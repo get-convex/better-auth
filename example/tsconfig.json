@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "skipLibCheck": false,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* This should only be used in this example. Real apps should not attempt
+     * to compile TypeScript because differences between tsconfig.json files can
+     * cause the code to be compiled differently.
+     */
+    "customConditions": ["@convex-dev/component-source"]
+  },
+  "include": ["./src", "vite.config.ts"]
+}

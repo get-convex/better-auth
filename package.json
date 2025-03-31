@@ -1,0 +1,90 @@
+{
+  "name": "convex-better-auth",
+  "description": "A sharded counter component for Convex.",
+  "repository": "github:get-convex/sharded-counter",
+  "homepage": "https://github.com/get-convex/sharded-counter#readme",
+  "bugs": {
+    "email": "support@convex.dev",
+    "url": "https://github.com/get-convex/sharded-counter/issues"
+  },
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "keywords": [
+    "convex",
+    "component"
+  ],
+  "type": "module",
+  "scripts": {
+    "build": "npm run build:esm && npm run build:cjs",
+    "build:esm": "tsc --project ./esm.json && echo '{\\n  \"type\": \"module\"\\n}' > dist/esm/package.json",
+    "build:cjs": "tsc --project ./commonjs.json && echo '{\\n  \"type\": \"commonjs\"\\n}' > dist/commonjs/package.json",
+    "dev": "cd example; npm run dev",
+    "typecheck": "tsc --noEmit",
+    "prepare": "npm run build",
+    "prepack": "node node10stubs.mjs",
+    "postpack": "node node10stubs.mjs --cleanup",
+    "test": "vitest run",
+    "test:debug": "vitest --inspect-brk --no-file-parallelism",
+    "test:coverage": "vitest run --coverage --coverage.reporter=text"
+  },
+  "files": [
+    "dist",
+    "src",
+    "react"
+  ],
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "@convex-dev/component-source": "./src/client/index.ts",
+        "types": "./dist/esm/client/index.d.ts",
+        "default": "./dist/esm/client/index.js"
+      },
+      "require": {
+        "@convex-dev/component-source": "./src/client/index.ts",
+        "types": "./dist/commonjs/client/index.d.ts",
+        "default": "./dist/commonjs/client/index.js"
+      }
+    },
+    "./react": {
+      "import": {
+        "@convex-dev/component-source": "./src/react/index.ts",
+        "types": "./dist/esm/react/index.d.ts",
+        "default": "./dist/esm/react/index.js"
+      },
+      "require": {
+        "@convex-dev/component-source": "./src/react/index.ts",
+        "types": "./dist/commonjs/react/index.d.ts",
+        "default": "./dist/commonjs/react/index.js"
+      }
+    },
+    "./convex.config": {
+      "import": {
+        "@convex-dev/component-source": "./src/component/convex.config.ts",
+        "types": "./dist/esm/component/convex.config.d.ts",
+        "default": "./dist/esm/component/convex.config.js"
+      }
+    }
+  },
+  "peerDependencies": {
+    "convex": ">=1.17.0 <1.25.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.1",
+    "@types/node": "^18.17.0",
+    "convex-test": "^0.0.33",
+    "eslint": "^9.9.1",
+    "globals": "^15.9.0",
+    "prettier": "3.2.5",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.4.0",
+    "vitest": "^2.1.4"
+  },
+  "main": "./dist/commonjs/client/index.js",
+  "types": "./dist/commonjs/client/index.d.ts",
+  "module": "./dist/esm/client/index.js",
+  "dependencies": {
+    "better-auth": "^1.2.5",
+    "convex-helpers": "^0.1.76"
+  }
+}
