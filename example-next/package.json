@@ -11,10 +11,18 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@convex-dev/better-auth": "file:..",
+    "@radix-ui/react-slot": "^1.1.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "convex": "^1.21.0",
+    "convex-helpers": "^0.1.76",
+    "lucide-react": "^0.486.0",
     "next": "^15.2.4",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "shadcn": "^2.4.0-canary.17",
+    "tailwind-merge": "^3.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
