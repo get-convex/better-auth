@@ -9,8 +9,12 @@ import { Input } from "@/components/ui/input";
 import { LogOut, Trash2 } from "lucide-react";
 import { useConvexAuth } from "convex/react";
 import { authClient } from "@/app/auth-client";
+import SignIn from "./components/SignIn";
+import SignUp from "./components/SignUp";
+import { Toaster } from "sonner";
 
 export default function Home() {
+  const [showSignIn, setShowSignIn] = useState(true);
   const { isAuthenticated, isLoading } = useConvexAuth();
   const user = useQuery(api.example.getCurrentUser);
   const deleteAccount = useMutation(api.example.deleteAccount);
@@ -20,7 +24,25 @@ export default function Home() {
   }
 
   if (!isAuthenticated || !user) {
-    return <div>Please sign in</div>;
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          {showSignIn ? <SignIn /> : <SignUp />}
+          <p className="text-center mt-4 text-sm text-neutral-600 dark:text-neutral-400">
+            {showSignIn
+              ? "Don't have an account? "
+              : "Already have an account? "}
+            <button
+              onClick={() => setShowSignIn(!showSignIn)}
+              className="text-orange-400 hover:text-orange-500 dark:text-orange-300 dark:hover:text-orange-200 underline"
+            >
+              {showSignIn ? "Sign up" : "Sign in"}
+            </button>
+          </p>
+        </div>
+        <Toaster />
+      </div>
+    );
   }
 
   const handleDeleteAccount = async () => {
@@ -69,6 +91,7 @@ export default function Home() {
       <main>
         <TodoList />
       </main>
+      <Toaster />
     </div>
   );
 }

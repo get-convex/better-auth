@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@convex-dev/better-auth": "file:..",
+    "@radix-ui/react-label": "^2.1.2",
     "@radix-ui/react-slot": "^1.1.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -23,6 +24,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "shadcn": "^2.4.0-canary.17",
+    "sonner": "^2.0.3",
     "tailwind-merge": "^3.1.0",
     "tw-animate-css": "^1.2.5"
   },
