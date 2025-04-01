@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as lib from "../lib.js";
 
 import type {
   ApiFromModules,
@@ -26,6 +27,7 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  lib: typeof lib;
 }>;
 export type Mounts = {
   auth: {
@@ -241,6 +243,9 @@ export type Mounts = {
       },
       any
     >;
+  };
+  lib: {
+    getUserById: FunctionReference<"query", "public", { id: string }, any>;
   };
 };
 // For now fullApiWithMounts is only fullApi which provides

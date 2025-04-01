@@ -1,47 +1,41 @@
 import {
+  Auth,
   Expand,
   FunctionReference,
   GenericDataModel,
   GenericMutationCtx,
   GenericQueryCtx,
+  httpActionGeneric,
   HttpRouter,
 } from "convex/server";
 import { GenericId } from "convex/values";
-import { api } from "../component/_generated/api";
 import { BetterAuthOptions } from "better-auth";
 import corsRouter from "./cors";
-import { httpAction } from "../component/_generated/server";
-import { Doc, TableNames } from "../component/_generated/dataModel";
+import { Id } from "../component/_generated/dataModel";
 import { auth, database } from "./auth";
-
-const transformInput = (data: any, model: string, action: string) => {
-  return data;
-};
-
-const transformOutput = (
-  { _id, _creationTime, ...data }: Doc<TableNames>,
-  _model: string
-) => {
-  return { ...data, id: _id };
-};
-
-const convertWhereClause = (where: any, table: any, model: string) => {
-  return where;
-};
-
-const getField = (model: string, field: string) => {
-  return field;
-};
-
-const db = {
-  user: [],
-};
+import { api } from "../component/_generated/api";
 
 export class BetterAuth<O extends BetterAuthOptions> {
   constructor(
     public component: UseApi<typeof api>,
     public options?: O
   ) {}
+  async getAuthUserId(ctx: RunQueryCtx & { auth: Auth }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
+    return identity.subject;
+  }
+  async getAuthUser(ctx: RunQueryCtx & { auth: Auth }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
+    return ctx.runQuery(this.component.lib.getUserById, {
+      id: identity.subject as Id<"user">,
+    });
+  }
   registerRoutes(
     http: HttpRouter,
     {
@@ -69,7 +63,7 @@ export class BetterAuth<O extends BetterAuthOptions> {
     http.route({
       path: "/.well-known/openid-configuration",
       method: "GET",
-      handler: httpAction(async () => {
+      handler: httpActionGeneric(async () => {
         const url = `${requireEnv("CONVEX_SITE_URL")}/api/auth/.well-known/openid-configuration`;
         return Response.redirect(url);
       }),
@@ -78,48 +72,48 @@ export class BetterAuth<O extends BetterAuthOptions> {
     http.route({
       path: `${path}/.well-known/openid-configuration`,
       method: "GET",
-      handler: httpAction(async (ctx, request) => {
-        return auth(database(ctx)()).handler(request);
+      handler: httpActionGeneric(async (ctx, request) => {
+        return auth(database(ctx, this.component)).handler(request);
       }),
     });
 
     http.route({
       pathPrefix: `${path}/oauth2/`,
       method: "GET",
-      handler: httpAction(async (ctx, request) => {
-        return auth(database(ctx)()).handler(request);
+      handler: httpActionGeneric(async (ctx, request) => {
+        return auth(database(ctx, this.component)).handler(request);
       }),
     });
 
     http.route({
       path: `${path}/jwks`,
       method: "GET",
-      handler: httpAction(async (ctx, request) => {
-        return auth(database(ctx)()).handler(request);
+      handler: httpActionGeneric(async (ctx, request) => {
+        return auth(database(ctx, this.component)).handler(request);
       }),
     });
 
     http.route({
       pathPrefix: `${path}/callback/`,
       method: "GET",
-      handler: httpAction(async (ctx, request) => {
-        return auth(database(ctx)()).handler(request);
+      handler: httpActionGeneric(async (ctx, request) => {
+        return auth(database(ctx, this.component)).handler(request);
       }),
     });
 
     cors.route({
       pathPrefix: `${path}/`,
       method: "GET",
-      handler: httpAction(async (ctx, request) => {
-        return auth(database(ctx)()).handler(request);
+      handler: httpActionGeneric(async (ctx, request) => {
+        return auth(database(ctx, this.component)).handler(request);
       }),
     });
 
     cors.route({
       pathPrefix: `${path}/`,
       method: "POST",
-      handler: httpAction(async (ctx, request) => {
-        return auth(database(ctx)()).handler(request);
+      handler: httpActionGeneric(async (ctx, request) => {
+        return auth(database(ctx, this.component)).handler(request);
       }),
     });
   }

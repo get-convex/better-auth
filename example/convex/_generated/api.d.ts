@@ -10,6 +10,7 @@
 
 import type * as example from "../example.js";
 import type * as http from "../http.js";
+import type * as todos from "../todos.js";
 
 import type {
   ApiFromModules,
@@ -28,6 +29,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   example: typeof example;
   http: typeof http;
+  todos: typeof todos;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 
@@ -273,6 +275,9 @@ export declare const components: {
         },
         any
       >;
+    };
+    lib: {
+      getUserById: FunctionReference<"query", "internal", { id: string }, any>;
     };
   };
 };

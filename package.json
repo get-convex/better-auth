@@ -1,5 +1,5 @@
 {
-  "name": "convex-better-auth",
+  "name": "@convex-dev/better-auth",
   "description": "A sharded counter component for Convex.",
   "repository": "github:get-convex/sharded-counter",
   "homepage": "https://github.com/get-convex/sharded-counter#readme",

@@ -6,8 +6,8 @@ import { api } from "../../convex/_generated/api";
 import { authClient } from "@/auth-client";
 
 export function Dashboard() {
-  const user = useQuery(api.app.getCurrentUser);
-  const deleteAccount = useMutation(api.app.deleteAccount);
+  const user = useQuery(api.example.getCurrentUser);
+  const deleteAccount = useMutation(api.example.deleteAccount);
 
   if (!user) {
     return <div>Loading...</div>;
@@ -16,7 +16,7 @@ export function Dashboard() {
   const handleDeleteAccount = async () => {
     if (
       window.confirm(
-        "Are you sure you want to delete your account? This action cannot be undone.",
+        "Are you sure you want to delete your account? This action cannot be undone."
       )
     ) {
       await deleteAccount();

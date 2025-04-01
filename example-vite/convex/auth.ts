@@ -474,12 +474,6 @@ export const auth = (ctx: ActionCtx) => {
             );
           }
           throw new Error("no matching function found");
-          /*
-          const table = db[model];
-          const res = convertWhereClause(where, table, model);
-          const record = res[0] || null;
-          return transformOutput(record, model, select);
-          */
         },
         findMany: async ({
           model,
@@ -523,29 +517,6 @@ export const auth = (ctx: ActionCtx) => {
             });
           }
           throw new Error("no matching function found");
-          /*
-          let table = db[model];
-          if (where) {
-            table = convertWhereClause(where, table, model);
-          }
-          if (sortBy) {
-            table = table.sort((a, b) => {
-              const field = getField(model, sortBy.field);
-              if (sortBy.direction === "asc") {
-                return a[field] > b[field] ? 1 : -1;
-              } else {
-                return a[field] < b[field] ? 1 : -1;
-              }
-            });
-          }
-          if (offset !== undefined) {
-            table = table.slice(offset);
-          }
-          if (limit !== undefined) {
-            table = table.slice(0, limit);
-          }
-          return table.map((record) => transformOutput(record, model));
-          */
         },
         count: async ({ model, where }) => {
           console.log({ fn: "count", model, where });
@@ -556,9 +527,6 @@ export const auth = (ctx: ActionCtx) => {
           }
           throw new Error("Not implemented");
           // return 0;
-          /*
-          return db[model].length;
-          */
         },
         update: async ({ model, where, update }) => {
           console.log({ fn: "update", model, where, update });
@@ -582,14 +550,6 @@ export const auth = (ctx: ActionCtx) => {
           }
           throw new Error("Not implemented");
           // return null
-          /*
-          const table = db[model];
-          const res = convertWhereClause(where, table, model);
-          res.forEach((record) => {
-            Object.assign(record, transformInput(update, model, "update"));
-          });
-          return transformOutput(res[0], model);
-          */
         },
         delete: async ({ model, where }) => {
           console.log({ fn: "delete", model, where });
@@ -609,11 +569,6 @@ export const auth = (ctx: ActionCtx) => {
           }
           throw new Error("no matching function found");
           // return null
-          /*
-          const table = db[model];
-          const res = convertWhereClause(where, table, model);
-          db[model] = table.filter((record) => !res.includes(record));
-          */
         },
         deleteMany: async ({ model, where }) => {
           console.log({ fn: "deleteMany", model, where });
@@ -638,19 +593,7 @@ export const auth = (ctx: ActionCtx) => {
             });
           }
           throw new Error("no matching function found");
-          /*
-          const table = db[model];
-          const res = convertWhereClause(where, table, model);
-          let count = 0;
-          db[model] = table.filter((record) => {
-            if (res.includes(record)) {
-              count++;
-              return false;
-            }
-            return !res.includes(record);
-          });
-          return count;
-          */
+          // return 0
         },
         updateMany: async ({ model, where, update }) => {
           console.log({ fn: "updateMany", model, where, update });
@@ -661,15 +604,6 @@ export const auth = (ctx: ActionCtx) => {
           }
           throw new Error("Not implemented");
           //return 0;
-          /*
-          const { model, where, update } = data;
-          const table = db[model];
-          const res = convertWhereClause(where, table, model);
-          res.forEach((record) => {
-            Object.assign(record, update);
-          });
-          return res[0] || null;
-          */
         },
       }) satisfies Adapter,
   });
