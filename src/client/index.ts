@@ -40,9 +40,11 @@ export class BetterAuth<O extends BetterAuthOptions> {
     http: HttpRouter,
     {
       path = "/api/auth",
+      allowedOrigins,
     }: {
       path?: string;
-    } = {}
+      allowedOrigins: string[];
+    }
   ) {
     const requireEnv = (name: string) => {
       const value = process.env[name];
@@ -52,8 +54,9 @@ export class BetterAuth<O extends BetterAuthOptions> {
       return value;
     };
 
+    console.log("allowedOrigins", allowedOrigins);
     const cors = corsRouter(http, {
-      allowedOrigins: ["http://localhost:5173", "https://localhost:5173"],
+      allowedOrigins,
       allowCredentials: true,
       allowedHeaders: ["Authorization", "Set-Auth-Token", "Content-Type"],
       verbose: true,

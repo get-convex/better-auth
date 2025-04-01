@@ -6,6 +6,8 @@ export const betterAuth = new BetterAuth(components.betterAuth);
 
 const http = httpRouter();
 
-betterAuth.registerRoutes(http);
+betterAuth.registerRoutes(http, {
+  allowedOrigins: ["*"],
+});
 
 export default http;

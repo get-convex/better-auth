@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -51,8 +52,10 @@ export default function SignUp() {
         onSuccess: () => {
           setLoading(false);
         },
-        onError: (ctx) => {
+        onError: async (ctx) => {
           setLoading(false);
+          console.error(ctx.error);
+          console.error("response", ctx.response);
           toast.error(ctx.error.message);
         },
       },
