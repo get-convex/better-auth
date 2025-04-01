@@ -46,13 +46,6 @@ export const verification = undefinedTable("verification", {
  updatedAt: integer('updated_at', { mode: 'timestamp' })
 				});
 
-export const jwks = undefinedTable("jwks", {
-					id: text("id").primaryKey(),
-					publicKey: text('public_key').notNull(),
- privateKey: text('private_key').notNull(),
- createdAt: integer('created_at', { mode: 'timestamp' }).notNull()
-				});
-
 export const oauthApplication = undefinedTable("oauth_application", {
 					id: text("id").primaryKey(),
 					name: text('name'),
@@ -89,4 +82,11 @@ export const oauthConsent = undefinedTable("oauth_consent", {
  createdAt: integer('created_at', { mode: 'timestamp' }),
  updatedAt: integer('updated_at', { mode: 'timestamp' }),
  consentGiven: integer('consent_given', { mode: 'boolean' })
+				});
+
+export const jwks = undefinedTable("jwks", {
+					id: text("id").primaryKey(),
+					publicKey: text('public_key').notNull(),
+ privateKey: text('private_key').notNull(),
+ createdAt: integer('created_at', { mode: 'timestamp' }).notNull()
 				});

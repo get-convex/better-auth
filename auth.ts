@@ -1,19 +1,8 @@
-// This file is a minimal betterAuth config for schema generation
-import { bearer, jwt, oidcProvider } from "better-auth/plugins";
-import { betterAuth } from "better-auth";
+// This file re-exports the auth config for schema generation
+import { auth } from "./src/client/auth";
 
-export const auth = betterAuth({
-  plugins: [
-    jwt(),
-    bearer(),
-    oidcProvider({
-      loginPage: "/login-test",
-    }),
-  ],
-  emailAndPassword: {
-    enabled: true,
-  },
-  database: () => ({
-    id: "drizzle",
-  }),
-});
+// Generate schema for drizzle, closest syntax to Convex schema
+// AI can translate schema changes to Convex schema, just requires
+// review for accuracy
+const config = auth(() => ({ id: "drizzle" }));
+export { config as auth };
