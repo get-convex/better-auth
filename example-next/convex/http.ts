@@ -1,3 +1,11 @@
-import { betterAuth } from "@convex-dev/better-auth";
+import { httpRouter } from "convex/server";
+import { BetterAuth } from "@convex-dev/better-auth";
+import { components } from "./_generated/api";
 
-export { betterAuth };
+export const betterAuth = new BetterAuth(components.betterAuth);
+
+const http = httpRouter();
+
+betterAuth.registerRoutes(http);
+
+export default http;

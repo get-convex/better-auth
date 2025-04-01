@@ -4,11 +4,11 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Todo } from "./components/Todo";
 import { useState } from "react";
-import { Button } from "./components/ui/button";
-import { Input } from "./components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { LogOut, Trash2 } from "lucide-react";
 import { useConvexAuth } from "convex/react";
-import { authClient } from "@/auth-client";
+import { authClient } from "@/app/auth-client";
 
 export default function Home() {
   const { isAuthenticated, isLoading } = useConvexAuth();

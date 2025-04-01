@@ -1,7 +1,5 @@
 import "./globals.css";
-import { ConvexProvider, ConvexReactClient } from "convex/react";
-
-const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+import { ConvexClientProvider } from "./ConvexClientProvider";
 
 export default function RootLayout({
   children,
@@ -11,7 +9,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="bg-neutral-950 text-neutral-50">
-        <ConvexProvider client={convex}>{children}</ConvexProvider>
+        <ConvexClientProvider>{children}</ConvexClientProvider>
       </body>
     </html>
   );
