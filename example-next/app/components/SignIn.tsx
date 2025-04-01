@@ -48,7 +48,6 @@ export default function SignIn() {
       {
         provider: "github",
         callbackURL: "http://localhost:3000",
-        disableRedirect: false,
       },
       {
         onRequest: () => {
@@ -61,9 +60,11 @@ export default function SignIn() {
           );
         },
         onSuccess: async (ctx) => {
+          /*
           if (ctx.data.token) {
             localStorage.setItem("bearer_token", ctx.data.token);
           }
+            */
           setLoading(false);
         },
         onError: (ctx) => {

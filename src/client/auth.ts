@@ -24,21 +24,19 @@ export const auth = (
         enabled: true,
       },
     },
-    /*
     advanced: {
       defaultCookieAttributes: {
         secure: true,
-        httpOnly: true,
+        //httpOnly: true,
         sameSite: "none", // Allows CORS-based cookie sharing across subdomains
-        partitioned: true, // New browser standards will mandate this for foreign cookies
+        //partitioned: true, // New browser standards will mandate this for foreign cookies
       },
     },
-    */
     plugins: [
       oidcProvider({
         loginPage: "/login-page",
       }),
-      bearer(),
+      //bearer(),
       jwt({
         jwt: {
           issuer: `${process.env.CONVEX_SITE_URL}`,

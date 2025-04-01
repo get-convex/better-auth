@@ -4,6 +4,7 @@ import { jwtClient } from "better-auth/client/plugins";
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_CONVEX_SITE_URL,
   plugins: [jwtClient()],
+  /*
   fetchOptions: {
     auth: {
       type: "Bearer",
@@ -19,4 +20,5 @@ export const authClient = createAuthClient({
       }
     },
   },
+  */
 });
