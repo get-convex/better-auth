@@ -47,7 +47,7 @@ export default function SignIn() {
     await authClient.signIn.social(
       {
         provider: "github",
-        callbackURL: window.location.origin,
+        callbackURL: "http://localhost:3000",
         disableRedirect: false,
       },
       {

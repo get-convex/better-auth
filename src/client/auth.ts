@@ -4,12 +4,21 @@ import { bearer } from "better-auth/plugins";
 import { oidcProvider } from "better-auth/plugins";
 import { Id } from "../component/_generated/dataModel";
 import { GenericActionCtx, GenericDataModel } from "convex/server";
-import { BetterAuth, UseApi } from ".";
+import { UseApi } from ".";
 import { api } from "../component/_generated/api";
 
-export const auth = (database: () => Adapter) =>
+export const auth = (
+  database: () => Adapter,
+  {
+    trustedOrigins,
+  }: {
+    trustedOrigins: string[];
+  } = {
+    trustedOrigins: [],
+  }
+) =>
   betterAuth({
-    trustedOrigins: ["http://localhost:5173"],
+    trustedOrigins,
     account: {
       accountLinking: {
         enabled: true,

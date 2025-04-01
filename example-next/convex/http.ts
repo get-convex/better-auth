@@ -7,7 +7,7 @@ export const betterAuth = new BetterAuth(components.betterAuth);
 const http = httpRouter();
 
 betterAuth.registerRoutes(http, {
-  allowedOrigins: ["*"],
+  allowedOrigins: ["http://localhost:3000"],
 });
 
 export default http;

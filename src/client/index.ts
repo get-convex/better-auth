@@ -2,6 +2,7 @@ import {
   Auth,
   Expand,
   FunctionReference,
+  GenericActionCtx,
   GenericDataModel,
   GenericMutationCtx,
   GenericQueryCtx,
@@ -54,12 +55,17 @@ export class BetterAuth<O extends BetterAuthOptions> {
       return value;
     };
 
-    console.log("allowedOrigins", allowedOrigins);
+    const authRequestHandler = httpActionGeneric(async (ctx, request) => {
+      return auth(database(ctx, this.component), {
+        trustedOrigins: allowedOrigins,
+      }).handler(request);
+    });
+
     const cors = corsRouter(http, {
       allowedOrigins,
       allowCredentials: true,
       allowedHeaders: ["Authorization", "Set-Auth-Token", "Content-Type"],
-      verbose: true,
+      verbose: false,
       exposedHeaders: ["Set-Auth-Token"],
     });
 
@@ -75,49 +81,37 @@ export class BetterAuth<O extends BetterAuthOptions> {
     http.route({
       path: `${path}/.well-known/openid-configuration`,
       method: "GET",
-      handler: httpActionGeneric(async (ctx, request) => {
-        return auth(database(ctx, this.component)).handler(request);
-      }),
+      handler: authRequestHandler,
     });
 
     http.route({
       pathPrefix: `${path}/oauth2/`,
       method: "GET",
-      handler: httpActionGeneric(async (ctx, request) => {
-        return auth(database(ctx, this.component)).handler(request);
-      }),
+      handler: authRequestHandler,
     });
 
     http.route({
       path: `${path}/jwks`,
       method: "GET",
-      handler: httpActionGeneric(async (ctx, request) => {
-        return auth(database(ctx, this.component)).handler(request);
-      }),
+      handler: authRequestHandler,
     });
 
     http.route({
       pathPrefix: `${path}/callback/`,
       method: "GET",
-      handler: httpActionGeneric(async (ctx, request) => {
-        return auth(database(ctx, this.component)).handler(request);
-      }),
+      handler: authRequestHandler,
     });
 
     cors.route({
       pathPrefix: `${path}/`,
       method: "GET",
-      handler: httpActionGeneric(async (ctx, request) => {
-        return auth(database(ctx, this.component)).handler(request);
-      }),
+      handler: authRequestHandler,
     });
 
     cors.route({
       pathPrefix: `${path}/`,
       method: "POST",
-      handler: httpActionGeneric(async (ctx, request) => {
-        return auth(database(ctx, this.component)).handler(request);
-      }),
+      handler: authRequestHandler,
     });
   }
   /*
