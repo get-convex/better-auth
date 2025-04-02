@@ -68,27 +68,17 @@ export { getByQuery as getBy };
 export const create = mutation({
   args: {
     input: v.union(
-      v.object({
-        table: v.literal("user"),
-        ...schema.tables.user.validator.fields,
-      }),
-      v.object({
-        table: v.literal("account"),
-        ...schema.tables.account.validator.fields,
-      }),
-      v.object({
-        table: v.literal("session"),
-        ...schema.tables.session.validator.fields,
-      }),
-      v.object({
-        table: v.literal("verification"),
-        ...schema.tables.verification.validator.fields,
-      })
+      ...Object.values(schema.tables).map((table) =>
+        v.object({
+          table: v.string(),
+          ...table.validator.fields,
+        })
+      )
     ),
   },
   handler: async (ctx, args) => {
     const { table, ...input } = args.input;
-    const id = await ctx.db.insert(table, {
+    const id = await ctx.db.insert(table as any, {
       ...input,
     });
     const doc = await ctx.db.get(id);

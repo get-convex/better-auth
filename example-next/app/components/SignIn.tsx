@@ -14,8 +14,10 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { authClient } from "@/app/auth-client";
+import { useRouter } from "next/navigation";
 
 export default function SignIn() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
@@ -38,8 +40,11 @@ export default function SignIn() {
         onRequest: () => {
           setOtpLoading(true);
         },
-        onSuccess: () => {
+        onSuccess: (ctx) => {
           setOtpLoading(false);
+          if (ctx.data.twoFactorRedirect) {
+            router.push("/verify-2fa");
+          }
         },
         onError: (ctx) => {
           setOtpLoading(false);

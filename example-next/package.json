@@ -13,6 +13,7 @@
   "dependencies": {
     "@convex-dev/better-auth": "file:..",
     "@radix-ui/react-checkbox": "^1.1.4",
+    "@radix-ui/react-dropdown-menu": "^2.1.6",
     "@radix-ui/react-label": "^2.1.2",
     "@radix-ui/react-slot": "^1.1.2",
     "@react-email/components": "0.0.35",
@@ -25,6 +26,7 @@
     "postcss": "^8.5.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-qr-code": "^2.0.15",
     "resend": "^4.2.0",
     "shadcn": "^2.4.0-canary.17",
     "sonner": "^2.0.3",

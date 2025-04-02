@@ -55,6 +55,20 @@ export const database =
         if (select) {
           throw new Error("select is not supported");
         }
+        return ctx.runMutation(component.auth.create, {
+          input: {
+            table: model,
+            ...Object.fromEntries(
+              Object.entries(data).map(([key, value]) => {
+                if (value instanceof Date) {
+                  return [key, value.getTime()];
+                }
+                return [key, value];
+              })
+            ),
+          },
+        });
+        /*
         if (model === "session") {
           if (!data.userId) {
             throw new Error("userId is required for session creation");
@@ -110,6 +124,19 @@ export const database =
             },
           });
         }
+        if (model === "twoFactor") {
+          return ctx.runMutation(component.auth.create, {
+            input: {
+              table: "twoFactor",
+              secret: data.secret,
+              backupCodes: data.backupCodes,
+              userId: data.userId,
+              createdAt: data.createdAt.getTime(),
+              updatedAt: data.updatedAt.getTime(),
+            },
+          });
+        }
+          */
         throw new Error("no matching function found");
       },
       findOne: async ({ model, where, select }): Promise<any> => {

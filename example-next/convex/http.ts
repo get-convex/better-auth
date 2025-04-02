@@ -8,7 +8,7 @@ import {
   sendResetPassword,
   sendOTPVerification,
 } from "./email";
-import { magicLink, emailOTP } from "better-auth/plugins";
+import { magicLink, emailOTP, twoFactor } from "better-auth/plugins";
 
 export const betterAuth = new BetterAuth(components.betterAuth, {
   trustedOrigins: ["http://localhost:3000"],
@@ -52,6 +52,7 @@ export const betterAuth = new BetterAuth(components.betterAuth, {
         });
       },
     }),
+    twoFactor(),
   ],
   socialProviders: {
     github: {
