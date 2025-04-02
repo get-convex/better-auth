@@ -136,8 +136,6 @@ export default function SignIn() {
             e.preventDefault();
             if (signInMethod === "password") {
               await handleSignIn();
-            } else {
-              await handleMagicLinkSignIn();
             }
           }}
           className="grid gap-4"
@@ -174,7 +172,16 @@ export default function SignIn() {
           ) : null}
 
           <div className="flex flex-col gap-2">
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button
+              type={signInMethod === "password" ? "submit" : "button"}
+              className="w-full"
+              disabled={loading}
+              onClick={
+                signInMethod === "magic-link"
+                  ? handleMagicLinkSignIn
+                  : undefined
+              }
+            >
               {loading ? (
                 <Loader2 size={16} className="animate-spin" />
               ) : signInMethod === "password" ? (
