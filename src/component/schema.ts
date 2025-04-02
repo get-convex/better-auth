@@ -8,6 +8,7 @@ const schema = defineSchema({
     email: v.string(),
     emailVerified: v.boolean(),
     image: v.optional(v.string()),
+    twoFactorEnabled: v.optional(v.boolean()),
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("email", ["email"]),
@@ -40,6 +41,12 @@ const schema = defineSchema({
   })
     .index("providerId_accountId", ["providerId", "accountId"])
     .index("userId", ["userId"]),
+
+  twoFactor: defineTable({
+    secret: v.string(),
+    backupCodes: v.string(),
+    userId: v.id("user"),
+  }).index("userId", ["userId"]),
 
   verification: defineTable({
     identifier: v.string(),
@@ -109,6 +116,7 @@ const uniqueFields: UniqueFields = {
   verification: [],
   jwks: [],
   oauthConsent: [],
+  twoFactor: [],
   user: ["email"],
   session: ["token"],
   oauthApplication: ["clientId"],

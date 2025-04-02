@@ -1,10 +1,16 @@
 import { createAuthClient } from "better-auth/react";
-import { jwtClient } from "better-auth/client/plugins";
+import { jwtClient, twoFactorClient } from "better-auth/client/plugins";
 import { magicLinkClient } from "better-auth/client/plugins";
+import { emailOTPClient } from "better-auth/client/plugins";
 
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_CONVEX_SITE_URL,
-  plugins: [jwtClient(), magicLinkClient()],
+  plugins: [
+    jwtClient(),
+    magicLinkClient(),
+    emailOTPClient(),
+    twoFactorClient(),
+  ],
   /*
   fetchOptions: {
     auth: {

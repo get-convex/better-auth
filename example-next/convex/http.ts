@@ -6,8 +6,9 @@ import {
   sendEmailVerification,
   sendMagicLink,
   sendResetPassword,
+  sendOTPVerification,
 } from "./email";
-import { magicLink } from "better-auth/plugins";
+import { magicLink, emailOTP } from "better-auth/plugins";
 
 export const betterAuth = new BetterAuth(components.betterAuth, {
   trustedOrigins: ["http://localhost:3000"],
@@ -40,6 +41,14 @@ export const betterAuth = new BetterAuth(components.betterAuth, {
         await sendMagicLink({
           to: email,
           url,
+        });
+      },
+    }),
+    emailOTP({
+      async sendVerificationOTP({ email, otp }) {
+        await sendOTPVerification({
+          to: email,
+          code: otp,
         });
       },
     }),

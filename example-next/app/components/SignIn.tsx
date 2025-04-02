@@ -18,11 +18,14 @@ import { authClient } from "@/app/auth-client";
 export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [magicLinkLoading, setMagicLinkLoading] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
-  const [signInMethod, setSignInMethod] = useState<"password" | "magic-link">(
-    "magic-link",
+  const [signInMethod, setSignInMethod] = useState<"password" | "passwordless">(
+    "passwordless",
   );
+  const [otpSent, setOtpSent] = useState(false);
 
   const handleSignIn = async () => {
     const { data, error } = await authClient.signIn.email(
@@ -33,13 +36,13 @@ export default function SignIn() {
       },
       {
         onRequest: () => {
-          setLoading(true);
+          setOtpLoading(true);
         },
         onSuccess: () => {
-          setLoading(false);
+          setOtpLoading(false);
         },
         onError: (ctx) => {
-          setLoading(false);
+          setOtpLoading(false);
           alert(ctx.error.message);
         },
       },
@@ -71,14 +74,14 @@ export default function SignIn() {
       },
       {
         onRequest: () => {
-          setLoading(true);
+          setMagicLinkLoading(true);
         },
         onSuccess: () => {
-          setLoading(false);
+          setMagicLinkLoading(false);
           alert("Check your email for the magic link!");
         },
         onError: (ctx) => {
-          setLoading(false);
+          setMagicLinkLoading(false);
           alert(ctx.error.message);
         },
       },
@@ -93,7 +96,7 @@ export default function SignIn() {
       },
       {
         onRequest: () => {
-          setLoading(true);
+          setOtpLoading(true);
         },
         onResponse: (ctx) => {
           console.log(
@@ -107,10 +110,10 @@ export default function SignIn() {
             localStorage.setItem("bearer_token", ctx.data.token);
           }
             */
-          setLoading(false);
+          setOtpLoading(false);
         },
         onError: (ctx) => {
-          setLoading(false);
+          setOtpLoading(false);
           alert(ctx.error.message);
         },
       },
@@ -125,17 +128,60 @@ export default function SignIn() {
       },
       {
         onRequest: () => {
-          setLoading(true);
+          setOtpLoading(true);
         },
         onSuccess: () => {
-          setLoading(false);
+          setOtpLoading(false);
         },
         onError: (ctx) => {
-          setLoading(false);
+          setOtpLoading(false);
           alert(ctx.error.message);
         },
       },
     );
+  };
+
+  const handleOtpSignIn = async () => {
+    if (!otpSent) {
+      await authClient.emailOtp.sendVerificationOtp(
+        {
+          email,
+          type: "sign-in",
+        },
+        {
+          onRequest: () => {
+            setOtpLoading(true);
+          },
+          onSuccess: () => {
+            setOtpLoading(false);
+            setOtpSent(true);
+          },
+          onError: (ctx) => {
+            setOtpLoading(false);
+            alert(ctx.error.message);
+          },
+        },
+      );
+    } else {
+      await authClient.signIn.emailOtp(
+        {
+          email,
+          otp,
+        },
+        {
+          onRequest: () => {
+            setOtpLoading(true);
+          },
+          onSuccess: () => {
+            setOtpLoading(false);
+          },
+          onError: (ctx) => {
+            setOtpLoading(false);
+            alert(ctx.error.message);
+          },
+        },
+      );
+    }
   };
 
   return (
@@ -152,6 +198,8 @@ export default function SignIn() {
             e.preventDefault();
             if (signInMethod === "password") {
               handleSignIn();
+            } else if (otpSent) {
+              handleOtpSignIn();
             }
           }}
           className="grid gap-4"
@@ -200,23 +248,64 @@ export default function SignIn() {
             </div>
           )}
 
+          {signInMethod === "passwordless" && otpSent && (
+            <div className="grid gap-2">
+              <Label htmlFor="otp">Verification Code</Label>
+              <Input
+                id="otp"
+                type="text"
+                placeholder="Enter verification code"
+                required
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                pattern="[0-9]*"
+                inputMode="numeric"
+                maxLength={6}
+              />
+            </div>
+          )}
+
           <div className="flex flex-col gap-2">
             {signInMethod === "password" && (
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full" disabled={otpLoading}>
                 Sign in with Password
               </Button>
             )}
-            {signInMethod === "magic-link" && (
-              <Button
-                type="button"
-                className="w-full"
-                disabled={loading}
-                onClick={handleMagicLinkSignIn}
-              >
-                {loading ? (
+            {signInMethod === "passwordless" && !otpSent && (
+              <div className="flex flex-col gap-2">
+                <Button
+                  type="button"
+                  className="w-full"
+                  disabled={magicLinkLoading || otpLoading}
+                  onClick={handleMagicLinkSignIn}
+                >
+                  {magicLinkLoading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    "Send Magic Link"
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  className="w-full"
+                  variant="outline"
+                  disabled={magicLinkLoading || otpLoading}
+                  onClick={handleOtpSignIn}
+                >
+                  {otpLoading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    "Send Verification Code"
+                  )}
+                </Button>
+              </div>
+            )}
+            {signInMethod === "passwordless" && otpSent && (
+              <Button type="submit" className="w-full" disabled={otpLoading}>
+                {otpLoading ? (
                   <Loader2 size={16} className="animate-spin" />
                 ) : (
-                  "Send Magic Link"
+                  "Verify Code"
                 )}
               </Button>
             )}
@@ -227,13 +316,15 @@ export default function SignIn() {
               className="text-sm"
               onClick={() => {
                 setSignInMethod(
-                  signInMethod === "password" ? "magic-link" : "password",
+                  signInMethod === "password" ? "passwordless" : "password",
                 );
                 setPassword("");
+                setOtp("");
+                setOtpSent(false);
               }}
             >
               {signInMethod === "password"
-                ? "Sign in with a magic link instead"
+                ? "Sign in with magic link or OTP instead"
                 : "Sign in with a password instead"}
             </Button>
           </div>
@@ -253,7 +344,7 @@ export default function SignIn() {
             type="button"
             variant="outline"
             className="w-full gap-2"
-            disabled={loading}
+            disabled={otpLoading}
             onClick={handleGithubSignIn}
           >
             <svg
@@ -274,7 +365,7 @@ export default function SignIn() {
             type="button"
             variant="outline"
             className="w-full gap-2"
-            disabled={loading}
+            disabled={otpLoading}
             onClick={handleGoogleSignIn}
           >
             <svg

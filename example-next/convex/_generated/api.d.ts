@@ -69,6 +69,7 @@ export declare const components: {
                 image?: string;
                 name: string;
                 table: "user";
+                twoFactorEnabled?: boolean;
                 updatedAt: number;
               }
             | {

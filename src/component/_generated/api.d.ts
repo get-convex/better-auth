@@ -43,6 +43,7 @@ export type Mounts = {
               image?: string;
               name: string;
               table: "user";
+              twoFactorEnabled?: boolean;
               updatedAt: number;
             }
           | {
