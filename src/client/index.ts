@@ -107,6 +107,12 @@ export class BetterAuth<O extends BetterAuthOptions> {
       handler: authRequestHandler,
     });
 
+    http.route({
+      pathPrefix: `${path}/magic-link/`,
+      method: "GET",
+      handler: authRequestHandler,
+    });
+
     cors.route({
       pathPrefix: `${path}/`,
       method: "GET",

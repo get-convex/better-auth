@@ -5,10 +5,12 @@ if (typeof MessageChannel === "undefined") {
     onmessageerror: ((ev: MessageEvent) => void) | undefined;
 
     close() {}
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     postMessage(_message: unknown, _transfer: Transferable[] = []) {}
     start() {}
     addEventListener() {}
     removeEventListener() {}
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     dispatchEvent(_event: Event): boolean {
       return false;
     }

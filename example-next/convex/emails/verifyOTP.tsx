@@ -1,39 +1,32 @@
-import { Heading, Link, Text } from "@react-email/components";
 import React from "react";
+import { Heading, Text } from "@react-email/components";
 import { BaseEmail, styles } from "./components/BaseEmail";
 
-interface VerifyEmailProps {
-  url: string;
+interface VerifyOTPProps {
+  code: string;
   brandName?: string;
   brandTagline?: string;
   brandLogoUrl?: string;
 }
 
-export default function VerifyEmail({
-  url,
+export default function VerifyOTP({
+  code,
   brandName,
   brandTagline,
   brandLogoUrl,
-}: VerifyEmailProps) {
+}: VerifyOTPProps) {
   return (
     <BaseEmail
-      previewText="Verify your email address"
+      previewText="Your verification code"
       brandName={brandName}
       brandTagline={brandTagline}
       brandLogoUrl={brandLogoUrl}
     >
       <Heading style={styles.h1}>Verify your email</Heading>
-      <Link
-        href={url}
-        target="_blank"
-        style={{
-          ...styles.link,
-          display: "block",
-          marginBottom: "16px",
-        }}
-      >
-        Click here to verify your email address
-      </Link>
+      <Text style={styles.text}>
+        Enter this verification code to verify your email address:
+      </Text>
+      <code style={styles.code}>{code}</code>
       <Text
         style={{
           ...styles.text,

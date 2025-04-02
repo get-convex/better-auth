@@ -1,8 +1,9 @@
-//import "./polyfills";
+import "./polyfills";
 import { httpRouter } from "convex/server";
 import { BetterAuth } from "@convex-dev/better-auth";
 import { components } from "./_generated/api";
 import { sendVerification } from "./email";
+import { magicLink } from "better-auth/plugins";
 
 export const betterAuth = new BetterAuth(components.betterAuth, {
   trustedOrigins: ["http://localhost:3000"],
@@ -12,14 +13,29 @@ export const betterAuth = new BetterAuth(components.betterAuth, {
     },
   },
   emailVerification: {
-    sendVerificationEmail: async ({ user }) => {
-      await sendVerification({ to: user.email });
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendVerification({
+        to: user.email,
+        type: "verification",
+        url,
+      });
     },
   },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
   },
+  plugins: [
+    magicLink({
+      sendMagicLink: async ({ email, url }) => {
+        await sendVerification({
+          to: email,
+          type: "magic-link",
+          url,
+        });
+      },
+    }),
+  ],
   socialProviders: {
     github: {
       clientId: process.env.GITHUB_CLIENT_ID as string,

@@ -11,16 +11,17 @@ export const auth = (database: () => Adapter, config: BetterAuthOptions) =>
   betterAuth({
     ...config,
     advanced: {
+      ...config.advanced,
       defaultCookieAttributes: {
+        ...config.advanced?.defaultCookieAttributes,
         secure: true,
         //httpOnly: true,
         sameSite: "none", // Allows CORS-based cookie sharing across subdomains
         //partitioned: true, // New browser standards will mandate this for
-        ...config.advanced?.defaultCookieAttributes,
       },
-      ...config.advanced,
     },
     plugins: [
+      ...(config.plugins || []),
       oidcProvider({
         loginPage: "/not-used",
       }),

@@ -9,7 +9,10 @@
  */
 
 import type * as email from "../email.js";
+import type * as emails_components_BaseEmail from "../emails/components/BaseEmail.js";
+import type * as emails_magicLink from "../emails/magicLink.js";
 import type * as emails_verifyEmail from "../emails/verifyEmail.js";
+import type * as emails_verifyOTP from "../emails/verifyOTP.js";
 import type * as example from "../example.js";
 import type * as http from "../http.js";
 import type * as todos from "../todos.js";
@@ -30,7 +33,10 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   email: typeof email;
+  "emails/components/BaseEmail": typeof emails_components_BaseEmail;
+  "emails/magicLink": typeof emails_magicLink;
   "emails/verifyEmail": typeof emails_verifyEmail;
+  "emails/verifyOTP": typeof emails_verifyOTP;
   example: typeof example;
   http: typeof http;
   todos: typeof todos;

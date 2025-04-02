@@ -1,28 +1,28 @@
 import { Heading, Link, Text } from "@react-email/components";
-import React from "react";
 import { BaseEmail, styles } from "./components/BaseEmail";
+import React from "react";
 
-interface VerifyEmailProps {
+interface MagicLinkEmailProps {
   url: string;
   brandName?: string;
   brandTagline?: string;
   brandLogoUrl?: string;
 }
 
-export default function VerifyEmail({
+export default function MagicLinkEmail({
   url,
   brandName,
   brandTagline,
   brandLogoUrl,
-}: VerifyEmailProps) {
+}: MagicLinkEmailProps) {
   return (
     <BaseEmail
-      previewText="Verify your email address"
+      previewText="Sign in with this magic link"
       brandName={brandName}
       brandTagline={brandTagline}
       brandLogoUrl={brandLogoUrl}
     >
-      <Heading style={styles.h1}>Verify your email</Heading>
+      <Heading style={styles.h1}>Sign in</Heading>
       <Link
         href={url}
         target="_blank"
@@ -32,7 +32,7 @@ export default function VerifyEmail({
           marginBottom: "16px",
         }}
       >
-        Click here to verify your email address
+        Click here to sign in with this magic link
       </Link>
       <Text
         style={{
@@ -42,7 +42,7 @@ export default function VerifyEmail({
           marginBottom: "16px",
         }}
       >
-        If you didn&apos;t create an account, you can safely ignore this email.
+        If you didn&apos;t try to sign in, you can safely ignore this email.
       </Text>
     </BaseEmail>
   );
