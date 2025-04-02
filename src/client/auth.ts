@@ -1,4 +1,4 @@
-import { Adapter, betterAuth } from "better-auth";
+import { Adapter, betterAuth, BetterAuthOptions } from "better-auth";
 import { jwt } from "better-auth/plugins";
 import { bearer } from "better-auth/plugins";
 import { oidcProvider } from "better-auth/plugins";
@@ -7,36 +7,24 @@ import { GenericActionCtx, GenericDataModel } from "convex/server";
 import { UseApi } from ".";
 import { api } from "../component/_generated/api";
 
-export const auth = (
-  database: () => Adapter,
-  {
-    trustedOrigins,
-  }: {
-    trustedOrigins: string[];
-  } = {
-    trustedOrigins: [],
-  }
-) =>
+export const auth = (database: () => Adapter, config: BetterAuthOptions) =>
   betterAuth({
-    trustedOrigins,
-    account: {
-      accountLinking: {
-        enabled: true,
-      },
-    },
+    ...config,
     advanced: {
       defaultCookieAttributes: {
         secure: true,
         //httpOnly: true,
         sameSite: "none", // Allows CORS-based cookie sharing across subdomains
-        //partitioned: true, // New browser standards will mandate this for foreign cookies
+        //partitioned: true, // New browser standards will mandate this for
+        ...config.advanced?.defaultCookieAttributes,
       },
+      ...config.advanced,
     },
     plugins: [
       oidcProvider({
-        loginPage: "/login-page",
+        loginPage: "/not-used",
       }),
-      //bearer(),
+      bearer(),
       jwt({
         jwt: {
           issuer: `${process.env.CONVEX_SITE_URL}`,
@@ -53,24 +41,6 @@ export const auth = (
         },
       }),
     ],
-    emailAndPassword: {
-      enabled: true,
-    },
-    socialProviders: {
-      github: {
-        clientId: process.env.GITHUB_CLIENT_ID as string,
-        clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-      },
-      google: {
-        clientId: process.env.GOOGLE_CLIENT_ID as string,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      },
-    },
-    user: {
-      deleteUser: {
-        enabled: true,
-      },
-    },
     database,
   });
 

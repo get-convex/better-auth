@@ -9,10 +9,12 @@
     "dev:frontend": "next dev",
     "lint": "next lint && tsc -p convex && eslint convex"
   },
+  "postinstall": "patch-package",
   "dependencies": {
     "@convex-dev/better-auth": "file:..",
     "@radix-ui/react-label": "^2.1.2",
     "@radix-ui/react-slot": "^1.1.2",
+    "@react-email/components": "0.0.35",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "convex": "^1.21.0",
@@ -22,6 +24,7 @@
     "postcss": "^8.5.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "resend": "^4.2.0",
     "shadcn": "^2.4.0-canary.17",
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.1.0",
@@ -36,6 +39,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.2.3",
     "npm-run-all": "^4.1.5",
+    "patch-package": "^8.0.0",
     "prettier": "^3.5.3",
     "tailwindcss": "^4.0.17",
     "typescript": "^5"

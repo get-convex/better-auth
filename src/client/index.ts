@@ -19,7 +19,9 @@ import { api } from "../component/_generated/api";
 export class BetterAuth<O extends BetterAuthOptions> {
   constructor(
     public component: UseApi<typeof api>,
-    public options?: O
+    public options?:
+      | O
+      | ((ctx: GenericActionCtx<GenericDataModel>, request: Request) => O)
   ) {}
   async getAuthUserId(ctx: RunQueryCtx & { auth: Auth }) {
     const identity = await ctx.auth.getUserIdentity();
@@ -56,16 +58,19 @@ export class BetterAuth<O extends BetterAuthOptions> {
     };
 
     const authRequestHandler = httpActionGeneric(async (ctx, request) => {
-      return auth(database(ctx, this.component), {
-        trustedOrigins: allowedOrigins,
-      }).handler(request);
+      return auth(
+        database(ctx, this.component),
+        typeof this.options === "function"
+          ? this.options(ctx, request)
+          : this.options || {}
+      ).handler(request);
     });
 
     const cors = corsRouter(http, {
       allowedOrigins,
       allowCredentials: true,
       allowedHeaders: ["Authorization", "Set-Auth-Token", "Content-Type"],
-      verbose: false,
+      verbose: true,
       exposedHeaders: ["Set-Auth-Token"],
     });
 

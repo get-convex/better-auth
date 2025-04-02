@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as email from "../email.js";
+import type * as emails_verifyEmail from "../emails/verifyEmail.js";
 import type * as example from "../example.js";
 import type * as http from "../http.js";
 import type * as todos from "../todos.js";
@@ -27,6 +29,8 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  email: typeof email;
+  "emails/verifyEmail": typeof emails_verifyEmail;
   example: typeof example;
   http: typeof http;
   todos: typeof todos;
