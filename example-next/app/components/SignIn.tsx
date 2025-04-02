@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { authClient } from "@/app/auth-client";
@@ -21,7 +20,6 @@ export default function SignIn() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
   const [signInMethod, setSignInMethod] = useState<"password" | "magic-link">(
     "magic-link",
   );
@@ -32,7 +30,6 @@ export default function SignIn() {
         email,
         password,
         callbackURL: "http://localhost:3000",
-        rememberMe,
       },
       {
         onRequest: () => {
@@ -173,50 +170,35 @@ export default function SignIn() {
             />
           </div>
 
-          {signInMethod === "password" ? (
-            <>
-              <div className="grid gap-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <Button
-                    variant="link"
-                    size="sm"
-                    type="button"
-                    onClick={handleResetPassword}
-                    className="cursor-pointer"
-                    disabled={forgotLoading || !email}
-                  >
-                    {forgotLoading ? (
-                      <Loader2 size={14} className="animate-spin mr-1" />
-                    ) : null}
-                    Forgot your password?
-                  </Button>
-                </div>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="password"
-                  autoComplete="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+          {signInMethod === "password" && (
+            <div className="grid gap-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <Button
+                  variant="link"
+                  size="sm"
+                  type="button"
+                  onClick={handleResetPassword}
+                  className="cursor-pointer"
+                  disabled={forgotLoading || !email}
+                >
+                  {forgotLoading ? (
+                    <Loader2 size={14} className="animate-spin mr-1" />
+                  ) : null}
+                  Forgot your password?
+                </Button>
               </div>
-
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="remember"
-                  checked={rememberMe}
-                  onCheckedChange={(checked: boolean) => {
-                    setRememberMe(checked);
-                  }}
-                />
-                <Label htmlFor="remember" className="text-sm">
-                  Remember me
-                </Label>
-              </div>
-            </>
-          ) : null}
+              <Input
+                id="password"
+                type="password"
+                placeholder="password"
+                autoComplete="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+          )}
 
           <div className="flex flex-col gap-2">
             {signInMethod === "password" && (
@@ -258,11 +240,11 @@ export default function SignIn() {
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
+              <span className="w-full border-t border-neutral-800" />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-card px-2 text-neutral-500">
+                or continue with
               </span>
             </div>
           </div>
