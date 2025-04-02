@@ -2,15 +2,11 @@ import SignIn from "./SignIn";
 import SignUp from "./SignUp";
 import { Dashboard } from "./components/Dashboard";
 import { useState } from "react";
-import { useConvexAuth, useQuery } from "convex/react";
-import { api } from "../convex/_generated/api";
+import { useConvexAuth } from "convex/react";
 
 export default function App() {
   const [showSignIn, setShowSignIn] = useState(true);
-  const user = useQuery(api.app.getCurrentUser);
-  console.log("user", user);
   const { isAuthenticated, isLoading } = useConvexAuth();
-  console.log("isAuthenticated", isAuthenticated);
   if (isLoading) {
     return <div>Loading...</div>;
   }

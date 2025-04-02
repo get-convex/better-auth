@@ -36,7 +36,7 @@ export default function SignIn() {
           setLoading(false);
           alert(ctx.error.message);
         },
-      },
+      }
     );
 
     console.log({ data, error });
@@ -58,14 +58,14 @@ export default function SignIn() {
           console.log(
             "onResponse GITHUB",
             ctx,
-            ctx.response.headers.get("set-auth-token"),
+            ctx.response.headers.get("set-auth-token")
           );
         },
         onSuccess: async (ctx) => {
           console.log("onSuccess GITHUB", JSON.stringify(ctx, null, 2));
           console.log(
             "success request",
-            ctx.response.headers.get("set-auth-token"),
+            ctx.response.headers.get("set-auth-token")
           );
           if (ctx.data.token) {
             console.log("setting token", ctx.data.token);
@@ -77,7 +77,7 @@ export default function SignIn() {
           setLoading(false);
           alert(ctx.error.message);
         },
-      },
+      }
     );
   };
 

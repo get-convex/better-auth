@@ -1,20 +1,17 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { Id } from "./_generated/dataModel";
+import { betterAuth } from "./http";
 
 export const get = query({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await betterAuth.getAuthUserId(ctx);
+    if (!userId) {
       return [];
     }
-
     return await ctx.db
       .query("todos")
-      .withIndex("userId", (q) =>
-        q.eq("userId", identity.subject as Id<"user">),
-      )
+      .withIndex("userId", (q) => q.eq("userId", userId))
       .order("desc")
       .collect();
   },
@@ -23,18 +20,16 @@ export const get = query({
 export const create = mutation({
   args: { text: v.string() },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await betterAuth.getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
-    console.log("identity", identity);
-    console.log("user", await ctx.db.get(identity.subject as Id<"user">));
 
     const now = Date.now();
     await ctx.db.insert("todos", {
       text: args.text,
       completed: false,
-      userId: identity.subject as Id<"user">,
+      userId,
       createdAt: now,
       updatedAt: now,
     });
@@ -44,13 +39,13 @@ export const create = mutation({
 export const toggle = mutation({
   args: { id: v.id("todos") },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await betterAuth.getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
     const todo = await ctx.db.get(args.id);
-    if (!todo || todo.userId !== identity.subject) {
+    if (!todo || todo.userId !== userId) {
       throw new Error("Todo not found or unauthorized");
     }
 
@@ -64,13 +59,13 @@ export const toggle = mutation({
 export const remove = mutation({
   args: { id: v.id("todos") },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await betterAuth.getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
     const todo = await ctx.db.get(args.id);
-    if (!todo || todo.userId !== identity.subject) {
+    if (!todo || todo.userId !== userId) {
       throw new Error("Todo not found or unauthorized");
     }
 

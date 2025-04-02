@@ -30,7 +30,7 @@ export const useBetterAuth = (): {
       }
       return tokenRef.current;
     },
-    [],
+    []
   );
   return useMemo(
     () => ({
@@ -41,6 +41,6 @@ export const useBetterAuth = (): {
       // The async function to fetch the ID token
       fetchAccessToken,
     }),
-    [isSessionPending, session, fetchAccessToken],
+    [isSessionPending, session, fetchAccessToken]
   );
 };

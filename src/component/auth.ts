@@ -10,6 +10,7 @@ import { api } from "../component/_generated/api";
 import { Doc, Id, TableNames } from "../component/_generated/dataModel";
 import schema, { isUniqueField } from "../component/schema";
 import { paginationOptsValidator, PaginationResult } from "convex/server";
+import { paginator } from "convex-helpers/server/pagination";
 
 const transformOutput = (
   { _id, _creationTime, ...data }: Doc<TableNames>,
@@ -198,7 +199,7 @@ export const deleteOldVerificationsPage = mutation({
       numItems: 500,
       cursor: null,
     };
-    const { page, ...result } = await ctx.db
+    const { page, ...result } = await paginator(ctx.db, schema)
       .query("verification")
       .withIndex("expiresAt", (q) => q.lt("expiresAt", args.currentTimestamp))
       .paginate(paginationOpts);
@@ -216,7 +217,8 @@ export const deleteOldVerifications = action({
   handler: async (ctx, args) => {
     let count = 0;
     let cursor = null;
-    while (cursor) {
+    let isDone = false;
+    do {
       const result: Omit<PaginationResult<Doc<"verification">>, "page"> & {
         count: number;
       } = await ctx.runMutation(api.auth.deleteOldVerificationsPage, {
@@ -233,7 +235,8 @@ export const deleteOldVerifications = action({
         ["SplitRecommended", "SplitRequired"].includes(result.pageStatus)
           ? result.splitCursor
           : result.continueCursor;
-    }
+      isDone = result.isDone;
+    } while (!isDone);
     return count;
   },
 });
@@ -249,7 +252,7 @@ export const deleteAllForUserPage = mutation({
       numItems: 500,
       cursor: null,
     };
-    const { page, ...result } = await ctx.db
+    const { page, ...result } = await paginator(ctx.db, schema)
       .query(args.table as any)
       .withIndex("userId", (q) => q.eq("userId", args.userId))
       .paginate(paginationOpts);
@@ -268,7 +271,8 @@ export const deleteAllForUser = action({
   handler: async (ctx, args) => {
     let count = 0;
     let cursor = null;
-    while (cursor) {
+    let isDone = false;
+    do {
       const result: Omit<PaginationResult<Doc<"session">>, "page"> & {
         count: number;
       } = await ctx.runMutation(api.auth.deleteAllForUserPage, {
@@ -286,7 +290,8 @@ export const deleteAllForUser = action({
         ["SplitRecommended", "SplitRequired"].includes(result.pageStatus)
           ? result.splitCursor
           : result.continueCursor;
-    }
+      isDone = result.isDone;
+    } while (!isDone);
     return count;
   },
 });

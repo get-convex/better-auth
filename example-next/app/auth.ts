@@ -14,17 +14,14 @@ export const useBetterAuth = (): {
     //error, //error object
     //refetch, //refetch the session
   } = authClient.useSession();
-  console.log("session", session);
   const tokenRef = useRef<string | null>(null);
   const fetchAccessToken = useCallback(
     async ({ forceRefreshToken }: { forceRefreshToken: boolean }) => {
-      console.log("fetching", { forceRefreshToken });
       if (forceRefreshToken) {
         // Here you can do whatever transformation to get the ID Token
         // or null
         // Make sure to fetch a new token when `forceRefreshToken` is true
-        const { data, error } = await authClient.token();
-        console.log({ data, error });
+        const { data } = await authClient.token();
         tokenRef.current = data?.token || null;
         return data?.token || null;
       }
