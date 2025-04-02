@@ -20,6 +20,7 @@ export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [signInMethod, setSignInMethod] = useState<"password" | "magic-link">(
     "magic-link",
@@ -51,10 +52,18 @@ export default function SignIn() {
   };
 
   const handleResetPassword = async () => {
-    await authClient.forgetPassword({
-      email,
-      redirectTo: "http://localhost:3000/reset-password",
-    });
+    setForgotLoading(true);
+    try {
+      await authClient.forgetPassword({
+        email,
+        redirectTo: "http://localhost:3000/reset-password",
+      });
+      alert("Check your email for the reset password link!");
+    } catch {
+      alert("Failed to send reset password link. Please try again.");
+    } finally {
+      setForgotLoading(false);
+    }
   };
 
   const handleMagicLinkSignIn = async () => {
@@ -142,10 +151,10 @@ export default function SignIn() {
       </CardHeader>
       <CardContent>
         <form
-          onSubmit={async (e) => {
+          onSubmit={(e) => {
             e.preventDefault();
             if (signInMethod === "password") {
-              await handleSignIn();
+              handleSignIn();
             }
           }}
           className="grid gap-4"
@@ -174,7 +183,12 @@ export default function SignIn() {
                     size="sm"
                     type="button"
                     onClick={handleResetPassword}
+                    className="cursor-pointer"
+                    disabled={forgotLoading || !email}
                   >
+                    {forgotLoading ? (
+                      <Loader2 size={14} className="animate-spin mr-1" />
+                    ) : null}
                     Forgot your password?
                   </Button>
                 </div>
@@ -205,24 +219,25 @@ export default function SignIn() {
           ) : null}
 
           <div className="flex flex-col gap-2">
-            <Button
-              type={signInMethod === "password" ? "submit" : "button"}
-              className="w-full"
-              disabled={loading}
-              onClick={
-                signInMethod === "magic-link"
-                  ? handleMagicLinkSignIn
-                  : undefined
-              }
-            >
-              {loading ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : signInMethod === "password" ? (
-                "Sign in with Password"
-              ) : (
-                "Send Magic Link"
-              )}
-            </Button>
+            {signInMethod === "password" && (
+              <Button type="submit" className="w-full" disabled={loading}>
+                Sign in with Password
+              </Button>
+            )}
+            {signInMethod === "magic-link" && (
+              <Button
+                type="button"
+                className="w-full"
+                disabled={loading}
+                onClick={handleMagicLinkSignIn}
+              >
+                {loading ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  "Send Magic Link"
+                )}
+              </Button>
+            )}
 
             <Button
               type="button"
