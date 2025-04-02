@@ -15,7 +15,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { authClient } from "@/app/auth-client";
-import Link from "next/link";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
@@ -49,6 +48,13 @@ export default function SignIn() {
     );
 
     console.log({ data, error });
+  };
+
+  const handleResetPassword = async () => {
+    await authClient.forgetPassword({
+      email,
+      redirectTo: "http://localhost:3000/reset-password",
+    });
   };
 
   const handleMagicLinkSignIn = async () => {
@@ -161,14 +167,16 @@ export default function SignIn() {
           {signInMethod === "password" ? (
             <>
               <div className="grid gap-2">
-                <div className="flex items-center">
+                <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <Link
-                    href="/forgot-password"
-                    className="ml-auto inline-block text-sm underline"
+                  <Button
+                    variant="link"
+                    size="sm"
+                    type="button"
+                    onClick={handleResetPassword}
                   >
                     Forgot your password?
-                  </Link>
+                  </Button>
                 </div>
                 <Input
                   id="password"

@@ -2,7 +2,11 @@ import "./polyfills";
 import { httpRouter } from "convex/server";
 import { BetterAuth } from "@convex-dev/better-auth";
 import { components } from "./_generated/api";
-import { sendVerification } from "./email";
+import {
+  sendEmailVerification,
+  sendMagicLink,
+  sendResetPassword,
+} from "./email";
 import { magicLink } from "better-auth/plugins";
 
 export const betterAuth = new BetterAuth(components.betterAuth, {
@@ -14,9 +18,8 @@ export const betterAuth = new BetterAuth(components.betterAuth, {
   },
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {
-      await sendVerification({
+      await sendEmailVerification({
         to: user.email,
-        type: "verification",
         url,
       });
     },
@@ -24,13 +27,18 @@ export const betterAuth = new BetterAuth(components.betterAuth, {
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
+    sendResetPassword: async ({ user, url }) => {
+      await sendResetPassword({
+        to: user.email,
+        url,
+      });
+    },
   },
   plugins: [
     magicLink({
       sendMagicLink: async ({ email, url }) => {
-        await sendVerification({
+        await sendMagicLink({
           to: email,
-          type: "magic-link",
           url,
         });
       },

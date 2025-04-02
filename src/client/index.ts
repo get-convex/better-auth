@@ -119,6 +119,12 @@ export class BetterAuth<O extends BetterAuthOptions> {
       handler: authRequestHandler,
     });
 
+    http.route({
+      pathPrefix: `${path}/reset-password/`,
+      method: "GET",
+      handler: authRequestHandler,
+    });
+
     cors.route({
       pathPrefix: `${path}/`,
       method: "GET",

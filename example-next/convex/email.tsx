@@ -5,16 +5,7 @@ import MagicLinkEmail from "./emails/magicLink";
 import VerifyOTP from "./emails/verifyOTP";
 import { render } from "@react-email/components";
 import React from "react";
-
-type SendVerificationOptions = {
-  to: string;
-  type?: "verification" | "magic-link" | "otp";
-  verificationCode?: string;
-  url?: string;
-  brandName?: string;
-  brandTagline?: string;
-  brandLogoUrl?: string;
-};
+import ResetPasswordEmail from "./emails/resetPassword";
 
 const sendEmail = async ({
   to,
@@ -34,52 +25,58 @@ const sendEmail = async ({
   });
 };
 
-export const sendVerification = async ({
+export const sendEmailVerification = async ({
   to,
-  type = "verification",
-  verificationCode,
   url,
-  brandName,
-  brandTagline,
-  brandLogoUrl,
-}: SendVerificationOptions) => {
-  let subject: string;
-  let html: string;
+}: {
+  to: string;
+  url: string;
+}) => {
+  await sendEmail({
+    to,
+    subject: "Verify your email address",
+    html: await render(<VerifyEmail url={url} />),
+  });
+};
 
-  switch (type) {
-    case "magic-link":
-      subject = "Sign in to your account";
-      html = await render(
-        <MagicLinkEmail
-          url={url!}
-          brandName={brandName}
-          brandTagline={brandTagline}
-          brandLogoUrl={brandLogoUrl}
-        />,
-      );
-      break;
-    case "otp":
-      subject = "Verify your email address";
-      html = await render(
-        <VerifyOTP
-          code={verificationCode!}
-          brandName={brandName}
-          brandTagline={brandTagline}
-          brandLogoUrl={brandLogoUrl}
-        />,
-      );
-      break;
-    default:
-      subject = "Verify your email address";
-      html = await render(
-        <VerifyEmail
-          url={url!}
-          brandName={brandName}
-          brandTagline={brandTagline}
-          brandLogoUrl={brandLogoUrl}
-        />,
-      );
-  }
+export const sendOTPVerification = async ({
+  to,
+  code,
+}: {
+  to: string;
+  code: string;
+}) => {
+  await sendEmail({
+    to,
+    subject: "Verify your email address",
+    html: await render(<VerifyOTP code={code} />),
+  });
+};
 
-  await sendEmail({ to, subject, html });
+export const sendMagicLink = async ({
+  to,
+  url,
+}: {
+  to: string;
+  url: string;
+}) => {
+  await sendEmail({
+    to,
+    subject: "Sign in to your account",
+    html: await render(<MagicLinkEmail url={url} />),
+  });
+};
+
+export const sendResetPassword = async ({
+  to,
+  url,
+}: {
+  to: string;
+  url: string;
+}) => {
+  await sendEmail({
+    to,
+    subject: "Reset your password",
+    html: await render(<ResetPasswordEmail url={url} />),
+  });
 };
