@@ -19,12 +19,16 @@ export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [signInMethod, setSignInMethod] = useState<"password" | "magic-link">(
+    "magic-link",
+  );
 
   const handleSignIn = async () => {
     const { data, error } = await authClient.signIn.email(
       {
         email,
         password,
+        callbackURL: "http://localhost:3000",
       },
       {
         onRequest: () => {
@@ -127,7 +131,17 @@ export default function SignIn() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4">
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (signInMethod === "password") {
+              await handleSignIn();
+            } else {
+              await handleMagicLinkSignIn();
+            }
+          }}
+          className="grid gap-4"
+        >
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -142,45 +156,48 @@ export default function SignIn() {
             />
           </div>
 
-          <div className="grid gap-2">
-            <div className="flex items-center">
-              <Label htmlFor="password">Password</Label>
+          {signInMethod === "password" ? (
+            <div className="grid gap-2">
+              <div className="flex items-center">
+                <Label htmlFor="password">Password</Label>
+              </div>
+              <Input
+                id="password"
+                type="password"
+                placeholder="password"
+                autoComplete="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
-            <Input
-              id="password"
-              type="password"
-              placeholder="password"
-              autoComplete="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+          ) : null}
 
           <div className="flex flex-col gap-2">
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-              onClick={handleSignIn}
-            >
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? (
                 <Loader2 size={16} className="animate-spin" />
-              ) : (
+              ) : signInMethod === "password" ? (
                 "Sign in with Password"
+              ) : (
+                "Send Magic Link"
               )}
             </Button>
 
             <Button
-              variant="secondary"
-              className="w-full"
-              disabled={loading}
-              onClick={handleMagicLinkSignIn}
+              type="button"
+              variant="ghost"
+              className="text-sm"
+              onClick={() => {
+                setSignInMethod(
+                  signInMethod === "password" ? "magic-link" : "password",
+                );
+                setPassword("");
+              }}
             >
-              {loading ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                "Sign in with Magic Link"
-              )}
+              {signInMethod === "password"
+                ? "Sign in with a magic link instead"
+                : "Sign in with a password instead"}
             </Button>
           </div>
 
@@ -196,6 +213,7 @@ export default function SignIn() {
           </div>
 
           <Button
+            type="button"
             variant="outline"
             className="w-full gap-2"
             disabled={loading}
@@ -216,6 +234,7 @@ export default function SignIn() {
           </Button>
 
           <Button
+            type="button"
             variant="outline"
             className="w-full gap-2"
             disabled={loading}
@@ -246,7 +265,7 @@ export default function SignIn() {
             </svg>
             Sign in with Google
           </Button>
-        </div>
+        </form>
       </CardContent>
       <CardFooter>
         <div className="flex justify-center w-full border-t py-4">

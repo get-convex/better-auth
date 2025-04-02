@@ -108,7 +108,13 @@ export class BetterAuth<O extends BetterAuthOptions> {
     });
 
     http.route({
-      pathPrefix: `${path}/magic-link/`,
+      path: `${path}/magic-link/verify`,
+      method: "GET",
+      handler: authRequestHandler,
+    });
+
+    http.route({
+      path: `${path}/verify-email`,
       method: "GET",
       handler: authRequestHandler,
     });

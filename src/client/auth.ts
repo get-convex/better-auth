@@ -242,7 +242,7 @@ export const database =
             "where clause with operator or connector is not supported"
           );
         }
-        if (where?.length === 1 && where[0].field === "id") {
+        if (where?.length === 1) {
           const { value, field } = where[0];
           return ctx.runMutation(component.auth.update, {
             input: {
