@@ -11,14 +11,17 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { authClient } from "@/app/auth-client";
+import Link from "next/link";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [signInMethod, setSignInMethod] = useState<"password" | "magic-link">(
     "magic-link",
   );
@@ -29,6 +32,7 @@ export default function SignIn() {
         email,
         password,
         callbackURL: "http://localhost:3000",
+        rememberMe,
       },
       {
         onRequest: () => {
@@ -155,20 +159,41 @@ export default function SignIn() {
           </div>
 
           {signInMethod === "password" ? (
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
+            <>
+              <div className="grid gap-2">
+                <div className="flex items-center">
+                  <Label htmlFor="password">Password</Label>
+                  <Link
+                    href="/forgot-password"
+                    className="ml-auto inline-block text-sm underline"
+                  >
+                    Forgot your password?
+                  </Link>
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="password"
+                  autoComplete="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
               </div>
-              <Input
-                id="password"
-                type="password"
-                placeholder="password"
-                autoComplete="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="remember"
+                  checked={rememberMe}
+                  onCheckedChange={(checked: boolean) => {
+                    setRememberMe(checked);
+                  }}
+                />
+                <Label htmlFor="remember" className="text-sm">
+                  Remember me
+                </Label>
+              </div>
+            </>
           ) : null}
 
           <div className="flex flex-col gap-2">
