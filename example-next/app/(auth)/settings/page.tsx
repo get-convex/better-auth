@@ -24,11 +24,11 @@ export default function SettingsPage() {
 
   const handleDisable2FA = async () => {
     try {
+      throw new Error("Not implemented");
       setLoading(true);
       await authClient.twoFactor.disable({
-        password: "", // This will be handled by the backend
+        password: "",
       });
-      window.location.reload();
     } catch {
       alert("Failed to disable 2FA. Please try again.");
     } finally {
@@ -44,8 +44,7 @@ export default function SettingsPage() {
     ) {
       try {
         await deleteAccount();
-        await authClient.signOut();
-        window.location.href = "/";
+        await authClient.deleteUser();
       } catch {
         alert("Failed to delete account. Please try again.");
       }

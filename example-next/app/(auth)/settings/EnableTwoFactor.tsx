@@ -10,21 +10,45 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2, Copy, Check, ArrowLeft } from "lucide-react";
 import { authClient } from "@/app/auth-client";
 import QRCode from "react-qr-code";
+import { api } from "@/convex/_generated/api";
+import { useQuery } from "convex/react";
 
-type SetupStep = "password" | "qr" | "verify" | "backup";
+type SetupStep =
+  | "loading"
+  | "need-password"
+  | "password"
+  | "qr-verify"
+  | "backup";
 
 export default function EnableTwoFactor() {
-  const [step, setStep] = useState<SetupStep>("password");
+  const user = useQuery(api.example.getCurrentUser);
+  const [step, setStep] = useState<SetupStep>("loading");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [totpUri, setTotpUri] = useState<string>();
   const [backupCodes, setBackupCodes] = useState<string[]>();
-  const [copiedIndex, setCopiedIndex] = useState<number>();
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const checkAccounts = async () => {
+      const accounts = await authClient.listAccounts();
+      if ("data" in accounts && accounts.data) {
+        const hasCredential = accounts.data.some(
+          (account) => account.provider === "credential",
+        );
+        console.log("hasCredential", hasCredential);
+        console.log("accounts", accounts);
+        setStep(hasCredential ? "password" : "need-password");
+      }
+    };
+    checkAccounts();
+  }, []);
+  console.log("step", step);
 
   const handlePasswordSubmit = async () => {
     try {
@@ -37,7 +61,7 @@ export default function EnableTwoFactor() {
         if (data.backupCodes) {
           setBackupCodes(data.backupCodes);
         }
-        setStep("qr");
+        setStep("qr-verify");
       }
     } catch {
       alert("Failed to enable 2FA. Please check your password and try again.");
@@ -49,9 +73,11 @@ export default function EnableTwoFactor() {
   const handleVerifyCode = async () => {
     try {
       setLoading(true);
-      await authClient.twoFactor.verifyTotp({
+      const { data, error } = await authClient.twoFactor.verifyTotp({
         code,
       });
+      console.log("data", data);
+      console.log("error", error);
       setStep("backup");
     } catch {
       alert("Failed to verify code. Please try again.");
@@ -60,16 +86,36 @@ export default function EnableTwoFactor() {
     }
   };
 
-  const copyBackupCode = async (code: string, index: number) => {
-    await navigator.clipboard.writeText(code);
-    setCopiedIndex(index);
-    setTimeout(() => setCopiedIndex(undefined), 2000);
+  const copyBackupCodes = async () => {
+    if (!backupCodes) return;
+    await navigator.clipboard.writeText(backupCodes.join("\n"));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleResetPassword = async () => {
+    if (!user?.email) {
+      alert("User email not found");
+      return;
+    }
+    try {
+      setLoading(true);
+      await authClient.forgetPassword({
+        email: user.email,
+        redirectTo: "http://localhost:3000/reset-password",
+      });
+      alert("Check your email for password reset instructions");
+    } catch {
+      alert("Failed to send password reset email. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {step === "password" && (
+        {(step === "password" || step === "need-password") && (
           <Button
             variant="ghost"
             size="sm"
@@ -86,16 +132,41 @@ export default function EnableTwoFactor() {
               Enable Two-Factor Authentication
             </CardTitle>
             <CardDescription className="text-xs md:text-sm">
-              {step === "password"
-                ? "Enter your password to begin setup"
-                : step === "qr"
-                  ? "Scan this QR code with your authenticator app"
-                  : step === "verify"
-                    ? "Enter the code from your authenticator app"
-                    : "Save these backup codes in a secure place"}
+              {step === "loading"
+                ? "Loading..."
+                : step === "need-password"
+                  ? "You need to set up a password before enabling 2FA"
+                  : step === "password"
+                    ? "Enter your password to begin setup"
+                    : step === "qr-verify"
+                      ? "Scan this QR code with your authenticator app"
+                      : "Save these backup codes in a secure place"}
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {step === "loading" && (
+              <div className="flex justify-center py-4">
+                <Loader2 size={24} className="animate-spin" />
+              </div>
+            )}
+
+            {step === "need-password" && (
+              <div className="grid gap-4">
+                <p className="text-sm text-muted-foreground">
+                  Two-factor authentication requires a password for additional
+                  security. Since you signed up with a social account,
+                  you&apos;ll need to set up a password first.
+                </p>
+                <Button onClick={handleResetPassword} disabled={loading}>
+                  {loading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    "Set Up Password"
+                  )}
+                </Button>
+              </div>
+            )}
+
             {step === "password" && (
               <form
                 onSubmit={(e) => {
@@ -125,70 +196,58 @@ export default function EnableTwoFactor() {
               </form>
             )}
 
-            {step === "qr" && totpUri && (
-              <div className="grid gap-4">
+            {step === "qr-verify" && totpUri && (
+              <div className="grid gap-6">
                 <div className="flex justify-center p-4 bg-white rounded-lg">
                   <QRCode value={totpUri} />
                 </div>
-                <Button onClick={() => setStep("verify")}>Continue</Button>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleVerifyCode();
+                  }}
+                  className="grid gap-4"
+                >
+                  <div className="grid gap-2">
+                    <Label htmlFor="code">Verification Code</Label>
+                    <Input
+                      id="code"
+                      type="text"
+                      placeholder="Enter 6-digit code"
+                      value={code}
+                      onChange={(e) => setCode(e.target.value)}
+                      pattern="[0-9]*"
+                      inputMode="numeric"
+                      maxLength={6}
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+                  <Button type="submit" disabled={loading}>
+                    {loading ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      "Verify"
+                    )}
+                  </Button>
+                </form>
               </div>
-            )}
-
-            {step === "verify" && (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleVerifyCode();
-                }}
-                className="grid gap-4"
-              >
-                <div className="grid gap-2">
-                  <Label htmlFor="code">Verification Code</Label>
-                  <Input
-                    id="code"
-                    type="text"
-                    placeholder="Enter 6-digit code"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    pattern="[0-9]*"
-                    inputMode="numeric"
-                    maxLength={6}
-                    required
-                    disabled={loading}
-                  />
-                </div>
-                <Button type="submit" disabled={loading}>
-                  {loading ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    "Verify"
-                  )}
-                </Button>
-              </form>
             )}
 
             {step === "backup" && backupCodes && (
               <div className="grid gap-4">
-                <div className="grid gap-2 p-4 bg-muted rounded-lg">
-                  {backupCodes.map((code, i) => (
-                    <div
-                      key={code}
-                      className="flex items-center justify-between p-2 bg-background rounded"
-                    >
-                      <code className="text-sm">{code}</code>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => copyBackupCode(code, i)}
-                      >
-                        {copiedIndex === i ? (
-                          <Check size={16} />
-                        ) : (
-                          <Copy size={16} />
-                        )}
-                      </Button>
-                    </div>
-                  ))}
+                <div className="relative p-4 bg-muted rounded-lg">
+                  <pre className="text-sm font-mono whitespace-pre-line">
+                    {backupCodes.join("\n")}
+                  </pre>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2"
+                    onClick={copyBackupCodes}
+                  >
+                    {copied ? <Check size={16} /> : <Copy size={16} />}
+                  </Button>
                 </div>
                 <Button onClick={() => window.location.reload()}>Done</Button>
               </div>

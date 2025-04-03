@@ -15,6 +15,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { authClient } from "@/app/auth-client";
 import { useSearchParams } from "next/navigation";
+import { redirect } from "next/navigation";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -43,7 +44,7 @@ export default function ResetPassword() {
         },
         onSuccess: () => {
           setLoading(false);
-          window.location.href = "/";
+          redirect("/");
         },
         onError: (ctx) => {
           setLoading(false);

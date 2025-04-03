@@ -73,11 +73,13 @@ export const database =
         }
         if (where.length === 1) {
           const { value, field } = where[0];
-          return ctx.runQuery(component.auth.getBy, {
+          const result = await ctx.runQuery(component.auth.getBy, {
             table: model,
             field,
             value: value instanceof Date ? value.getTime() : value,
           });
+          console.log("result", result);
+          return result;
         }
         if (
           model === "account" &&
