@@ -67,7 +67,8 @@
     }
   },
   "peerDependencies": {
-    "convex": "^1.22.0"
+    "convex": "~1.16.5 || >=1.17.0 <1.25.0",
+    "better-auth": "1.2.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
@@ -84,7 +85,6 @@
   "types": "./dist/commonjs/client/index.d.ts",
   "module": "./dist/esm/client/index.js",
   "dependencies": {
-    "better-auth": "^1.2.5",
     "convex-helpers": "^0.1.76"
   }
 }
