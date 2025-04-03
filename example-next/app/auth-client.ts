@@ -3,6 +3,10 @@ import { jwtClient, twoFactorClient } from "better-auth/client/plugins";
 import { magicLinkClient } from "better-auth/client/plugins";
 import { emailOTPClient } from "better-auth/client/plugins";
 
+console.log(
+  "process.env.NEXT_PUBLIC_CONVEX_SITE_URL",
+  process.env.NEXT_PUBLIC_CONVEX_SITE_URL,
+);
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_CONVEX_SITE_URL,
   plugins: [

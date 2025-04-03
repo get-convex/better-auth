@@ -11,7 +11,7 @@ import {
 import { magicLink, emailOTP, twoFactor } from "better-auth/plugins";
 
 export const betterAuth = new BetterAuth(components.betterAuth, {
-  trustedOrigins: ["http://localhost:3000"],
+  trustedOrigins: ["http://localhost:3000", "https://localhost:3000"],
   account: {
     accountLinking: {
       enabled: true,
@@ -74,7 +74,7 @@ export const betterAuth = new BetterAuth(components.betterAuth, {
 const http = httpRouter();
 
 betterAuth.registerRoutes(http, {
-  allowedOrigins: ["http://localhost:3000"],
+  allowedOrigins: ["http://localhost:3000", "https://localhost:3000"],
 });
 
 export default http;

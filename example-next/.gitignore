@@ -42,3 +42,5 @@ next-env.d.ts
 
 # Ignored for the template, you probably want to remove it:
 package-lock.json
+
+certificates
