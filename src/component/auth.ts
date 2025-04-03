@@ -9,7 +9,11 @@ import { v } from "convex/values";
 import { api } from "../component/_generated/api";
 import { Doc, Id, TableNames } from "../component/_generated/dataModel";
 import schema, { isUniqueField } from "../component/schema";
-import { paginationOptsValidator, PaginationResult } from "convex/server";
+import {
+  FunctionHandle,
+  paginationOptsValidator,
+  PaginationResult,
+} from "convex/server";
 import { paginator } from "convex-helpers/server/pagination";
 
 export const transformInput = (model: string, data: Record<string, any>) => {
@@ -90,6 +94,7 @@ export const create = mutation({
         })
       )
     ),
+    onCreateHandle: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const { table, ...input } = args.input;
@@ -99,6 +104,20 @@ export const create = mutation({
     const doc = await ctx.db.get(id);
     if (!doc) {
       throw new Error(`Failed to create ${table}`);
+    }
+    if (args.onCreateHandle) {
+      await ctx.runMutation(
+        args.onCreateHandle as FunctionHandle<
+          "mutation",
+          {
+            user: typeof schema.tables.user;
+          },
+          void
+        >,
+        {
+          user: doc,
+        }
+      );
     }
     return transformOutput(doc, table);
   },
@@ -134,13 +153,22 @@ export const update = mutation({
   },
 });
 export const deleteBy = mutation({
-  args: getByArgsValidator,
+  args: {
+    ...getByArgsValidator,
+    onDeleteHandle: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
     const doc = await getBy(ctx, args);
     if (!doc) {
       return;
     }
     await ctx.db.delete(doc._id);
+    if (args.onDeleteHandle) {
+      await ctx.runMutation(
+        args.onDeleteHandle as FunctionHandle<"mutation", { id: string }, void>,
+        { id: doc._id }
+      );
+    }
   },
 });
 

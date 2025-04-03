@@ -1,5 +1,6 @@
 import {
   Auth,
+  DefaultFunctionArgs,
   Expand,
   FunctionReference,
   GenericActionCtx,
@@ -9,19 +10,41 @@ import {
   httpActionGeneric,
   HttpRouter,
 } from "convex/server";
-import { GenericId } from "convex/values";
+import { GenericId, Infer, v } from "convex/values";
 import { BetterAuthOptions } from "better-auth";
 import corsRouter from "./cors";
 import { Id } from "../component/_generated/dataModel";
 import { auth, database } from "./auth";
 import { api } from "../component/_generated/api";
+import schema from "../component/schema";
+
+export { schema };
+
+export const userValidator = v.object({
+  ...schema.tables.user.validator.fields,
+  _id: v.string(),
+  _creationTime: v.number(),
+});
+
+export type EventFunction<T extends DefaultFunctionArgs> = FunctionReference<
+  "mutation",
+  "internal" | "public",
+  T
+>;
+
+export type OnCreateUser = EventFunction<{ user: Infer<typeof userValidator> }>;
+export type OnDeleteUser = EventFunction<{ id: string }>;
 
 export class BetterAuth<O extends BetterAuthOptions> {
   constructor(
     public component: UseApi<typeof api>,
-    public options?:
+    public betterAuthOptions?:
       | O
-      | ((ctx: GenericActionCtx<GenericDataModel>, request: Request) => O)
+      | ((ctx: GenericActionCtx<GenericDataModel>, request: Request) => O),
+    public config?: {
+      onCreateUser?: OnCreateUser;
+      onDeleteUser?: OnDeleteUser;
+    }
   ) {}
   async getAuthUserId(ctx: RunQueryCtx & { auth: Auth }) {
     const identity = await ctx.auth.getUserIdentity();
@@ -59,10 +82,10 @@ export class BetterAuth<O extends BetterAuthOptions> {
 
     const authRequestHandler = httpActionGeneric(async (ctx, request) => {
       return auth(
-        database(ctx, this.component),
-        typeof this.options === "function"
-          ? this.options(ctx, request)
-          : this.options || {}
+        database(ctx, this.component, this.config),
+        typeof this.betterAuthOptions === "function"
+          ? this.betterAuthOptions(ctx, request)
+          : this.betterAuthOptions || {}
       ).handler(request);
     });
 

@@ -127,6 +127,7 @@ export type Mounts = {
               updatedAt?: number;
               userId?: string;
             };
+        onCreateHandle?: string;
       },
       any
     >;
@@ -158,6 +159,7 @@ export type Mounts = {
       "public",
       {
         field: string;
+        onDeleteHandle?: string;
         table: string;
         value: string | number | boolean | Array<string> | Array<number> | null;
       },

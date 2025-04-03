@@ -3,8 +3,12 @@ import { jwt } from "better-auth/plugins";
 import { bearer } from "better-auth/plugins";
 import { oidcProvider } from "better-auth/plugins";
 import { Id } from "../component/_generated/dataModel";
-import { GenericActionCtx, GenericDataModel } from "convex/server";
-import { UseApi } from ".";
+import {
+  createFunctionHandle,
+  GenericActionCtx,
+  GenericDataModel,
+} from "convex/server";
+import { OnDeleteUser, OnCreateUser, UseApi } from ".";
 import { api } from "../component/_generated/api";
 import { transformInput } from "../component/auth";
 
@@ -48,7 +52,14 @@ export const auth = (database: () => Adapter, config: BetterAuthOptions) =>
   });
 
 export const database =
-  (ctx: GenericActionCtx<GenericDataModel>, component: UseApi<typeof api>) =>
+  (
+    ctx: GenericActionCtx<GenericDataModel>,
+    component: UseApi<typeof api>,
+    config?: {
+      onCreateUser?: OnCreateUser;
+      onDeleteUser?: OnDeleteUser;
+    }
+  ) =>
   (): Adapter =>
     ({
       id: "convex",
@@ -62,6 +73,10 @@ export const database =
             table: model,
             ...transformInput(model, data),
           },
+          onCreateHandle:
+            config?.onCreateUser && model === "user"
+              ? await createFunctionHandle(config.onCreateUser)
+              : undefined,
         });
       },
       findOne: async ({ model, where, select }): Promise<any> => {
@@ -188,6 +203,10 @@ export const database =
             table: model,
             field,
             value: value instanceof Date ? value.getTime() : value,
+            onDeleteHandle:
+              config?.onDeleteUser && model === "user"
+                ? await createFunctionHandle(config.onDeleteUser)
+                : undefined,
           });
           return;
         }

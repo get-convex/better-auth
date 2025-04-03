@@ -13,4 +13,7 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("userId", ["userId"]),
+  users: defineTable({
+    authId: v.string(),
+  }).index("authId", ["authId"]),
 });

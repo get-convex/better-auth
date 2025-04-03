@@ -153,6 +153,7 @@ export declare const components: {
                 updatedAt?: number;
                 userId?: string;
               };
+          onCreateHandle?: string;
         },
         any
       >;
@@ -184,6 +185,7 @@ export declare const components: {
         "internal",
         {
           field: string;
+          onDeleteHandle?: string;
           table: string;
           value:
             | string

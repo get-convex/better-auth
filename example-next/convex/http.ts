@@ -1,7 +1,7 @@
 import "./polyfills";
 import { httpRouter } from "convex/server";
 import { BetterAuth } from "@convex-dev/better-auth";
-import { components } from "./_generated/api";
+import { components, internal } from "./_generated/api";
 import {
   sendEmailVerification,
   sendMagicLink,
@@ -9,67 +9,75 @@ import {
   sendOTPVerification,
 } from "./email";
 import { magicLink, emailOTP, twoFactor } from "better-auth/plugins";
+import { BetterAuthOptions } from "better-auth";
 
-export const betterAuth = new BetterAuth(components.betterAuth, {
-  trustedOrigins: ["http://localhost:3000", "https://localhost:3000"],
-  account: {
-    accountLinking: {
-      enabled: true,
+export const betterAuth: BetterAuth<BetterAuthOptions> = new BetterAuth(
+  components.betterAuth,
+  {
+    trustedOrigins: ["http://localhost:3000", "https://localhost:3000"],
+    account: {
+      accountLinking: {
+        enabled: true,
+      },
     },
-  },
-  emailVerification: {
-    sendVerificationEmail: async ({ user, url }) => {
-      await sendEmailVerification({
-        to: user.email,
-        url,
-      });
-    },
-  },
-  emailAndPassword: {
-    enabled: true,
-    requireEmailVerification: true,
-    sendResetPassword: async ({ user, url }) => {
-      await sendResetPassword({
-        to: user.email,
-        url,
-      });
-    },
-  },
-  plugins: [
-    magicLink({
-      sendMagicLink: async ({ email, url }) => {
-        await sendMagicLink({
-          to: email,
+    emailVerification: {
+      sendVerificationEmail: async ({ user, url }) => {
+        await sendEmailVerification({
+          to: user.email,
           url,
         });
       },
-    }),
-    emailOTP({
-      async sendVerificationOTP({ email, otp }) {
-        await sendOTPVerification({
-          to: email,
-          code: otp,
+    },
+    emailAndPassword: {
+      enabled: true,
+      requireEmailVerification: true,
+      sendResetPassword: async ({ user, url }) => {
+        await sendResetPassword({
+          to: user.email,
+          url,
         });
       },
-    }),
-    twoFactor(),
-  ],
-  socialProviders: {
-    github: {
-      clientId: process.env.GITHUB_CLIENT_ID as string,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     },
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    plugins: [
+      magicLink({
+        sendMagicLink: async ({ email, url }) => {
+          await sendMagicLink({
+            to: email,
+            url,
+          });
+        },
+      }),
+      emailOTP({
+        async sendVerificationOTP({ email, otp }) {
+          await sendOTPVerification({
+            to: email,
+            code: otp,
+          });
+        },
+      }),
+      twoFactor(),
+    ],
+    socialProviders: {
+      github: {
+        clientId: process.env.GITHUB_CLIENT_ID as string,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+      },
+      google: {
+        clientId: process.env.GOOGLE_CLIENT_ID as string,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      },
+    },
+    user: {
+      deleteUser: {
+        enabled: true,
+      },
     },
   },
-  user: {
-    deleteUser: {
-      enabled: true,
-    },
+  {
+    onCreateUser: internal.example.onCreateUser,
+    onDeleteUser: internal.example.onDeleteUser,
   },
-});
+);
 
 const http = httpRouter();
 
