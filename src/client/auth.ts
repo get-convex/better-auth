@@ -6,6 +6,7 @@ import { Id } from "../component/_generated/dataModel";
 import { GenericActionCtx, GenericDataModel } from "convex/server";
 import { UseApi } from ".";
 import { api } from "../component/_generated/api";
+import { transformInput } from "../component/auth";
 
 export const auth = (database: () => Adapter, config: BetterAuthOptions) =>
   betterAuth({
@@ -59,86 +60,9 @@ export const database =
         return ctx.runMutation(component.auth.create, {
           input: {
             table: model,
-            ...Object.fromEntries(
-              Object.entries(data).map(([key, value]) => {
-                if (value instanceof Date) {
-                  return [key, value.getTime()];
-                }
-                return [key, value];
-              })
-            ),
+            ...transformInput(model, data),
           },
         });
-        /*
-        if (model === "session") {
-          if (!data.userId) {
-            throw new Error("userId is required for session creation");
-          }
-          return ctx.runMutation(component.auth.create, {
-            input: {
-              table: "session",
-              token: data.token,
-              userId: data.userId,
-              expiresAt: data.expiresAt.getTime(),
-              ipAddress: data.ipAddress,
-              userAgent: data.userAgent,
-              createdAt: data.createdAt.getTime(),
-              updatedAt: data.updatedAt.getTime(),
-            },
-          });
-        }
-        if (model === "account") {
-          return ctx.runMutation(component.auth.create, {
-            input: {
-              table: "account",
-              accountId: data.accountId,
-              providerId: data.providerId,
-              userId: data.userId,
-              password: data.password,
-              createdAt: data.createdAt.getTime(),
-              updatedAt: data.updatedAt.getTime(),
-            },
-          });
-        }
-        if (model === "user") {
-          return ctx.runMutation(component.auth.create, {
-            input: {
-              table: "user",
-              email: data.email,
-              image: data.image,
-              name: data.name,
-              emailVerified: data.emailVerified,
-              createdAt: data.createdAt.getTime(),
-              updatedAt: data.updatedAt.getTime(),
-            },
-          });
-        }
-        if (model === "verification") {
-          return ctx.runMutation(component.auth.create, {
-            input: {
-              table: "verification",
-              value: data.value,
-              expiresAt: data.expiresAt.getTime(),
-              identifier: data.identifier,
-              createdAt: data.createdAt.getTime(),
-              updatedAt: data.updatedAt.getTime(),
-            },
-          });
-        }
-        if (model === "twoFactor") {
-          return ctx.runMutation(component.auth.create, {
-            input: {
-              table: "twoFactor",
-              secret: data.secret,
-              backupCodes: data.backupCodes,
-              userId: data.userId,
-              createdAt: data.createdAt.getTime(),
-              updatedAt: data.updatedAt.getTime(),
-            },
-          });
-        }
-          */
-        throw new Error("no matching function found");
       },
       findOne: async ({ model, where, select }): Promise<any> => {
         console.log({ fn: "findOne", model, where, select });
@@ -170,12 +94,6 @@ export const database =
           );
         }
         throw new Error("no matching function found");
-        /*
-          const table = db[model];
-          const res = convertWhereClause(where, table, model);
-          const record = res[0] || null;
-          return transformOutput(record, model, select);
-          */
       },
       findMany: async ({
         model,
@@ -206,11 +124,6 @@ export const database =
             userId: where[0].value as Id<"user">,
           });
         }
-        // Currently there exists exactly one jwks result which is inserted to
-        // the db during setup.
-        // TODO: support jwks creation when convex runtime supports subtle
-        // crypto generateKeyPair or when http actions can run in node
-        // (enabling BA to be run in node).
         if (model === "jwks") {
           return ctx.runQuery(component.auth.getJwks);
         }
@@ -226,29 +139,6 @@ export const database =
           });
         }
         throw new Error("no matching function found");
-        /*
-          let table = db[model];
-          if (where) {
-            table = convertWhereClause(where, table, model);
-          }
-          if (sortBy) {
-            table = table.sort((a, b) => {
-              const field = getField(model, sortBy.field);
-              if (sortBy.direction === "asc") {
-                return a[field] > b[field] ? 1 : -1;
-              } else {
-                return a[field] < b[field] ? 1 : -1;
-              }
-            });
-          }
-          if (offset !== undefined) {
-            table = table.slice(offset);
-          }
-          if (limit !== undefined) {
-            table = table.slice(0, limit);
-          }
-          return table.map((record) => transformOutput(record, model));
-          */
       },
       count: async ({ model, where }) => {
         console.log({ fn: "count", model, where });
@@ -259,9 +149,6 @@ export const database =
         }
         throw new Error("Not implemented");
         // return 0;
-        /*
-          return db[model].length;
-          */
       },
       update: async ({ model, where, update }) => {
         console.log({ fn: "update", model, where, update });
@@ -279,20 +166,12 @@ export const database =
                 field,
                 value: value instanceof Date ? value.getTime() : value,
               },
-              value: update,
+              value: transformInput(model, update),
             },
           });
         }
         throw new Error("Not implemented");
         // return null
-        /*
-          const table = db[model];
-          const res = convertWhereClause(where, table, model);
-          res.forEach((record) => {
-            Object.assign(record, transformInput(update, model, "update"));
-          });
-          return transformOutput(res[0], model);
-          */
       },
       delete: async ({ model, where }) => {
         console.log({ fn: "delete", model, where });
@@ -312,11 +191,6 @@ export const database =
         }
         throw new Error("no matching function found");
         // return null
-        /*
-          const table = db[model];
-          const res = convertWhereClause(where, table, model);
-          db[model] = table.filter((record) => !res.includes(record));
-          */
       },
       deleteMany: async ({ model, where }) => {
         console.log({ fn: "deleteMany", model, where });
@@ -341,19 +215,7 @@ export const database =
           });
         }
         throw new Error("no matching function found");
-        /*
-          const table = db[model];
-          const res = convertWhereClause(where, table, model);
-          let count = 0;
-          db[model] = table.filter((record) => {
-            if (res.includes(record)) {
-              count++;
-              return false;
-            }
-            return !res.includes(record);
-          });
-          return count;
-          */
+        // return count;
       },
       updateMany: async ({ model, where, update }) => {
         console.log({ fn: "updateMany", model, where, update });

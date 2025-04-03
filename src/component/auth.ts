@@ -12,11 +12,26 @@ import schema, { isUniqueField } from "../component/schema";
 import { paginationOptsValidator, PaginationResult } from "convex/server";
 import { paginator } from "convex-helpers/server/pagination";
 
+export const transformInput = (model: string, data: Record<string, any>) => {
+  return {
+    ...Object.fromEntries(
+      Object.entries(data).map(([key, value]) => {
+        if (value instanceof Date) {
+          return [key, value.getTime()];
+        }
+        return [key, value];
+      })
+    ),
+  };
+};
+
 const transformOutput = (
   { _id, _creationTime, ...data }: Doc<TableNames>,
   _model: string
 ) => {
-  return { ...data, id: _id };
+  // Provide the expected id field, but it can be overwritten if
+  // the model has an id field
+  return { id: _id, ...data };
 };
 
 const getBy = async (

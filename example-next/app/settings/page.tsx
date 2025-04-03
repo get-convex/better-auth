@@ -12,12 +12,15 @@ import {
 import { useState } from "react";
 import { authClient } from "@/app/auth-client";
 import EnableTwoFactor from "@/app/components/EnableTwoFactor";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
-export default function SecuritySettingsPage() {
+export default function SettingsPage() {
   const [showEnable2FA, setShowEnable2FA] = useState(false);
   const [loading, setLoading] = useState(false);
+  const deleteAccount = useMutation(api.example.deleteAccount);
 
   const handleDisable2FA = async () => {
     try {
@@ -30,6 +33,22 @@ export default function SecuritySettingsPage() {
       alert("Failed to disable 2FA. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (
+      window.confirm(
+        "Are you sure you want to delete your account? This action cannot be undone.",
+      )
+    ) {
+      try {
+        await deleteAccount();
+        await authClient.signOut();
+        window.location.href = "/";
+      } catch {
+        alert("Failed to delete account. Please try again.");
+      }
     }
   };
 
@@ -52,11 +71,9 @@ export default function SecuritySettingsPage() {
           </Button>
           <Card className="w-full">
             <CardHeader>
-              <CardTitle className="text-lg md:text-xl">
-                Security Settings
-              </CardTitle>
+              <CardTitle className="text-lg md:text-xl">Settings</CardTitle>
               <CardDescription className="text-xs md:text-sm">
-                Manage your account security settings
+                Manage your account settings and security
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6">
@@ -83,6 +100,24 @@ export default function SecuritySettingsPage() {
                     disabled={loading}
                   >
                     Disable 2FA
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid gap-4">
+                <div>
+                  <h3 className="text-sm font-medium mb-1 flex items-center gap-2">
+                    Delete Account
+                    <AlertTriangle size={14} className="text-destructive" />
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Permanently delete your account and all associated data.
+                    This action cannot be undone.
+                  </p>
+                </div>
+                <div>
+                  <Button variant="destructive" onClick={handleDeleteAccount}>
+                    Delete Account
                   </Button>
                 </div>
               </div>

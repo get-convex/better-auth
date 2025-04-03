@@ -6,19 +6,22 @@ import { Todo } from "./components/Todo";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LogOut, Trash2 } from "lucide-react";
 import { useConvexAuth } from "convex/react";
 import { authClient } from "@/app/auth-client";
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
 import { Toaster } from "sonner";
 import Link from "next/link";
+import { Settings, LogOut } from "lucide-react";
 
 export default function Home() {
   const [showSignIn, setShowSignIn] = useState(true);
   const convexAuth = useConvexAuth();
   const user = useQuery(api.example.getCurrentUser);
-  const deleteAccount = useMutation(api.example.deleteAccount);
+
+  const handleSignOut = async () => {
+    await authClient.signOut();
+  };
 
   if (convexAuth.isLoading || user === undefined) {
     return <div className="text-neutral-400">Loading...</div>;
@@ -46,17 +49,6 @@ export default function Home() {
     );
   }
 
-  const handleDeleteAccount = async () => {
-    if (
-      window.confirm(
-        "Are you sure you want to delete your account? This action cannot be undone.",
-      )
-    ) {
-      await deleteAccount();
-      await authClient.deleteUser();
-    }
-  };
-
   return (
     <div className="min-h-screen w-full p-4 space-y-8">
       <header className="flex items-center justify-between max-w-2xl mx-auto">
@@ -83,11 +75,13 @@ export default function Home() {
           </Link>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="destructive" onClick={handleDeleteAccount}>
-            <Trash2 size={16} className="mr-2" />
-            Delete Account
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/settings" className="flex items-center gap-2">
+              <Settings size={16} />
+              Settings
+            </Link>
           </Button>
-          <Button variant="ghost" onClick={() => authClient.signOut()}>
+          <Button variant="ghost" size="sm" onClick={handleSignOut}>
             <LogOut size={16} className="mr-2" />
             Sign out
           </Button>
