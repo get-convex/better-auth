@@ -1,11 +1,10 @@
 {
-  "name": "@convex-dev/better-auth",
-  "description": "A sharded counter component for Convex.",
-  "repository": "github:get-convex/sharded-counter",
-  "homepage": "https://github.com/get-convex/sharded-counter#readme",
+  "name": "@erquhart/convex-better-auth",
+  "description": "A Better Auth component for Convex.",
+  "repository": "github:erquhart/convex-better-auth",
+  "homepage": "https://github.com/erquhart/convex-better-auth#readme",
   "bugs": {
-    "email": "support@convex.dev",
-    "url": "https://github.com/get-convex/sharded-counter/issues"
+    "url": "https://github.com/erquhart/convex-better-auth/issues"
   },
   "version": "0.1.0",
   "license": "Apache-2.0",
