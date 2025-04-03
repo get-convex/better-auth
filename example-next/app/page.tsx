@@ -12,18 +12,19 @@ import { authClient } from "@/app/auth-client";
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
 import { Toaster } from "sonner";
+import Link from "next/link";
 
 export default function Home() {
   const [showSignIn, setShowSignIn] = useState(true);
-  const { isAuthenticated, isLoading } = useConvexAuth();
+  const convexAuth = useConvexAuth();
   const user = useQuery(api.example.getCurrentUser);
   const deleteAccount = useMutation(api.example.deleteAccount);
 
-  if (isLoading || user === undefined) {
+  if (convexAuth.isLoading || user === undefined) {
     return <div className="text-neutral-400">Loading...</div>;
   }
 
-  if (!isAuthenticated || !user) {
+  if (!convexAuth.isAuthenticated || !user) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center p-4">
         <div className="w-full max-w-md">
@@ -60,21 +61,26 @@ export default function Home() {
     <div className="min-h-screen w-full p-4 space-y-8">
       <header className="flex items-center justify-between max-w-2xl mx-auto">
         <div className="flex items-center gap-4">
-          {user.image ? (
-            <img
-              src={user.image}
-              alt={user.name}
-              className="w-10 h-10 rounded-full"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center text-orange-600 dark:text-orange-200 font-medium">
-              {user.name[0].toUpperCase()}
+          <Link href="/" className="flex items-center space-x-2">
+            {user.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={user.image}
+                alt={user.name}
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center text-orange-600 dark:text-orange-200 font-medium">
+                {user.name[0].toUpperCase()}
+              </div>
+            )}
+            <div>
+              <h1 className="font-medium">{user.name}</h1>
+              <p className="text-sm text-neutral-500">{user.email}</p>
             </div>
-          )}
-          <div>
-            <h1 className="font-medium">{user.name}</h1>
-            <p className="text-sm text-neutral-500">{user.email}</p>
-          </div>
+          </Link>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="destructive" onClick={handleDeleteAccount}>

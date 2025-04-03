@@ -19,7 +19,7 @@
     "@react-email/components": "0.0.35",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "convex": "^1.21.0",
+    "convex": "file:../node_modules/convex",
     "convex-helpers": "^0.1.76",
     "lucide-react": "^0.486.0",
     "next": "^15.2.4",

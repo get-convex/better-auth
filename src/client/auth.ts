@@ -35,10 +35,11 @@ export const auth = (database: () => Adapter, config: BetterAuthOptions) =>
           }),
         },
         jwks: {
-          disablePrivateKeyEncryption: true,
+          //disablePrivateKeyEncryption: true,
           keyPairConfig: {
             alg: "RS256",
-          },
+            extractable: true,
+          } as any,
         },
       }),
     ],

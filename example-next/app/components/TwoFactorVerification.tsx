@@ -11,10 +11,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { authClient } from "@/app/auth-client";
-import QRCode from "react-qr-code";
+import { useRouter } from "next/navigation";
 
 type VerificationMethod = "totp" | "otp" | "backup";
 
@@ -23,28 +23,8 @@ export default function TwoFactorVerification() {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [trustDevice, setTrustDevice] = useState(false);
-  const [totpUri, setTotpUri] = useState<string>();
   const [otpSent, setOtpSent] = useState(false);
-
-  useEffect(() => {
-    const fetchTotpUri = async () => {
-      try {
-        const { data } = await authClient.twoFactor.getTotpUri({
-          password: "", // This will be handled by the backend since we're in a 2FA flow
-        });
-        if (data?.totpURI) {
-          setTotpUri(data.totpURI);
-        }
-      } catch {
-        // If this fails, the user probably needs to enable 2FA first
-        // The UI will show just the code input
-      }
-    };
-
-    if (method === "totp") {
-      fetchTotpUri();
-    }
-  }, [method]);
+  const router = useRouter();
 
   const handleTotpVerify = async () => {
     try {
@@ -52,9 +32,18 @@ export default function TwoFactorVerification() {
       await authClient.twoFactor.verifyTotp({
         code,
         trustDevice,
+        fetchOptions: {
+          onRequest: () => {
+            setLoading(true);
+          },
+          onSuccess: () => {
+            setLoading(false);
+            router.push("/");
+          },
+        },
       });
-      // Redirect will happen automatically on success
-    } catch {
+    } catch (error) {
+      console.log("error", error);
       alert("Failed to verify code. Please try again.");
     } finally {
       setLoading(false);
@@ -163,12 +152,6 @@ export default function TwoFactorVerification() {
               Backup Code
             </Button>
           </div>
-
-          {method === "totp" && totpUri && (
-            <div className="flex justify-center p-4 bg-white rounded-lg">
-              <QRCode value={totpUri} />
-            </div>
-          )}
 
           <div className="grid gap-2">
             <Label htmlFor="code">

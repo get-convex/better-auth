@@ -113,6 +113,7 @@ export declare const components: {
               }
             | {
                 createdAt: number;
+                id: string;
                 privateKey: string;
                 publicKey: string;
                 table: string;
