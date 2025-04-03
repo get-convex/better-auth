@@ -5,7 +5,7 @@ import { ConvexReactClient, ConvexProviderWithAuth } from "convex/react";
 import { useBetterAuth } from "@/app/auth";
 
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!, {
-  verbose: true,
+  verbose: false,
 });
 
 export function ConvexClientProvider({ children }: { children: ReactNode }) {

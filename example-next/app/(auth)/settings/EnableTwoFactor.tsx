@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { Loader2, Copy, Check } from "lucide-react";
+import { Loader2, Copy, Check, ArrowLeft } from "lucide-react";
 import { authClient } from "@/app/auth-client";
 import QRCode from "react-qr-code";
 
@@ -67,120 +67,135 @@ export default function EnableTwoFactor() {
   };
 
   return (
-    <Card className="max-w-md">
-      <CardHeader>
-        <CardTitle className="text-lg md:text-xl">
-          Enable Two-Factor Authentication
-        </CardTitle>
-        <CardDescription className="text-xs md:text-sm">
-          {step === "password"
-            ? "Enter your password to begin setup"
-            : step === "qr"
-              ? "Scan this QR code with your authenticator app"
-              : step === "verify"
-                ? "Enter the code from your authenticator app"
-                : "Save these backup codes in a secure place"}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <div className="min-h-screen w-full flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
         {step === "password" && (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handlePasswordSubmit();
-            }}
-            className="grid gap-4"
+          <Button
+            variant="ghost"
+            size="sm"
+            className="flex items-center gap-2 mb-4"
+            onClick={() => window.location.reload()}
           >
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-              />
-            </div>
-            <Button type="submit" disabled={loading}>
-              {loading ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                "Continue"
-              )}
-            </Button>
-          </form>
+            <ArrowLeft size={16} />
+            Back to Settings
+          </Button>
         )}
-
-        {step === "qr" && totpUri && (
-          <div className="grid gap-4">
-            <div className="flex justify-center p-4 bg-white rounded-lg">
-              <QRCode value={totpUri} />
-            </div>
-            <Button onClick={() => setStep("verify")}>Continue</Button>
-          </div>
-        )}
-
-        {step === "verify" && (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleVerifyCode();
-            }}
-            className="grid gap-4"
-          >
-            <div className="grid gap-2">
-              <Label htmlFor="code">Verification Code</Label>
-              <Input
-                id="code"
-                type="text"
-                placeholder="Enter 6-digit code"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                pattern="[0-9]*"
-                inputMode="numeric"
-                maxLength={6}
-                required
-                disabled={loading}
-              />
-            </div>
-            <Button type="submit" disabled={loading}>
-              {loading ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                "Verify"
-              )}
-            </Button>
-          </form>
-        )}
-
-        {step === "backup" && backupCodes && (
-          <div className="grid gap-4">
-            <div className="grid gap-2 p-4 bg-muted rounded-lg">
-              {backupCodes.map((code, i) => (
-                <div
-                  key={code}
-                  className="flex items-center justify-between p-2 bg-background rounded"
-                >
-                  <code className="text-sm">{code}</code>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => copyBackupCode(code, i)}
-                  >
-                    {copiedIndex === i ? (
-                      <Check size={16} />
-                    ) : (
-                      <Copy size={16} />
-                    )}
-                  </Button>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg md:text-xl">
+              Enable Two-Factor Authentication
+            </CardTitle>
+            <CardDescription className="text-xs md:text-sm">
+              {step === "password"
+                ? "Enter your password to begin setup"
+                : step === "qr"
+                  ? "Scan this QR code with your authenticator app"
+                  : step === "verify"
+                    ? "Enter the code from your authenticator app"
+                    : "Save these backup codes in a secure place"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {step === "password" && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handlePasswordSubmit();
+                }}
+                className="grid gap-4"
+              >
+                <div className="grid gap-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
                 </div>
-              ))}
-            </div>
-            <Button onClick={() => window.location.reload()}>Done</Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+                <Button type="submit" disabled={loading}>
+                  {loading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    "Continue"
+                  )}
+                </Button>
+              </form>
+            )}
+
+            {step === "qr" && totpUri && (
+              <div className="grid gap-4">
+                <div className="flex justify-center p-4 bg-white rounded-lg">
+                  <QRCode value={totpUri} />
+                </div>
+                <Button onClick={() => setStep("verify")}>Continue</Button>
+              </div>
+            )}
+
+            {step === "verify" && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleVerifyCode();
+                }}
+                className="grid gap-4"
+              >
+                <div className="grid gap-2">
+                  <Label htmlFor="code">Verification Code</Label>
+                  <Input
+                    id="code"
+                    type="text"
+                    placeholder="Enter 6-digit code"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    pattern="[0-9]*"
+                    inputMode="numeric"
+                    maxLength={6}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <Button type="submit" disabled={loading}>
+                  {loading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    "Verify"
+                  )}
+                </Button>
+              </form>
+            )}
+
+            {step === "backup" && backupCodes && (
+              <div className="grid gap-4">
+                <div className="grid gap-2 p-4 bg-muted rounded-lg">
+                  {backupCodes.map((code, i) => (
+                    <div
+                      key={code}
+                      className="flex items-center justify-between p-2 bg-background rounded"
+                    >
+                      <code className="text-sm">{code}</code>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => copyBackupCode(code, i)}
+                      >
+                        {copiedIndex === i ? (
+                          <Check size={16} />
+                        ) : (
+                          <Copy size={16} />
+                        )}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                <Button onClick={() => window.location.reload()}>Done</Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }
