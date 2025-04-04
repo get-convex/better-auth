@@ -1,11 +1,20 @@
 import * as fs from "node:fs";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { Link as LinkIcon, Check, Info, AlertCircle, X } from "lucide-react";
+import {
+  Link as LinkIcon,
+  Check,
+  Info,
+  AlertCircle,
+  X,
+  ChevronDown,
+} from "lucide-react";
 import DocsLayout, { SmoothScrollLink } from "@/components/docs-layout";
 import { CodeBlock } from "@/components/code-block";
 import { stripIndent } from "common-tags";
 import { AlertTriangle } from "lucide-react";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 function SectionLink({
   href,
@@ -22,6 +31,45 @@ function SectionLink({
       {children}
       <LinkIcon className="ml-2 size-4 opacity-0 group-hover:opacity-50 transition-opacity" />
     </SmoothScrollLink>
+  );
+}
+
+// Simple collapsible component
+function Collapsible({
+  title,
+  children,
+  defaultOpen = false,
+}: {
+  title: React.ReactNode;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className="w-full rounded-md border border-muted/60 bg-background/50 hover:bg-accent/30 transition-colors">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center justify-between w-full py-3 px-4 text-left focus:outline-none"
+      >
+        <span className="text-muted-foreground font-medium">{title}</span>
+        <ChevronDown
+          className={cn(
+            "h-5 w-5 text-muted-foreground/70 transition-transform duration-200",
+            isOpen ? "transform rotate-180" : ""
+          )}
+        />
+      </button>
+      <div
+        className={cn(
+          "overflow-hidden transition-all duration-300 ease-in-out px-4",
+          isOpen ? "max-h-[1000px] opacity-100 pb-4" : "max-h-0 opacity-0 pb-0"
+        )}
+      >
+        {children}
+      </div>
+    </div>
   );
 }
 
@@ -107,28 +155,33 @@ function Home() {
               The Convex Better Auth component is in early alpha development.
             </p>
 
-            <p className="text-muted-foreground">
-              The challenge for this component is that Better Auth is designed
-              to generate dynamic queries for traditional databases, and Convex
-              is... not a traditional database. It's way better. Which is why it
-              will eventually take over the world, but that's just one man's
-              opinion. Sorry, getting off track here. Anywho. Dynamic queries
-              are actually quite possible in Convex, but dynamic{" "}
-              <em>indexes</em> are not, so dynamic queries have to be supported
-              by a set of predefined indexes.
-            </p>
+            <Collapsible title="Read more about current limitations and compatibility">
+              <div className="space-y-4">
+                <p className="text-muted-foreground">
+                  The challenge for this component is that Better Auth is
+                  designed to generate dynamic queries for traditional
+                  databases, and Convex is... not a traditional database. It's
+                  way better. Which is why it will eventually take over the
+                  world, but that's just one man's opinion. Sorry, getting off
+                  track here. Anywho. While dynamic queries are somewhat
+                  possible in Convex, dynamic <em>indexes</em> are not, so
+                  dynamic queries have to be supported by a set of predefined
+                  indexes.
+                </p>
 
-            <p className="text-muted-foreground">
-              All of this means that the Better Auth component has to support
-              specific plugins and features intentionally, and there will
-              generally be a set of known working plugins/features, while others
-              may or may not run into errors.
-            </p>
+                <p className="text-muted-foreground">
+                  All of this means that the Better Auth component has to
+                  support specific plugins and features intentionally, and there
+                  will always be a set of known working plugins/features, while
+                  others may or may not run into errors.
+                </p>
 
-            <p className="mb-6 text-muted-foreground">
-              Most Better Auth plugins should work, but some plugins that have
-              more complex requirements may or may not run into errors.
-            </p>
+                <p className="text-muted-foreground">
+                  Most Better Auth plugins should work, but some plugins that
+                  have more complex requirements may or may not run into errors.
+                </p>
+              </div>
+            </Collapsible>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
@@ -222,42 +275,46 @@ function Home() {
               </ul>
             </div>
 
-            <div className="flex items-start gap-3 bg-blue-500/5 p-4 rounded-md mt-8">
-              <Info className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-              <div>
-                <h4 className="font-medium mb-1">Issues and Feedback</h4>
-                <p className="text-sm text-muted-foreground">
-                  If your use case isn't supported, a plugin doesn't work, you
-                  hit a bug, etc, please open a{" "}
-                  <a
-                    href="https://github.com/erquhart/convex-better-auth/issues"
-                    className="text-primary hover:underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    GitHub issue
-                  </a>{" "}
-                  or reach out on{" "}
-                  <a
-                    href="https://discord.gg/convex"
-                    className="text-primary hover:underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Discord
-                  </a>
-                  . You can also find the library on{" "}
-                  <a
-                    href="https://www.npmjs.com/package/@erquhart/convex-better-auth"
-                    className="text-primary hover:underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    NPM
-                  </a>
-                  .
-                </p>
+            <div className="mt-10">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-blue-800/20 flex items-center justify-center">
+                  <Info className="h-5 w-5 text-blue-500" />
+                </div>
+                <h3 className="text-xl font-medium text-blue-500">
+                  Issues and Feedback
+                </h3>
               </div>
+              <p className="text-muted-foreground ml-2.25">
+                If your use case isn't supported, a plugin doesn't work, you hit
+                a bug, etc, please open a{" "}
+                <a
+                  href="https://github.com/erquhart/convex-better-auth/issues"
+                  className="text-primary hover:underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  GitHub issue
+                </a>{" "}
+                or reach out on{" "}
+                <a
+                  href="https://discord.gg/convex"
+                  className="text-primary hover:underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Discord
+                </a>
+                . You can also find the library on{" "}
+                <a
+                  href="https://www.npmjs.com/package/@erquhart/convex-better-auth"
+                  className="text-primary hover:underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  NPM
+                </a>
+                .
+              </p>
             </div>
           </div>
         </section>
