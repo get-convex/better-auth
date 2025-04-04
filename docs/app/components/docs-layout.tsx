@@ -1,5 +1,14 @@
-import type * as React from "react"
-import { BookOpen, Code, FileText, Github, Home, Package, Server, Layers } from "lucide-react"
+import type * as React from "react";
+import {
+  BookOpen,
+  Code,
+  FileText,
+  Github,
+  Home,
+  Package,
+  Server,
+  Layers,
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -19,9 +28,13 @@ import {
   SidebarProvider,
   SidebarRail,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
-export default function DocsLayout({ children }: { children: React.ReactNode }) {
+export default function DocsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <SidebarProvider>
       <Sidebar variant="inset" collapsible="icon">
@@ -35,7 +48,9 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                   </div>
                   <div className="flex flex-col gap-0.5 leading-none">
                     <span className="font-semibold">Quantum.js</span>
-                    <span className="text-xs text-muted-foreground">v1.2.0</span>
+                    <span className="text-xs text-muted-foreground">
+                      v1.2.0
+                    </span>
                   </div>
                 </a>
               </SidebarMenuButton>
@@ -129,7 +144,11 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild tooltip="GitHub">
-                <a href="https://github.com/example/quantum-js" target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://github.com/example/quantum-js"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <Github className="size-4" />
                   <span>GitHub</span>
                 </a>
@@ -147,7 +166,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
             href="https://github.com/example/quantum-js"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex h-9 items-center justify-center rounded-md px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground"
+            className="inline/-flex hidden h-9 items-center justify-center rounded-md px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground"
           >
             <Github className="mr-2 h-4 w-4" />
             GitHub
@@ -156,6 +175,5 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
         <main className="flex-1">{children}</main>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }
-
