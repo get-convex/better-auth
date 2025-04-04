@@ -15,77 +15,102 @@ interface CodeBlockProps {
   highlightedLines?: number[];
 }
 
-// Custom theme optimized for dark backgrounds
+// Custom theme inspired by Dracula with our brand colors
 const darkTheme = {
   plain: {
-    color: "#e6e6e6",
+    color: "#e4e4e7", // Slightly dimmer base text color
     backgroundColor: "transparent",
   },
   styles: [
     {
       types: ["comment", "prolog", "doctype", "cdata"],
       style: {
-        color: "#999988",
+        color: "#6272a4",
         fontStyle: "italic" as const,
       },
     },
     {
-      types: ["namespace"],
+      types: ["operator", "punctuation", "delimiter", "char"],
       style: {
-        opacity: 0.7,
+        color: "#64748b", // Muted for structural elements
       },
     },
     {
-      types: ["string", "attr-value"],
+      types: ["string", "attr-value", "template-punctuation"],
       style: {
-        color: "#8dc891",
+        color: "#e6a91c", // Slightly muted orange/yellow for strings
       },
     },
     {
-      types: ["punctuation", "operator"],
+      types: ["number", "boolean", "inserted"],
       style: {
-        color: "#d1d1d1",
+        color: "#bd93f9", // Purple for literals
+      },
+    },
+    {
+      types: ["variable", "parameter"],
+      style: {
+        color: "#e4e4e7", // Base color for variables
+      },
+    },
+    {
+      types: ["property", "property-access", "member", "object"],
+      style: {
+        color: "#94a3b8", // Muted slate for properties/members
+      },
+    },
+    {
+      types: ["function", "method", "deleted", "tag"],
+      style: {
+        color: "#e6a91c", // Slightly muted orange/yellow for functions
+      },
+    },
+    {
+      types: ["keyword"],
+      style: {
+        color: "#e63366", // Slightly muted pink for core keywords
+      },
+    },
+    {
+      types: ["constant", "regex"],
+      style: {
+        color: "#db72b6", // Slightly muted lighter pink for constants
       },
     },
     {
       types: [
-        "entity",
-        "url",
-        "symbol",
-        "number",
-        "boolean",
-        "variable",
-        "constant",
-        "property",
-        "regex",
-        "inserted",
+        "class-name",
+        "maybe-class-name",
+        "interface",
+        "enum",
+        "type-parameters",
       ],
       style: {
-        color: "#79b6f2",
+        color: "#bd93f9", // Purple for class/type names
       },
     },
     {
-      types: ["atrule", "keyword", "attr-name", "selector"],
+      types: ["builtin", "attr-name"],
       style: {
-        color: "#cc99cd",
+        color: "#94a3b8", // Muted slate for built-ins
       },
     },
     {
-      types: ["function", "deleted", "tag"],
+      types: ["type", "type-annotation"],
       style: {
-        color: "#f08d49",
+        color: "#c4b5fd", // Lighter purple for type annotations
+      },
+    },
+    {
+      types: ["module", "imports", "exports"],
+      style: {
+        color: "#e63366", // Slightly muted pink for module-related
       },
     },
     {
       types: ["function-variable"],
       style: {
-        color: "#6196cc",
-      },
-    },
-    {
-      types: ["tag", "selector", "keyword"],
-      style: {
-        color: "#ff8383",
+        color: "#e6a91c", // Slightly muted orange/yellow for function variables
       },
     },
   ],
@@ -115,7 +140,7 @@ export function CodeBlock({
   // Always use dark theme for code blocks
   const getTheme = () => {
     //if (!mounted) return themes.synthwave84; // Default for SSR
-    return themes.dracula;
+    return darkTheme;
   };
 
   // Map language string to prism language
