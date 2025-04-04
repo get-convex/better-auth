@@ -2,8 +2,7 @@
 
 import { Check, Copy } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Highlight } from "prism-react-renderer";
-import { PrismTheme } from "prism-react-renderer";
+import { Highlight, PrismTheme, themes } from "prism-react-renderer";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -115,8 +114,8 @@ export function CodeBlock({
 
   // Always use dark theme for code blocks
   const getTheme = () => {
-    if (!mounted) return darkTheme; // Default for SSR
-    return darkTheme;
+    //if (!mounted) return themes.synthwave84; // Default for SSR
+    return themes.dracula;
   };
 
   // Map language string to prism language

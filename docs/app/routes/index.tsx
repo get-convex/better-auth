@@ -116,12 +116,14 @@ function Home() {
 
           <h3 className="text-2xl font-bold mt-10 mb-4">Set up Better Auth</h3>
           <p className="mb-4">Create a Better Auth instance in your backend.</p>
-          <p className="mb-6">
-            Keeping the Better Auth instance in a separate file like{" "}
-            <code className="bg-muted px-1 rounded">convex/auth.ts</code> is
-            recommended, but this can be done in any file in the Convex
-            directory.
-          </p>
+          <div className="mb-6 flex gap-3 rounded-md border bg-muted/50 p-4">
+            <div className="select-none text-primary">💡</div>
+            <p className="text-sm text-muted-foreground">
+              Keeping the Better Auth instance in a separate file like{" "}
+              convex/auth.ts is recommended for better organization, but it will
+              work from any file in the Convex directory.
+            </p>
+          </div>
 
           <CodeBlock
             language="typescript"
