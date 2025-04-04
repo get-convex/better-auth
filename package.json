@@ -85,6 +85,7 @@
   "types": "./dist/commonjs/client/index.d.ts",
   "module": "./dist/esm/client/index.js",
   "dependencies": {
-    "convex-helpers": "^0.1.76"
+    "convex-helpers": "^0.1.76",
+    "type-fest": "^4.39.1"
   }
 }

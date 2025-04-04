@@ -1,10 +1,20 @@
+import { BetterAuthClientPlugin, ClientOptions } from "better-auth/client";
 import { jwtClient } from "better-auth/client/plugins";
 import { createAuthClient as createBetterAuthClient } from "better-auth/react";
 import { useCallback, useMemo, useRef } from "react";
+import { SetRequired } from "type-fest";
 
-export const createAuthClient = (
-  options: Parameters<typeof createBetterAuthClient>[0]
-) => {
+export const createAuthClient = <O extends ClientOptions>(
+  options: O
+): ReturnType<
+  typeof createBetterAuthClient<
+    O & {
+      plugins: O["plugins"] extends BetterAuthClientPlugin[]
+        ? [...O["plugins"], ReturnType<typeof jwtClient>]
+        : [ReturnType<typeof jwtClient>];
+    }
+  >
+> => {
   if (!options?.baseURL) {
     throw new Error(
       `baseURL should be set to your Convex deployment site URL, which ends in "convex.site".`
@@ -12,7 +22,7 @@ export const createAuthClient = (
   }
   return createBetterAuthClient({
     ...options,
-    plugins: [...(options?.plugins || []), jwtClient()],
+    plugins: (options.plugins ?? []).concat(jwtClient()),
   });
 };
 

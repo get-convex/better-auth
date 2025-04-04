@@ -8,11 +8,14 @@ import {
   GenericActionCtx,
   GenericDataModel,
 } from "convex/server";
-import { OnDeleteUser, OnCreateUser, UseApi } from ".";
+import { OnDeleteUser, OnCreateUser, UseApi } from "./index";
 import { api } from "../component/_generated/api";
 import { transformInput } from "../component/auth";
 
-export const auth = (database: () => Adapter, config: BetterAuthOptions) =>
+export const auth = (
+  database: () => Adapter,
+  config: BetterAuthOptions
+): ReturnType<typeof betterAuth> =>
   betterAuth({
     ...config,
     advanced: {
