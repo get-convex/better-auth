@@ -102,9 +102,10 @@ function Home() {
 
           <CodeBlock
             language="typescript"
+            filename="convex.config.ts"
             code={stripIndent`
-              import betterAuth from '@erquhart/convex-better-auth/convex.config'
               import { defineApp } from 'convex/server'
+              import betterAuth from '@erquhart/convex-better-auth/convex.config'
 
               const app = defineApp()
               app.use(betterAuth)
@@ -118,6 +119,7 @@ function Home() {
 
           <CodeBlock
             language="typescript"
+            filename="app/auth.ts"
             code={`import { map, filter, pipe } from 'quantum-js';
 
 // Use the pipe function to compose operations
@@ -147,6 +149,7 @@ const result = processData([1, 6, 3, 8, 10]);
 
           <CodeBlock
             language="typescript"
+            filename="app/example.ts"
             code={`import { update } from 'quantum-js';
 
 const user = { name: 'John', age: 30 };
@@ -164,6 +167,7 @@ const updatedUser = update(user, { age: 31 });
 
           <CodeBlock
             language="typescript"
+            filename="app/users.ts"
             code={`import { pipe, map, filter, sort } from 'quantum-js';
 
 const processUsers = pipe(
@@ -194,6 +198,7 @@ const processedUsers = processUsers(users);`}
                   </p>
                   <CodeBlock
                     language="typescript"
+                    filename="app/components/Counter.tsx"
                     code={`import { useQuantum } from 'quantum-js/react';
 
 function Counter() {
@@ -216,6 +221,7 @@ function Counter() {
                   </p>
                   <CodeBlock
                     language="typescript"
+                    filename="app/components/UserProfile.tsx"
                     code={`import { useAsyncData } from 'quantum-js/react';
 
 function UserProfile({ userId }) {
@@ -245,6 +251,7 @@ function UserProfile({ userId }) {
                   </p>
                   <CodeBlock
                     language="typescript"
+                    filename="server/index.ts"
                     code={`import { createServer } from 'quantum-js/node';
 
 const app = createServer();
@@ -270,6 +277,7 @@ app.listen(3000, () => {
                   </p>
                   <CodeBlock
                     language="typescript"
+                    filename="server/files.ts"
                     code={`import { fileSystem } from 'quantum-js/node';
 
 async function processFiles() {

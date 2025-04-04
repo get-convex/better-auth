@@ -3,6 +3,7 @@
 import { Check, Copy } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Highlight, themes } from "prism-react-renderer";
+import { PrismTheme } from "prism-react-renderer";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ interface CodeBlockProps {
   language: string;
   code: string;
   className?: string;
+  filename?: string;
 }
 
 // Custom theme optimized for dark backgrounds
@@ -25,7 +27,7 @@ const darkTheme = {
       types: ["comment", "prolog", "doctype", "cdata"],
       style: {
         color: "#999988",
-        fontStyle: "italic",
+        fontStyle: "italic" as const,
       },
     },
     {
@@ -88,9 +90,14 @@ const darkTheme = {
       },
     },
   ],
-};
+} satisfies PrismTheme;
 
-export function CodeBlock({ language, code, className }: CodeBlockProps) {
+export function CodeBlock({
+  language,
+  code,
+  className,
+  filename,
+}: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
   const { theme: currentTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -128,8 +135,17 @@ export function CodeBlock({ language, code, className }: CodeBlockProps) {
     <div
       className={cn("relative my-4 rounded-lg border bg-zinc-950", className)}
     >
-      <div className="flex items-center justify-between px-4 py-2 text-sm text-muted-foreground border-b border-zinc-800">
-        <span className="font-medium">{language}</span>
+      <div className="flex items-center justify-between px-4 py-2 text-sm border-b border-zinc-800">
+        {filename && (
+          <span className="font-medium text-sm text-foreground/90">
+            {filename}
+          </span>
+        )}
+        {!filename && (
+          <span className="font-medium text-sm text-muted-foreground">
+            {language}
+          </span>
+        )}
         <Button
           variant="ghost"
           size="icon"
