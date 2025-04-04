@@ -41,10 +41,17 @@ function Home() {
     <DocsLayout>
       <div className="max-w-3xl mx-auto">
         <div className="py-20 space-y-6">
-          <h1 className="text-5xl font-bold tracking-tight">Quantum.js</h1>
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-br from-[rgb(243,176,28)] from-30% to-[#FF3366] to-100% bg-clip-text text-transparent">
+              Convex
+            </h1>
+            <span className="text-4xl font-light text-muted-foreground">+</span>
+            <h1 className="text-5xl font-bold tracking-tight">Better Auth</h1>
+          </div>
           <p className="text-xl text-muted-foreground">
-            A lightweight, type-safe utility library for modern JavaScript
-            applications. Build faster with less code and better performance.
+            Own your auth in your Convex applications. Type-safe, secure
+            authentication with a beautiful developer experience. Built for
+            modern TypeScript applications with real-time data sync.
           </p>
           <div className="flex gap-4">
             <a
@@ -54,7 +61,7 @@ function Home() {
               Get Started
             </a>
             <a
-              href="https://github.com/example/quantum-js"
+              href="https://github.com/example/convex-better-auth"
               className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
               target="_blank"
               rel="noopener noreferrer"
