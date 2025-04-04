@@ -131,78 +131,90 @@ function Home() {
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-full bg-green-500/5 flex items-center justify-center">
-                    <Check className="h-4 w-4 text-green-500/70" />
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-green-800/20 flex items-center justify-center">
+                    <Check className="h-5 w-5 text-green-500" />
                   </div>
-                  <h3 className="text-lg font-medium text-green-500/70">
+                  <h3 className="text-xl font-medium text-green-500">
                     Known To Work
                   </h3>
                 </div>
-                <ul className="grid gap-3 text-sm text-muted-foreground pl-4">
-                  <li className="flex gap-2">
-                    <Check className="h-4 w-4 text-green-500/70 mt-1 flex-shrink-0" />
-                    <span>Basic functionality</span>
+                <ul className="space-y-3 ml-2">
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-muted-foreground">
+                      Basic functionality
+                    </span>
                   </li>
-                  <li className="flex gap-2">
-                    <Check className="h-4 w-4 text-green-500/70 mt-1 flex-shrink-0" />
-                    <span>Email / Password Auth</span>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-muted-foreground">
+                      Email / Password Auth
+                    </span>
                   </li>
-                  <li className="flex gap-2">
-                    <Check className="h-4 w-4 text-green-500/70 mt-1 flex-shrink-0" />
-                    <span>Social Auth (Google, GitHub, etc)</span>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-muted-foreground">
+                      Social Auth (Google, GitHub, etc)
+                    </span>
                   </li>
-                  <li className="flex gap-2">
-                    <Check className="h-4 w-4 text-green-500/70 mt-1 flex-shrink-0" />
-                    <span>Magic Link / OTP Code Auth</span>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-muted-foreground">
+                      Magic Link / OTP Code Auth
+                    </span>
                   </li>
-                  <li className="flex gap-2">
-                    <Check className="h-4 w-4 text-green-500/70 mt-1 flex-shrink-0" />
-                    <span>Two Factor (OTP, TOTP)</span>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-muted-foreground">
+                      Two Factor (OTP, TOTP)
+                    </span>
                   </li>
                 </ul>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-full bg-amber-500/5 flex items-center justify-center">
-                    <AlertTriangle className="h-4 w-4 text-amber-500/70" />
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-amber-800/20 flex items-center justify-center">
+                    <AlertTriangle className="h-5 w-5 text-amber-500" />
                   </div>
-                  <h3 className="text-lg font-medium text-amber-500/70">
+                  <h3 className="text-xl font-medium text-amber-500">
                     Might Not Work
                   </h3>
                 </div>
-                <ul className="grid gap-3 text-sm text-muted-foreground pl-4">
-                  <li className="flex gap-2">
-                    <AlertTriangle className="h-4 w-4 text-amber-500/70 mt-1 flex-shrink-0" />
-                    <span>Plugins not listed under "known to work"</span>
+                <ul className="space-y-3 ml-2">
+                  <li className="flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-muted-foreground">
+                      Plugins not listed under "known to work"
+                    </span>
                   </li>
                 </ul>
               </div>
             </div>
 
-            <div className="mt-8 space-y-4">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-full bg-red-500/5 flex items-center justify-center">
-                  <X className="h-4 w-4 text-red-500/70" />
+            <div className="mt-10">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-red-800/20 flex items-center justify-center">
+                  <X className="h-5 w-5 text-red-500" />
                 </div>
-                <h3 className="text-lg font-medium text-red-500/70">
+                <h3 className="text-xl font-medium text-red-500">
                   Not Currently Supported
                 </h3>
               </div>
-              <ul className="grid gap-3 text-sm text-muted-foreground pl-4">
-                <li className="flex gap-2">
-                  <X className="h-4 w-4 text-red-500/70 mt-1 flex-shrink-0" />
-                  <span>
+              <ul className="space-y-3 ml-2">
+                <li className="flex items-start gap-3">
+                  <X className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-muted-foreground">
                     Plugins not listed above that include a migration step
                     (indicated in Better Auth docs) are almost guaranteed not to
                     work.
                   </span>
                 </li>
-                <li className="flex gap-2">
-                  <X className="h-4 w-4 text-red-500/70 mt-1 flex-shrink-0" />
-                  <span>
+                <li className="flex items-start gap-3">
+                  <X className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-muted-foreground">
                     JWT and OIDC plugins probably won't work, preconfigured
                     versions are already in use for Convex support
                   </span>
