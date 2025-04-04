@@ -74,8 +74,12 @@ function Home() {
         <section id="getting-started" className="py-10">
           <h2 className="text-3xl font-bold mb-6">Getting Started</h2>
           <p className="mb-6">
-            Quantum.js is available as an npm package. You can install it using
-            npm, yarn, or pnpm:
+            Convex + Better Auth allows Better Auth to run securely in your
+            Convex database as a{" "}
+            <a href="https://www.convex.dev/components">Convex Component</a>.
+            Convex Components have their own tables and functions, separate from
+            those of your application, but are still able to interact with them
+            in specific ways.
           </p>
 
           <CodeBlock language="bash" code="npm install quantum-js" />
