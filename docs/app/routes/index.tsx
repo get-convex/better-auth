@@ -135,18 +135,8 @@ function Home() {
 
               export const betterAuth: BetterAuth<BetterAuthOptions> = new BetterAuth(
                 components.betterAuth,
-                {
-                  trustedOrigins: ['http://localhost:5173'],
-                  socialProviders: {
-                    github: {
-                      clientId: process.env.AUTH_GITHUB_ID as string,
-                      clientSecret: process.env.AUTH_GITHUB_SECRET as string,
-                    },
-                  },
-                },
-                {
-                  onCreateSession: internal.timer.migrateUser,
-                },
+                // Add your options here
+                { ... }
               )
             `}
           />
@@ -164,10 +154,54 @@ function Home() {
               const http = httpRouter()
 
               betterAuth.registerRoutes(http, {
-                allowedOrigins: ['http://localhost:5173'],
+                allowedOrigins: [process.env.SITE_URL],
               })
 
               export default http
+            `}
+          />
+          <h3 className="text-2xl font-bold mt-10 mb-4">Set up client</h3>
+          <p className="mb-4">Create a Better Auth client instance.</p>
+          <div className="mb-6 flex gap-3 rounded-md border bg-muted/50 p-4">
+            <div className="select-none text-primary">💡</div>
+            <p className="text-sm text-muted-foreground">
+              Be sure to import <code>createAuthClient</code> from the
+              component, not directly from the better-auth package.
+            </p>
+          </div>
+
+          <CodeBlock
+            language="typescript"
+            filename="lib/auth.ts"
+            code={stripIndent`
+              import { createAuthClient } from '@erquhart/convex-better-auth/react'
+
+              export const authClient = createAuthClient({
+                // This should be your Convex site URL, which ends in .convex.site
+                baseURL: 'https://funky-penguin-123.convex.site'
+              })
+            `}
+          />
+
+          <p className="mb-4">Add to Convex client.</p>
+          <p className="mb-4">
+            Use `ConvexProviderWithAuth` instead of `ConvexProvider`. The
+            specific file this happens in will depend on your framework.
+          </p>
+
+          <CodeBlock
+            language="typescript"
+            filename="src/index.tsx"
+            code={stripIndent`
+              import { ConvexProviderWithAuth, ConvexReactClient } from 'convex/react'
+              import { useBetterAuth } from '@erquhart/convex-better-auth/react'
+              import { authClient } from 'lib/auth.ts'
+
+              const convex = new ConvexReactClient(
+                <ConvexProviderWithAuth client={convex} useAuth={useBetterAuth(authClient)}>
+                  {children}
+                </ConvexProviderWithAuth>
+              )
             `}
           />
 

@@ -173,7 +173,7 @@ export function CodeBlock({
   // Always use dark theme for code blocks
   const getTheme = () => {
     //if (!mounted) return themes.synthwave84; // Default for SSR
-    return darkTheme;
+    return themes.vsDark;
   };
 
   // Map language string to prism language
