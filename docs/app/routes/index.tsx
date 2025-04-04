@@ -277,10 +277,10 @@ function Home() {
 
             <div className="mt-10">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-blue-800/20 flex items-center justify-center">
-                  <Info className="h-5 w-5 text-blue-500" />
+                <div className="w-10 h-10 rounded-full bg-gray-600/20 flex items-center justify-center">
+                  <Info className="h-5 w-5 text-white" />
                 </div>
-                <h3 className="text-xl font-medium text-blue-500">
+                <h3 className="text-xl font-medium text-white">
                   Issues and Feedback
                 </h3>
               </div>
