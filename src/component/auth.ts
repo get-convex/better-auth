@@ -110,12 +110,11 @@ export const create = mutation({
         args.onCreateHandle as FunctionHandle<
           "mutation",
           {
-            user: typeof schema.tables.user;
-          },
-          void
+            [table]: any;
+          }
         >,
         {
-          user: doc,
+          [table]: doc,
         }
       );
     }

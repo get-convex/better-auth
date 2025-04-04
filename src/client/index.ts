@@ -1,27 +1,34 @@
+import type { BetterAuthOptions } from "better-auth";
 import {
-  Auth,
-  DefaultFunctionArgs,
-  Expand,
-  FunctionReference,
-  GenericActionCtx,
-  GenericDataModel,
-  GenericMutationCtx,
-  GenericQueryCtx,
+  type Auth,
+  type DefaultFunctionArgs,
+  type Expand,
+  type FunctionReference,
+  type GenericActionCtx,
+  type GenericDataModel,
+  type GenericMutationCtx,
+  type GenericQueryCtx,
+  type HttpRouter,
   httpActionGeneric,
-  HttpRouter,
 } from "convex/server";
-import { GenericId, Infer, v } from "convex/values";
-import { BetterAuthOptions } from "better-auth";
-import corsRouter from "./cors";
-import { Id } from "../component/_generated/dataModel";
-import { auth, database } from "./auth";
-import { api } from "../component/_generated/api";
+import { type GenericId, type Infer, v } from "convex/values";
+import type { api } from "../component/_generated/api";
+import type { Id } from "../component/_generated/dataModel";
 import schema from "../component/schema";
+import { auth, database } from "./auth";
+import corsRouter from "./cors";
 
 export { schema };
 
 export const userValidator = v.object({
   ...schema.tables.user.validator.fields,
+  _id: v.string(),
+  _creationTime: v.number(),
+});
+
+export const sessionValidator = v.object({
+  ...schema.tables.session.validator.fields,
+  userId: v.string(),
   _id: v.string(),
   _creationTime: v.number(),
 });
@@ -34,6 +41,9 @@ export type EventFunction<T extends DefaultFunctionArgs> = FunctionReference<
 
 export type OnCreateUser = EventFunction<{ user: Infer<typeof userValidator> }>;
 export type OnDeleteUser = EventFunction<{ id: string }>;
+export type OnCreateSession = EventFunction<{
+  session: Infer<typeof sessionValidator>;
+}>;
 
 export class BetterAuth<O extends BetterAuthOptions> {
   constructor(
@@ -44,6 +54,7 @@ export class BetterAuth<O extends BetterAuthOptions> {
     public config?: {
       onCreateUser?: OnCreateUser;
       onDeleteUser?: OnDeleteUser;
+      onCreateSession?: OnCreateSession;
     }
   ) {}
   async getAuthUserId(ctx: RunQueryCtx & { auth: Auth }) {
@@ -60,6 +71,11 @@ export class BetterAuth<O extends BetterAuthOptions> {
     }
     return ctx.runQuery(this.component.lib.getUserById, {
       id: identity.subject as Id<"user">,
+    });
+  }
+  async getAnyUserById(ctx: RunQueryCtx, id: string) {
+    return ctx.runQuery(this.component.lib.getUserById, {
+      id,
     });
   }
   registerRoutes(

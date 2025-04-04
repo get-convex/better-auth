@@ -8,7 +8,7 @@ import {
   GenericActionCtx,
   GenericDataModel,
 } from "convex/server";
-import { OnDeleteUser, OnCreateUser, UseApi } from "./index";
+import { OnDeleteUser, OnCreateUser, OnCreateSession, UseApi } from "./index";
 import { api } from "../component/_generated/api";
 import { transformInput } from "../component/auth";
 
@@ -61,6 +61,7 @@ export const database =
     config?: {
       onCreateUser?: OnCreateUser;
       onDeleteUser?: OnDeleteUser;
+      onCreateSession?: OnCreateSession;
     }
   ) =>
   (): Adapter =>
@@ -77,9 +78,13 @@ export const database =
             ...transformInput(model, data),
           },
           onCreateHandle:
-            config?.onCreateUser && model === "user"
-              ? await createFunctionHandle(config.onCreateUser)
-              : undefined,
+            (config?.onCreateUser &&
+              model === "user" &&
+              (await createFunctionHandle(config.onCreateUser))) ||
+            (config?.onCreateSession &&
+              model === "session" &&
+              (await createFunctionHandle(config.onCreateSession))) ||
+            undefined,
         });
       },
       findOne: async ({ model, where, select }): Promise<any> => {

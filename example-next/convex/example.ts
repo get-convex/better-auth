@@ -1,7 +1,7 @@
 import { internalMutation, mutation, query } from "./_generated/server";
 import { asyncMap } from "convex-helpers";
 import { betterAuth } from "./http";
-import { userValidator } from "@convex-dev/better-auth";
+import { sessionValidator, userValidator } from "@convex-dev/better-auth";
 import { v } from "convex/values";
 
 export const getCurrentUser = query({
@@ -62,5 +62,15 @@ export const onDeleteUser = internalMutation({
       return;
     }
     await ctx.db.delete(user._id);
+  },
+});
+
+export const onCreateSession = internalMutation({
+  args: {
+    session: sessionValidator,
+    user: userValidator,
+  },
+  handler: async () => {
+    // do something with the session and user
   },
 });
