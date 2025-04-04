@@ -15,6 +15,11 @@ interface CodeBlockProps {
   highlightedLines?: number[];
 }
 
+interface HighlightedSection {
+  start: number;
+  end: number;
+}
+
 // Custom theme inspired by Dracula with our brand colors
 const darkTheme = {
   plain: {
@@ -124,6 +129,7 @@ export function CodeBlock({
   highlightedLines = [],
 }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
+  const [copiedSection, setCopiedSection] = useState<number>();
   const [mounted, setMounted] = useState(false);
 
   // Prevent hydration mismatch
@@ -135,6 +141,32 @@ export function CodeBlock({
     await navigator.clipboard.writeText(code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const getHighlightedSections = (lines: number[]): HighlightedSection[] => {
+    if (lines.length === 0) return [];
+    const sorted = [...lines].sort((a, b) => a - b);
+    const sections: HighlightedSection[] = [];
+    let current: HighlightedSection = { start: sorted[0], end: sorted[0] };
+
+    for (let i = 1; i < sorted.length; i++) {
+      if (sorted[i] === current.end + 1) {
+        current.end = sorted[i];
+      } else {
+        sections.push(current);
+        current = { start: sorted[i], end: sorted[i] };
+      }
+    }
+    sections.push(current);
+    return sections;
+  };
+
+  const copySection = async (section: HighlightedSection) => {
+    const lines = code.split("\n");
+    const sectionText = lines.slice(section.start - 1, section.end).join("\n");
+    await navigator.clipboard.writeText(sectionText);
+    setCopiedSection(section.start);
+    setTimeout(() => setCopiedSection(undefined), 2000);
   };
 
   // Always use dark theme for code blocks
@@ -190,31 +222,63 @@ export function CodeBlock({
           code={code}
           language={getLanguage(language)}
         >
-          {({ className, style, tokens, getLineProps, getTokenProps }) => (
-            <pre
-              className={cn("text-sm p-4", className)}
-              style={{
-                ...style,
-                backgroundColor: "transparent", // Remove white background
-                margin: 0,
-              }}
-            >
-              {tokens.map((line, i) => (
-                <div
-                  key={i}
-                  {...getLineProps({ line, key: i })}
-                  className={cn(
-                    highlightedLines.includes(i + 1) &&
-                      "bg-muted/50 -mx-4 px-4 py-1 border-primary"
-                  )}
-                >
-                  {line.map((token, key) => (
-                    <span key={key} {...getTokenProps({ token, key })} />
-                  ))}
-                </div>
-              ))}
-            </pre>
-          )}
+          {({ className, style, tokens, getLineProps, getTokenProps }) => {
+            const sections = getHighlightedSections(highlightedLines);
+
+            return (
+              <pre
+                className={cn("text-sm p-4", className)}
+                style={{
+                  ...style,
+                  backgroundColor: "transparent",
+                  margin: 0,
+                }}
+              >
+                {tokens.map((line, i) => {
+                  const lineNumber = i + 1;
+                  const section = sections.find(
+                    (s) => lineNumber >= s.start && lineNumber <= s.end
+                  );
+                  const isFirstLineOfSection = section?.start === lineNumber;
+                  const sectionClass = section
+                    ? `section-${section.start}`
+                    : "";
+
+                  return (
+                    <div
+                      key={i}
+                      {...getLineProps({ line, key: i })}
+                      className={cn(
+                        "relative",
+                        sectionClass,
+                        highlightedLines.includes(lineNumber) &&
+                          "bg-muted/50 -mx-4 px-4 py-1 border-primary hover:[&_.section-copy]:opacity-40 hover:[&~.${sectionClass}_.section-copy]:opacity-40 [&:hover_.section-copy]:opacity-100"
+                      )}
+                    >
+                      {isFirstLineOfSection && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="section-copy absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 transition-opacity"
+                          onClick={() => copySection(section)}
+                        >
+                          {copiedSection === section.start ? (
+                            <Check className="h-3 w-3 text-muted-foreground" />
+                          ) : (
+                            <Copy className="h-3 w-3 text-muted-foreground" />
+                          )}
+                          <span className="sr-only">Copy section</span>
+                        </Button>
+                      )}
+                      {line.map((token, key) => (
+                        <span key={key} {...getTokenProps({ token, key })} />
+                      ))}
+                    </div>
+                  );
+                })}
+              </pre>
+            );
+          }}
         </Highlight>
       </div>
     </div>
