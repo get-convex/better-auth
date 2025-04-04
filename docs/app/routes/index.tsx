@@ -3,6 +3,7 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import DocsLayout from "@/components/docs-layout";
 import { CodeBlock } from "@/components/code-block";
+import { stripIndent } from "common-tags";
 const filePath = "count.txt";
 
 async function readCount() {
@@ -84,7 +85,8 @@ function Home() {
             your Convex database, but without direct access to your application
             data, and with it's own space in the dashboard.
           </p>
-          <p className="mb-6 text-lg">
+          <h3 className="text-2xl font-bold mt-10 mb-4">Installation</h3>
+          <p className="mb-6">
             To get started, install the component and a pinned version of Better
             Auth:
           </p>
@@ -92,6 +94,23 @@ function Home() {
           <CodeBlock
             language="bash"
             code="npm install @erquhart/convex-better-auth better-auth@1.2.5"
+          />
+
+          <p className="mb-6 mt-10">
+            Next add the component to your application:
+          </p>
+
+          <CodeBlock
+            language="typescript"
+            code={stripIndent`
+              import betterAuth from '@erquhart/convex-better-auth/convex.config'
+              import { defineApp } from 'convex/server'
+
+              const app = defineApp()
+              app.use(betterAuth)
+
+              export default app
+            `}
           />
 
           <h3 className="text-2xl font-bold mt-10 mb-4">Basic Usage</h3>
