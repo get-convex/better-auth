@@ -5,6 +5,7 @@ import { Link as LinkIcon } from "lucide-react";
 import DocsLayout, { SmoothScrollLink } from "@/components/docs-layout";
 import { CodeBlock } from "@/components/code-block";
 import { stripIndent } from "common-tags";
+import { AlertTriangle, Info } from "lucide-react";
 
 function SectionLink({
   href,
@@ -69,6 +70,14 @@ function Home() {
             <span className="text-4xl font-light text-muted-foreground">+</span>
             <h1 className="text-5xl font-bold tracking-tight">Better Auth</h1>
           </div>
+          <div className="flex items-center gap-2 mb-8">
+            <code className="px-2 py-1 text-sm rounded-md bg-muted">
+              v0.1.0
+            </code>
+            <span className="px-2 py-1 text-xs rounded-full font-medium bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20">
+              Alpha
+            </span>
+          </div>
           <p className="text-xl text-muted-foreground leading-relaxed">
             Own your auth in your Convex applications. Type-safe, secure
             authentication and a beautiful developer experience with Better
@@ -92,6 +101,106 @@ function Home() {
             </a>
           </div>
         </div>
+
+        <section id="alpha-status" className="py-10">
+          <div className="p-6 rounded-md border-2 border-yellow-500/20 bg-gradient-to-br from-yellow-500/5 to-amber-500/10 space-y-6">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="h-6 w-6 text-yellow-500/80 flex-shrink-0" />
+              <h2 className="text-2xl font-bold text-yellow-700/90 dark:text-yellow-400/90">
+                Alpha Status
+              </h2>
+            </div>
+
+            <p className="text-muted-foreground">
+              Better Auth is currently in early alpha development. While
+              functional, there are several important considerations to keep in
+              mind:
+            </p>
+
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-4 w-4 text-amber-500 mt-1 flex-shrink-0" />
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-medium">API Stability:</span> APIs may
+                    change without notice. Breaking changes could be introduced
+                    between minor versions during the alpha phase.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-4 w-4 text-amber-500 mt-1 flex-shrink-0" />
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-medium">Performance:</span>{" "}
+                    Optimizations are ongoing. Current implementations may not
+                    be suitable for high-traffic production environments.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-4 w-4 text-amber-500 mt-1 flex-shrink-0" />
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-medium">Browser Support:</span>{" "}
+                    Currently only tested on the latest versions of Chrome,
+                    Firefox, and Safari. Compatibility with older browsers is
+                    not guaranteed.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Info className="h-4 w-4 text-blue-500/70 mt-1 flex-shrink-0" />
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-medium">Feedback:</span> We actively
+                    encourage feedback and bug reports. Please submit issues on{" "}
+                    <a
+                      href="https://github.com/erquhart/convex-better-auth/issues"
+                      className="text-primary/80 hover:text-primary hover:underline"
+                    >
+                      GitHub
+                    </a>
+                    .
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-5 mt-2 border-t border-yellow-500/20">
+              <h4 className="text-sm font-medium mb-3 text-yellow-700/80 dark:text-yellow-400/80">
+                Known Limitations
+              </h4>
+              <ul className="list-disc pl-6 space-y-1 text-sm text-muted-foreground">
+                <li>
+                  Some authentication providers may have limited functionality
+                </li>
+                <li>Session management features are still being developed</li>
+                <li>React Server Components integration is experimental</li>
+                <li>
+                  TypeScript type inference may be incomplete in some edge cases
+                </li>
+                <li>Node.js support is limited to version 16.0.0 and above</li>
+              </ul>
+            </div>
+
+            <div className="pt-5 mt-2 border-t border-yellow-500/20">
+              <h4 className="text-sm font-medium mb-3 text-yellow-700/80 dark:text-yellow-400/80">
+                Production Usage
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                While we don't recommend using Better Auth in critical
+                production systems yet, early adopters are using it successfully
+                in non-critical applications. If you decide to use it in
+                production, we recommend pinning to exact versions and
+                thoroughly testing your implementation.
+              </p>
+            </div>
+          </div>
+        </section>
 
         <section id="getting-started" className="py-10">
           <h2 className="text-3xl font-bold mb-6">

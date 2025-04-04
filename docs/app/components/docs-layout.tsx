@@ -7,6 +7,7 @@ import {
   Home,
   Server,
   Layers,
+  AlertTriangle,
 } from "lucide-react";
 
 import {
@@ -102,6 +103,18 @@ export default function DocsLayout({
                     <SmoothScrollLink href="#">
                       <Home className="size-4" />
                       <span>Home</span>
+                    </SmoothScrollLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    tooltip="Alpha Status"
+                    className="text-yellow-600 dark:text-yellow-400"
+                  >
+                    <SmoothScrollLink href="#alpha-status">
+                      <AlertTriangle className="size-4" />
+                      <span>Alpha Status</span>
                     </SmoothScrollLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
