@@ -102,24 +102,40 @@ function Home() {
           </div>
         </div>
 
-        <section id="alpha-status" className="py-10">
-          <div className="p-6 rounded-md border-2 border-yellow-500/20 bg-gradient-to-br from-yellow-500/5 to-amber-500/10 space-y-6">
+        <section id="alpha-status" className="py-6">
+          <div className="p-6 rounded-lg border bg-muted/50 space-y-6">
             <div className="flex items-center gap-3">
-              <AlertTriangle className="h-6 w-6 text-yellow-500/80 flex-shrink-0" />
-              <h2 className="text-2xl font-bold text-yellow-700/90 dark:text-yellow-400/90">
+              <AlertTriangle className="h-6 w-6 text-yellow-500 flex-shrink-0" />
+              <h2 className="text-2xl font-bold text-yellow-500">
                 Alpha Status
               </h2>
             </div>
 
             <p className="text-muted-foreground">
-              Better Auth is currently in early alpha development. While
-              functional, there are several important considerations to keep in
-              mind:
+              The Convex Better Auth component is in early alpha development.
+            </p>
+
+            <p className="text-muted-foreground">
+              The challenge for this component is that Better Auth is designed
+              to generate dynamic queries for traditional databases, and Convex
+              is... not a traditional database. It's way better. Which is why it
+              will eventually take over the world, but that's just one man's
+              opinion. Sorry, getting off track here. Anywho. Dynamic queries
+              are actually quite possible in Convex, but dynamic{" "}
+              <em>indexes</em> are not, so dynamic queries have to be supported
+              by a set of predefined indexes.
+            </p>
+
+            <p className="text-muted-foreground">
+              All of this means that the Better Auth component has to support
+              specific plugins and features intentionally, and there will
+              generally be a set of known working plugins/features, while others
+              may or may not run into errors.
             </p>
 
             <div className="space-y-4">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="h-4 w-4 text-amber-500 mt-1 flex-shrink-0" />
+                <AlertTriangle className="h-4 w-4 text-yellow-500 mt-1 flex-shrink-0" />
                 <div>
                   <p className="text-sm text-muted-foreground">
                     <span className="font-medium">API Stability:</span> APIs may
@@ -130,7 +146,7 @@ function Home() {
               </div>
 
               <div className="flex items-start gap-3">
-                <AlertTriangle className="h-4 w-4 text-amber-500 mt-1 flex-shrink-0" />
+                <AlertTriangle className="h-4 w-4 text-yellow-500 mt-1 flex-shrink-0" />
                 <div>
                   <p className="text-sm text-muted-foreground">
                     <span className="font-medium">Performance:</span>{" "}
@@ -141,7 +157,7 @@ function Home() {
               </div>
 
               <div className="flex items-start gap-3">
-                <AlertTriangle className="h-4 w-4 text-amber-500 mt-1 flex-shrink-0" />
+                <AlertTriangle className="h-4 w-4 text-yellow-500 mt-1 flex-shrink-0" />
                 <div>
                   <p className="text-sm text-muted-foreground">
                     <span className="font-medium">Browser Support:</span>{" "}
@@ -153,14 +169,14 @@ function Home() {
               </div>
 
               <div className="flex items-start gap-3">
-                <Info className="h-4 w-4 text-blue-500/70 mt-1 flex-shrink-0" />
+                <Info className="h-4 w-4 text-blue-500 mt-1 flex-shrink-0" />
                 <div>
                   <p className="text-sm text-muted-foreground">
                     <span className="font-medium">Feedback:</span> We actively
                     encourage feedback and bug reports. Please submit issues on{" "}
                     <a
                       href="https://github.com/erquhart/convex-better-auth/issues"
-                      className="text-primary/80 hover:text-primary hover:underline"
+                      className="text-primary hover:underline"
                     >
                       GitHub
                     </a>
@@ -170,10 +186,8 @@ function Home() {
               </div>
             </div>
 
-            <div className="pt-5 mt-2 border-t border-yellow-500/20">
-              <h4 className="text-sm font-medium mb-3 text-yellow-700/80 dark:text-yellow-400/80">
-                Known Limitations
-              </h4>
+            <div className="pt-4 mt-2 border-t space-y-1">
+              <h4 className="text-sm font-medium mb-3">Known Limitations</h4>
               <ul className="list-disc pl-6 space-y-1 text-sm text-muted-foreground">
                 <li>
                   Some authentication providers may have limited functionality
@@ -187,10 +201,8 @@ function Home() {
               </ul>
             </div>
 
-            <div className="pt-5 mt-2 border-t border-yellow-500/20">
-              <h4 className="text-sm font-medium mb-3 text-yellow-700/80 dark:text-yellow-400/80">
-                Production Usage
-              </h4>
+            <div className="pt-4 mt-2 border-t">
+              <h4 className="text-sm font-medium mb-3">Production Usage</h4>
               <p className="text-sm text-muted-foreground">
                 While we don't recommend using Better Auth in critical
                 production systems yet, early adopters are using it successfully
