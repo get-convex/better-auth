@@ -131,7 +131,6 @@ function Home() {
             code={stripIndent`
               import { BetterAuth } from '@erquhart/convex-better-auth'
               import type { BetterAuthOptions } from 'better-auth'
-              import { httpRouter } from 'convex/server'
               import { components, internal } from './_generated/api'
 
               export const betterAuth: BetterAuth<BetterAuthOptions> = new BetterAuth(
@@ -149,6 +148,26 @@ function Home() {
                   onCreateSession: internal.timer.migrateUser,
                 },
               )
+            `}
+          />
+
+          <p className="mb-4">Register route handlers.</p>
+
+          <CodeBlock
+            language="typescript"
+            filename="convex/http.ts"
+            highlightedLines={[2, 6, 7, 8]}
+            code={stripIndent`
+              import { httpRouter } from 'convex/server'
+              import { betterAuth } from './auth'
+
+              const http = httpRouter()
+
+              betterAuth.registerRoutes(http, {
+                allowedOrigins: ['http://localhost:5173'],
+              })
+
+              export default http
             `}
           />
 

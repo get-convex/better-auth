@@ -205,7 +205,7 @@ export function CodeBlock({
                   {...getLineProps({ line, key: i })}
                   className={cn(
                     highlightedLines.includes(i + 1) &&
-                      "bg-muted/50 -mx-4 px-4 border-l-2 border-primary"
+                      "bg-muted/50 -mx-4 px-4 py-1 border-primary"
                   )}
                 >
                   {line.map((token, key) => (
