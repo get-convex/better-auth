@@ -91,6 +91,14 @@ function Home() {
             >
               GitHub
             </a>
+            <a
+              href="https://www.npmjs.com/package/@erquhart/convex-better-auth"
+              className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              NPM
+            </a>
           </div>
         </div>
 
@@ -140,7 +148,7 @@ function Home() {
                     Known To Work
                   </h3>
                 </div>
-                <ul className="space-y-3 ml-2">
+                <ul className="space-y-3 ml-2.25">
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
                     <span className="text-muted-foreground">
@@ -183,7 +191,7 @@ function Home() {
                     Might Not Work
                   </h3>
                 </div>
-                <ul className="space-y-3 ml-2">
+                <ul className="space-y-3 ml-2.25">
                   <li className="flex items-start gap-3">
                     <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
                     <span className="text-muted-foreground">
@@ -203,7 +211,7 @@ function Home() {
                   Not Currently Supported
                 </h3>
               </div>
-              <ul className="space-y-3 ml-2">
+              <ul className="space-y-3 ml-2.25">
                 <li className="flex items-start gap-3">
                   <X className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
                   <span className="text-muted-foreground">
@@ -241,8 +249,19 @@ function Home() {
                   <a
                     href="https://discord.gg/convex"
                     className="text-primary hover:underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     Discord
+                  </a>
+                  . You can also find the library on{" "}
+                  <a
+                    href="https://www.npmjs.com/package/@erquhart/convex-better-auth"
+                    className="text-primary hover:underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    NPM
                   </a>
                   .
                 </p>
