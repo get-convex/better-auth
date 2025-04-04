@@ -51,8 +51,9 @@ function Home() {
           </div>
           <p className="text-xl text-muted-foreground leading-relaxed">
             Own your auth in your Convex applications. Type-safe, secure
-            authentication with a beautiful developer experience. Built for
-            modern TypeScript applications with real-time data sync.
+            authentication and a beautiful developer experience with Better
+            Auth. Built for modern TypeScript applications with real-time data
+            sync.
           </p>
           <div className="flex gap-6 pt-2">
             <a
@@ -88,7 +89,7 @@ function Home() {
           <h3 className="text-2xl font-bold mt-10 mb-4">Installation</h3>
           <p className="mb-6">
             To get started, install the component and a pinned version of Better
-            Auth:
+            Auth.
           </p>
 
           <CodeBlock
@@ -96,13 +97,12 @@ function Home() {
             code="npm install @erquhart/convex-better-auth better-auth@1.2.5"
           />
 
-          <p className="mb-6 mt-10">
-            Next add the component to your application:
-          </p>
+          <p className="mb-6 mt-10">Add the component to your application.</p>
 
           <CodeBlock
             language="typescript"
-            filename="convex.config.ts"
+            filename="convex/convex.config.ts"
+            highlightedLines={[2, 5]}
             code={stripIndent`
               import { defineApp } from 'convex/server'
               import betterAuth from '@erquhart/convex-better-auth/convex.config'
@@ -111,6 +111,42 @@ function Home() {
               app.use(betterAuth)
 
               export default app
+            `}
+          />
+
+          <h3 className="text-2xl font-bold mt-10 mb-4">Set up Better Auth</h3>
+          <p className="mb-4">Create a Better Auth instance in your backend.</p>
+          <p className="mb-6">
+            Keeping the Better Auth instance in a separate file like{" "}
+            <code className="bg-muted px-1 rounded">convex/auth.ts</code> is
+            recommended, but this can be done in any file in the Convex
+            directory.
+          </p>
+
+          <CodeBlock
+            language="typescript"
+            filename="convex/auth.ts"
+            code={stripIndent`
+              import { BetterAuth } from '@erquhart/convex-better-auth'
+              import type { BetterAuthOptions } from 'better-auth'
+              import { httpRouter } from 'convex/server'
+              import { components, internal } from './_generated/api'
+
+              export const betterAuth: BetterAuth<BetterAuthOptions> = new BetterAuth(
+                components.betterAuth,
+                {
+                  trustedOrigins: ['http://localhost:5173'],
+                  socialProviders: {
+                    github: {
+                      clientId: process.env.AUTH_GITHUB_ID as string,
+                      clientSecret: process.env.AUTH_GITHUB_SECRET as string,
+                    },
+                  },
+                },
+                {
+                  onCreateSession: internal.timer.migrateUser,
+                },
+              )
             `}
           />
 

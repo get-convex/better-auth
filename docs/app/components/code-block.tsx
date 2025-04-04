@@ -2,18 +2,18 @@
 
 import { Check, Copy } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Highlight, themes } from "prism-react-renderer";
+import { Highlight } from "prism-react-renderer";
 import { PrismTheme } from "prism-react-renderer";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useTheme } from "next-themes";
 
 interface CodeBlockProps {
   language: string;
   code: string;
   className?: string;
   filename?: string;
+  highlightedLines?: number[];
 }
 
 // Custom theme optimized for dark backgrounds
@@ -97,9 +97,9 @@ export function CodeBlock({
   code,
   className,
   filename,
+  highlightedLines = [],
 }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
-  const { theme: currentTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   // Prevent hydration mismatch
@@ -176,7 +176,14 @@ export function CodeBlock({
               }}
             >
               {tokens.map((line, i) => (
-                <div key={i} {...getLineProps({ line, key: i })}>
+                <div
+                  key={i}
+                  {...getLineProps({ line, key: i })}
+                  className={cn(
+                    highlightedLines.includes(i + 1) &&
+                      "bg-muted/50 -mx-4 px-4 border-l-2 border-primary"
+                  )}
+                >
                   {line.map((token, key) => (
                     <span key={key} {...getTokenProps({ token, key })} />
                   ))}
