@@ -1,9 +1,29 @@
 import * as fs from "node:fs";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import DocsLayout from "@/components/docs-layout";
+import { Link as LinkIcon } from "lucide-react";
+import DocsLayout, { SmoothScrollLink } from "@/components/docs-layout";
 import { CodeBlock } from "@/components/code-block";
 import { stripIndent } from "common-tags";
+
+function SectionLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <SmoothScrollLink
+      href={href}
+      className="inline-flex items-center rounded-md -ml-2 px-2 py-1 cursor-pointer hover:bg-muted/50 transition-colors group"
+    >
+      {children}
+      <LinkIcon className="ml-2 size-4 opacity-0 group-hover:opacity-50 transition-opacity" />
+    </SmoothScrollLink>
+  );
+}
+
 const filePath = "count.txt";
 
 async function readCount() {
@@ -74,7 +94,9 @@ function Home() {
         </div>
 
         <section id="getting-started" className="py-10">
-          <h2 className="text-3xl font-bold mb-6">Getting Started</h2>
+          <h2 className="text-3xl font-bold mb-6">
+            <SectionLink href="#getting-started">Getting Started</SectionLink>
+          </h2>
           <p className="mb-6 text-lg">
             This library is a{" "}
             <a href="https://www.convex.dev/components" className="underline">
@@ -86,7 +108,10 @@ function Home() {
             your Convex database, but without direct access to your application
             data, and with it's own space in the dashboard.
           </p>
-          <h3 className="text-2xl font-bold mt-10 mb-4">Installation</h3>
+
+          <h2 id="installation" className="text-2xl font-bold mt-10 mb-4">
+            <SectionLink href="#installation">Installation</SectionLink>
+          </h2>
           <p className="mb-6">
             To get started, install the component and a pinned version of Better
             Auth.
@@ -114,7 +139,11 @@ function Home() {
             `}
           />
 
-          <h3 className="text-2xl font-bold mt-10 mb-4">Set up Better Auth</h3>
+          <h3 id="setup-better-auth" className="text-2xl font-bold mt-10 mb-4">
+            <SectionLink href="#setup-better-auth">
+              Set up Better Auth
+            </SectionLink>
+          </h3>
           <p className="mb-4">Create a Better Auth instance in your backend.</p>
           <div className="mb-6 flex gap-3 rounded-md border bg-muted/50 p-4">
             <div className="select-none text-primary">💡</div>
@@ -160,7 +189,9 @@ function Home() {
               export default http
             `}
           />
-          <h3 className="text-2xl font-bold mt-10 mb-4">Set up client</h3>
+          <h3 id="setup-client" className="text-2xl font-bold mt-10 mb-4">
+            <SectionLink href="#setup-client">Set up client</SectionLink>
+          </h3>
           <p className="mb-4">Create a Better Auth client instance.</p>
           <div className="mb-6 flex gap-3 rounded-md border bg-muted/50 p-4">
             <div className="select-none text-primary">💡</div>

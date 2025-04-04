@@ -29,7 +29,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
-function SmoothScrollLink({
+export function SmoothScrollLink({
   href,
   children,
   ...props
