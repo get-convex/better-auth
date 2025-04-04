@@ -43,13 +43,13 @@ export default function DocsLayout({
             <SidebarMenuItem>
               <SidebarMenuButton asChild size="lg">
                 <a href="/">
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                    <Package className="size-4" />
+                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-[rgb(243,176,28)] from-30% to-[#FF3366] to-100% text-white">
+                    <Layers className="size-4" />
                   </div>
                   <div className="flex flex-col gap-0.5 leading-none">
-                    <span className="font-semibold">Quantum.js</span>
+                    <span className="font-semibold">Convex + Better Auth</span>
                     <span className="text-xs text-muted-foreground">
-                      v1.2.0
+                      v0.1.0-alpha
                     </span>
                   </div>
                 </a>
