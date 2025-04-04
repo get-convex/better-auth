@@ -142,6 +142,25 @@ function Home() {
           </div>
         </div>
 
+        <div className="mt-10 mb-10 flex gap-3 rounded-md border bg-muted/50 p-4">
+          <div className="select-none text-primary">💡</div>
+          <div className="text-muted-foreground">
+            <p>
+              Check out working example implementations in the{" "}
+              <a
+                href="https://github.com/erquhart/convex-better-auth/tree/main/examples"
+                className="text-primary hover:underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                examples directory
+              </a>{" "}
+              on GitHub, including setups for Next.js and Vite. TanStack coming
+              soon, but it should work similarly to the others.
+            </p>
+          </div>
+        </div>
+
         <section id="alpha-status" className="py-6">
           <div className="p-6 rounded-lg border bg-muted/50 space-y-6">
             <div className="flex items-center gap-3">

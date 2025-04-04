@@ -56,8 +56,19 @@ export declare const components: {
                 emailVerified: boolean;
                 image?: string;
                 name: string;
-                table: "user";
+                table: string;
+                twoFactorEnabled?: boolean;
                 updatedAt: number;
+              }
+            | {
+                createdAt: number;
+                expiresAt: number;
+                ipAddress?: string;
+                table: string;
+                token: string;
+                updatedAt: number;
+                userAgent?: string;
+                userId: string;
               }
             | {
                 accessToken?: string;
@@ -70,28 +81,67 @@ export declare const components: {
                 refreshToken?: string;
                 refreshTokenExpiresAt?: number;
                 scope?: string;
-                table: "account";
+                table: string;
                 updatedAt: number;
                 userId: string;
               }
             | {
-                createdAt: number;
-                expiresAt: number;
-                ipAddress?: string;
-                table: "session";
-                token: string;
-                updatedAt: number;
-                userAgent?: string;
+                backupCodes: string;
+                secret: string;
+                table: string;
                 userId: string;
               }
             | {
                 createdAt?: number;
                 expiresAt: number;
                 identifier: string;
-                table: "verification";
+                table: string;
                 updatedAt?: number;
                 value: string;
+              }
+            | {
+                createdAt: number;
+                id: string;
+                privateKey: string;
+                publicKey: string;
+                table: string;
+              }
+            | {
+                clientId: string;
+                clientSecret?: string;
+                createdAt?: number;
+                disabled?: boolean;
+                icon?: string;
+                metadata?: string;
+                name?: string;
+                redirectURLs?: string;
+                table: string;
+                type?: string;
+                updatedAt?: number;
+                userId?: string;
+              }
+            | {
+                accessToken: string;
+                accessTokenExpiresAt?: number;
+                clientId?: string;
+                createdAt?: number;
+                refreshToken?: string;
+                refreshTokenExpiresAt?: number;
+                scopes?: string;
+                table: string;
+                updatedAt?: number;
+                userId?: string;
+              }
+            | {
+                clientId?: string;
+                consentGiven?: boolean;
+                createdAt?: number;
+                scopes?: string;
+                table: string;
+                updatedAt?: number;
+                userId?: string;
               };
+          onCreateHandle?: string;
         },
         any
       >;
@@ -123,6 +173,7 @@ export declare const components: {
         "internal",
         {
           field: string;
+          onDeleteHandle?: string;
           table: string;
           value:
             | string

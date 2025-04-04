@@ -110,7 +110,7 @@ export const create = mutation({
         args.onCreateHandle as FunctionHandle<
           "mutation",
           {
-            [table]: any;
+            [table: string]: any;
           }
         >,
         {
