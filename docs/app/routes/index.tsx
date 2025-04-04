@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { Link as LinkIcon, Check, Info } from "lucide-react";
+import { Link as LinkIcon, Check, Info, AlertCircle, X } from "lucide-react";
 import DocsLayout, { SmoothScrollLink } from "@/components/docs-layout";
 import { CodeBlock } from "@/components/code-block";
 import { stripIndent } from "common-tags";
@@ -136,24 +136,24 @@ function Home() {
             <div className="space-y-8">
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-full bg-green-500/10 flex items-center justify-center">
-                    <Check className="h-4 w-4 text-green-500" />
+                  <div className="h-8 w-8 rounded-full bg-green-500/5 flex items-center justify-center">
+                    <Check className="h-4 w-4 text-green-500/70" />
                   </div>
-                  <h3 className="text-lg font-medium text-green-500">
+                  <h3 className="text-lg font-medium text-green-500/70">
                     Known To Work
                   </h3>
                 </div>
-                <ul className="grid gap-3 text-sm text-muted-foreground">
+                <ul className="grid gap-3 text-sm text-muted-foreground pl-4">
                   <li className="flex gap-2">
-                    <Check className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
+                    <Check className="h-4 w-4 text-green-500/70 mt-1 flex-shrink-0" />
                     <span>Email / Password Auth</span>
                   </li>
                   <li className="flex gap-2">
-                    <Check className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
+                    <Check className="h-4 w-4 text-green-500/70 mt-1 flex-shrink-0" />
                     <span>Social Auth (Google, GitHub, etc)</span>
                   </li>
                   <li className="flex gap-2">
-                    <Check className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
+                    <Check className="h-4 w-4 text-green-500/70 mt-1 flex-shrink-0" />
                     <span>2FA, OTP, TOTP</span>
                   </li>
                 </ul>
@@ -161,24 +161,20 @@ function Home() {
 
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-full bg-zinc-500/10 flex items-center justify-center">
-                    <div className="h-2 w-2 rounded-full bg-zinc-400" />
+                  <div className="h-8 w-8 rounded-full bg-amber-500/5 flex items-center justify-center">
+                    <AlertCircle className="h-4 w-4 text-amber-500/70" />
                   </div>
-                  <h3 className="text-lg font-medium text-zinc-400">
+                  <h3 className="text-lg font-medium text-amber-500/70">
                     Might Not Work
                   </h3>
                 </div>
-                <ul className="grid gap-3 text-sm text-muted-foreground">
+                <ul className="grid gap-3 text-sm text-muted-foreground pl-4">
                   <li className="flex gap-2">
-                    <div className="h-4 w-4 flex items-center justify-center mt-1 flex-shrink-0">
-                      <div className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
-                    </div>
+                    <AlertCircle className="h-4 w-4 text-amber-500/70 mt-1 flex-shrink-0" />
                     <span>Plugins not listed above</span>
                   </li>
                   <li className="flex gap-2">
-                    <div className="h-4 w-4 flex items-center justify-center mt-1 flex-shrink-0">
-                      <div className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
-                    </div>
+                    <AlertCircle className="h-4 w-4 text-amber-500/70 mt-1 flex-shrink-0" />
                     <span>
                       Plugins not listed above that include a migration step
                       (indicated in Better Auth docs) are almost guaranteed not
@@ -186,16 +182,37 @@ function Home() {
                     </span>
                   </li>
                   <li className="flex gap-2">
-                    <div className="h-4 w-4 flex items-center justify-center mt-1 flex-shrink-0">
-                      <div className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
-                    </div>
+                    <AlertCircle className="h-4 w-4 text-amber-500/70 mt-1 flex-shrink-0" />
                     <span>Performance optimizations are still ongoing</span>
                   </li>
                   <li className="flex gap-2">
-                    <div className="h-4 w-4 flex items-center justify-center mt-1 flex-shrink-0">
-                      <div className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
-                    </div>
+                    <AlertCircle className="h-4 w-4 text-amber-500/70 mt-1 flex-shrink-0" />
                     <span>React Server Components support is experimental</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-full bg-red-500/5 flex items-center justify-center">
+                    <X className="h-4 w-4 text-red-500/70" />
+                  </div>
+                  <h3 className="text-lg font-medium text-red-500/70">
+                    Not Currently Supported
+                  </h3>
+                </div>
+                <ul className="grid gap-3 text-sm text-muted-foreground pl-4">
+                  <li className="flex gap-2">
+                    <X className="h-4 w-4 text-red-500/70 mt-1 flex-shrink-0" />
+                    <span>Magic Links</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <X className="h-4 w-4 text-red-500/70 mt-1 flex-shrink-0" />
+                    <span>WebAuthn / Passkeys</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <X className="h-4 w-4 text-red-500/70 mt-1 flex-shrink-0" />
+                    <span>Custom OAuth Providers</span>
                   </li>
                 </ul>
               </div>
