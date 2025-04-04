@@ -130,6 +130,7 @@ export function CodeBlock({
 }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
   const [copiedSection, setCopiedSection] = useState<number>();
+  const [hoveredSection, setHoveredSection] = useState<number>();
   const [mounted, setMounted] = useState(false);
 
   // Prevent hydration mismatch
@@ -252,14 +253,23 @@ export function CodeBlock({
                         "relative",
                         sectionClass,
                         highlightedLines.includes(lineNumber) &&
-                          "bg-muted/50 -mx-4 px-4 py-1 border-primary hover:[&_.section-copy]:opacity-40 hover:[&~.${sectionClass}_.section-copy]:opacity-40 [&:hover_.section-copy]:opacity-100"
+                          "bg-muted/50 -mx-4 px-4 py-1 border-primary"
                       )}
+                      onMouseEnter={() =>
+                        section && setHoveredSection(section.start)
+                      }
+                      onMouseLeave={() => setHoveredSection(undefined)}
                     >
-                      {isFirstLineOfSection && (
+                      {isFirstLineOfSection && section && (
                         <Button
-                          variant="ghost"
+                          variant="link"
                           size="icon"
-                          className="section-copy absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 transition-opacity"
+                          className={cn(
+                            "absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 transition-opacity cursor-pointer",
+                            hoveredSection === section.start
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
                           onClick={() => copySection(section)}
                         >
                           {copiedSection === section.start ? (
