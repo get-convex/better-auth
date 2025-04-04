@@ -1,11 +1,11 @@
 import * as fs from "node:fs";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { Link as LinkIcon } from "lucide-react";
+import { Link as LinkIcon, Check, Info } from "lucide-react";
 import DocsLayout, { SmoothScrollLink } from "@/components/docs-layout";
 import { CodeBlock } from "@/components/code-block";
 import { stripIndent } from "common-tags";
-import { AlertTriangle, Info } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 function SectionLink({
   href,
@@ -133,83 +133,91 @@ function Home() {
               may or may not run into errors.
             </p>
 
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="h-4 w-4 text-yellow-500 mt-1 flex-shrink-0" />
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    <span className="font-medium">API Stability:</span> APIs may
-                    change without notice. Breaking changes could be introduced
-                    between minor versions during the alpha phase.
-                  </p>
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-full bg-green-500/10 flex items-center justify-center">
+                    <Check className="h-4 w-4 text-green-500" />
+                  </div>
+                  <h3 className="text-lg font-medium text-green-500">
+                    Known To Work
+                  </h3>
                 </div>
+                <ul className="grid gap-3 text-sm text-muted-foreground">
+                  <li className="flex gap-2">
+                    <Check className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
+                    <span>Email / Password Auth</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <Check className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
+                    <span>Social Auth (Google, GitHub, etc)</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <Check className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
+                    <span>2FA, OTP, TOTP</span>
+                  </li>
+                </ul>
               </div>
 
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="h-4 w-4 text-yellow-500 mt-1 flex-shrink-0" />
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    <span className="font-medium">Performance:</span>{" "}
-                    Optimizations are ongoing. Current implementations may not
-                    be suitable for high-traffic production environments.
-                  </p>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-full bg-zinc-500/10 flex items-center justify-center">
+                    <div className="h-2 w-2 rounded-full bg-zinc-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-zinc-400">
+                    Might Not Work
+                  </h3>
                 </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="h-4 w-4 text-yellow-500 mt-1 flex-shrink-0" />
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    <span className="font-medium">Browser Support:</span>{" "}
-                    Currently only tested on the latest versions of Chrome,
-                    Firefox, and Safari. Compatibility with older browsers is
-                    not guaranteed.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Info className="h-4 w-4 text-blue-500 mt-1 flex-shrink-0" />
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    <span className="font-medium">Feedback:</span> We actively
-                    encourage feedback and bug reports. Please submit issues on{" "}
-                    <a
-                      href="https://github.com/erquhart/convex-better-auth/issues"
-                      className="text-primary hover:underline"
-                    >
-                      GitHub
-                    </a>
-                    .
-                  </p>
-                </div>
+                <ul className="grid gap-3 text-sm text-muted-foreground">
+                  <li className="flex gap-2">
+                    <div className="h-4 w-4 flex items-center justify-center mt-1 flex-shrink-0">
+                      <div className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
+                    </div>
+                    <span>Plugins not listed above</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <div className="h-4 w-4 flex items-center justify-center mt-1 flex-shrink-0">
+                      <div className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
+                    </div>
+                    <span>
+                      Plugins not listed above that include a migration step
+                      (indicated in Better Auth docs) are almost guaranteed not
+                      to work.
+                    </span>
+                  </li>
+                  <li className="flex gap-2">
+                    <div className="h-4 w-4 flex items-center justify-center mt-1 flex-shrink-0">
+                      <div className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
+                    </div>
+                    <span>Performance optimizations are still ongoing</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <div className="h-4 w-4 flex items-center justify-center mt-1 flex-shrink-0">
+                      <div className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
+                    </div>
+                    <span>React Server Components support is experimental</span>
+                  </li>
+                </ul>
               </div>
             </div>
 
-            <div className="pt-4 mt-2 border-t space-y-1">
-              <h4 className="text-sm font-medium mb-3">Known Limitations</h4>
-              <ul className="list-disc pl-6 space-y-1 text-sm text-muted-foreground">
-                <li>
-                  Some authentication providers may have limited functionality
-                </li>
-                <li>Session management features are still being developed</li>
-                <li>React Server Components integration is experimental</li>
-                <li>
-                  TypeScript type inference may be incomplete in some edge cases
-                </li>
-                <li>Node.js support is limited to version 16.0.0 and above</li>
-              </ul>
-            </div>
-
-            <div className="pt-4 mt-2 border-t">
-              <h4 className="text-sm font-medium mb-3">Production Usage</h4>
-              <p className="text-sm text-muted-foreground">
-                While we don't recommend using Better Auth in critical
-                production systems yet, early adopters are using it successfully
-                in non-critical applications. If you decide to use it in
-                production, we recommend pinning to exact versions and
-                thoroughly testing your implementation.
-              </p>
+            <div className="flex items-start gap-3 bg-blue-500/5 p-4 rounded-md">
+              <Info className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="font-medium mb-1">Getting Help</h4>
+                <p className="text-sm text-muted-foreground">
+                  We actively encourage feedback and bug reports. If you run
+                  into any issues or have suggestions, please submit them on{" "}
+                  <a
+                    href="https://github.com/erquhart/convex-better-auth/issues"
+                    className="text-primary hover:underline"
+                  >
+                    GitHub
+                  </a>
+                  . For production use, we recommend pinning to exact versions
+                  and thorough testing.
+                </p>
+              </div>
             </div>
           </div>
         </section>
