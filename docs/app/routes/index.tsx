@@ -40,20 +40,20 @@ function Home() {
   return (
     <DocsLayout>
       <div className="max-w-3xl mx-auto">
-        <div className="py-20 space-y-6">
-          <div className="flex items-center gap-2 mb-2">
+        <div className="py-20 space-y-10">
+          <div className="flex items-center gap-3 mb-4">
             <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-br from-[rgb(243,176,28)] from-30% to-[#FF3366] to-100% bg-clip-text text-transparent">
               Convex
             </h1>
             <span className="text-4xl font-light text-muted-foreground">+</span>
             <h1 className="text-5xl font-bold tracking-tight">Better Auth</h1>
           </div>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-xl text-muted-foreground leading-relaxed">
             Own your auth in your Convex applications. Type-safe, secure
             authentication with a beautiful developer experience. Built for
             modern TypeScript applications with real-time data sync.
           </p>
-          <div className="flex gap-4">
+          <div className="flex gap-6 pt-2">
             <a
               href="#getting-started"
               className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
@@ -73,18 +73,26 @@ function Home() {
 
         <section id="getting-started" className="py-10">
           <h2 className="text-3xl font-bold mb-6">Getting Started</h2>
-          <p className="mb-6">
-            Convex + Better Auth allows Better Auth to run securely in your
-            Convex database as a{" "}
-            <a href="https://www.convex.dev/components">Convex Component</a>.
-            Convex Components have their own tables and functions, separate from
-            those of your application, but are still able to interact with them
-            in specific ways.
+          <p className="mb-6 text-lg">
+            This library is a{" "}
+            <a href="https://www.convex.dev/components" className="underline">
+              Convex Component
+            </a>
+            . Components have their own tables and functions that are separate
+            from those of your application, but are still able to interact with
+            them in specific ways. This allows Better Auth to run securely in
+            your Convex database, but without direct access to your application
+            data, and with it's own space in the dashboard.
+          </p>
+          <p className="mb-6 text-lg">
+            To get started, install the component and a pinned version of Better
+            Auth:
           </p>
 
-          <CodeBlock language="bash" code="npm install quantum-js" />
-          <CodeBlock language="bash" code="yarn add quantum-js" />
-          <CodeBlock language="bash" code="pnpm add quantum-js" />
+          <CodeBlock
+            language="bash"
+            code="npm install @erquhart/convex-better-auth better-auth@1.2.5"
+          />
 
           <h3 className="text-2xl font-bold mt-10 mb-4">Basic Usage</h3>
           <p className="mb-6">Import the functions you need from Quantum.js:</p>
