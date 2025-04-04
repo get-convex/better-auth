@@ -201,7 +201,7 @@ export default function DocsLayout({
             <SidebarMenuItem>
               <SidebarMenuButton asChild tooltip="GitHub">
                 <a
-                  href="https://github.com/example/convex-better-auth"
+                  href="https://github.com/erquhart/convex-better-auth"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -219,7 +219,7 @@ export default function DocsLayout({
           <SidebarTrigger />
           <div className="flex-1" />
           <a
-            href="https://github.com/example/convex-better-auth"
+            href="https://github.com/erquhart/convex-better-auth"
             target="_blank"
             rel="noopener noreferrer"
             className="inline/-flex hidden h-9 items-center justify-center rounded-md px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground"

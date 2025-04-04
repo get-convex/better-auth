@@ -63,20 +63,12 @@ function Home() {
     <DocsLayout>
       <div className="max-w-3xl mx-auto">
         <div className="py-20 space-y-10">
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-3 mb-6">
             <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-br from-[rgb(243,176,28)] from-30% to-[#FF3366] to-100% bg-clip-text text-transparent">
               Convex
             </h1>
             <span className="text-4xl font-light text-muted-foreground">+</span>
             <h1 className="text-5xl font-bold tracking-tight">Better Auth</h1>
-          </div>
-          <div className="flex items-center gap-2 mb-8">
-            <code className="px-2 py-1 text-sm rounded-md bg-muted">
-              v0.1.0
-            </code>
-            <span className="px-2 py-1 text-xs rounded-full font-medium bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20">
-              Alpha
-            </span>
           </div>
           <p className="text-xl text-muted-foreground leading-relaxed">
             Own your auth in your Convex applications. Type-safe, secure
@@ -85,14 +77,14 @@ function Home() {
             sync.
           </p>
           <div className="flex gap-6 pt-2">
-            <a
+            <SmoothScrollLink
               href="#getting-started"
               className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
             >
               Get Started
-            </a>
+            </SmoothScrollLink>
             <a
-              href="https://github.com/example/convex-better-auth"
+              href="https://github.com/erquhart/convex-better-auth"
               className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
               target="_blank"
               rel="noopener noreferrer"
@@ -133,7 +125,12 @@ function Home() {
               may or may not run into errors.
             </p>
 
-            <div className="space-y-8">
+            <p className="mb-6 text-muted-foreground">
+              Most Better Auth plugins should work, but some plugins that have
+              more complex requirements may or may not run into errors.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <div className="h-8 w-8 rounded-full bg-green-500/5 flex items-center justify-center">
@@ -146,6 +143,10 @@ function Home() {
                 <ul className="grid gap-3 text-sm text-muted-foreground pl-4">
                   <li className="flex gap-2">
                     <Check className="h-4 w-4 text-green-500/70 mt-1 flex-shrink-0" />
+                    <span>Basic functionality</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <Check className="h-4 w-4 text-green-500/70 mt-1 flex-shrink-0" />
                     <span>Email / Password Auth</span>
                   </li>
                   <li className="flex gap-2">
@@ -154,7 +155,11 @@ function Home() {
                   </li>
                   <li className="flex gap-2">
                     <Check className="h-4 w-4 text-green-500/70 mt-1 flex-shrink-0" />
-                    <span>2FA, OTP, TOTP</span>
+                    <span>Magic Link / OTP Code Auth</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <Check className="h-4 w-4 text-green-500/70 mt-1 flex-shrink-0" />
+                    <span>Two Factor (OTP, TOTP)</span>
                   </li>
                 </ul>
               </div>
@@ -162,7 +167,7 @@ function Home() {
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <div className="h-8 w-8 rounded-full bg-amber-500/5 flex items-center justify-center">
-                    <AlertCircle className="h-4 w-4 text-amber-500/70" />
+                    <AlertTriangle className="h-4 w-4 text-amber-500/70" />
                   </div>
                   <h3 className="text-lg font-medium text-amber-500/70">
                     Might Not Work
@@ -170,69 +175,64 @@ function Home() {
                 </div>
                 <ul className="grid gap-3 text-sm text-muted-foreground pl-4">
                   <li className="flex gap-2">
-                    <AlertCircle className="h-4 w-4 text-amber-500/70 mt-1 flex-shrink-0" />
-                    <span>Plugins not listed above</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <AlertCircle className="h-4 w-4 text-amber-500/70 mt-1 flex-shrink-0" />
-                    <span>
-                      Plugins not listed above that include a migration step
-                      (indicated in Better Auth docs) are almost guaranteed not
-                      to work.
-                    </span>
-                  </li>
-                  <li className="flex gap-2">
-                    <AlertCircle className="h-4 w-4 text-amber-500/70 mt-1 flex-shrink-0" />
-                    <span>Performance optimizations are still ongoing</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <AlertCircle className="h-4 w-4 text-amber-500/70 mt-1 flex-shrink-0" />
-                    <span>React Server Components support is experimental</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-full bg-red-500/5 flex items-center justify-center">
-                    <X className="h-4 w-4 text-red-500/70" />
-                  </div>
-                  <h3 className="text-lg font-medium text-red-500/70">
-                    Not Currently Supported
-                  </h3>
-                </div>
-                <ul className="grid gap-3 text-sm text-muted-foreground pl-4">
-                  <li className="flex gap-2">
-                    <X className="h-4 w-4 text-red-500/70 mt-1 flex-shrink-0" />
-                    <span>Magic Links</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <X className="h-4 w-4 text-red-500/70 mt-1 flex-shrink-0" />
-                    <span>WebAuthn / Passkeys</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <X className="h-4 w-4 text-red-500/70 mt-1 flex-shrink-0" />
-                    <span>Custom OAuth Providers</span>
+                    <AlertTriangle className="h-4 w-4 text-amber-500/70 mt-1 flex-shrink-0" />
+                    <span>Plugins not listed under "known to work"</span>
                   </li>
                 </ul>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 bg-blue-500/5 p-4 rounded-md">
+            <div className="mt-8 space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-red-500/5 flex items-center justify-center">
+                  <X className="h-4 w-4 text-red-500/70" />
+                </div>
+                <h3 className="text-lg font-medium text-red-500/70">
+                  Not Currently Supported
+                </h3>
+              </div>
+              <ul className="grid gap-3 text-sm text-muted-foreground pl-4">
+                <li className="flex gap-2">
+                  <X className="h-4 w-4 text-red-500/70 mt-1 flex-shrink-0" />
+                  <span>
+                    Plugins not listed above that include a migration step
+                    (indicated in Better Auth docs) are almost guaranteed not to
+                    work.
+                  </span>
+                </li>
+                <li className="flex gap-2">
+                  <X className="h-4 w-4 text-red-500/70 mt-1 flex-shrink-0" />
+                  <span>
+                    JWT and OIDC plugins probably won't work, preconfigured
+                    versions are already in use for Convex support
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="flex items-start gap-3 bg-blue-500/5 p-4 rounded-md mt-8">
               <Info className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
               <div>
-                <h4 className="font-medium mb-1">Getting Help</h4>
+                <h4 className="font-medium mb-1">Issues and Feedback</h4>
                 <p className="text-sm text-muted-foreground">
-                  We actively encourage feedback and bug reports. If you run
-                  into any issues or have suggestions, please submit them on{" "}
+                  If your use case isn't supported, a plugin doesn't work, you
+                  hit a bug, etc, please open a{" "}
                   <a
                     href="https://github.com/erquhart/convex-better-auth/issues"
                     className="text-primary hover:underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    GitHub
+                    GitHub issue
+                  </a>{" "}
+                  or reach out on{" "}
+                  <a
+                    href="https://discord.gg/convex"
+                    className="text-primary hover:underline"
+                  >
+                    Discord
                   </a>
-                  . For production use, we recommend pinning to exact versions
-                  and thorough testing.
+                  .
                 </p>
               </div>
             </div>

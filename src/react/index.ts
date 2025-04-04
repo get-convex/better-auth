@@ -2,7 +2,6 @@ import { BetterAuthClientPlugin, ClientOptions } from "better-auth/client";
 import { jwtClient } from "better-auth/client/plugins";
 import { createAuthClient as createBetterAuthClient } from "better-auth/react";
 import { useCallback, useMemo, useRef } from "react";
-import { SetRequired } from "type-fest";
 
 export const createAuthClient = <O extends ClientOptions>(
   options: O
