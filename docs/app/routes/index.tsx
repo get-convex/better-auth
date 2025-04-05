@@ -142,7 +142,7 @@ function Home() {
           </div>
         </div>
 
-        <div className="mt-10 mb-10 flex gap-3 rounded-md border bg-muted/50 p-4">
+        <div className="mt-2 mb-10 flex gap-3 rounded-md border bg-muted/50 p-4">
           <div className="select-none text-primary">💡</div>
           <div className="text-muted-foreground">
             <p>
@@ -415,7 +415,7 @@ function Home() {
             `}
           />
 
-          <p className="mb-4">Register route handlers.</p>
+          <p className="mt-10 mb-4">Register route handlers.</p>
 
           <CodeBlock
             language="typescript"
@@ -459,10 +459,10 @@ function Home() {
             `}
           />
 
-          <p className="mb-4">Add to Convex client.</p>
-          <p className="mb-4">
-            Use `ConvexProviderWithAuth` instead of `ConvexProvider`. The
-            specific file this happens in will depend on your framework.
+          <p className="mt-12 mb-4">
+            Add to Convex client using `ConvexProviderWithAuth` instead of
+            `ConvexProvider`. The specific file this happens in will depend on
+            your framework.
           </p>
 
           <CodeBlock
