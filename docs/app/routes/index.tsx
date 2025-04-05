@@ -530,7 +530,11 @@ function Home() {
             </p>
 
             <div>
-              <h3 className="text-2xl font-bold mb-6">Working with Users</h3>
+              <h3 id="working-with-users" className="text-2xl font-bold mb-6">
+                <SectionLink href="#working-with-users">
+                  Working with Users
+                </SectionLink>
+              </h3>
               <p className="text-lg mb-8">
                 The Better Auth component maintains its own tables in your
                 Convex database, including a users table. There are two main
@@ -685,8 +689,13 @@ function Home() {
                 </div>
 
                 <div>
-                  <h3 className="text-2xl font-bold mb-6">
-                    Migrating Existing Users
+                  <h3
+                    id="migrating-existing-users"
+                    className="text-2xl font-bold mb-6"
+                  >
+                    <SectionLink href="#migrating-existing-users">
+                      Migrating Existing Users
+                    </SectionLink>
                   </h3>
                   <p className="text-lg mb-8">
                     If you're migrating from an existing authentication system,
@@ -696,13 +705,51 @@ function Home() {
                     gracefully.
                   </p>
 
+                  <div className="flex gap-3 rounded-md border bg-destructive/10 p-4 mb-12">
+                    <div className="select-none text-destructive">⚠️</div>
+                    <div className="text-sm text-destructive">
+                      <p className="font-medium mb-2">Security Warning</p>
+                      <p className="mb-2">
+                        It is <strong>strongly recommended</strong> to verify
+                        the user's email before executing any migration logic.
+                        Without verification, account takeovers can occur
+                        easily.
+                      </p>
+                      <p>
+                        For systems with additional security measures like 2FA,
+                        consider requiring users to authenticate through your
+                        legacy system first. Future versions of these docs will
+                        include more sophisticated migration strategies for such
+                        cases.
+                      </p>
+                    </div>
+                  </div>
+
                   <div className="space-y-12">
                     <div>
+                      <p className="text-muted-foreground">
+                        First, ensure Better Auth is configured to handle email
+                        verification. For email/password auth, follow the{" "}
+                        <a
+                          href="https://www.better-auth.com/docs/concepts/email#email-verification"
+                          className="text-primary hover:underline"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          email verification setup guide
+                        </a>
+                        . For social login providers, email verification status
+                        is automatically provided by the OAuth service via the
+                        user emailVerified field, which is covered below.
+                      </p>
+                    </div>
+
+                    <div>
                       <p className="mb-4 text-muted-foreground">
-                        First, update any schemas that use <code>v.id()</code>{" "}
-                        for user IDs to use <code>v.string()</code> instead, as
-                        component table IDs are strings and won't validate
-                        against <code>v.id()</code>:
+                        Update any schemas that use <code>v.id()</code> for user
+                        IDs to use <code>v.string()</code> instead, as Better
+                        Auth user IDs are strings and won't validate against{" "}
+                        <code>v.id()</code>:
                       </p>
                       <CodeBlock
                         language="typescript"
@@ -753,7 +800,8 @@ function Home() {
                         Implement the migration logic in your{" "}
                         <code>onCreateSession</code> hook. This will run each
                         time a user logs in, allowing you to gradually migrate
-                        users as they access your app:
+                        users as they access your app. Be sure to verify the
+                        user's email status before proceeding with migration:
                       </p>
                       <CodeBlock
                         language="typescript"
@@ -776,6 +824,12 @@ function Home() {
                               
                               if (migrated) {
                                 return // User already migrated
+                              }
+
+                              // Get full user object to check email verification
+                              const user = await betterAuth.getAnyUserById(ctx, session.userId)
+                              if (!user?.emailVerified) {
+                                return // Wait for email verification
                               }
 
                               // Find legacy user data
@@ -829,21 +883,6 @@ function Home() {
                           )`}
                       />
                     </div>
-
-                    <div className="flex gap-3 rounded-md border bg-muted/50 p-4">
-                      <div className="select-none text-primary">💡</div>
-                      <div className="text-sm text-muted-foreground">
-                        <p className="font-medium mb-2">Migration Resilience</p>
-                        <p>
-                          If a migration fails (e.g., due to schema validation),
-                          the user will be prompted to try logging in again.
-                          Since we check for existing migrations at the start of
-                          the process, previously successful migrations won't be
-                          affected, and failed migrations will be retried
-                          automatically on the next login attempt.
-                        </p>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -860,7 +899,7 @@ function Home() {
             <div id="authentication-methods">
               <h3 className="text-2xl font-bold mb-6">
                 <SectionLink href="#authentication-methods">
-                  Authentication Methods
+                  Auth Instance Methods
                 </SectionLink>
               </h3>
               <p className="mb-4 text-muted-foreground">
@@ -898,7 +937,7 @@ function Home() {
               <h3 className="text-2xl font-bold mb-6">
                 <SectionLink href="#event-hooks">Event Hooks</SectionLink>
               </h3>
-              <p className="mb-4 text-muted-foreground">
+              <p className="mb-12 text-muted-foreground">
                 The component provides hooks for important authentication
                 events. These can be configured when creating your Better Auth
                 instance, and are completely optional.
@@ -945,7 +984,7 @@ function Home() {
                 </div>
 
                 <div>
-                  <h4 className="text-xl font-semibold mb-2">
+                  <h4 className="mt-10 text-xl font-semibold mb-2">
                     Add hooks to component configuration
                   </h4>
                   <p className="mb-4 text-muted-foreground">

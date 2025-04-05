@@ -156,6 +156,22 @@ export default function DocsLayout({
                       <span>Basic Usage</span>
                     </SmoothScrollLink>
                   </SidebarMenuButton>
+                  <SidebarMenuSub>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <SmoothScrollLink href="#working-with-users">
+                          Working with Users
+                        </SmoothScrollLink>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <SmoothScrollLink href="#migrating-existing-users">
+                          Migrating Existing Users
+                        </SmoothScrollLink>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  </SidebarMenuSub>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="API Reference">
@@ -168,16 +184,16 @@ export default function DocsLayout({
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
                         <SmoothScrollLink href="#authentication-methods">
-                          <Layers className="size-4 mr-2" />
-                          Authentication Methods
+                          <span className="truncate">
+                            Auth Instance Methods
+                          </span>
                         </SmoothScrollLink>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
                         <SmoothScrollLink href="#event-hooks">
-                          <Server className="size-4 mr-2" />
-                          Event Hooks
+                          <span className="truncate">Event Hooks</span>
                         </SmoothScrollLink>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
