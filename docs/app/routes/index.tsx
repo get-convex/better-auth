@@ -415,7 +415,7 @@ function Home() {
                   import type { BetterAuthOptions } from 'better-auth'
                   import { components, internal } from './_generated/api'
 
-                  export const betterAuth = new BetterAuth(
+                  export const betterAuth: BetterAuth = new BetterAuth(
                     components.betterAuth,
                     {
                       trustedOrigins: [process.env.SITE_URL as string],
@@ -666,7 +666,7 @@ function Home() {
                           import { BetterAuth } from '@erquhart/convex-better-auth'
                           import { components, internal } from './_generated/api'
 
-                          export const betterAuth = new BetterAuth(
+                          export const betterAuth: BetterAuth = new BetterAuth(
                             components.betterAuth,
                             // Better Auth options (e.g., social providers)
                             {
@@ -873,7 +873,7 @@ function Home() {
                         language="typescript"
                         filename="convex/auth.ts"
                         code={stripIndent`
-                          export const betterAuth = new BetterAuth(
+                          export const betterAuth: BetterAuth = new BetterAuth(
                             components.betterAuth,
                             { ...options },
                             {
@@ -995,7 +995,7 @@ function Home() {
                     language="typescript"
                     filename="convex/auth.ts"
                     code={stripIndent`
-                      export const betterAuth = new BetterAuth(
+                      export const betterAuth: BetterAuth = new BetterAuth(
                         components.betterAuth,
                         { ...options }
 

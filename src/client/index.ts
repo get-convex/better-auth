@@ -45,7 +45,6 @@ export type OnCreateSession = EventFunction<{
   session: Infer<typeof sessionValidator>;
 }>;
 
-// Explicitly type the instance of the BetterAuth class
 export class BetterAuth {
   constructor(
     public component: UseApi<typeof api>,

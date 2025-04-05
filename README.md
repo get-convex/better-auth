@@ -1,134 +1,51 @@
-# Convex Component Template
+# Convex Better Auth Component
 
-This is a Convex component, ready to be published on npm.
+[![npm version](https://badge.fury.io/js/@erquhart%2Fconvex-better-auth.svg)](https://badge.fury.io/js/@erquhart%2Fconvex-better-auth)
 
-To create your own component:
-
-1. Find and replace "@convex-dev/sharded-counter" with your npm package's name.
-1. Find and replace "get-convex/sharded-counter" to your component's repo.
-1. Find and replace "ShardedCounter", "shardedCounter", "sharded-counter", "sharded_counter", "sharded counter", and "Sharded Counter" to your component's name.
-1. Write code in src/component for your component.
-1. Write code in src/client for your thick client.
-1. Write example usage in example/convex/example.ts.
-1. Delete the text in this readme until `---` and flesh out the README.
-
-To develop your component run a dev process in the example project.
-
-```
-npm i
-cd example
-npm i
-npx convex dev
-```
-
-Modify the schema and index files in src/component/ to define your component.
-
-Write a client for using this component in src/client/index.ts.
-
-If you won't be adding frontend code (e.g. React components) to this
-component you can delete the following:
-
-- "prepack" and "postpack" scripts of package.json
-- "./react" exports in package.json
-- the "src/react/" directory
-- the "node10stubs.mjs" file
-
-### Component Directory structure
-
-```
-.
-├── README.md           documentation of your component
-├── package.json        component name, version number, other metadata
-├── package-lock.json   Components are like libraries, package-lock.json
-│                       is .gitignored and ignored by consumers.
-├── src
-│   ├── component/
-│   │   ├── _generated/ Files here are generated.
-│   │   ├── convex.config.ts  Name your component here and use other components
-│   │   ├── index.ts    Define functions here and in new files in this directory
-│   │   └── schema.ts   schema specific to this component
-│   ├── client/index.ts "Thick" client code goes here.
-│   └── react/          Code intended to be used on the frontend goes here.
-│       │               Your are free to delete this if this component
-│       │               does not provide code.
-│       └── index.ts
-├── example/            example Convex app that uses this component
-│   │                   Run 'npx convex dev' from here during development.
-│   ├── package.json.ts Thick client code goes here.
-│   └── convex/
-│       ├── _generated/
-│       ├── convex.config.ts  Imports and uses this component
-│       ├── myFunctions.ts    Functions that use the component
-│       ├── schema.ts         Example app schema
-│       └── tsconfig.json
-│  
-├── dist/               Publishing artifacts will be created here.
-├── commonjs.json       Used during build by TypeScript.
-├── esm.json            Used during build by TypeScript.
-├── node10stubs.mjs     Script used during build for compatibility
-│                       with the Metro bundler used with React Native.
-├── eslint.config.mjs   Recommended lints for writing a component.
-│                       Feel free to customize it.
-└── tsconfig.json       Recommended tsconfig.json for writing a component.
-                        Some settings can be customized, some are required.
-```
-
-### Structure of a Convex Component
-
-A Convex components exposes the entry point convex.config.js. The on-disk
-location of this file must be a directory containing implementation files. These
-files should be compiled to ESM.
-The package.json should contain `"type": "module"` and the tsconfig.json should
-contain `"moduleResolution": "Bundler"` or `"Node16"` in order to import other
-component definitions.
-
-In addition to convex.config.js, a component typically exposes a client that
-wraps communication with the component for use in the Convex
-environment is typically exposed as a named export `MyComponentClient` or
-`MyComponent` imported from the root package.
-
-```
-import { MyComponentClient } from "my-convex-component";
-```
-
-When frontend code is included it is typically published at a subpath:
-
-```
-import { helper } from "my-convex-component/react";
-import { FrontendReactComponent } from "my-convex-component/react";
-```
-
-Frontend code should be compiled as CommonJS code as well as ESM and make use of
-subpackage stubs (see next section).
-
-If you do include frontend components, prefer peer dependencies to avoid using
-more than one version of e.g. React.
-
-### Support for Node10 module resolution
-
-The [Metro](https://reactnative.dev/docs/metro) bundler for React Native
-requires setting
-[`resolver.unstable_enablePackageExports`](https://metrobundler.dev/docs/package-exports/)
-in order to import code that lives in `dist/esm/react.js` from a path like
-`my-convex-component/react`.
-
-Authors of Convex component that provide frontend components are encouraged to
-support these legacy "Node10-style" module resolution algorithms by generating
-stub directories with special pre- and post-pack scripts.
-
----
-
-# Convex Sharded Counter Component
-
-[![npm version](https://badge.fury.io/js/@convex-dev%2Fsharded-counter.svg)](https://badge.fury.io/js/@convex-dev%2Fsharded-counter)
+This is a [Convex Component](https://convex.dev/components) that adds [Better Auth](https://www.better-auth.com/) to your Convex application, providing a comprehensive authentication solution with support for email/password, social providers, magic links, and more.
 
 <!-- START: Include on https://convex.dev/components -->
 
-- [ ] What is some compelling syntax as a hook?
-- [ ] Why should you use this component?
-- [ ] Links to Stack / other resources?
+Add type-safe, secure authentication to your Convex application. With this component, you get a beautiful developer experience and a complete auth solution that lives in your Convex database. The data is stored alongside the rest of your app's data, with full support for real-time updates and Convex's powerful features.
 
-Found a bug? Feature request? [File it here](https://github.com/get-convex/sharded-counter/issues).
+Just configure your auth providers, add this component to your Convex backend, and use the provided React hooks. All Better Auth features work out of the box, including email/password auth, social providers, magic links, and two-factor authentication.
+
+Check out working example implementations in the [examples directory](https://github.com/erquhart/convex-better-auth/tree/main/examples) on GitHub:
+
+- [Next.js Example](https://github.com/erquhart/convex-better-auth/tree/main/examples/next)
+- [Vite Example](https://github.com/erquhart/convex-better-auth/tree/main/examples/vite)
+
+TanStack example coming soon, but it should work similarly to the others.
+
+Example usage, see [below](#usage) for more details:
+
+```tsx
+function AuthenticatedComponent() {
+  const { user, signIn } = useAuth();
+  return user ? (
+    <div>Welcome, {user.email}!</div>
+  ) : (
+    <button onClick={() => signIn()}>Sign In</button>
+  );
+}
+```
+
+Features:
+
+- Complete authentication solution with multiple auth methods
+- Type-safe API with full TypeScript support
+- Email/password authentication with verification
+- Social auth providers (Google, GitHub, etc)
+- Magic link and OTP code authentication
+- Two-factor authentication (OTP, TOTP)
+- Secure session management
+- Real-time user data syncing
+- Customizable user data with hooks
+- Gradual migration support from existing auth systems
+
+See [below](#api-reference) for the complete API reference and
+[CONTRIBUTING.md](./CONTRIBUTING.md) for how to contribute.
+Found a bug? Feature request? [File it here](https://github.com/erquhart/convex-better-auth/issues).
 
 ## Pre-requisite: Convex
 
@@ -140,10 +57,10 @@ Run `npm create convex` or follow any of the [quickstarts](https://docs.convex.d
 
 ## Installation
 
-Install the component package:
+Install the component and Better Auth:
 
-```ts
-npm install @convex-dev/sharded-counter
+```bash
+npm install @erquhart/convex-better-auth better-auth@1.2.5
 ```
 
 Create a `convex.config.ts` file in your app's `convex/` folder and install the component by calling `use`:
@@ -151,25 +68,230 @@ Create a `convex.config.ts` file in your app's `convex/` folder and install the 
 ```ts
 // convex/convex.config.ts
 import { defineApp } from "convex/server";
-import shardedCounter from "@convex-dev/sharded-counter/convex.config";
+import betterAuth from "@erquhart/convex-better-auth/convex.config";
 
 const app = defineApp();
-app.use(shardedCounter);
+app.use(betterAuth);
 
 export default app;
 ```
 
 ## Usage
 
-```ts
-import { components } from "./_generated/api";
-import { ShardedCounter } from "@convex-dev/sharded-counter";
+To use the component, first create a Better Auth instance in your backend:
 
-const shardedCounter = new ShardedCounter(components.shardedCounter, {
-  ...options,
+```ts
+// convex/auth.ts
+import { BetterAuth } from "@erquhart/convex-better-auth";
+import type { BetterAuthOptions } from "better-auth";
+import { components, internal } from "./_generated/api";
+
+export const betterAuth = new BetterAuth(
+  components.betterAuth,
+  {
+    trustedOrigins: [process.env.SITE_URL as string],
+    socialProviders: {
+      github: {
+        clientId: process.env.GITHUB_CLIENT_ID as string,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+      },
+    },
+  },
+  {
+    onCreateUser: internal.myHooks.onCreateUser,
+    onDeleteUser: internal.myHooks.onDeleteUser,
+    onCreateSession: internal.myHooks.onCreateSession,
+  }
+);
+```
+
+Register route handlers:
+
+```ts
+// convex/http.ts
+import { httpRouter } from "convex/server";
+import { betterAuth } from "./auth";
+
+const http = httpRouter();
+
+betterAuth.registerRoutes(http, {
+  allowedOrigins: [process.env.SITE_URL],
+});
+
+export default http;
+```
+
+Create a Better Auth client instance:
+
+```ts
+// lib/auth.ts
+import { createAuthClient } from "@erquhart/convex-better-auth/react";
+
+export const authClient = createAuthClient({
+  // This should be your Convex site URL, which ends in .convex.site
+  baseURL: "https://funky-penguin-123.convex.site",
 });
 ```
 
-See more example usage in [example.ts](./example/convex/example.ts).
+Add to your Convex client using `ConvexProviderWithAuth`:
+
+```tsx
+// src/index.tsx
+import { ConvexProviderWithAuth, ConvexReactClient } from "convex/react";
+import { useBetterAuth } from "@erquhart/convex-better-auth/react";
+import { authClient } from "lib/auth.ts";
+
+const convex = new ConvexReactClient(
+  (
+    <ConvexProviderWithAuth client={convex} useAuth={useBetterAuth(authClient)}>
+      {children}
+    </ConvexProviderWithAuth>
+  )
+);
+```
+
+## Working with Users
+
+The Better Auth component maintains its own tables in your Convex database. There are two main approaches to working with user data:
+
+### Using Component Tables Directly
+
+If the default user fields (id, email, name, etc) are sufficient for your app:
+
+```ts
+// In your Convex functions
+const user = await betterAuth.getAuthUser(ctx);
+// user has: id, email, name, emailVerified, image, etc.
+```
+
+### Custom User Data
+
+For apps that need additional user fields, create your own users table and use event hooks:
+
+```ts
+// convex/schema.ts
+const schema = defineSchema({
+  users: defineTable({
+    authId: v.string(), // Reference to Better Auth user ID
+    // Your custom fields
+    role: v.string(),
+    preferences: v.object({
+      theme: v.string(),
+      notifications: v.boolean(),
+    }),
+  }).index("authId", ["authId"]), // Important: index for efficient queries
+});
+```
+
+Create event hooks to keep your data in sync:
+
+```ts
+// convex/userHooks.ts
+import { userValidator } from "@erquhart/convex-better-auth";
+import { internalMutation } from "./_generated/server";
+
+export const onCreateUser = internalMutation({
+  args: { user: userValidator },
+  handler: async (ctx, { user }) => {
+    await ctx.db.insert("users", {
+      authId: user._id,
+      role: "user",
+      preferences: {
+        theme: "light",
+        notifications: true,
+      },
+    });
+  },
+});
+
+export const onDeleteUser = internalMutation({
+  args: { id: v.string() },
+  handler: async (ctx, { id }) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("authId", (q) => q.eq("authId", id))
+      .unique();
+
+    if (user) {
+      await ctx.db.delete(user._id);
+    }
+  },
+});
+```
+
+## API Reference
+
+### Auth Instance Methods
+
+```ts
+// Get the currently authenticated user's ID
+const userId = await betterAuth.getAuthUserId(ctx);
+
+// Get the currently authenticated user
+const user = await betterAuth.getAuthUser(ctx);
+
+// Get any user by ID - typically for admin functionality
+const user = await betterAuth.getAnyUserById(ctx, id);
+
+// You can also use the standard Convex ctx.auth method
+const identity = await ctx.auth.getUserIdentity();
+```
+
+### Event Hooks
+
+The component provides hooks for important authentication events:
+
+```ts
+// convex/myHooks.ts
+import { userValidator, sessionValidator } from "@erquhart/convex-better-auth";
+import { internalMutation } from "./_generated/server";
+
+export const onCreateUser = internalMutation({
+  args: { user: userValidator },
+  handler: async (ctx, { user }) => {
+    // Handle user creation
+  },
+});
+
+export const onDeleteUser = internalMutation({
+  args: { id: v.string() },
+  handler: async (ctx, { id }) => {
+    // Handle user deletion
+  },
+});
+
+export const onCreateSession = internalMutation({
+  args: { session: sessionValidator },
+  handler: async (ctx, { session }) => {
+    // Handle session creation
+  },
+});
+```
+
+Configure hooks in your Better Auth instance:
+
+```ts
+export const betterAuth = new BetterAuth(
+  components.betterAuth,
+  { ...options },
+  {
+    onCreateUser: internal.myHooks.onCreateUser,
+    onDeleteUser: internal.myHooks.onDeleteUser,
+    onCreateSession: internal.myHooks.onCreateSession,
+  }
+);
+```
 
 <!-- END: Include on https://convex.dev/components -->
+
+## Running the examples locally
+
+In your terminal, run:
+
+```sh
+npm install
+cd examples/next # or examples/vite
+npm install
+# Involves signing into Convex if necessary and deploying to a Convex dev instance.
+npm run dev
+```

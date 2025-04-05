@@ -11,7 +11,7 @@ import {
 import { magicLink, emailOTP, twoFactor } from "better-auth/plugins";
 import { BetterAuthOptions } from "better-auth";
 
-export const betterAuth: BetterAuth<BetterAuthOptions> = new BetterAuth(
+export const betterAuth: BetterAuth = new BetterAuth(
   components.betterAuth,
   {
     trustedOrigins: ["http://localhost:3000", "https://localhost:3000"],
