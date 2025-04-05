@@ -407,10 +407,22 @@ function Home() {
               import type { BetterAuthOptions } from 'better-auth'
               import { components, internal } from './_generated/api'
 
-              export const betterAuth: BetterAuth<BetterAuthOptions> = new BetterAuth(
+              export const betterAuth = new BetterAuth(
                 components.betterAuth,
-                // Add your options here
-                { ... }
+                {
+                  trustedOrigins: [process.env.SITE_URL as string],
+                  socialProviders: {
+                    github: {
+                      clientId: process.env.GITHUB_CLIENT_ID as string,
+                      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+                    },
+                  },
+                },
+                {
+                  onCreateUser: internal.myHooks.onCreateUser,
+                  onDeleteUser: internal.myHooks.onDeleteUser,
+                  onCreateSession: internal.myHooks.onCreateSession,
+                }
               )
             `}
           />
@@ -480,194 +492,257 @@ function Home() {
               )
             `}
           />
-
-          <h3 className="text-2xl font-bold mt-10 mb-4">Basic Usage</h3>
-          <p className="mb-6">Import the functions you need from Quantum.js:</p>
-
-          <CodeBlock
-            language="typescript"
-            filename="app/auth.ts"
-            code={`import { map, filter, pipe } from 'quantum-js';
-
-// Use the pipe function to compose operations
-const processData = pipe(
-  filter((x: number) => x > 5),
-  map((x: number) => x * 2)
-);
-
-const result = processData([1, 6, 3, 8, 10]);
-// result: [12, 16, 20]`}
-          />
         </section>
 
-        <section id="core-concepts" className="py-10">
-          <h2 className="text-3xl font-bold mb-6">Core Concepts</h2>
-          <p className="mb-6">
-            Quantum.js is built around a few core concepts that make it powerful
-            and flexible:
-          </p>
+        <section id="basic-usage" className="py-10">
+          <h2 className="text-3xl font-bold mb-6">
+            <SectionLink href="#basic-usage">Basic Usage</SectionLink>
+          </h2>
 
-          <h3 className="text-2xl font-bold mt-8 mb-4">Immutability</h3>
-          <p className="mb-6">
-            All operations in Quantum.js are immutable, meaning they don't
-            modify the original data. This makes your code more predictable and
-            easier to reason about.
-          </p>
+          <div className="space-y-6">
+            <p>
+              Better Auth provides comprehensive documentation for all its
+              features. You can use all Better Auth features exactly as
+              documented in the{" "}
+              <a
+                href="https://www.better-auth.com/docs/basic-usage"
+                className="text-primary hover:underline"
+              >
+                Better Auth documentation
+              </a>
+              , including email/password auth, social providers, magic links,
+              and more.
+            </p>
 
-          <CodeBlock
-            language="typescript"
-            filename="app/example.ts"
-            code={`import { update } from 'quantum-js';
+            <div className="mb-8">
+              <h3 className="text-2xl font-bold mb-4">Working with Users</h3>
+              <p className="mb-4">
+                The Better Auth component maintains its own tables in your
+                Convex database, including a users table. There are two main
+                approaches to working with user data:
+              </p>
 
-const user = { name: 'John', age: 30 };
-const updatedUser = update(user, { age: 31 });
+              <div className="space-y-6">
+                <div>
+                  <h4 className="text-xl font-semibold mb-2">
+                    1. Using Component Tables Directly
+                  </h4>
+                  <p className="text-muted-foreground">
+                    If the default user fields (id, email, name, etc) are
+                    sufficient for your app, you can work directly with the
+                    component's users table using the provided methods:
+                  </p>
+                  <CodeBlock
+                    language="typescript"
+                    code={stripIndent`
+                      // In your Convex functions
+                      const user = await betterAuth.getAuthUser(ctx)
+                      // user has: id, email, name, emailVerified, image, etc.
+                    `}
+                  />
+                </div>
 
-// user: { name: 'John', age: 30 }
-// updatedUser: { name: 'John', age: 31 }`}
-          />
+                <div>
+                  <h4 className="text-xl font-semibold mb-2">
+                    2. Custom User Data
+                  </h4>
+                  <p className="text-muted-foreground mb-4">
+                    For apps that need additional user fields, create your own
+                    users table and use the event hooks to keep it synchronized
+                    with the component's table.
+                  </p>
+                  <div className="mt-4 flex gap-3 rounded-md border bg-muted/50 p-4">
+                    <div className="select-none text-primary">💡</div>
+                    <div className="text-sm text-muted-foreground">
+                      <p className="font-medium mb-2">Transactional Safety</p>
+                      <p>
+                        Because Convex mutations are transactions, the event
+                        hooks run within the same transaction as the component's
+                        user creation/deletion. This means your app's user
+                        records will always stay in sync - if the hook fails,
+                        the entire operation is rolled back.
+                      </p>
+                    </div>
+                  </div>
+                  <CodeBlock
+                    language="typescript"
+                    code={stripIndent`
+                      // In your schema.ts
+                      const schema = defineSchema({
+                        users: defineTable({
+                          authId: v.string(), // Reference to Better Auth user ID
+                          // Your custom fields
+                          role: v.string(),
+                          preferences: v.object({
+                            theme: v.string(),
+                            notifications: v.boolean()
+                          })
+                        }).index("authId", ["authId"])
+                      })
 
-          <h3 className="text-2xl font-bold mt-8 mb-4">Function Composition</h3>
-          <p className="mb-6">
-            Compose multiple functions together to create reusable data
-            transformation pipelines.
-          </p>
+                      // In your auth.ts
+                      export const onCreateUser = internalMutation({
+                        args: { user: userValidator },
+                        handler: async (ctx, { user }) => {
+                          // Create your app's user record
+                          await ctx.db.insert("users", {
+                            authId: user._id,
+                            role: "user",
+                            preferences: {
+                              theme: "light",
+                              notifications: true
+                            }
+                          })
+                        }
+                      })
 
-          <CodeBlock
-            language="typescript"
-            filename="app/users.ts"
-            code={`import { pipe, map, filter, sort } from 'quantum-js';
+                      export const onDeleteUser = internalMutation({
+                        args: { id: v.string() },
+                        handler: async (ctx, { id }) => {
+                          const user = await ctx.db
+                            .query("users")
+                            .withIndex("authId", q => q.eq("authId", id))
+                            .unique()
+                          
+                          if (user) {
+                            await ctx.db.delete(user._id)
+                          }
+                        }
+                      })
 
-const processUsers = pipe(
-  filter((user: User) => user.active),
-  sort((a: User, b: User) => a.name.localeCompare(b.name)),
-  map((user: User) => ({ 
-    displayName: \`\${user.name} (\${user.age})\`, 
-    id: user.id 
-  }))
-);
-
-const processedUsers = processUsers(users);`}
-          />
+                      // Configure the component with your hooks
+                      export const auth = betterAuth({
+                        // ... other options
+                        config: {
+                          onCreateUser,
+                          onDeleteUser
+                        }
+                      })`}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
 
         <section id="api-reference" className="py-10">
-          <h2 className="text-3xl font-bold mb-10">API Reference</h2>
+          <h2 className="text-3xl font-bold mb-6">
+            <SectionLink href="#api-reference">API Reference</SectionLink>
+          </h2>
 
-          <div className="space-y-16">
-            <section id="react-hooks">
-              <h3 className="text-2xl font-bold mb-6">React Hooks</h3>
+          <div id="authentication-methods" className="mb-12">
+            <h3 className="text-2xl font-bold mb-4">
+              <SectionLink href="#authentication-methods">
+                Authentication Methods
+              </SectionLink>
+            </h3>
+            <p className="mb-4 text-muted-foreground">
+              These methods are available on your Better Auth instance to help
+              manage authentication state.
+            </p>
+            <CodeBlock
+              language="typescript"
+              filename="convex/someFile.ts"
+              highlightedLines={[6, 7, 9, 10, 12, 13]}
+              code={stripIndent`
+                import { betterAuth } from './auth'
 
-              <div className="space-y-12">
-                <div id="use-quantum">
-                  <h4 className="text-xl font-semibold mb-2">useQuantum</h4>
-                  <p className="mb-4 text-muted-foreground">
-                    A React hook for managing state with Quantum.js utilities.
-                  </p>
-                  <CodeBlock
-                    language="typescript"
-                    filename="app/components/Counter.tsx"
-                    code={`import { useQuantum } from 'quantum-js/react';
+                export const myQuery = query({
+                  args: {},
+                  handler: async (ctx) => {
+                    // Get the currently authenticated user's ID
+                    const userId = await betterAuth.getAuthUserId(ctx)
 
-function Counter() {
-  const [count, setCount] = useQuantum(0);
-  
-  return (
-    <button onClick={() => setCount(c => c + 1)}>
-      Count: {count}
-    </button>
-  );
-}`}
-                  />
-                </div>
+                    // Get the currently authenticated user
+                    const user = await betterAuth.getAuthUser(ctx)
 
-                <div id="use-async-data">
-                  <h4 className="text-xl font-semibold mb-2">useAsyncData</h4>
-                  <p className="mb-4 text-muted-foreground">
-                    A hook for handling async data fetching with loading and
-                    error states.
-                  </p>
-                  <CodeBlock
-                    language="typescript"
-                    filename="app/components/UserProfile.tsx"
-                    code={`import { useAsyncData } from 'quantum-js/react';
+                    // Get any user by ID - typically for admin functionality
+                    const user = await betterAuth.getAnyUserById(ctx, id)
 
-function UserProfile({ userId }) {
-  const { data, loading, error } = useAsyncData(
-    () => fetchUser(userId),
-    [userId]
-  );
-  
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-  
-  return <div>Hello, {data.name}!</div>;
-}`}
-                  />
-                </div>
+                    // You can also use the standard Convex ctx.auth method
+                    const identity = await ctx.auth.getUserIdentity()
+                  }
+                })
+              `}
+            />
+          </div>
+
+          <div id="event-hooks" className="mb-12">
+            <h3 className="text-2xl font-bold mb-4">
+              <SectionLink href="#event-hooks">Event Hooks</SectionLink>
+            </h3>
+            <p className="mb-4 text-muted-foreground">
+              The component provides hooks for important authentication events.
+              These can be configured when creating your Better Auth instance,
+              and are completely optional.
+            </p>
+            <div className="space-y-6">
+              <div>
+                <h4 className="text-xl font-semibold mb-2">
+                  Define Your Hooks
+                </h4>
+                <p className="mb-4 text-muted-foreground">
+                  First, define your event handlers as internal mutations:
+                </p>
+                <CodeBlock
+                  language="typescript"
+                  filename="convex/myHooks.ts"
+                  code={stripIndent`
+                    import { userValidator, sessionValidator } from '@erquhart/convex-better-auth'
+                    import { internalMutation } from './_generated/server'
+
+                    export const onCreateUser = internalMutation({
+                      args: { user: userValidator },
+                      handler: async (ctx, { user }) => {
+                        // Handle user creation
+                        // e.g., create additional user data in your app's tables
+                      }
+                    })
+
+                    export const onDeleteUser = internalMutation({
+                      args: { id: v.string() },
+                      handler: async (ctx, { id }) => {
+                        // Handle user deletion
+                        // e.g., clean up related user data
+                      }
+                    })
+
+                    export const onCreateSession = internalMutation({
+                      args: { session: sessionValidator },
+                      handler: async (ctx, { session }) => {
+                        // Handle session creation
+                        // e.g., log session activity
+                      }
+                    })`}
+                />
               </div>
-            </section>
 
-            <section id="nodejs-utilities">
-              <h3 className="text-2xl font-bold mb-6">Node.js Utilities</h3>
+              <div>
+                <h4 className="text-xl font-semibold mb-2">
+                  Add hooks to component configuration
+                </h4>
+                <p className="mb-4 text-muted-foreground">
+                  Configure the hooks when creating your Better Auth instance
+                  via function references.
+                </p>
+                <CodeBlock
+                  language="typescript"
+                  filename="convex/auth.ts"
+                  code={stripIndent`
+                    export const betterAuth = new BetterAuth(
+                      components.betterAuth,
+                      { ...options }
 
-              <div className="space-y-12">
-                <div id="create-server">
-                  <h4 className="text-xl font-semibold mb-2">createServer</h4>
-                  <p className="mb-4 text-muted-foreground">
-                    Create a lightweight HTTP server with middleware support.
-                  </p>
-                  <CodeBlock
-                    language="typescript"
-                    filename="server/index.ts"
-                    code={`import { createServer } from 'quantum-js/node';
-
-const app = createServer();
-
-app.use(logger());
-app.use(cors());
-
-app.get('/api/users', async (req, res) => {
-  const users = await db.getUsers();
-  res.json(users);
-});
-
-app.listen(3000, () => {
-  console.log('Server running on port 3000');
-});`}
-                  />
-                </div>
-
-                <div id="file-system">
-                  <h4 className="text-xl font-semibold mb-2">fileSystem</h4>
-                  <p className="mb-4 text-muted-foreground">
-                    Promise-based file system utilities.
-                  </p>
-                  <CodeBlock
-                    language="typescript"
-                    filename="server/files.ts"
-                    code={`import { fileSystem } from 'quantum-js/node';
-
-async function processFiles() {
-  const files = await fileSystem.readDir('./data');
-  
-  for (const file of files) {
-    const content = await fileSystem.readFile(
-      \`./data/\${file}\`, 
-      'utf-8'
-    );
-    
-    const processed = processContent(content);
-    
-    await fileSystem.writeFile(
-      \`./output/\${file}\`, 
-      processed
-    );
-  }
-}`}
-                  />
-                </div>
+                      // Event hooks configuration
+                      {
+                        onCreateUser: internal.myHooks.onCreateUser,
+                        onDeleteUser: internal.myHooks.onDeleteUser,
+                        onCreateSession: internal.myHooks.onCreateSession,
+                      }
+                    )`}
+                />
               </div>
-            </section>
+            </div>
           </div>
         </section>
       </div>

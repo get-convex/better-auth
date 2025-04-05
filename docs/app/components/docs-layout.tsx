@@ -125,12 +125,35 @@ export default function DocsLayout({
                       <span>Getting Started</span>
                     </SmoothScrollLink>
                   </SidebarMenuButton>
+                  <SidebarMenuSub>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <SmoothScrollLink href="#installation">
+                          Installation
+                        </SmoothScrollLink>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <SmoothScrollLink href="#setup-better-auth">
+                          Setup Better Auth
+                        </SmoothScrollLink>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <SmoothScrollLink href="#setup-client">
+                          Setup Client
+                        </SmoothScrollLink>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  </SidebarMenuSub>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild tooltip="Core Concepts">
-                    <SmoothScrollLink href="#core-concepts">
+                  <SidebarMenuButton asChild tooltip="Basic Usage">
+                    <SmoothScrollLink href="#basic-usage">
                       <FileText className="size-4" />
-                      <span>Core Concepts</span>
+                      <span>Basic Usage</span>
                     </SmoothScrollLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -144,51 +167,19 @@ export default function DocsLayout({
                   <SidebarMenuSub>
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
-                        <SmoothScrollLink href="#react-hooks">
+                        <SmoothScrollLink href="#authentication-methods">
                           <Layers className="size-4 mr-2" />
-                          React Hooks
+                          Authentication Methods
                         </SmoothScrollLink>
                       </SidebarMenuSubButton>
-                      <SidebarMenuSub>
-                        <SidebarMenuSubItem>
-                          <SidebarMenuSubButton asChild>
-                            <SmoothScrollLink href="#use-quantum">
-                              useQuantum
-                            </SmoothScrollLink>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                        <SidebarMenuSubItem>
-                          <SidebarMenuSubButton asChild>
-                            <SmoothScrollLink href="#use-async-data">
-                              useAsyncData
-                            </SmoothScrollLink>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      </SidebarMenuSub>
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
-                        <SmoothScrollLink href="#nodejs-utilities">
+                        <SmoothScrollLink href="#event-hooks">
                           <Server className="size-4 mr-2" />
-                          Node.js Utilities
+                          Event Hooks
                         </SmoothScrollLink>
                       </SidebarMenuSubButton>
-                      <SidebarMenuSub>
-                        <SidebarMenuSubItem>
-                          <SidebarMenuSubButton asChild>
-                            <SmoothScrollLink href="#create-server">
-                              createServer
-                            </SmoothScrollLink>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                        <SidebarMenuSubItem>
-                          <SidebarMenuSubButton asChild>
-                            <SmoothScrollLink href="#file-system">
-                              fileSystem
-                            </SmoothScrollLink>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      </SidebarMenuSub>
                     </SidebarMenuSubItem>
                   </SidebarMenuSub>
                 </SidebarMenuItem>

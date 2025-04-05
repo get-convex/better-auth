@@ -45,12 +45,16 @@ export type OnCreateSession = EventFunction<{
   session: Infer<typeof sessionValidator>;
 }>;
 
-export class BetterAuth<O extends BetterAuthOptions> {
+// Explicitly type the instance of the BetterAuth class
+export class BetterAuth {
   constructor(
     public component: UseApi<typeof api>,
     public betterAuthOptions?:
-      | O
-      | ((ctx: GenericActionCtx<GenericDataModel>, request: Request) => O),
+      | BetterAuthOptions
+      | ((
+          ctx: GenericActionCtx<GenericDataModel>,
+          request: Request
+        ) => BetterAuthOptions),
     public config?: {
       onCreateUser?: OnCreateUser;
       onDeleteUser?: OnDeleteUser;
