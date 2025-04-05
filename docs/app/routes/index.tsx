@@ -683,6 +683,169 @@ function Home() {
                     </div>
                   </div>
                 </div>
+
+                <div>
+                  <h3 className="text-2xl font-bold mb-6">
+                    Migrating Existing Users
+                  </h3>
+                  <p className="text-lg mb-8">
+                    If you're migrating from an existing authentication system,
+                    you can use a gradual migration approach that moves users
+                    over as they log in. This method is less disruptive than a
+                    bulk migration and allows you to handle edge cases more
+                    gracefully.
+                  </p>
+
+                  <div className="space-y-12">
+                    <div>
+                      <p className="mb-4 text-muted-foreground">
+                        First, update any schemas that use <code>v.id()</code>{" "}
+                        for user IDs to use <code>v.string()</code> instead, as
+                        component table IDs are strings and won't validate
+                        against <code>v.id()</code>:
+                      </p>
+                      <CodeBlock
+                        language="typescript"
+                        filename="convex/schema.ts"
+                        code={stripIndent`
+                          const schema = defineSchema({
+                            posts: defineTable({
+                              // Before
+                              // authorId: v.id("users"),
+                              
+                              // After
+                              authorId: v.string(),
+                              title: v.string(),
+                              content: v.string(),
+                            })
+                          })`}
+                      />
+                    </div>
+
+                    <div>
+                      <p className="mb-4 text-muted-foreground">
+                        Add a field to track migrated users. This can be done by
+                        adding an <code>isMigrated</code> field to your legacy
+                        users table, or by creating a separate tracking table:
+                      </p>
+                      <CodeBlock
+                        language="typescript"
+                        filename="convex/schema.ts"
+                        code={stripIndent`
+                          const schema = defineSchema({
+                            // Option 1: Add to existing users table
+                            legacyUsers: defineTable({
+                              // ... existing fields ...
+                              isMigrated: v.boolean(),
+                            }),
+
+                            // Option 2: Create a separate tracking table
+                            migratedUsers: defineTable({
+                              legacyUserId: v.string(),
+                              betterAuthId: v.string(),
+                            }).index("legacyUserId", ["legacyUserId"]),
+                          })`}
+                      />
+                    </div>
+
+                    <div>
+                      <p className="mb-4 text-muted-foreground">
+                        Implement the migration logic in your{" "}
+                        <code>onCreateSession</code> hook. This will run each
+                        time a user logs in, allowing you to gradually migrate
+                        users as they access your app:
+                      </p>
+                      <CodeBlock
+                        language="typescript"
+                        filename="convex/userHooks.ts"
+                        code={stripIndent`
+                          import { sessionValidator } from '@erquhart/convex-better-auth'
+                          import { asyncMap } from 'convex-helpers'
+                          import { internalMutation } from './_generated/server'
+
+                          export const onCreateSession = internalMutation({
+                            args: { session: sessionValidator },
+                            handler: async (ctx, { session }) => {
+                              // Check if user is already migrated
+                              const migrated = await ctx.db
+                                .query("migratedUsers")
+                                .withIndex("legacyUserId", q => 
+                                  q.eq("legacyUserId", session.userId)
+                                )
+                                .unique()
+                              
+                              if (migrated) {
+                                return // User already migrated
+                              }
+
+                              // Find legacy user data
+                              const legacyUser = await ctx.db
+                                .query("legacyUsers")
+                                .withIndex("email", q => q.eq(q.field("email"), session.email))
+                                .unique()
+                              
+                              if (!legacyUser) {
+                                return // No legacy user to migrate
+                              }
+
+                              // Update references in other tables
+                              const userPosts = await ctx.db
+                                .query("posts")
+                                .withIndex("authorId", q => q.eq(q.field("authorId"), legacyUser._id))
+                                .collect()
+                              
+                              await asyncMap(userPosts, async post => {
+                                await ctx.db.patch(post._id, {
+                                  authorId: session.userId
+                                })
+                              })
+
+                              // Track the migration
+                              await ctx.db.insert("migratedUsers", {
+                                legacyUserId: legacyUser._id,
+                                betterAuthId: session.userId
+                              })
+                            }
+                          })`}
+                      />
+                    </div>
+
+                    <div>
+                      <p className="mb-4 text-muted-foreground">
+                        Finally, update your Better Auth configuration to use
+                        the migration hook:
+                      </p>
+                      <CodeBlock
+                        language="typescript"
+                        filename="convex/auth.ts"
+                        code={stripIndent`
+                          export const betterAuth = new BetterAuth(
+                            components.betterAuth,
+                            { ...options },
+                            {
+                              onCreateSession: internal.userHooks.onCreateSession,
+                              // ... other hooks
+                            }
+                          )`}
+                      />
+                    </div>
+
+                    <div className="flex gap-3 rounded-md border bg-muted/50 p-4">
+                      <div className="select-none text-primary">💡</div>
+                      <div className="text-sm text-muted-foreground">
+                        <p className="font-medium mb-2">Migration Resilience</p>
+                        <p>
+                          If a migration fails (e.g., due to schema validation),
+                          the user will be prompted to try logging in again.
+                          Since we check for existing migrations at the start of
+                          the process, previously successful migrations won't be
+                          affected, and failed migrations will be retried
+                          automatically on the next login attempt.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
