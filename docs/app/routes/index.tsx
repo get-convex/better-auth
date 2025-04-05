@@ -149,7 +149,7 @@ function Home() {
               Check out working example implementations in the{" "}
               <a
                 href="https://github.com/erquhart/convex-better-auth/tree/main/examples"
-                className="text-primary hover:underline"
+                className="text-primary underline"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -308,7 +308,7 @@ function Home() {
                 a bug, etc, please open a{" "}
                 <a
                   href="https://github.com/erquhart/convex-better-auth/issues"
-                  className="text-primary hover:underline"
+                  className="text-primary underline"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -317,7 +317,7 @@ function Home() {
                 or reach out on{" "}
                 <a
                   href="https://discord.gg/convex"
-                  className="text-primary hover:underline"
+                  className="text-primary underline"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -326,7 +326,7 @@ function Home() {
                 . You can also find the library on{" "}
                 <a
                   href="https://www.npmjs.com/package/@erquhart/convex-better-auth"
-                  className="text-primary hover:underline"
+                  className="text-primary underline"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -521,7 +521,7 @@ function Home() {
               documented in the{" "}
               <a
                 href="https://www.better-auth.com/docs/basic-usage"
-                className="text-primary hover:underline"
+                className="text-primary underline"
               >
                 Better Auth documentation
               </a>
@@ -732,7 +732,7 @@ function Home() {
                         verification. For email/password auth, follow the{" "}
                         <a
                           href="https://www.better-auth.com/docs/concepts/email#email-verification"
-                          className="text-primary hover:underline"
+                          className="text-primary underline"
                           target="_blank"
                           rel="noopener noreferrer"
                         >
