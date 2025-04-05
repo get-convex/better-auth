@@ -20,7 +20,18 @@ export const Route = createRootRoute({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "TanStack Start Starter",
+        title:
+          "Convex + Better Auth - Comprehensive authentication for Convex Apps",
+      },
+      {
+        name: "description",
+        content:
+          "Type-safe, secure authentication for Convex applications. Supports email/password, social auth, magic links, and 2FA with a beautiful developer experience.",
+      },
+      {
+        name: "keywords",
+        content:
+          "convex, authentication, typescript, better-auth, oauth, 2fa, magic links",
       },
     ],
     links: [

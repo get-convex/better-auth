@@ -119,7 +119,7 @@ function Home() {
             <h1 className="text-5xl font-bold tracking-tight">Better Auth</h1>
           </div>
           <p className="text-xl text-muted-foreground leading-relaxed">
-            Own your auth in your Convex applications. Type-safe, secure
+            Own your auth in your Convex applications. Comprehensive, secure
             authentication and a beautiful developer experience with Better
             Auth. Built for modern TypeScript applications with real-time data
             sync.

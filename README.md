@@ -6,7 +6,7 @@ This is a [Convex Component](https://convex.dev/components) that adds [Better Au
 
 <!-- START: Include on https://convex.dev/components -->
 
-Add type-safe, secure authentication to your Convex application. With this component, you get a beautiful developer experience and a complete auth solution that lives in your Convex database. The data is stored alongside the rest of your app's data, with full support for real-time updates and Convex's powerful features.
+Add comprehensive authentication to your Convex application. With this component, you get a beautiful developer experience and a complete auth solution that lives in your Convex database. The data is stored alongside the rest of your app's data, with full support for real-time updates and Convex's powerful features.
 
 Just configure your auth providers, add this component to your Convex backend, and use the provided React hooks. All Better Auth features work out of the box, including email/password auth, social providers, magic links, and two-factor authentication.
 
