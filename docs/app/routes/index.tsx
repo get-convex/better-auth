@@ -318,15 +318,6 @@ function Home() {
                 >
                   Discord
                 </a>
-                . You can also find the library on{" "}
-                <a
-                  href="https://www.npmjs.com/package/@erquhart/convex-better-auth"
-                  className="text-primary underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  NPM
-                </a>
                 .
               </p>
             </div>

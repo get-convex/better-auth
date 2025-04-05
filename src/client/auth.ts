@@ -23,7 +23,7 @@ export const auth = (
       defaultCookieAttributes: {
         ...config.advanced?.defaultCookieAttributes,
         secure: true,
-        //httpOnly: true,
+        httpOnly: true,
         sameSite: "none", // Allows CORS-based cookie sharing across subdomains
         //partitioned: true, // New browser standards will mandate this for
       },
