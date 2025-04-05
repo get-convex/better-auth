@@ -194,11 +194,6 @@ function Home() {
                   will always be a set of known working plugins/features, while
                   others may or may not run into errors.
                 </p>
-
-                <p className="text-muted-foreground">
-                  Most Better Auth plugins should work, but some plugins that
-                  have more complex requirements may or may not run into errors.
-                </p>
               </div>
             </Collapsible>
 
