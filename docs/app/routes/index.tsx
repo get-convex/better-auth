@@ -338,11 +338,11 @@ function Home() {
           </div>
         </section>
 
-        <section id="getting-started" className="py-10">
-          <h2 className="text-3xl font-bold mb-6">
+        <section id="getting-started" className="py-16">
+          <h2 className="text-3xl font-bold mb-8">
             <SectionLink href="#getting-started">Getting Started</SectionLink>
           </h2>
-          <p className="mb-6 text-lg">
+          <p className="mb-12 text-lg">
             This library is a{" "}
             <a href="https://www.convex.dev/components" className="underline">
               Convex Component
@@ -354,153 +354,168 @@ function Home() {
             data, and with it's own space in the dashboard.
           </p>
 
-          <h2 id="installation" className="text-2xl font-bold mt-10 mb-4">
-            <SectionLink href="#installation">Installation</SectionLink>
-          </h2>
-          <p className="mb-6">
-            To get started, install the component and a pinned version of Better
-            Auth.
-          </p>
+          <div className="space-y-12">
+            <div>
+              <h3 id="installation" className="text-2xl font-bold mb-6">
+                <SectionLink href="#installation">Installation</SectionLink>
+              </h3>
+              <p className="mb-8">
+                To get started, install the component and a pinned version of
+                Better Auth.
+              </p>
 
-          <CodeBlock
-            language="bash"
-            code="npm install @erquhart/convex-better-auth better-auth@1.2.5"
-          />
+              <CodeBlock
+                language="bash"
+                code="npm install @erquhart/convex-better-auth better-auth@1.2.5"
+              />
+            </div>
 
-          <p className="mb-6 mt-10">Add the component to your application.</p>
+            <div>
+              <p className="mb-8">Add the component to your application.</p>
 
-          <CodeBlock
-            language="typescript"
-            filename="convex/convex.config.ts"
-            highlightedLines={[2, 5]}
-            code={stripIndent`
-              import { defineApp } from 'convex/server'
-              import betterAuth from '@erquhart/convex-better-auth/convex.config'
+              <CodeBlock
+                language="typescript"
+                filename="convex/convex.config.ts"
+                highlightedLines={[2, 5]}
+                code={stripIndent`
+                  import { defineApp } from 'convex/server'
+                  import betterAuth from '@erquhart/convex-better-auth/convex.config'
 
-              const app = defineApp()
-              app.use(betterAuth)
+                  const app = defineApp()
+                  app.use(betterAuth)
 
-              export default app
-            `}
-          />
+                  export default app
+                `}
+              />
+            </div>
 
-          <h3 id="setup-better-auth" className="text-2xl font-bold mt-10 mb-4">
-            <SectionLink href="#setup-better-auth">
-              Set up Better Auth
-            </SectionLink>
-          </h3>
-          <p className="mb-4">Create a Better Auth instance in your backend.</p>
-          <div className="mb-6 flex gap-3 rounded-md border bg-muted/50 p-4">
-            <div className="select-none text-primary">💡</div>
-            <p className="text-sm text-muted-foreground">
-              Keeping the Better Auth instance in a separate file like{" "}
-              convex/auth.ts is recommended for better organization, but it will
-              work from any file in the Convex directory.
-            </p>
-          </div>
+            <div>
+              <h3 id="setup-better-auth" className="text-2xl font-bold mb-6">
+                <SectionLink href="#setup-better-auth">
+                  Set up Better Auth
+                </SectionLink>
+              </h3>
+              <p className="mb-4">
+                Create a Better Auth instance in your backend.
+              </p>
+              <div className="mb-6 flex gap-3 rounded-md border bg-muted/50 p-4">
+                <div className="select-none text-primary">💡</div>
+                <p className="text-sm text-muted-foreground">
+                  Keeping the Better Auth instance in a separate file like{" "}
+                  convex/auth.ts is recommended for better organization, but it
+                  will work from any file in the Convex directory.
+                </p>
+              </div>
 
-          <CodeBlock
-            language="typescript"
-            filename="convex/auth.ts"
-            code={stripIndent`
-              import { BetterAuth } from '@erquhart/convex-better-auth'
-              import type { BetterAuthOptions } from 'better-auth'
-              import { components, internal } from './_generated/api'
+              <CodeBlock
+                language="typescript"
+                filename="convex/auth.ts"
+                code={stripIndent`
+                  import { BetterAuth } from '@erquhart/convex-better-auth'
+                  import type { BetterAuthOptions } from 'better-auth'
+                  import { components, internal } from './_generated/api'
 
-              export const betterAuth = new BetterAuth(
-                components.betterAuth,
-                {
-                  trustedOrigins: [process.env.SITE_URL as string],
-                  socialProviders: {
-                    github: {
-                      clientId: process.env.GITHUB_CLIENT_ID as string,
-                      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+                  export const betterAuth = new BetterAuth(
+                    components.betterAuth,
+                    {
+                      trustedOrigins: [process.env.SITE_URL as string],
+                      socialProviders: {
+                        github: {
+                          clientId: process.env.GITHUB_CLIENT_ID as string,
+                          clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+                        },
+                      },
                     },
-                  },
-                },
-                {
-                  onCreateUser: internal.myHooks.onCreateUser,
-                  onDeleteUser: internal.myHooks.onDeleteUser,
-                  onCreateSession: internal.myHooks.onCreateSession,
-                }
-              )
-            `}
-          />
+                    {
+                      onCreateUser: internal.myHooks.onCreateUser,
+                      onDeleteUser: internal.myHooks.onDeleteUser,
+                      onCreateSession: internal.myHooks.onCreateSession,
+                    }
+                  )
+                `}
+              />
+            </div>
 
-          <p className="mt-10 mb-4">Register route handlers.</p>
+            <div>
+              <p className="mb-8">Register route handlers.</p>
 
-          <CodeBlock
-            language="typescript"
-            filename="convex/http.ts"
-            highlightedLines={[2, 6, 7, 8]}
-            code={stripIndent`
-              import { httpRouter } from 'convex/server'
-              import { betterAuth } from './auth'
+              <CodeBlock
+                language="typescript"
+                filename="convex/http.ts"
+                highlightedLines={[2, 6, 7, 8]}
+                code={stripIndent`
+                  import { httpRouter } from 'convex/server'
+                  import { betterAuth } from './auth'
 
-              const http = httpRouter()
+                  const http = httpRouter()
 
-              betterAuth.registerRoutes(http, {
-                allowedOrigins: [process.env.SITE_URL],
-              })
+                  betterAuth.registerRoutes(http, {
+                    allowedOrigins: [process.env.SITE_URL],
+                  })
 
-              export default http
-            `}
-          />
-          <h3 id="setup-client" className="text-2xl font-bold mt-10 mb-4">
-            <SectionLink href="#setup-client">Set up client</SectionLink>
-          </h3>
-          <p className="mb-4">Create a Better Auth client instance.</p>
-          <div className="mb-6 flex gap-3 rounded-md border bg-muted/50 p-4">
-            <div className="select-none text-primary">💡</div>
-            <p className="text-sm text-muted-foreground">
-              Be sure to import <code>createAuthClient</code> from the
-              component, not directly from the better-auth package.
-            </p>
+                  export default http
+                `}
+              />
+            </div>
+
+            <div>
+              <h3 id="setup-client" className="text-2xl font-bold mb-6">
+                <SectionLink href="#setup-client">Set up client</SectionLink>
+              </h3>
+              <p className="mb-4">Create a Better Auth client instance.</p>
+              <div className="mb-6 flex gap-3 rounded-md border bg-muted/50 p-4">
+                <div className="select-none text-primary">💡</div>
+                <p className="text-sm text-muted-foreground">
+                  Be sure to import <code>createAuthClient</code> from the
+                  component, not directly from the better-auth package.
+                </p>
+              </div>
+
+              <CodeBlock
+                language="typescript"
+                filename="lib/auth.ts"
+                code={stripIndent`
+                  import { createAuthClient } from '@erquhart/convex-better-auth/react'
+
+                  export const authClient = createAuthClient({
+                    // This should be your Convex site URL, which ends in .convex.site
+                    baseURL: 'https://funky-penguin-123.convex.site'
+                  })
+                `}
+              />
+
+              <p className="mb-8">
+                Add to Convex client using `ConvexProviderWithAuth` instead of
+                `ConvexProvider`. The specific file this happens in will depend
+                on your framework.
+              </p>
+
+              <CodeBlock
+                language="typescript"
+                filename="src/index.tsx"
+                code={stripIndent`
+                  import { ConvexProviderWithAuth, ConvexReactClient } from 'convex/react'
+                  import { useBetterAuth } from '@erquhart/convex-better-auth/react'
+                  import { authClient } from 'lib/auth.ts'
+
+                  const convex = new ConvexReactClient(
+                    <ConvexProviderWithAuth client={convex} useAuth={useBetterAuth(authClient)}>
+                      {children}
+                    </ConvexProviderWithAuth>
+                  )
+                `}
+              />
+            </div>
           </div>
-
-          <CodeBlock
-            language="typescript"
-            filename="lib/auth.ts"
-            code={stripIndent`
-              import { createAuthClient } from '@erquhart/convex-better-auth/react'
-
-              export const authClient = createAuthClient({
-                // This should be your Convex site URL, which ends in .convex.site
-                baseURL: 'https://funky-penguin-123.convex.site'
-              })
-            `}
-          />
-
-          <p className="mt-12 mb-4">
-            Add to Convex client using `ConvexProviderWithAuth` instead of
-            `ConvexProvider`. The specific file this happens in will depend on
-            your framework.
-          </p>
-
-          <CodeBlock
-            language="typescript"
-            filename="src/index.tsx"
-            code={stripIndent`
-              import { ConvexProviderWithAuth, ConvexReactClient } from 'convex/react'
-              import { useBetterAuth } from '@erquhart/convex-better-auth/react'
-              import { authClient } from 'lib/auth.ts'
-
-              const convex = new ConvexReactClient(
-                <ConvexProviderWithAuth client={convex} useAuth={useBetterAuth(authClient)}>
-                  {children}
-                </ConvexProviderWithAuth>
-              )
-            `}
-          />
         </section>
 
-        <section id="basic-usage" className="py-10">
-          <h2 className="text-3xl font-bold mb-6">
+        <section id="basic-usage" className="py-16">
+          <h2 className="text-3xl font-bold mb-8">
             <SectionLink href="#basic-usage">Basic Usage</SectionLink>
           </h2>
 
-          <div className="space-y-6">
-            <p>
+          <div className="space-y-12">
+            <p className="text-lg">
               Better Auth provides comprehensive documentation for all its
               features. You can use all Better Auth features exactly as
               documented in the{" "}
@@ -514,20 +529,20 @@ function Home() {
               and more.
             </p>
 
-            <div className="mb-8">
-              <h3 className="text-2xl font-bold mb-4">Working with Users</h3>
-              <p className="mb-4">
+            <div>
+              <h3 className="text-2xl font-bold mb-6">Working with Users</h3>
+              <p className="text-lg mb-8">
                 The Better Auth component maintains its own tables in your
                 Convex database, including a users table. There are two main
                 approaches to working with user data:
               </p>
 
-              <div className="space-y-6">
+              <div className="space-y-16">
                 <div>
-                  <h4 className="text-xl font-semibold mb-2">
+                  <h4 className="text-xl font-semibold mb-4">
                     1. Using Component Tables Directly
                   </h4>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground mb-6">
                     If the default user fields (id, email, name, etc) are
                     sufficient for your app, you can work directly with the
                     component's users table using the provided methods:
@@ -543,204 +558,254 @@ function Home() {
                 </div>
 
                 <div>
-                  <h4 className="text-xl font-semibold mb-2">
+                  <h4 className="text-xl font-semibold mb-4">
                     2. Custom User Data
                   </h4>
-                  <p className="text-muted-foreground mb-4">
+                  <p className="text-muted-foreground mb-8">
                     For apps that need additional user fields, create your own
                     users table and use the event hooks to keep it synchronized
                     with the component's table.
                   </p>
-                  <div className="mt-4 flex gap-3 rounded-md border bg-muted/50 p-4">
+                  <div className="mt-8 mb-8 flex gap-3 rounded-md border bg-muted/50 p-4">
                     <div className="select-none text-primary">💡</div>
                     <div className="text-sm text-muted-foreground">
                       <p className="font-medium mb-2">Transactional Safety</p>
                       <p>
-                        Because Convex mutations are transactions, the event
-                        hooks run within the same transaction as the component's
-                        user creation/deletion. This means your app's user
-                        records will always stay in sync - if the hook fails,
-                        the entire operation is rolled back.
+                        Because Convex mutations are atomic, the event hooks run
+                        within the same transaction as the component's user
+                        creation/deletion. This means your app's user records
+                        will always stay in sync - if the hook fails, the entire
+                        operation is rolled back.
                       </p>
                     </div>
                   </div>
-                  <CodeBlock
-                    language="typescript"
-                    code={stripIndent`
-                      // In your schema.ts
-                      const schema = defineSchema({
-                        users: defineTable({
-                          authId: v.string(), // Reference to Better Auth user ID
-                          // Your custom fields
-                          role: v.string(),
-                          preferences: v.object({
-                            theme: v.string(),
-                            notifications: v.boolean()
-                          })
-                        }).index("authId", ["authId"])
-                      })
 
-                      // In your auth.ts
-                      export const onCreateUser = internalMutation({
-                        args: { user: userValidator },
-                        handler: async (ctx, { user }) => {
-                          // Create your app's user record
-                          await ctx.db.insert("users", {
-                            authId: user._id,
-                            role: "user",
-                            preferences: {
-                              theme: "light",
-                              notifications: true
+                  <div className="space-y-12">
+                    <div>
+                      <p className="mb-4 text-muted-foreground">
+                        First, define your app's users table in your schema.
+                        Include an <code>authId</code> field to reference the
+                        Better Auth user, and add any custom fields your app
+                        needs:
+                      </p>
+                      <CodeBlock
+                        language="typescript"
+                        filename="convex/schema.ts"
+                        code={stripIndent`
+                          const schema = defineSchema({
+                            users: defineTable({
+                              authId: v.string(), // Reference to Better Auth user ID
+                              // Your custom fields
+                              role: v.string(),
+                              preferences: v.object({
+                                theme: v.string(),
+                                notifications: v.boolean()
+                              })
+                            }).index("authId", ["authId"]) // Important: index for efficient queries
+                          })`}
+                      />
+                    </div>
+
+                    <div>
+                      <p className="mb-4 text-muted-foreground">
+                        Create mutations for your event hooks. These will run
+                        whenever Better Auth creates or deletes a user, keeping
+                        your app's user table in sync:
+                      </p>
+                      <CodeBlock
+                        language="typescript"
+                        filename="convex/userHooks.ts"
+                        code={stripIndent`
+                          import { userValidator } from '@erquhart/convex-better-auth'
+                          import { internalMutation } from './_generated/server'
+
+                          export const onCreateUser = internalMutation({
+                            args: { user: userValidator },
+                            handler: async (ctx, { user }) => {
+                              // Create your app's user record
+                              await ctx.db.insert("users", {
+                                authId: user._id,
+                                role: "user",
+                                preferences: {
+                                  theme: "light",
+                                  notifications: true
+                                }
+                              })
                             }
                           })
-                        }
-                      })
 
-                      export const onDeleteUser = internalMutation({
-                        args: { id: v.string() },
-                        handler: async (ctx, { id }) => {
-                          const user = await ctx.db
-                            .query("users")
-                            .withIndex("authId", q => q.eq("authId", id))
-                            .unique()
-                          
-                          if (user) {
-                            await ctx.db.delete(user._id)
-                          }
-                        }
-                      })
+                          export const onDeleteUser = internalMutation({
+                            args: { id: v.string() },
+                            handler: async (ctx, { id }) => {
+                              const user = await ctx.db
+                                .query("users")
+                                .withIndex("authId", q => q.eq("authId", id))
+                                .unique()
+                              
+                              if (user) {
+                                await ctx.db.delete(user._id)
+                              }
+                            }
+                          })`}
+                      />
+                    </div>
 
-                      // Configure the component with your hooks
-                      export const auth = betterAuth({
-                        // ... other options
-                        config: {
-                          onCreateUser,
-                          onDeleteUser
-                        }
-                      })`}
-                  />
+                    <div>
+                      <p className="mb-4 text-muted-foreground">
+                        Finally, update your Better Auth configuration to use
+                        these hooks:
+                      </p>
+                      <CodeBlock
+                        language="typescript"
+                        filename="convex/auth.ts"
+                        code={stripIndent`
+                          import { BetterAuth } from '@erquhart/convex-better-auth'
+                          import { components, internal } from './_generated/api'
+
+                          export const betterAuth = new BetterAuth(
+                            components.betterAuth,
+                            // Better Auth options (e.g., social providers)
+                            {
+                              socialProviders: {
+                                github: {
+                                  clientId: process.env.GITHUB_CLIENT_ID as string,
+                                  clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+                                },
+                              },
+                            },
+                            // Event hooks configuration
+                            {
+                              onCreateUser: internal.userHooks.onCreateUser,
+                              onDeleteUser: internal.userHooks.onDeleteUser,
+                            }
+                          )`}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        <section id="api-reference" className="py-10">
-          <h2 className="text-3xl font-bold mb-6">
+        <section id="api-reference" className="py-16">
+          <h2 className="text-3xl font-bold mb-8">
             <SectionLink href="#api-reference">API Reference</SectionLink>
           </h2>
 
-          <div id="authentication-methods" className="mb-12">
-            <h3 className="text-2xl font-bold mb-4">
-              <SectionLink href="#authentication-methods">
-                Authentication Methods
-              </SectionLink>
-            </h3>
-            <p className="mb-4 text-muted-foreground">
-              These methods are available on your Better Auth instance to help
-              manage authentication state.
-            </p>
-            <CodeBlock
-              language="typescript"
-              filename="convex/someFile.ts"
-              highlightedLines={[6, 7, 9, 10, 12, 13]}
-              code={stripIndent`
-                import { betterAuth } from './auth'
+          <div className="space-y-12">
+            <div id="authentication-methods">
+              <h3 className="text-2xl font-bold mb-6">
+                <SectionLink href="#authentication-methods">
+                  Authentication Methods
+                </SectionLink>
+              </h3>
+              <p className="mb-4 text-muted-foreground">
+                These methods are available on your Better Auth instance to help
+                manage authentication state.
+              </p>
+              <CodeBlock
+                language="typescript"
+                filename="convex/someFile.ts"
+                highlightedLines={[6, 7, 9, 10, 12, 13]}
+                code={stripIndent`
+                  import { betterAuth } from './auth'
 
-                export const myQuery = query({
-                  args: {},
-                  handler: async (ctx) => {
-                    // Get the currently authenticated user's ID
-                    const userId = await betterAuth.getAuthUserId(ctx)
+                  export const myQuery = query({
+                    args: {},
+                    handler: async (ctx) => {
+                      // Get the currently authenticated user's ID
+                      const userId = await betterAuth.getAuthUserId(ctx)
 
-                    // Get the currently authenticated user
-                    const user = await betterAuth.getAuthUser(ctx)
+                      // Get the currently authenticated user
+                      const user = await betterAuth.getAuthUser(ctx)
 
-                    // Get any user by ID - typically for admin functionality
-                    const user = await betterAuth.getAnyUserById(ctx, id)
+                      // Get any user by ID - typically for admin functionality
+                      const user = await betterAuth.getAnyUserById(ctx, id)
 
-                    // You can also use the standard Convex ctx.auth method
-                    const identity = await ctx.auth.getUserIdentity()
-                  }
-                })
-              `}
-            />
-          </div>
+                      // You can also use the standard Convex ctx.auth method
+                      const identity = await ctx.auth.getUserIdentity()
+                    }
+                  })
+                `}
+              />
+            </div>
 
-          <div id="event-hooks" className="mb-12">
-            <h3 className="text-2xl font-bold mb-4">
-              <SectionLink href="#event-hooks">Event Hooks</SectionLink>
-            </h3>
-            <p className="mb-4 text-muted-foreground">
-              The component provides hooks for important authentication events.
-              These can be configured when creating your Better Auth instance,
-              and are completely optional.
-            </p>
-            <div className="space-y-6">
-              <div>
-                <h4 className="text-xl font-semibold mb-2">
-                  Define Your Hooks
-                </h4>
-                <p className="mb-4 text-muted-foreground">
-                  First, define your event handlers as internal mutations:
-                </p>
-                <CodeBlock
-                  language="typescript"
-                  filename="convex/myHooks.ts"
-                  code={stripIndent`
-                    import { userValidator, sessionValidator } from '@erquhart/convex-better-auth'
-                    import { internalMutation } from './_generated/server'
+            <div id="event-hooks">
+              <h3 className="text-2xl font-bold mb-6">
+                <SectionLink href="#event-hooks">Event Hooks</SectionLink>
+              </h3>
+              <p className="mb-4 text-muted-foreground">
+                The component provides hooks for important authentication
+                events. These can be configured when creating your Better Auth
+                instance, and are completely optional.
+              </p>
+              <div className="space-y-6">
+                <div>
+                  <h4 className="text-xl font-semibold mb-2">
+                    Define Your Hooks
+                  </h4>
+                  <p className="mb-4 text-muted-foreground">
+                    First, define your event handlers as internal mutations:
+                  </p>
+                  <CodeBlock
+                    language="typescript"
+                    filename="convex/myHooks.ts"
+                    code={stripIndent`
+                      import { userValidator, sessionValidator } from '@erquhart/convex-better-auth'
+                      import { internalMutation } from './_generated/server'
 
-                    export const onCreateUser = internalMutation({
-                      args: { user: userValidator },
-                      handler: async (ctx, { user }) => {
-                        // Handle user creation
-                        // e.g., create additional user data in your app's tables
-                      }
-                    })
+                      export const onCreateUser = internalMutation({
+                        args: { user: userValidator },
+                        handler: async (ctx, { user }) => {
+                          // Handle user creation
+                          // e.g., create additional user data in your app's tables
+                        }
+                      })
 
-                    export const onDeleteUser = internalMutation({
-                      args: { id: v.string() },
-                      handler: async (ctx, { id }) => {
-                        // Handle user deletion
-                        // e.g., clean up related user data
-                      }
-                    })
+                      export const onDeleteUser = internalMutation({
+                        args: { id: v.string() },
+                        handler: async (ctx, { id }) => {
+                          // Handle user deletion
+                          // e.g., clean up related user data
+                        }
+                      })
 
-                    export const onCreateSession = internalMutation({
-                      args: { session: sessionValidator },
-                      handler: async (ctx, { session }) => {
-                        // Handle session creation
-                        // e.g., log session activity
-                      }
-                    })`}
-                />
-              </div>
+                      export const onCreateSession = internalMutation({
+                        args: { session: sessionValidator },
+                        handler: async (ctx, { session }) => {
+                          // Handle session creation
+                          // e.g., log session activity
+                        }
+                      })`}
+                  />
+                </div>
 
-              <div>
-                <h4 className="text-xl font-semibold mb-2">
-                  Add hooks to component configuration
-                </h4>
-                <p className="mb-4 text-muted-foreground">
-                  Configure the hooks when creating your Better Auth instance
-                  via function references.
-                </p>
-                <CodeBlock
-                  language="typescript"
-                  filename="convex/auth.ts"
-                  code={stripIndent`
-                    export const betterAuth = new BetterAuth(
-                      components.betterAuth,
-                      { ...options }
+                <div>
+                  <h4 className="text-xl font-semibold mb-2">
+                    Add hooks to component configuration
+                  </h4>
+                  <p className="mb-4 text-muted-foreground">
+                    Configure the hooks when creating your Better Auth instance
+                    via function references.
+                  </p>
+                  <CodeBlock
+                    language="typescript"
+                    filename="convex/auth.ts"
+                    code={stripIndent`
+                      export const betterAuth = new BetterAuth(
+                        components.betterAuth,
+                        { ...options }
 
-                      // Event hooks configuration
-                      {
-                        onCreateUser: internal.myHooks.onCreateUser,
-                        onDeleteUser: internal.myHooks.onDeleteUser,
-                        onCreateSession: internal.myHooks.onCreateSession,
-                      }
-                    )`}
-                />
+                        // Event hooks configuration
+                        {
+                          onCreateUser: internal.myHooks.onCreateUser,
+                          onDeleteUser: internal.myHooks.onDeleteUser,
+                          onCreateSession: internal.myHooks.onCreateSession,
+                        }
+                      )`}
+                  />
+                </div>
               </div>
             </div>
           </div>
