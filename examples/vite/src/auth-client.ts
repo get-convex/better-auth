@@ -1,8 +1,12 @@
 import { createAuthClient } from "better-auth/react";
 import { jwtClient } from "better-auth/client/plugins";
 
+const siteUrl = (import.meta.env.VITE_CONVEX_URL as string)
+  .split(".cloud")[0]
+  .concat(".site");
+
 export const authClient = createAuthClient({
-  baseURL: import.meta.env.VITE_CONVEX_SITE_URL,
+  baseURL: siteUrl,
   plugins: [jwtClient()],
   fetchOptions: {
     auth: {
