@@ -7,6 +7,8 @@
     "dev": "npm-run-all --parallel dev:frontend dev:backend",
     "dev:frontend": "vite",
     "dev:backend": "convex dev --live-component-sources --typecheck-components",
+    "build": "vite build",
+    "preview": "vite preview",
     "logs": "convex logs",
     "lint": "tsc -p convex && eslint convex"
   },
