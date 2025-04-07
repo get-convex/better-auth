@@ -46,7 +46,7 @@ export default function SignIn() {
     await authClient.signIn.social(
       {
         provider: "github",
-        callbackURL: import.meta.env.VITE_SITE_URL,
+        callbackURL: import.meta.env.VITE_URL,
         disableRedirect: false,
       },
       {
