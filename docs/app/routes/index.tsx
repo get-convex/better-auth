@@ -109,22 +109,26 @@ function Home() {
 
   return (
     <DocsLayout>
-      <div className="max-w-3xl mx-auto">
-        <div className="py-20 space-y-10">
-          <div className="flex items-center gap-3 mb-6">
-            <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-br from-[rgb(243,176,28)] from-30% to-[#FF3366] to-100% bg-clip-text text-transparent">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6">
+        <div className="py-8 sm:py-20 space-y-6 sm:space-y-10">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4 sm:mb-6">
+            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight bg-gradient-to-br from-[rgb(243,176,28)] from-30% to-[#FF3366] to-100% bg-clip-text text-transparent">
               Convex
             </h1>
-            <span className="text-4xl font-light text-muted-foreground">+</span>
-            <h1 className="text-5xl font-bold tracking-tight">Better Auth</h1>
+            <span className="text-3xl sm:text-4xl font-light text-muted-foreground">
+              +
+            </span>
+            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
+              Better Auth
+            </h1>
           </div>
-          <p className="text-xl text-muted-foreground leading-relaxed">
+          <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed">
             Own your auth in your Convex applications. Comprehensive, secure
             authentication and a beautiful developer experience with Better
             Auth. Built for modern TypeScript applications with real-time data
             sync.
           </p>
-          <div className="flex gap-6 pt-2">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 pt-2">
             <SmoothScrollLink
               href="#getting-started"
               className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"

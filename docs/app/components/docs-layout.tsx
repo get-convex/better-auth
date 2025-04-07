@@ -261,16 +261,16 @@ export default function DocsLayout({
       </Sidebar>
       <SidebarInset>
         <header className="flex h-14 items-center gap-4 border-b px-4 lg:h-[60px]">
-          <SidebarTrigger />
+          <SidebarTrigger className="md:hidden" />
           <div className="flex-1" />
           <a
             href="https://github.com/erquhart/convex-better-auth"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline/-flex hidden h-9 items-center justify-center rounded-md px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground"
+            className="inline-flex h-9 items-center justify-center rounded-md px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground"
           >
             <Github className="mr-2 h-4 w-4" />
-            GitHub
+            <span className="hidden sm:inline">GitHub</span>
           </a>
         </header>
         <main className="flex-1">{children}</main>
