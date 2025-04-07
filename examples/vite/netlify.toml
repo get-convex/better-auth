@@ -1,0 +1,2 @@
+[build]
+  command = "VITE_URL=$URL npx convex deploy --cmd 'npm run build'"
