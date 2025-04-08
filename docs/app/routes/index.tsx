@@ -484,14 +484,14 @@ function Home() {
                 language="typescript"
                 filename="src/index.tsx"
                 code={stripIndent`
-                  import { ConvexProviderWithAuth, ConvexReactClient } from 'convex/react'
-                  import { useBetterAuth } from '@erquhart/convex-better-auth/react'
+                  import { ConvexReactClient } from 'convex/react'
+                  import { ConvexProviderWithBetterAuth } from '@erquhart/convex-better-auth/react'
                   import { authClient } from 'lib/auth.ts'
 
                   const convex = new ConvexReactClient(
-                    <ConvexProviderWithAuth client={convex} useAuth={useBetterAuth(authClient)}>
+                    <ConvexProviderWithBetterAuth client={convex} authClient={authClient}>
                       {children}
-                    </ConvexProviderWithAuth>
+                    </ConvexProviderWithBetterAuth>
                   )
                 `}
               />

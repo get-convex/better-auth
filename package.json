@@ -1,5 +1,5 @@
 {
-  "name": "@erquhart/convex-better-auth",
+  "name": "@convex-dev/better-auth",
   "description": "A Better Auth component for Convex.",
   "repository": "github:erquhart/convex-better-auth",
   "homepage": "https://github.com/erquhart/convex-better-auth#readme",
@@ -47,12 +47,12 @@
     },
     "./react": {
       "import": {
-        "@convex-dev/component-source": "./src/react/index.ts",
+        "@convex-dev/component-source": "./src/react/index.tsx",
         "types": "./dist/esm/react/index.d.ts",
         "default": "./dist/esm/react/index.js"
       },
       "require": {
-        "@convex-dev/component-source": "./src/react/index.ts",
+        "@convex-dev/component-source": "./src/react/index.tsx",
         "types": "./dist/commonjs/react/index.d.ts",
         "default": "./dist/commonjs/react/index.js"
       }
