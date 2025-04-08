@@ -1,4 +1,4 @@
-import { createAuthClient } from "better-auth/react";
+import { createAuthClient } from "@convex-dev/better-auth/react";
 import { jwtClient } from "better-auth/client/plugins";
 
 export const authClient = createAuthClient({
@@ -13,7 +13,10 @@ export const authClient = createAuthClient({
       },
     },
     onRequest: (ctx) => {
-      console.log("onRequest", ctx.url);
+      console.log(
+        "onRequest",
+        typeof ctx.url === "string" ? ctx.url : ctx.url.toString()
+      );
     },
     onResponse: (ctx) => {
       console.log("onResponse", ctx.response.status, ctx.response.headers);

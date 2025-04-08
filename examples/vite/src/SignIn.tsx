@@ -52,7 +52,10 @@ export default function SignIn() {
       {
         onRequest: (ctx) => {
           setLoading(true);
-          console.log("onRequest GITHUB", ctx);
+          console.log(
+            "onRequest GITHUB",
+            typeof ctx.url === "string" ? ctx.url : ctx.url.toString()
+          );
         },
         onResponse: (ctx) => {
           console.log(
