@@ -149,6 +149,11 @@ export const update = mutation({
       throw new Error(`Failed to update ${table}`);
     }
     await ctx.db.patch(doc._id, value as any);
+    const updatedDoc = await ctx.db.get(doc._id);
+    if (!updatedDoc) {
+      throw new Error(`Failed to update ${table}`);
+    }
+    return transformOutput(updatedDoc, table);
   },
 });
 export const deleteBy = mutation({

@@ -175,7 +175,7 @@ export const database =
         throw new Error("Not implemented");
         // return 0;
       },
-      update: async ({ model, where, update }) => {
+      update: async ({ model, where, update }): Promise<any> => {
         console.log({ fn: "update", model, where, update });
         if (where?.some((w) => w.operator || w.connector)) {
           throw new Error(
@@ -196,7 +196,6 @@ export const database =
           });
         }
         throw new Error("Not implemented");
-        // return null
       },
       delete: async ({ model, where }) => {
         console.log({ fn: "delete", model, where });
