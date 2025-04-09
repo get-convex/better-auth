@@ -1,7 +1,8 @@
 import { Adapter, betterAuth, BetterAuthOptions } from "better-auth";
-import { jwt } from "better-auth/plugins";
+import { createAuthMiddleware, jwt } from "better-auth/plugins";
 import { bearer } from "better-auth/plugins";
 import { oidcProvider } from "better-auth/plugins";
+import { oneTimeToken } from "better-auth/plugins/one-time-token";
 import { Id } from "../component/_generated/dataModel";
 import {
   createFunctionHandle,
@@ -11,12 +12,13 @@ import {
 import { OnDeleteUser, OnCreateUser, OnCreateSession, UseApi } from "./index";
 import { api } from "../component/_generated/api";
 import { transformInput } from "../component/auth";
+import { generateRandomString } from "better-auth/crypto";
 
 export const auth = (
   database: () => Adapter,
   config: BetterAuthOptions
-): ReturnType<typeof betterAuth> =>
-  betterAuth({
+): ReturnType<typeof betterAuth> => {
+  return betterAuth({
     ...config,
     advanced: {
       ...config.advanced,
@@ -24,7 +26,7 @@ export const auth = (
         ...config.advanced?.defaultCookieAttributes,
         secure: true,
         httpOnly: true,
-        sameSite: "none", // Allows CORS-based cookie sharing across subdomains
+        sameSite: "none" as const, // Allows CORS-based cookie sharing across subdomains
         //partitioned: true, // New browser standards will mandate this for
       },
     },
@@ -50,9 +52,41 @@ export const auth = (
           } as any,
         },
       }),
+      oneTimeToken({ disableClientRequest: true }),
     ],
     database,
+    hooks: {
+      // Mostly copied from better-auth/plugins/one-time-token/src/index.ts,
+      // pending redirect handling to be added to that plugin.
+      after: createAuthMiddleware(async (ctx) => {
+        // Only run for /callback/:id
+        if (!ctx.path.startsWith("/callback/") || !ctx.params.id) {
+          return;
+        }
+        const session = ctx.context.newSession;
+        if (!session) {
+          console.error("No session found");
+          return;
+        }
+        const token = generateRandomString(32);
+        const expiresAt = new Date(Date.now() + 3 * 60 * 1000);
+        await ctx.context.internalAdapter.createVerificationValue({
+          value: session.session.token,
+          identifier: `one-time-token:${token}`,
+          expiresAt,
+        });
+        const redirectTo = ctx.context.responseHeaders?.get("location");
+        if (!redirectTo) {
+          console.error("No redirect to found");
+          return;
+        }
+        const url = new URL(redirectTo);
+        url.searchParams.set("ott", token);
+        throw ctx.redirect(url.toString());
+      }),
+    },
   });
+};
 
 export const database =
   (

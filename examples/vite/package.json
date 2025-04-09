@@ -18,6 +18,7 @@
     "@tailwindcss/vite": "^4.0.17",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "better-auth": "file:../../node_modules/better-auth",
     "convex": "file:../../node_modules/convex",
     "lucide-react": "^0.486.0",
     "react": "^18.3.1",

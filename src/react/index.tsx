@@ -1,5 +1,5 @@
 import { BetterAuthClientPlugin, ClientOptions } from "better-auth/client";
-import { jwtClient } from "better-auth/client/plugins";
+import { jwtClient, oneTimeTokenClient } from "better-auth/client/plugins";
 import { createAuthClient as createBetterAuthClient } from "better-auth/react";
 import { ConvexProviderWithAuth, ConvexReactClient } from "convex/react";
 import isNetworkError from "is-network-error";
@@ -33,8 +33,12 @@ export const createAuthClient = <O extends ClientOptions>(
   typeof createBetterAuthClient<
     O & {
       plugins: O["plugins"] extends BetterAuthClientPlugin[]
-        ? [...O["plugins"], ReturnType<typeof jwtClient>]
-        : [ReturnType<typeof jwtClient>];
+        ? [
+            ...O["plugins"],
+            ReturnType<typeof jwtClient>,
+            ReturnType<typeof oneTimeTokenClient>,
+          ]
+        : [ReturnType<typeof jwtClient>, ReturnType<typeof oneTimeTokenClient>];
     }
   >
 > => {
@@ -45,7 +49,7 @@ export const createAuthClient = <O extends ClientOptions>(
   }
   return createBetterAuthClient({
     ...options,
-    plugins: (options.plugins ?? []).concat(jwtClient()),
+    plugins: (options.plugins ?? []).concat(jwtClient(), oneTimeTokenClient()),
   });
 };
 
@@ -139,6 +143,28 @@ export function ConvexProviderWithBetterAuth({
       }
     },
     [fetchToken]
+  );
+
+  useEffect(
+    () => {
+      const token =
+        typeof window?.location !== "undefined"
+          ? new URLSearchParams(window.location.search).get("ott")
+          : null;
+      if (token) {
+        authClient.oneTimeToken
+          .verify({
+            token,
+          })
+          .then((result: any) => {
+            console.log("result", result);
+          });
+      }
+    },
+    // Explicitly chosen dependencies.
+    // This effect should mostly only run once
+    // on mount.
+    [client]
   );
 
   const isAuthenticated = session !== null;
