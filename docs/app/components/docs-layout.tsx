@@ -9,6 +9,7 @@ import {
   Layers,
   AlertTriangle,
 } from "lucide-react";
+import { ThemeToggle } from "./theme-toggle";
 
 import {
   Sidebar,
@@ -238,6 +239,9 @@ export default function DocsLayout({
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
+          <div className="px-0.5 mt-2">
+            <ThemeToggle />
+          </div>
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>

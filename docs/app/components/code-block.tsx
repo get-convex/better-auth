@@ -3,6 +3,7 @@
 import { Check, Copy } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Highlight, PrismTheme, themes } from "prism-react-renderer";
+import { useTheme } from "next-themes";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -132,6 +133,7 @@ export function CodeBlock({
   const [copiedSection, setCopiedSection] = useState<number>();
   const [hoveredSection, setHoveredSection] = useState<number>();
   const [mounted, setMounted] = useState(false);
+  const { resolvedTheme } = useTheme();
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -170,11 +172,12 @@ export function CodeBlock({
     setTimeout(() => setCopiedSection(undefined), 2000);
   };
 
-  // Always use dark theme for code blocks
-  const getTheme = () => {
-    //if (!mounted) return themes.synthwave84; // Default for SSR
-    return themes.vsDark;
-  };
+  // Determine the theme based on resolvedTheme and mounted state
+  const prismTheme = !mounted
+    ? themes.vsDark // Default for SSR
+    : resolvedTheme === "light"
+      ? themes.github // Light theme
+      : themes.vsDark; // Dark theme (or could use custom darkTheme)
 
   // Map language string to prism language
   const getLanguage = (lang: string) => {
@@ -190,9 +193,18 @@ export function CodeBlock({
 
   return (
     <div
-      className={cn("relative my-4 rounded-lg border bg-zinc-950", className)}
+      className={cn(
+        "relative my-4 rounded-lg border",
+        resolvedTheme === "light" ? "bg-white" : "bg-zinc-950", // Conditional background
+        className
+      )}
     >
-      <div className="flex items-center justify-between px-4 py-2 text-sm border-b border-zinc-800">
+      <div
+        className={cn(
+          "flex items-center justify-between px-4 py-2 text-sm border-b",
+          resolvedTheme === "light" ? "border-border" : "border-zinc-800" // Conditional border
+        )}
+      >
         {filename && (
           <span className="font-medium text-sm text-foreground/90">
             {filename}
@@ -219,7 +231,7 @@ export function CodeBlock({
       </div>
       <div className="overflow-x-auto">
         <Highlight
-          theme={getTheme()}
+          theme={prismTheme} // Use the dynamically determined theme
           code={code}
           language={getLanguage(language)}
         >
