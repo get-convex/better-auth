@@ -2,7 +2,7 @@
 
 import { Moon, Sun, Monitor } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useSidebar } from "@/components/ui/sidebar";
+import { useSidebar, SidebarMenuButton } from "@/components/ui/sidebar";
 
 export function ThemeToggle() {
   const { setTheme, theme } = useTheme();
@@ -23,13 +23,14 @@ export function ThemeToggle() {
 
   if (state === "collapsed") {
     return (
-      <button
+      <SidebarMenuButton
         onClick={cycleTheme}
-        className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+        tooltip="Theme"
         aria-label="Toggle theme"
+        className="text-muted-foreground"
       >
         {currentIcon}
-      </button>
+      </SidebarMenuButton>
     );
   }
 

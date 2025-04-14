@@ -5,7 +5,6 @@ import {
   FileText,
   Github,
   Home,
-  Server,
   Layers,
   AlertTriangle,
   PanelLeft,
@@ -64,6 +63,7 @@ function SidebarFooterContent() {
               href="https://github.com/erquhart/convex-better-auth"
               target="_blank"
               rel="noopener noreferrer"
+              className="flex items-center"
             >
               <Github className="size-4" />
               <span className="group-data-[collapsible=icon]:hidden">
@@ -78,6 +78,7 @@ function SidebarFooterContent() {
               href="https://www.npmjs.com/package/@erquhart/convex-better-auth"
               target="_blank"
               rel="noopener noreferrer"
+              className="flex items-center"
             >
               <svg
                 className="size-4"
@@ -97,6 +98,7 @@ function SidebarFooterContent() {
               href="https://discord.gg/convex"
               target="_blank"
               rel="noopener noreferrer"
+              className="flex items-center"
             >
               <svg
                 className="size-4"
@@ -125,6 +127,7 @@ function SidebarFooterContent() {
               onClick={toggleSidebar}
               tooltip="Expand"
               aria-label="Expand"
+              className="text-muted-foreground"
             >
               <PanelLeft className="size-4" />
             </SidebarMenuButton>
@@ -135,7 +138,7 @@ function SidebarFooterContent() {
           <ThemeToggle />
           <button
             onClick={toggleSidebar}
-            className="flex h-7 w-7 items-center justify-center rounded-[4px] text-muted-foreground hover:text-foreground"
+            className="flex h-7 w-7 items-center justify-center rounded-[4px] text-muted-foreground hover:text-foreground cursor-pointer"
             aria-label="Collapse"
           >
             <PanelLeft className="size-4" />
