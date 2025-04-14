@@ -32,7 +32,6 @@ import {
   useSidebar,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
 
 export function SmoothScrollLink({
   href,
@@ -297,15 +296,15 @@ export default function DocsLayout({
       </Sidebar>
       <SidebarInset>
         <header className="flex h-14 items-center gap-4 border-b px-4 lg:h-[60px]">
-          <SidebarTrigger className="md:hidden" />
+          <SidebarTrigger className="md:hidden size-4" />
           <div className="flex-1" />
           <a
             href="https://github.com/erquhart/convex-better-auth"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex h-9 items-center justify-center rounded-md px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground"
+            className="inline-flex h-9 items-center justify-center rounded-md px-2 md:px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground"
           >
-            <Github className="mr-2 h-4 w-4" />
+            <Github className="md:mr-2 h-4 w-4" />
             <span className="hidden sm:inline">GitHub</span>
           </a>
         </header>
