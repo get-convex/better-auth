@@ -238,10 +238,12 @@ export default function DocsLayout({
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip="Theme">
+                <ThemeToggle />
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
-          <div className="px-0.5 mt-2">
-            <ThemeToggle />
-          </div>
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>

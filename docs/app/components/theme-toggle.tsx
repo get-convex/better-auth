@@ -2,9 +2,36 @@
 
 import { Moon, Sun, Monitor } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useSidebar } from "@/components/ui/sidebar";
 
 export function ThemeToggle() {
   const { setTheme, theme } = useTheme();
+  const { state } = useSidebar();
+
+  const cycleTheme = () => {
+    const themes = ["light", "dark", "system"];
+    const currentIndex = themes.indexOf(theme ?? "system");
+    const nextIndex = (currentIndex + 1) % themes.length;
+    setTheme(themes[nextIndex]);
+  };
+
+  const currentIcon = {
+    light: <Sun className="size-4" />,
+    dark: <Moon className="size-4" />,
+    system: <Monitor className="size-4" />,
+  }[theme ?? "system"];
+
+  if (state === "collapsed") {
+    return (
+      <button
+        onClick={cycleTheme}
+        className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+        aria-label="Toggle theme"
+      >
+        {currentIcon}
+      </button>
+    );
+  }
 
   return (
     <div className="flex gap-1">
