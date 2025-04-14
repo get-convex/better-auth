@@ -30,6 +30,7 @@ import {
   SidebarRail,
   SidebarTrigger,
   useSidebar,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 
@@ -116,23 +117,26 @@ function SidebarFooterContent() {
         </SidebarMenuItem>
       </SidebarMenu>
       {state === "collapsed" ? (
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Theme">
-              <ThemeToggle />
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              onClick={toggleSidebar}
-              tooltip="Expand"
-              aria-label="Expand"
-              className="text-muted-foreground"
-            >
-              <PanelLeft className="size-4" />
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <>
+          <SidebarSeparator className="mx-0" />
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip="Theme">
+                <ThemeToggle />
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={toggleSidebar}
+                tooltip="Expand"
+                aria-label="Expand"
+                className="text-muted-foreground"
+              >
+                <PanelLeft className="size-4" />
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </>
       ) : (
         <div className="mt-2 flex w-full items-center justify-between px-0.5">
           <ThemeToggle />
