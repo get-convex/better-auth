@@ -102,11 +102,6 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  /*
-  const router = useRouter();
-  const state = Route.useLoaderData();
-  */
-
   return (
     <DocsLayout>
       <div className="max-w-3xl mx-auto px-4 sm:px-6">

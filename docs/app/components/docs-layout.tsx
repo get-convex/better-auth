@@ -39,28 +39,10 @@ export function SmoothScrollLink({
   children: React.ReactNode;
   [key: string]: unknown;
 }) {
-  const handleClick = (e: React.MouseEvent) => {
-    if (href === "#" || href === "/") {
-      e.preventDefault();
-      e.stopPropagation();
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } else if (href.startsWith("#")) {
-      e.preventDefault();
-      e.stopPropagation();
-      const element = document.querySelector(href);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }
-  };
-
+  // Remove the handleClick logic entirely
+  // Let the browser handle default anchor link behavior
   return (
-    <a
-      href={href}
-      onClick={handleClick}
-      onClickCapture={handleClick}
-      {...props}
-    >
+    <a href={href} {...props}>
       {children}
     </a>
   );

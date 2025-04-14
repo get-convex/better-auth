@@ -12,6 +12,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { SetRequired } from "type-fest";
 
 const ConvexAuthInternalContext = createContext<{
   isLoading: boolean;
@@ -32,6 +33,12 @@ export const createAuthClient = <O extends ClientOptions>(
 ): ReturnType<
   typeof createBetterAuthClient<
     O & {
+      fetchOptions: O["fetchOptions"] & {
+        auth: {
+          type: "Bearer";
+          token: () => string | null;
+        };
+      };
       plugins: O["plugins"] extends BetterAuthClientPlugin[]
         ? [
             ...O["plugins"],
@@ -49,6 +56,13 @@ export const createAuthClient = <O extends ClientOptions>(
   }
   return createBetterAuthClient({
     ...options,
+    fetchOptions: {
+      ...options.fetchOptions,
+      auth: {
+        type: "Bearer",
+        token: () => localStorage.getItem("better_auth_bearer_token"),
+      },
+    },
     plugins: (options.plugins ?? []).concat(jwtClient(), oneTimeTokenClient()),
   });
 };
@@ -59,7 +73,7 @@ export function ConvexProviderWithBetterAuth({
   children,
 }: {
   client: ConvexReactClient;
-  authClient: ReturnType<typeof createAuthClient>;
+  authClient: ReturnType<typeof createAuthClient<{ baseURL: string }>>;
   children: ReactNode;
 }) {
   const { data: session, isPending: isSessionPending } =
@@ -119,6 +133,10 @@ export function ConvexProviderWithBetterAuth({
         if (!isNetworkError(e)) {
           throw e;
         }
+        if (retries > 3) {
+          logVerbose(`verifyCode failed with network error, giving up`);
+          throw e;
+        }
         const backoff = nextBackoff();
         logVerbose(
           `verifyCode failed with network error, attempting retrying in ${backoff}ms`
@@ -141,25 +159,44 @@ export function ConvexProviderWithBetterAuth({
         logVerbose(`returning retrieved token`);
         return token;
       }
+      return null;
     },
     [fetchToken]
   );
 
   useEffect(
     () => {
-      const token =
-        typeof window?.location !== "undefined"
-          ? new URLSearchParams(window.location.search).get("ott")
-          : null;
-      if (token) {
-        authClient.oneTimeToken
-          .verify({
-            token,
-          })
-          .then((result: any) => {
-            console.log("result", result);
-          });
-      }
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      (async () => {
+        const url = new URL(window.location.href);
+        const token = url.searchParams.get("ott");
+        if (token) {
+          url.searchParams.delete("ott");
+          window.history.replaceState({}, "", url);
+          const result = await authClient.oneTimeToken.verify({ token });
+          console.log("result", result);
+          const session = result.data?.session;
+          if (!session) {
+            return;
+          }
+          const tokenResult = await authClient.token(
+            {},
+            {
+              headers: {
+                Authorization: `Bearer ${session.token}`,
+              },
+            }
+          );
+          if (!tokenResult.data?.token) {
+            localStorage.removeItem("better_auth_bearer_token");
+            return;
+          }
+          localStorage.setItem(
+            "better_auth_bearer_token",
+            tokenResult.data?.token || ""
+          );
+        }
+      })();
     },
     // Explicitly chosen dependencies.
     // This effect should mostly only run once
