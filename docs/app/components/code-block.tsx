@@ -194,7 +194,7 @@ export function CodeBlock({
     >
       <div className="flex items-center justify-between px-4 py-2 text-sm border-b border-zinc-800">
         {filename && (
-          <span className="font-medium text-sm text-foreground/90">
+          <span className="font-medium text-sm text-muted-foreground">
             {filename}
           </span>
         )}
