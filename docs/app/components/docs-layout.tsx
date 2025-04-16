@@ -236,6 +236,30 @@ export default function DocsLayout({
                   </SidebarMenuSub>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
+                  <SidebarMenuButton asChild tooltip="Authorization">
+                    <SmoothScrollLink href="#authorization">
+                      <FileText className="size-4" />
+                      <span>Authorization</span>
+                    </SmoothScrollLink>
+                  </SidebarMenuButton>
+                  <SidebarMenuSub>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <SmoothScrollLink href="#authorization-client">
+                          Client
+                        </SmoothScrollLink>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <SmoothScrollLink href="#authorization-convex-functions">
+                          Convex Functions
+                        </SmoothScrollLink>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  </SidebarMenuSub>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Basic Usage">
                     <SmoothScrollLink href="#basic-usage">
                       <FileText className="size-4" />
@@ -257,29 +281,10 @@ export default function DocsLayout({
                         </SmoothScrollLink>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
-                  </SidebarMenuSub>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild tooltip="API Reference">
-                    <SmoothScrollLink href="#api-reference">
-                      <Code className="size-4" />
-                      <span>API Reference</span>
-                    </SmoothScrollLink>
-                  </SidebarMenuButton>
-                  <SidebarMenuSub>
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton asChild>
-                        <SmoothScrollLink href="#authentication-methods">
-                          <span className="truncate">
-                            Auth Instance Methods
-                          </span>
-                        </SmoothScrollLink>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
                         <SmoothScrollLink href="#event-hooks">
-                          <span className="truncate">Event Hooks</span>
+                          Event Hooks
                         </SmoothScrollLink>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>

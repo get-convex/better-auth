@@ -357,7 +357,6 @@ function Home() {
 
             <div>
               <p className="mb-8">Add the component to your application.</p>
-
               <CodeBlock
                 language="typescript"
                 filename="convex/convex.config.ts"
@@ -370,6 +369,30 @@ function Home() {
                   app.use(betterAuth)
 
                   export default app
+                `}
+              />
+            </div>
+
+            <div>
+              <p className="mb-8">
+                Add a <code>convex/auth.config.ts</code> file to configure
+                authentication providers for Better Auth:
+              </p>
+              <CodeBlock
+                language="typescript"
+                filename="convex/auth.config.ts"
+                code={stripIndent`
+                  export default {
+                    providers: [
+                      {
+                        // This should be your Convex site URL, which ends in .convex.site
+                        domain: process.env.CONVEX_SITE_URL,
+
+                        // Application ID has to be "convex"
+                        applicationID: "convex",
+                      },
+                    ],
+                  }
                 `}
               />
             </div>
@@ -488,6 +511,94 @@ function Home() {
                       {children}
                     </ConvexProviderWithBetterAuth>
                   )
+                `}
+              />
+            </div>
+          </div>
+        </section>
+
+        <section id="authorization" className="py-16">
+          <h2 className="text-3xl font-bold mb-8">
+            <SectionLink href="#authorization">Authorization</SectionLink>
+          </h2>
+
+          <div className="space-y-16">
+            <div>
+              <h3 id="authorization-client" className="text-2xl font-bold mb-6">
+                <SectionLink href="#authorization-client">Client</SectionLink>
+              </h3>
+              <p className="mb-6 text-lg">
+                To check authentication state in your React components, use the{" "}
+                <code>useConvexAuth</code> hook from <code>convex/react</code>.
+                This hook provides a simple, idiomatic way to determine if a
+                user is authenticated and whether the authentication state is
+                still loading.
+              </p>
+              <CodeBlock
+                language="tsx"
+                code={stripIndent`
+                  import { useConvexAuth } from "convex/react";
+
+                  export default function App() {
+                    const { isAuthenticated, isLoading } = useConvexAuth();
+
+                    if (isLoading) {
+                      return <div>Loading...</div>;
+                    }
+                    if (isAuthenticated) {
+                      return <Dashboard />;
+                    }
+                    return <SignIn />;
+                  }
+                `}
+              />
+              <ul className="list-disc ml-6 mt-4 text-muted-foreground">
+                <li>
+                  <code>isLoading</code>: <code>true</code> while the
+                  authentication state is being determined.
+                </li>
+                <li>
+                  <code>isAuthenticated</code>: <code>true</code> if the user is
+                  signed in.
+                </li>
+              </ul>
+              <p className="mt-4">
+                Use this hook to conditionally render UI based on authentication
+                state. This is the recommended approach for client-side auth
+                checks in React apps using Convex.
+              </p>
+            </div>
+
+            <div>
+              <h3
+                id="authorization-convex-functions"
+                className="text-2xl font-bold mb-6"
+              >
+                <SectionLink href="#authorization-convex-functions">
+                  Convex Functions
+                </SectionLink>
+              </h3>
+              <p className="mb-6 text-lg">
+                For authorization and user checks inside Convex functions
+                (queries, mutations, actions), use the helpers provided by the
+                Better Auth Convex component:
+              </p>
+              <CodeBlock
+                language="ts"
+                code={stripIndent`
+                  import { betterAuth } from "./auth";
+
+                  export const myFunction = async (ctx) => {
+                    // Get the full user object for the currently authenticated user
+                    const user = await betterAuth.getAuthUser(ctx);
+
+                    // Get the authenticated user's ID as a string
+                    const userId = await betterAuth.getAuthUserId(ctx);
+
+                    // Get the user's unique identifier
+                    // (the 'sub' claim from the JWT)
+                    const identity = await ctx.auth.getUserIdentity();
+                  };
                 `}
               />
             </div>
@@ -869,129 +980,6 @@ function Home() {
                       />
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="api-reference" className="py-16">
-          <h2 className="text-3xl font-bold mb-8">
-            <SectionLink href="#api-reference">API Reference</SectionLink>
-          </h2>
-
-          <div className="space-y-12">
-            <div id="authentication-methods">
-              <h3 className="text-2xl font-bold mb-6">
-                <SectionLink href="#authentication-methods">
-                  Auth Instance Methods
-                </SectionLink>
-              </h3>
-              <p className="mb-4 text-muted-foreground">
-                These methods are available on your Better Auth instance to help
-                manage authentication state.
-              </p>
-              <CodeBlock
-                language="typescript"
-                filename="convex/someFile.ts"
-                highlightedLines={[6, 7, 9, 10, 12, 13]}
-                code={stripIndent`
-                  import { betterAuth } from './auth'
-
-                  export const myQuery = query({
-                    args: {},
-                    handler: async (ctx) => {
-                      // Get the currently authenticated user's ID
-                      const userId = await betterAuth.getAuthUserId(ctx)
-
-                      // Get the currently authenticated user
-                      const user = await betterAuth.getAuthUser(ctx)
-
-                      // Get any user by ID - typically for admin functionality
-                      const user = await betterAuth.getAnyUserById(ctx, id)
-
-                      // You can also use the standard Convex ctx.auth method
-                      const identity = await ctx.auth.getUserIdentity()
-                    }
-                  })
-                `}
-              />
-            </div>
-
-            <div id="event-hooks">
-              <h3 className="text-2xl font-bold mb-6">
-                <SectionLink href="#event-hooks">Event Hooks</SectionLink>
-              </h3>
-              <p className="mb-12 text-muted-foreground">
-                The component provides hooks for important authentication
-                events. These can be configured when creating your Better Auth
-                instance, and are completely optional.
-              </p>
-              <div className="space-y-6">
-                <div>
-                  <h4 className="text-xl font-semibold mb-2">
-                    Define Your Hooks
-                  </h4>
-                  <p className="mb-4 text-muted-foreground">
-                    First, define your event handlers as internal mutations:
-                  </p>
-                  <CodeBlock
-                    language="typescript"
-                    filename="convex/myHooks.ts"
-                    code={stripIndent`
-                      import { userValidator, sessionValidator } from '@erquhart/convex-better-auth'
-                      import { internalMutation } from './_generated/server'
-
-                      export const onCreateUser = internalMutation({
-                        args: { user: userValidator },
-                        handler: async (ctx, { user }) => {
-                          // Handle user creation
-                          // e.g., create additional user data in your app's tables
-                        }
-                      })
-
-                      export const onDeleteUser = internalMutation({
-                        args: { id: v.string() },
-                        handler: async (ctx, { id }) => {
-                          // Handle user deletion
-                          // e.g., clean up related user data
-                        }
-                      })
-
-                      export const onCreateSession = internalMutation({
-                        args: { session: sessionValidator },
-                        handler: async (ctx, { session }) => {
-                          // Handle session creation
-                          // e.g., log session activity
-                        }
-                      })`}
-                  />
-                </div>
-
-                <div>
-                  <h4 className="mt-10 text-xl font-semibold mb-2">
-                    Add hooks to component configuration
-                  </h4>
-                  <p className="mb-4 text-muted-foreground">
-                    Configure the hooks when creating your Better Auth instance
-                    via function references.
-                  </p>
-                  <CodeBlock
-                    language="typescript"
-                    filename="convex/auth.ts"
-                    code={stripIndent`
-                      export const betterAuth: BetterAuth = new BetterAuth(
-                        components.betterAuth,
-                        { ...options }
-
-                        // Event hooks configuration
-                        {
-                          onCreateUser: internal.myHooks.onCreateUser,
-                          onDeleteUser: internal.myHooks.onDeleteUser,
-                          onCreateSession: internal.myHooks.onCreateSession,
-                        }
-                      )`}
-                  />
                 </div>
               </div>
             </div>
