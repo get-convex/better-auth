@@ -195,6 +195,8 @@ export function ConvexProviderWithBetterAuth({
             "better_auth_bearer_token",
             tokenResult.data?.token || ""
           );
+          const sessionResult = await authClient.getSession();
+          console.log("session", sessionResult);
         }
       })();
     },
