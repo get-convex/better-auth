@@ -10,9 +10,9 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
 } from "react";
-import { SetRequired } from "type-fest";
+
+const SESSION_STORAGE_KEY = "__better_auth_session";
 
 const ConvexAuthInternalContext = createContext<{
   isLoading: boolean;
@@ -60,7 +60,7 @@ export const createAuthClient = <O extends ClientOptions>(
       ...options.fetchOptions,
       auth: {
         type: "Bearer",
-        token: () => localStorage.getItem("better_auth_bearer_token"),
+        token: () => localStorage.getItem(SESSION_STORAGE_KEY),
       },
     },
     plugins: (options.plugins ?? []).concat(jwtClient(), oneTimeTokenClient()),
@@ -78,7 +78,8 @@ export function ConvexProviderWithBetterAuth({
 }) {
   const { data: session, isPending: isSessionPending } =
     authClient.useSession();
-  const [isRefreshingToken, setIsRefreshingToken] = useState(false);
+  console.log("session", session);
+  console.log("isSessionPending", isSessionPending);
 
   const verbose: boolean = (client as any).options?.verbose ?? false;
   const logVerbose = useCallback(
@@ -91,30 +92,9 @@ export function ConvexProviderWithBetterAuth({
     [verbose]
   );
 
-  useEffect(() => {
-    const listener = async (e: Event) => {
-      if (isRefreshingToken) {
-        // There are 3 different ways to trigger this pop up so just try all of
-        // them.
-
-        e.preventDefault();
-        // This confirmation message doesn't actually appear in most modern
-        // browsers but we tried.
-        const confirmationMessage =
-          "Are you sure you want to leave? Your changes may not be saved.";
-        e.returnValue = true;
-        return confirmationMessage;
-      }
-    };
-    browserAddEventListener("beforeunload", listener);
-    return () => {
-      browserRemoveEventListener("beforeunload", listener);
-    };
-  });
-
   const fetchToken = useCallback(async () => {
     const initialBackoff = 100;
-    const maxBackoff = 16000;
+    const maxBackoff = 1000;
     let retries = 0;
 
     const nextBackoff = () => {
@@ -128,18 +108,19 @@ export function ConvexProviderWithBetterAuth({
     const fetchWithRetry = async () => {
       try {
         const { data } = await authClient.token();
+        console.log("data", data);
         return data?.token || null;
       } catch (e) {
         if (!isNetworkError(e)) {
           throw e;
         }
-        if (retries > 3) {
-          logVerbose(`verifyCode failed with network error, giving up`);
+        if (retries > 10) {
+          logVerbose(`fetchToken failed with network error, giving up`);
           throw e;
         }
         const backoff = nextBackoff();
         logVerbose(
-          `verifyCode failed with network error, attempting retrying in ${backoff}ms`
+          `fetchToken failed with network error, attempting retrying in ${backoff}ms`
         );
         await new Promise((resolve) => setTimeout(resolve, backoff));
         return fetchWithRetry();
@@ -152,10 +133,7 @@ export function ConvexProviderWithBetterAuth({
   const fetchAccessToken = useCallback(
     async ({ forceRefreshToken }: { forceRefreshToken: boolean }) => {
       if (forceRefreshToken) {
-        setIsRefreshingToken(true);
-        const token = await fetchToken().finally(() => {
-          setIsRefreshingToken(false);
-        });
+        const token = await fetchToken();
         logVerbose(`returning retrieved token`);
         return token;
       }
@@ -172,42 +150,27 @@ export function ConvexProviderWithBetterAuth({
         const token = url.searchParams.get("ott");
         if (token) {
           url.searchParams.delete("ott");
-          window.history.replaceState({}, "", url);
           const result = await authClient.oneTimeToken.verify({ token });
-          console.log("result", result);
           const session = result.data?.session;
           if (!session) {
             return;
           }
-          const tokenResult = await authClient.token(
-            {},
-            {
-              headers: {
-                Authorization: `Bearer ${session.token}`,
-              },
-            }
-          );
-          if (!tokenResult.data?.token) {
-            localStorage.removeItem("better_auth_bearer_token");
-            return;
-          }
-          localStorage.setItem(
-            "better_auth_bearer_token",
-            tokenResult.data?.token || ""
-          );
-          const sessionResult = await authClient.getSession();
-          console.log("session", sessionResult);
+          localStorage.setItem(SESSION_STORAGE_KEY, session.token);
+          window.history.replaceState({}, "", url);
+          location.reload();
         }
       })();
     },
     // Explicitly chosen dependencies.
     // This effect should mostly only run once
     // on mount.
-    [client]
+    [client, authClient]
   );
 
   const isAuthenticated = session !== null;
   const isLoading = isSessionPending;
+  console.log("isAuthenticated", isAuthenticated);
+  console.log("isLoading", isLoading);
   const authState = useMemo(
     () => ({
       isLoading,
@@ -224,20 +187,4 @@ export function ConvexProviderWithBetterAuth({
       </ConvexProviderWithAuth>
     </ConvexAuthInternalContext.Provider>
   );
-}
-
-function browserAddEventListener<K extends keyof WindowEventMap>(
-  type: K,
-  listener: (this: Window, ev: WindowEventMap[K]) => any,
-  options?: boolean | AddEventListenerOptions
-): void {
-  window.addEventListener?.(type, listener, options);
-}
-
-function browserRemoveEventListener<K extends keyof WindowEventMap>(
-  type: K,
-  listener: (this: Window, ev: WindowEventMap[K]) => any,
-  options?: boolean | EventListenerOptions
-): void {
-  window.removeEventListener?.(type, listener, options);
 }

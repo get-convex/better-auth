@@ -87,7 +87,6 @@ export type Mounts = {
             }
           | {
               createdAt: number;
-              id: string;
               privateKey: string;
               publicKey: string;
               table: string;

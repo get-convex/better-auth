@@ -59,7 +59,6 @@ const schema = defineSchema({
     .index("expiresAt", ["expiresAt"]),
 
   jwks: defineTable({
-    id: v.string(),
     publicKey: v.string(),
     privateKey: v.string(),
     createdAt: v.number(),

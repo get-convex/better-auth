@@ -100,12 +100,14 @@ export class BetterAuth {
     };
 
     const authRequestHandler = httpActionGeneric(async (ctx, request) => {
-      return auth(
+      const response = await auth(
         database(ctx, this.component, this.config),
         typeof this.betterAuthOptions === "function"
           ? this.betterAuthOptions(ctx, request)
           : this.betterAuthOptions || {}
       ).handler(request);
+      console.log("response headers", response.headers);
+      return response;
     });
 
     const cors = corsRouter(http, {

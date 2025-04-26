@@ -20,16 +20,6 @@ export const auth = (
 ): ReturnType<typeof betterAuth> => {
   return betterAuth({
     ...config,
-    advanced: {
-      ...config.advanced,
-      defaultCookieAttributes: {
-        ...config.advanced?.defaultCookieAttributes,
-        secure: true,
-        httpOnly: true,
-        //sameSite: "none" as const, // Allows CORS-based cookie sharing across subdomains
-        //partitioned: true, // New browser standards will mandate this for
-      },
-    },
     plugins: [
       ...(config.plugins || []),
       oidcProvider({
