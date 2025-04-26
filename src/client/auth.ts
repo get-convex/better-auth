@@ -49,10 +49,16 @@ export const auth = (
       // Mostly copied from better-auth/plugins/one-time-token/src/index.ts,
       // pending redirect handling to be added to that plugin.
       after: createAuthMiddleware(async (ctx) => {
-        // Only run for /callback/:id
-        if (!ctx.path.startsWith("/callback/") || !ctx.params.id) {
+        const ottPaths = ["/callback/", "/magic-link/verify"];
+        console.log("ctx.path", ctx.path);
+        if (
+          !ottPaths.some((path) => ctx.path.startsWith(path)) ||
+          !ctx.params.id
+        ) {
+          console.log("not an ott path");
           return;
         }
+        console.log("is an ott path");
         const session = ctx.context.newSession;
         if (!session) {
           console.error("No session found");
@@ -65,6 +71,7 @@ export const auth = (
           identifier: `one-time-token:${token}`,
           expiresAt,
         });
+        console.log("generated ott", token);
         const redirectTo = ctx.context.responseHeaders?.get("location");
         if (!redirectTo) {
           console.error("No redirect to found");

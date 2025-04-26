@@ -9,7 +9,6 @@ import {
   sendOTPVerification,
 } from "./email";
 import { magicLink, emailOTP, twoFactor } from "better-auth/plugins";
-import { BetterAuthOptions } from "better-auth";
 
 export const betterAuth: BetterAuth = new BetterAuth(
   components.betterAuth,

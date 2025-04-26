@@ -62,6 +62,8 @@ const schema = defineSchema({
     publicKey: v.string(),
     privateKey: v.string(),
     createdAt: v.number(),
+    // no longer used
+    id: v.optional(v.string()),
   }),
 
   oauthApplication: defineTable({
