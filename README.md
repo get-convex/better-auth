@@ -20,13 +20,18 @@ TanStack example coming soon, but it should work similarly to the others.
 Example usage, see [below](#usage) for more details:
 
 ```tsx
+import { useConvexAuth } from "convex/react";
+
 function AuthenticatedComponent() {
-  const { user, signIn } = useAuth();
-  return user ? (
-    <div>Welcome, {user.email}!</div>
-  ) : (
-    <button onClick={() => signIn()}>Sign In</button>
-  );
+  const { isAuthenticated, isLoading } = useConvexAuth();
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+  if (isAuthenticated) {
+    return <Dashboard />;
+  }
+  return <SignIn />;
 }
 ```
 
@@ -133,21 +138,23 @@ export const authClient = createAuthClient({
 });
 ```
 
-Add to your Convex client using `ConvexProviderWithAuth`:
+Add to your Convex client using `ConvexBetterAuthProvider`:
 
 ```tsx
 // src/index.tsx
-import { ConvexProviderWithAuth, ConvexReactClient } from "convex/react";
-import { useBetterAuth } from "@erquhart/convex-better-auth/react";
+import { ConvexReactClient } from "convex/react";
+import { ConvexBetterAuthProvider } from "@erquhart/convex-better-auth/react";
 import { authClient } from "lib/auth.ts";
 
-const convex = new ConvexReactClient(
-  (
-    <ConvexProviderWithAuth client={convex} useAuth={useBetterAuth(authClient)}>
-      {children}
-    </ConvexProviderWithAuth>
-  )
+const convex = new ConvexReactClient(process.env.CONVEX_URL as string);
+
+const ConvexProvider = ({ children }) => (
+  <ConvexBetterAuthProvider client={convex} authClient={authClient}>
+    {children}
+  </ConvexBetterAuthProvider>
 );
+
+export default ConvexProvider;
 ```
 
 ## Working with Users
