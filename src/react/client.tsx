@@ -11,7 +11,7 @@ import {
   useEffect,
   useMemo,
 } from "react";
-import { convexClient } from "../client/plugin";
+import { convexClient } from "./clientPlugin";
 
 export const createAuthClient = <O extends ClientOptions>(
   options: O

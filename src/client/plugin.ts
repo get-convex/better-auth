@@ -1,70 +1,42 @@
-import type { BetterAuthClientPlugin, Store } from "better-auth";
-import { BetterFetchOption } from "better-auth/client";
+import { generateRandomString } from "better-auth/crypto";
+import { BetterAuthPlugin, createAuthMiddleware } from "better-auth/plugins";
 
-const SESSION_STORAGE_KEY = "__better_auth_session";
-
-export const convexClient = () => {
-  let store: Store | null = null;
+export const convex = () => {
   return {
     id: "convex",
-    getActions(_, $store) {
-      store = $store;
-      return {
-        /**
-         * Notify the session signal.
-         *
-         * This is used to trigger an update in useSession, generally when a new session
-         * token is set.
-         *
-         * @example
-         * ```ts
-         * client.notifySessionSignal();
-         * ```
-         */
-        setSession: (sessionToken: string) => {
-          localStorage.setItem(SESSION_STORAGE_KEY, sessionToken);
-          $store.notify("$sessionSignal");
-        },
-      };
-    },
-    fetchPlugins: [
-      {
-        id: "convex",
-        name: "Convex",
-        hooks: {
-          onRequest: async (context) => {
-            context.headers.set(
-              "Authorization",
-              `Bearer ${localStorage.getItem(SESSION_STORAGE_KEY)}`
-            );
-            return context;
+    hooks: {
+      after: [
+        {
+          matcher: (ctx) => {
+            console.log("matching for", ctx.path);
+            const ottPaths = ["/callback/", "/magic-link/verify"];
+            return ottPaths.some((path) => ctx.path.startsWith(path));
           },
-          onResponse: async (context) => {
-            if (context.response.headers.get("set-auth-token")) {
-              localStorage.setItem(
-                SESSION_STORAGE_KEY,
-                context.response.headers.get("set-auth-token")!
-              );
-              store?.notify("$sessionSignal");
+          handler: createAuthMiddleware(async (ctx) => {
+            const session = ctx.context.newSession;
+            if (!session) {
+              console.error("No session found");
+              return;
             }
-            return context;
-          },
-        },
-        async init(url, options) {
-          if (url.includes("/sign-out")) {
-            localStorage.removeItem(SESSION_STORAGE_KEY);
-            store?.atoms.session?.set({
-              data: null,
-              error: null,
-              isPending: false,
+            const token = generateRandomString(32);
+            const expiresAt = new Date(Date.now() + 3 * 60 * 1000);
+            await ctx.context.internalAdapter.createVerificationValue({
+              value: session.session.token,
+              identifier: `one-time-token:${token}`,
+              expiresAt,
             });
-          }
-          return {
-            url,
-            options: options as BetterFetchOption,
-          };
+            console.log("generated ott", token);
+            const redirectTo = ctx.context.responseHeaders?.get("location");
+            if (!redirectTo) {
+              console.error("No redirect to found");
+              return;
+            }
+            const url = new URL(redirectTo);
+            url.searchParams.set("ott", token);
+            throw ctx.redirect(url.toString());
+          }),
         },
-      },
-    ],
-  } satisfies BetterAuthClientPlugin;
+      ],
+    },
+  } satisfies BetterAuthPlugin;
 };

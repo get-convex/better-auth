@@ -12,7 +12,7 @@ import {
 import { OnDeleteUser, OnCreateUser, OnCreateSession, UseApi } from "./index";
 import { api } from "../component/_generated/api";
 import { transformInput } from "../component/auth";
-import { generateRandomString } from "better-auth/crypto";
+import { convex } from "./plugin";
 
 export const auth = (
   database: () => Adapter,
@@ -43,45 +43,9 @@ export const auth = (
         },
       }),
       oneTimeToken({ disableClientRequest: true }),
+      convex(),
     ],
     database,
-    hooks: {
-      // Mostly copied from better-auth/plugins/one-time-token/src/index.ts,
-      // pending redirect handling to be added to that plugin.
-      after: createAuthMiddleware(async (ctx) => {
-        const ottPaths = ["/callback/", "/magic-link/verify"];
-        console.log("ctx.path", ctx.path);
-        if (
-          !ottPaths.some((path) => ctx.path.startsWith(path)) ||
-          !ctx.params.id
-        ) {
-          console.log("not an ott path");
-          return;
-        }
-        console.log("is an ott path");
-        const session = ctx.context.newSession;
-        if (!session) {
-          console.error("No session found");
-          return;
-        }
-        const token = generateRandomString(32);
-        const expiresAt = new Date(Date.now() + 3 * 60 * 1000);
-        await ctx.context.internalAdapter.createVerificationValue({
-          value: session.session.token,
-          identifier: `one-time-token:${token}`,
-          expiresAt,
-        });
-        console.log("generated ott", token);
-        const redirectTo = ctx.context.responseHeaders?.get("location");
-        if (!redirectTo) {
-          console.error("No redirect to found");
-          return;
-        }
-        const url = new URL(redirectTo);
-        url.searchParams.set("ott", token);
-        throw ctx.redirect(url.toString());
-      }),
-    },
   });
 };
 
