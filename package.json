@@ -1,5 +1,5 @@
 {
-  "name": "@convex-dev/better-auth",
+  "name": "@erquhart/convex-better-auth",
   "description": "A Better Auth component for Convex.",
   "repository": "github:erquhart/convex-better-auth",
   "homepage": "https://github.com/erquhart/convex-better-auth#readme",
