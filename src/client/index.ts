@@ -58,6 +58,7 @@ export class BetterAuth {
       onCreateUser?: OnCreateUser;
       onDeleteUser?: OnDeleteUser;
       onCreateSession?: OnCreateSession;
+      verbose?: boolean;
     }
   ) {}
   async getAuthUserId(ctx: RunQueryCtx & { auth: Auth }) {
@@ -106,7 +107,9 @@ export class BetterAuth {
           ? this.betterAuthOptions(ctx, request)
           : this.betterAuthOptions || {}
       ).handler(request);
-      console.log("response headers", response.headers);
+      if (this.config?.verbose) {
+        console.log("response headers", response.headers);
+      }
       return response;
     });
 
@@ -114,7 +117,7 @@ export class BetterAuth {
       allowedOrigins,
       allowCredentials: true,
       allowedHeaders: ["Authorization", "Set-Auth-Token", "Content-Type"],
-      verbose: true,
+      verbose: this.config?.verbose,
       exposedHeaders: ["Set-Auth-Token"],
     });
 

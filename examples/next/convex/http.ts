@@ -75,6 +75,7 @@ export const betterAuth: BetterAuth = new BetterAuth(
   {
     onCreateUser: internal.example.onCreateUser,
     onDeleteUser: internal.example.onDeleteUser,
+    verbose: true,
   },
 );
 

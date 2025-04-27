@@ -8,8 +8,7 @@ export const convex = () => {
       after: [
         {
           matcher: (ctx) => {
-            console.log("matching for", ctx.path);
-            const ottPaths = ["/callback/", "/magic-link/verify"];
+            const ottPaths = ["/callback/"];
             return ottPaths.some((path) => ctx.path.startsWith(path));
           },
           handler: createAuthMiddleware(async (ctx) => {
@@ -25,7 +24,6 @@ export const convex = () => {
               identifier: `one-time-token:${token}`,
               expiresAt,
             });
-            console.log("generated ott", token);
             const redirectTo = ctx.context.responseHeaders?.get("location");
             if (!redirectTo) {
               console.error("No redirect to found");

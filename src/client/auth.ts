@@ -57,13 +57,16 @@ export const database =
       onCreateUser?: OnCreateUser;
       onDeleteUser?: OnDeleteUser;
       onCreateSession?: OnCreateSession;
+      verbose?: boolean;
     }
   ) =>
   (): Adapter =>
     ({
       id: "convex",
       create: async ({ model, data, select }): Promise<any> => {
-        console.log({ fn: "create", model, data, select });
+        if (config?.verbose) {
+          console.log({ fn: "create", model, data, select });
+        }
         if (select) {
           throw new Error("select is not supported");
         }
@@ -83,7 +86,9 @@ export const database =
         });
       },
       findOne: async ({ model, where, select }): Promise<any> => {
-        console.log({ fn: "findOne", model, where, select });
+        if (config?.verbose) {
+          console.log({ fn: "findOne", model, where, select });
+        }
         if (where.some((w) => w.operator || w.connector)) {
           throw new Error(
             "where clause with operator or connector is not supported"
@@ -96,7 +101,9 @@ export const database =
             field,
             value: value instanceof Date ? value.getTime() : value,
           });
-          console.log("result", result);
+          if (config?.verbose) {
+            console.log("result", result);
+          }
           return result;
         }
         if (
@@ -122,14 +129,16 @@ export const database =
         limit,
         offset,
       }): Promise<any[]> => {
-        console.log({
-          fn: "findMany",
-          model,
-          where,
-          sortBy,
-          limit,
-          offset,
-        });
+        if (config?.verbose) {
+          console.log({
+            fn: "findMany",
+            model,
+            where,
+            sortBy,
+            limit,
+            offset,
+          });
+        }
         if (where?.some((w) => w.operator || w.connector)) {
           throw new Error(
             "where clause with operator or connector is not supported"
@@ -161,7 +170,9 @@ export const database =
         throw new Error("no matching function found");
       },
       count: async ({ model, where }) => {
-        console.log({ fn: "count", model, where });
+        if (config?.verbose) {
+          console.log({ fn: "count", model, where });
+        }
         if (where?.some((w) => w.operator || w.connector)) {
           throw new Error(
             "where clause with operator or connector is not supported"
@@ -171,7 +182,9 @@ export const database =
         // return 0;
       },
       update: async ({ model, where, update }): Promise<any> => {
-        console.log({ fn: "update", model, where, update });
+        if (config?.verbose) {
+          console.log({ fn: "update", model, where, update });
+        }
         if (where?.some((w) => w.operator || w.connector)) {
           throw new Error(
             "where clause with operator or connector is not supported"
@@ -193,7 +206,9 @@ export const database =
         throw new Error("Not implemented");
       },
       delete: async ({ model, where }) => {
-        console.log({ fn: "delete", model, where });
+        if (config?.verbose) {
+          console.log({ fn: "delete", model, where });
+        }
         if (where?.some((w) => w.operator || w.connector)) {
           throw new Error(
             "where clause with operator or connector is not supported"
@@ -216,7 +231,9 @@ export const database =
         // return null
       },
       deleteMany: async ({ model, where }) => {
-        console.log({ fn: "deleteMany", model, where });
+        if (config?.verbose) {
+          console.log({ fn: "deleteMany", model, where });
+        }
         if (where?.some((w) => w.connector)) {
           throw new Error("where clause with connector is not supported");
         }
@@ -241,7 +258,9 @@ export const database =
         // return count;
       },
       updateMany: async ({ model, where, update }) => {
-        console.log({ fn: "updateMany", model, where, update });
+        if (config?.verbose) {
+          console.log({ fn: "updateMany", model, where, update });
+        }
         if (where?.some((w) => w.operator || w.connector)) {
           throw new Error(
             "where clause with operator or connector is not supported"

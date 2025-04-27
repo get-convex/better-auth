@@ -74,7 +74,6 @@ const getByArgsValidator = {
 export const getByQuery = query({
   args: getByArgsValidator,
   handler: async (ctx, args) => {
-    console.log({ fn: "getBy", args });
     const doc = await getBy(ctx, args);
     if (!doc) {
       return;
