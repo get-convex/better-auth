@@ -60,7 +60,7 @@ Run `npm create convex` or follow any of the [quickstarts](https://docs.convex.d
 Install the component and Better Auth:
 
 ```bash
-npm install @erquhart/convex-better-auth better-auth@1.2.5
+npm install @erquhart/convex-better-auth better-auth@1.2.7
 ```
 
 Create a `convex.config.ts` file in your app's `convex/` folder and install the component by calling `use`:

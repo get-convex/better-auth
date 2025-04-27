@@ -351,7 +351,7 @@ function Home() {
 
               <CodeBlock
                 language="bash"
-                code="npm install @erquhart/convex-better-auth better-auth@1.2.5"
+                code="npm install @erquhart/convex-better-auth better-auth@1.2.7"
               />
             </div>
 
