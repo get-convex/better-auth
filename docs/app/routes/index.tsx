@@ -492,25 +492,38 @@ function Home() {
                 `}
               />
 
-              <p className="mb-8">
-                Add to Convex client using `ConvexProviderWithAuth` instead of
-                `ConvexProvider`. The specific file this happens in will depend
-                on your framework.
+              <p className="mt-8 mb-8">
+                Set up the Convex client using{" "}
+                <code className="px-1 rounded-md bg-muted">
+                  ConvexBetterAuthProvider
+                </code>
+                instead of{" "}
+                <code className="mx-1 rounded-md bg-muted">ConvexProvider</code>
+                . The specific file this happens in will depend on your
+                framework.
               </p>
 
               <CodeBlock
                 language="typescript"
                 filename="src/index.tsx"
                 code={stripIndent`
+                  "use client"
+
                   import { ConvexReactClient } from 'convex/react'
-                  import { ConvexProviderWithBetterAuth } from '@erquhart/convex-better-auth/react'
-                  import { authClient } from 'lib/auth.ts'
+                  import { ConvexBetterAuthProvider } from '@erquhart/convex-better-auth/react'
+                  import { authClient } from 'path/to/your/auth.ts'
 
                   const convex = new ConvexReactClient(
-                    <ConvexProviderWithBetterAuth client={convex} authClient={authClient}>
+                    process.env.CONVEX_URL as string,
+                  );
+
+                  const ConvexProvider = ({ children }: PropsWithChildren) => (
+                    <ConvexBetterAuthProvider client={convex} authClient={authClient}>
                       {children}
-                    </ConvexProviderWithBetterAuth>
+                    </ConvexBetterAuthProvider>
                   )
+
+                  export default ConvexProvider
                 `}
               />
             </div>
