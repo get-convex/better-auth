@@ -420,13 +420,14 @@ function Home() {
                 filename="convex/auth.ts"
                 code={stripIndent`
                   import { BetterAuth } from '@erquhart/convex-better-auth'
-                  import type { BetterAuthOptions } from 'better-auth'
-                  import { components, internal } from './_generated/api'
+                  import { components } from './_generated/api'
 
                   export const betterAuth: BetterAuth = new BetterAuth(
                     components.betterAuth,
                     {
                       trustedOrigins: [process.env.SITE_URL as string],
+
+                      // Example config for GitHub social provider
                       socialProviders: {
                         github: {
                           clientId: process.env.GITHUB_CLIENT_ID as string,
@@ -434,11 +435,6 @@ function Home() {
                         },
                       },
                     },
-                    {
-                      onCreateUser: internal.myHooks.onCreateUser,
-                      onDeleteUser: internal.myHooks.onDeleteUser,
-                      onCreateSession: internal.myHooks.onCreateSession,
-                    }
                   )
                 `}
               />
@@ -487,7 +483,10 @@ function Home() {
 
                   export const authClient = createAuthClient({
                     // This should be your Convex site URL, which ends in .convex.site
-                    baseURL: 'https://funky-penguin-123.convex.site'
+                    baseURL: 'https://funky-penguin-123.convex.site',
+                    
+                    // The rest of your Better Auth client config goes here,
+                    // such as client plugins
                   })
                 `}
               />
@@ -626,8 +625,8 @@ function Home() {
           <div className="space-y-12">
             <p className="text-lg">
               Better Auth provides comprehensive documentation for all its
-              features. You can use all Better Auth features exactly as
-              documented in the{" "}
+              features. Better Auth features supported by the Convex component
+              can be used as documented in the{" "}
               <a
                 href="https://www.better-auth.com/docs/basic-usage"
                 className="text-primary underline"
@@ -635,7 +634,8 @@ function Home() {
                 Better Auth documentation
               </a>
               , including email/password auth, social providers, magic links,
-              and more.
+              and more. Clear supported/unsupported functionality lists will be
+              added here soon.
             </p>
 
             <div>
