@@ -8,7 +8,7 @@ import { asyncMap } from "convex-helpers";
 import { v } from "convex/values";
 import { api } from "../component/_generated/api";
 import { Doc, Id, TableNames } from "../component/_generated/dataModel";
-import schema, { isUniqueField } from "../component/schema";
+import schema from "../component/schema";
 import {
   FunctionHandle,
   paginationOptsValidator,
@@ -44,6 +44,7 @@ const getBy = async (
     table: string;
     field: string;
     value: any;
+    unique?: boolean;
   }
 ) => {
   if (args.field === "id") {
@@ -52,14 +53,13 @@ const getBy = async (
   const query = ctx.db
     .query(args.table as any)
     .withIndex(args.field as any, (q) => q.eq(args.field, args.value));
-  return isUniqueField(args.table as any, args.field as any)
-    ? await query.unique()
-    : await query.first();
+  return args.unique ? await query.unique() : await query.first();
 };
 
 const getByArgsValidator = {
   table: v.string(),
   field: v.string(),
+  unique: v.optional(v.boolean()),
   value: v.union(
     v.string(),
     v.number(),

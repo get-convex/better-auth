@@ -161,6 +161,7 @@ export type Mounts = {
         field: string;
         onDeleteHandle?: string;
         table: string;
+        unique?: boolean;
         value: string | number | boolean | Array<string> | Array<number> | null;
       },
       any
@@ -205,6 +206,7 @@ export type Mounts = {
       {
         field: string;
         table: string;
+        unique?: boolean;
         value: string | number | boolean | Array<string> | Array<number> | null;
       },
       any
@@ -215,6 +217,7 @@ export type Mounts = {
       {
         field: string;
         table: string;
+        unique?: boolean;
         value: string | number | boolean | Array<string> | Array<number> | null;
       },
       any

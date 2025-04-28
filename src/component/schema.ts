@@ -1,6 +1,5 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-import { TableNames } from "./_generated/dataModel";
 
 const schema = defineSchema({
   user: defineTable({
@@ -105,29 +104,3 @@ const schema = defineSchema({
 });
 
 export default schema;
-
-type Fields<T extends TableNames> =
-  (typeof schema.tables)[T]["validator"]["fieldPaths"];
-
-type UniqueFields = {
-  [K in TableNames]: Fields<K>[];
-};
-
-const uniqueFields: UniqueFields = {
-  account: [],
-  verification: [],
-  jwks: [],
-  oauthConsent: [],
-  twoFactor: [],
-  user: ["email"],
-  session: ["token"],
-  oauthApplication: ["clientId"],
-  oauthAccessToken: ["accessToken", "refreshToken"],
-};
-
-export const isUniqueField = <T extends keyof typeof uniqueFields>(
-  table: T,
-  field: (typeof uniqueFields)[T][number]
-) => {
-  return uniqueFields[table]?.some((f) => f === field);
-};

@@ -10,20 +10,24 @@ const requireEnv = (name: string) => {
   return value;
 };
 
-export const betterAuth = new BetterAuth(components.betterAuth, {
-  trustedOrigins: [requireEnv("SITE_URL")],
-  socialProviders: {
-    github: {
-      clientId: requireEnv("GITHUB_CLIENT_ID"),
-      clientSecret: requireEnv("GITHUB_CLIENT_SECRET"),
+export const betterAuth = new BetterAuth(
+  components.betterAuth,
+  {
+    trustedOrigins: [requireEnv("SITE_URL")],
+    socialProviders: {
+      github: {
+        clientId: requireEnv("GITHUB_CLIENT_ID"),
+        clientSecret: requireEnv("GITHUB_CLIENT_SECRET"),
+      },
+    },
+    user: {
+      deleteUser: {
+        enabled: true,
+      },
     },
   },
-  user: {
-    deleteUser: {
-      enabled: true,
-    },
-  },
-});
+  { verbose: true }
+);
 
 const http = httpRouter();
 

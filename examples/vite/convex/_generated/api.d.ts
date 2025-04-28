@@ -175,6 +175,7 @@ export declare const components: {
           field: string;
           onDeleteHandle?: string;
           table: string;
+          unique?: boolean;
           value:
             | string
             | number
@@ -225,6 +226,7 @@ export declare const components: {
         {
           field: string;
           table: string;
+          unique?: boolean;
           value:
             | string
             | number
@@ -241,6 +243,7 @@ export declare const components: {
         {
           field: string;
           table: string;
+          unique?: boolean;
           value:
             | string
             | number

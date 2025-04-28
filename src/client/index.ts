@@ -4,7 +4,6 @@ import {
   type DefaultFunctionArgs,
   type Expand,
   type FunctionReference,
-  type GenericActionCtx,
   type GenericDataModel,
   type GenericMutationCtx,
   type GenericQueryCtx,
@@ -45,15 +44,10 @@ export type OnCreateSession = EventFunction<{
   session: Infer<typeof sessionValidator>;
 }>;
 
-export class BetterAuth {
+export class BetterAuth<O extends BetterAuthOptions = BetterAuthOptions> {
   constructor(
     public component: UseApi<typeof api>,
-    public betterAuthOptions?:
-      | BetterAuthOptions
-      | ((
-          ctx: GenericActionCtx<GenericDataModel>,
-          request: Request
-        ) => BetterAuthOptions),
+    public betterAuthOptions?: O,
     public config?: {
       onCreateUser?: OnCreateUser;
       onDeleteUser?: OnDeleteUser;
@@ -61,6 +55,7 @@ export class BetterAuth {
       verbose?: boolean;
     }
   ) {}
+
   async getAuthUserId(ctx: RunQueryCtx & { auth: Auth }) {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
@@ -102,10 +97,13 @@ export class BetterAuth {
 
     const authRequestHandler = httpActionGeneric(async (ctx, request) => {
       const response = await auth(
-        database(ctx, this.component, this.config),
-        typeof this.betterAuthOptions === "function"
-          ? this.betterAuthOptions(ctx, request)
-          : this.betterAuthOptions || {}
+        database(
+          ctx,
+          this.component,
+          this.betterAuthOptions || {},
+          this.config
+        ),
+        this.betterAuthOptions || {}
       ).handler(request);
       if (this.config?.verbose) {
         console.log("response headers", response.headers);

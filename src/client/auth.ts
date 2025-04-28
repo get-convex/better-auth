@@ -1,5 +1,5 @@
 import { Adapter, betterAuth, BetterAuthOptions } from "better-auth";
-import { createAuthMiddleware, jwt } from "better-auth/plugins";
+import { jwt } from "better-auth/plugins";
 import { bearer } from "better-auth/plugins";
 import { oidcProvider } from "better-auth/plugins";
 import { oneTimeToken } from "better-auth/plugins/one-time-token";
@@ -13,6 +13,7 @@ import { OnDeleteUser, OnCreateUser, OnCreateSession, UseApi } from "./index";
 import { api } from "../component/_generated/api";
 import { transformInput } from "../component/auth";
 import { convex } from "./plugin";
+import { getSchema } from "better-auth/db";
 
 export const auth = (
   database: () => Adapter,
@@ -34,25 +35,24 @@ export const auth = (
             sub: `${session.user.id}|${session.session.id}`,
           }),
         },
-        jwks: {
-          //disablePrivateKeyEncryption: true,
-          keyPairConfig: {
-            alg: "RS256",
-            extractable: true,
-          } as any,
-        },
       }),
       oneTimeToken({ disableClientRequest: true }),
       convex(),
     ],
     database,
+    advanced: {
+      database: {
+        generateId: false,
+      },
+    },
   });
 };
 
 export const database =
-  (
+  <O extends BetterAuthOptions>(
     ctx: GenericActionCtx<GenericDataModel>,
     component: UseApi<typeof api>,
+    betterAuthOptions: O,
     config?: {
       onCreateUser?: OnCreateUser;
       onDeleteUser?: OnDeleteUser;
@@ -96,9 +96,11 @@ export const database =
         }
         if (where.length === 1) {
           const { value, field } = where[0];
+          const schema = getSchema(betterAuthOptions);
           const result = await ctx.runQuery(component.auth.getBy, {
             table: model,
             field,
+            unique: field === "id" ? true : schema[model].fields[field].unique,
             value: value instanceof Date ? value.getTime() : value,
           });
           if (config?.verbose) {
