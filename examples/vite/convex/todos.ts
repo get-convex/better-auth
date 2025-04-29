@@ -1,11 +1,11 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { betterAuth } from "./http";
+import { betterAuthComponent } from "./auth";
 
 export const get = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await betterAuth.getAuthUserId(ctx);
+    const userId = await betterAuthComponent.getAuthUserId(ctx);
     if (!userId) {
       return [];
     }
@@ -20,7 +20,7 @@ export const get = query({
 export const create = mutation({
   args: { text: v.string() },
   handler: async (ctx, args) => {
-    const userId = await betterAuth.getAuthUserId(ctx);
+    const userId = await betterAuthComponent.getAuthUserId(ctx);
     if (!userId) {
       throw new Error("Not authenticated");
     }
@@ -39,7 +39,7 @@ export const create = mutation({
 export const toggle = mutation({
   args: { id: v.id("todos") },
   handler: async (ctx, args) => {
-    const userId = await betterAuth.getAuthUserId(ctx);
+    const userId = await betterAuthComponent.getAuthUserId(ctx);
     if (!userId) {
       throw new Error("Not authenticated");
     }
@@ -59,7 +59,7 @@ export const toggle = mutation({
 export const remove = mutation({
   args: { id: v.id("todos") },
   handler: async (ctx, args) => {
-    const userId = await betterAuth.getAuthUserId(ctx);
+    const userId = await betterAuthComponent.getAuthUserId(ctx);
     if (!userId) {
       throw new Error("Not authenticated");
     }

@@ -1,0 +1,136 @@
+import { BetterAuth, sessionValidator } from "@convex-dev/better-auth";
+import { components, internal } from "./_generated/api";
+import { twoFactor } from "better-auth/plugins";
+import { emailOTP } from "better-auth/plugins";
+import { sendMagicLink, sendOTPVerification } from "./email";
+import { sendEmailVerification, sendResetPassword } from "./email";
+import { magicLink } from "better-auth/plugins";
+import { internalMutation } from "./_generated/server";
+import { v } from "convex/values";
+import schema from "./schema";
+import { asyncMap } from "convex-helpers";
+
+const authApi = internal.auth as any;
+const onCreateUserFn = internal.auth.onCreateUser as any;
+const onDeleteUserFn = internal.example.onDeleteUser as any;
+
+export const betterAuthComponent = new BetterAuth(
+  components.betterAuth,
+  {
+    trustedOrigins: ["http://localhost:3000", "https://localhost:3000"],
+    account: {
+      accountLinking: {
+        enabled: true,
+      },
+    },
+    emailVerification: {
+      sendVerificationEmail: async ({ user, url }) => {
+        await sendEmailVerification({
+          to: user.email,
+          url,
+        });
+      },
+    },
+    emailAndPassword: {
+      enabled: true,
+      requireEmailVerification: true,
+      sendResetPassword: async ({ user, url }) => {
+        await sendResetPassword({
+          to: user.email,
+          url,
+        });
+      },
+    },
+    plugins: [
+      magicLink({
+        sendMagicLink: async ({ email, url }) => {
+          await sendMagicLink({
+            to: email,
+            url,
+          });
+        },
+      }),
+      emailOTP({
+        async sendVerificationOTP({ email, otp }) {
+          await sendOTPVerification({
+            to: email,
+            code: otp,
+          });
+        },
+      }),
+      twoFactor(),
+    ],
+    socialProviders: {
+      github: {
+        clientId: process.env.GITHUB_CLIENT_ID as string,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+      },
+      google: {
+        clientId: process.env.GOOGLE_CLIENT_ID as string,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      },
+    },
+    user: {
+      deleteUser: {
+        enabled: true,
+      },
+    },
+  },
+  {
+    verbose: true,
+    authApi,
+    onCreateUser: onCreateUserFn,
+    onDeleteUser: onDeleteUserFn,
+  },
+);
+
+export const { create, getBy, update, deleteBy } =
+  betterAuthComponent.authApi();
+
+export const onCreateUser = internalMutation({
+  args: {
+    user: v.object({
+      ...schema.tables.users.validator.fields,
+      _id: v.string(),
+      _creationTime: v.number(),
+    }),
+  },
+  handler: async (ctx, args) => {
+    // Use this to make database changes when a user is created.
+    // This mutation runs within the create user mutation, so this
+    // mutation is guaranteed to run if the user is created, or
+    // else the user is not created.
+    await ctx.db.insert("todos", {
+      userId: args.user._id,
+      text: "Test todo",
+      completed: false,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+export const onDeleteUser = internalMutation({
+  args: {
+    id: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const todos = await ctx.db
+      .query("todos")
+      .withIndex("userId", (q) => q.eq("userId", args.id))
+      .collect();
+    await asyncMap(todos, async (todo) => {
+      await ctx.db.delete(todo._id);
+    });
+  },
+});
+
+export const onCreateSession = internalMutation({
+  args: {
+    session: sessionValidator,
+    user: schema.tables.users.validator,
+  },
+  handler: async () => {
+    // do something with the session and user
+  },
+});

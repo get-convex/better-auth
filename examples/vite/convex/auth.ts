@@ -1,25 +1,49 @@
-import { internalMutation, query } from "./_generated/server";
-import { asyncMap } from "convex-helpers";
-import { betterAuthComponent } from "./auth";
-import { sessionValidator } from "@convex-dev/better-auth";
+import { BetterAuth, sessionValidator } from "@convex-dev/better-auth";
+import { components, internal } from "./_generated/api";
+import { requireEnv } from "./util";
 import { v } from "convex/values";
 import schema from "./schema";
-import { Id } from "./_generated/dataModel";
+import { internalMutation } from "./_generated/server";
+import { asyncMap } from "convex-helpers";
 
-export const getCurrentUser = query({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await betterAuthComponent.getAuthUserId(ctx);
-    if (!userId) {
-      return null;
-    }
-    return await ctx.db.get(userId as Id<"users">);
+const authApi = internal.auth as any;
+const onCreateUserFn = internal.auth.onCreateUser as any;
+const onDeleteUserFn = internal.auth.onDeleteUser as any;
+
+export const betterAuthComponent = new BetterAuth(
+  components.betterAuth,
+  {
+    trustedOrigins: [requireEnv("SITE_URL")],
+    socialProviders: {
+      github: {
+        clientId: requireEnv("GITHUB_CLIENT_ID"),
+        clientSecret: requireEnv("GITHUB_CLIENT_SECRET"),
+      },
+    },
+    user: {
+      deleteUser: {
+        enabled: true,
+      },
+      modelName: "users",
+      fields: {
+        name: "full_name",
+      },
+    },
   },
-});
+  {
+    verbose: true,
+    authApi,
+    onCreateUser: onCreateUserFn,
+    onDeleteUser: onDeleteUserFn,
+  }
+);
+
+export const { create, getBy, update, deleteBy } =
+  betterAuthComponent.authApi();
 
 export const onCreateUser = internalMutation({
   args: {
-    user: v.object({
+    doc: v.object({
       ...schema.tables.users.validator.fields,
       _id: v.string(),
       _creationTime: v.number(),
@@ -31,7 +55,7 @@ export const onCreateUser = internalMutation({
     // mutation is guaranteed to run if the user is created, or
     // else the user is not created.
     await ctx.db.insert("todos", {
-      userId: args.user._id,
+      userId: args.doc._id,
       text: "Test todo",
       completed: false,
       createdAt: Date.now(),

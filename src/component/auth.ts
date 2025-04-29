@@ -29,7 +29,7 @@ export const transformInput = (model: string, data: Record<string, any>) => {
   };
 };
 
-const transformOutput = (
+export const transformOutput = (
   { _id, _creationTime, ...data }: Doc<TableNames>,
   _model: string
 ) => {
@@ -38,7 +38,7 @@ const transformOutput = (
   return { id: _id, ...data };
 };
 
-const getBy = async (
+export const getByHelper = async (
   ctx: QueryCtx,
   args: {
     table: string;
@@ -56,7 +56,7 @@ const getBy = async (
   return args.unique ? await query.unique() : await query.first();
 };
 
-const getByArgsValidator = {
+export const getByArgsValidator = {
   table: v.string(),
   field: v.string(),
   unique: v.optional(v.boolean()),
@@ -74,7 +74,7 @@ const getByArgsValidator = {
 export const getByQuery = query({
   args: getByArgsValidator,
   handler: async (ctx, args) => {
-    const doc = await getBy(ctx, args);
+    const doc = await getByHelper(ctx, args);
     if (!doc) {
       return;
     }
@@ -83,18 +83,20 @@ export const getByQuery = query({
 });
 export { getByQuery as getBy };
 
+export const createArgsValidator = v.object({
+  input: v.union(
+    ...Object.values(schema.tables).map((table) =>
+      v.object({
+        table: v.string(),
+        ...table.validator.fields,
+      })
+    )
+  ),
+  onCreateHandle: v.optional(v.string()),
+});
+
 export const create = mutation({
-  args: {
-    input: v.union(
-      ...Object.values(schema.tables).map((table) =>
-        v.object({
-          table: v.string(),
-          ...table.validator.fields,
-        })
-      )
-    ),
-    onCreateHandle: v.optional(v.string()),
-  },
+  args: createArgsValidator,
   handler: async (ctx, args) => {
     const { table, ...input } = args.input;
     const id = await ctx.db.insert(table as any, {
@@ -121,7 +123,9 @@ export const create = mutation({
   },
 });
 
-const updateArgsInputValidator = <T extends TableNames>(table: T) => {
+export const updateArgsInputValidator = <T extends TableNames | "user">(
+  table: T
+) => {
   return v.object({
     table: v.literal(table),
     where: v.object({ field: v.string(), value: getByArgsValidator.value }),
@@ -129,21 +133,26 @@ const updateArgsInputValidator = <T extends TableNames>(table: T) => {
   });
 };
 
+export const updateArgs = {
+  input: v.union(
+    updateArgsInputValidator("account"),
+    updateArgsInputValidator("session"),
+    updateArgsInputValidator("verification"),
+
+    // this table is in the parent, but keeping
+    // validators together for this shared function
+    updateArgsInputValidator("user")
+  ),
+};
+
 export const update = mutation({
-  args: {
-    input: v.union(
-      updateArgsInputValidator("user"),
-      updateArgsInputValidator("account"),
-      updateArgsInputValidator("session"),
-      updateArgsInputValidator("verification")
-    ),
-  },
+  args: updateArgs,
   handler: async (ctx, args) => {
     const { table, where, value } = args.input;
     const doc =
       where.field === "id"
         ? await ctx.db.get(where.value as Id<any>)
-        : await getBy(ctx, { table, ...where });
+        : await getByHelper(ctx, { table, ...where });
     if (!doc) {
       throw new Error(`Failed to update ${table}`);
     }
@@ -161,7 +170,7 @@ export const deleteBy = mutation({
     onDeleteHandle: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const doc = await getBy(ctx, args);
+    const doc = await getByHelper(ctx, args);
     if (!doc) {
       return;
     }
@@ -280,7 +289,7 @@ export const deleteOldVerifications = action({
 export const deleteAllForUserPage = mutation({
   args: {
     table: v.string(),
-    userId: v.id("user"),
+    userId: v.string(),
     paginationOpts: v.optional(paginationOptsValidator),
   },
   handler: async (ctx, args) => {
@@ -302,7 +311,7 @@ export const deleteAllForUserPage = mutation({
 export const deleteAllForUser = action({
   args: {
     table: v.string(),
-    userId: v.id("user"),
+    userId: v.string(),
   },
   handler: async (ctx, args) => {
     let count = 0;

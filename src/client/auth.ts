@@ -3,13 +3,12 @@ import { jwt } from "better-auth/plugins";
 import { bearer } from "better-auth/plugins";
 import { oidcProvider } from "better-auth/plugins";
 import { oneTimeToken } from "better-auth/plugins/one-time-token";
-import { Id } from "../component/_generated/dataModel";
 import {
   createFunctionHandle,
   GenericActionCtx,
   GenericDataModel,
 } from "convex/server";
-import { OnDeleteUser, OnCreateUser, OnCreateSession, UseApi } from "./index";
+import { UseApi, BetterAuth } from "./index";
 import { api } from "../component/_generated/api";
 import { transformInput } from "../component/auth";
 import { convex } from "./plugin";
@@ -53,15 +52,19 @@ export const database =
     ctx: GenericActionCtx<GenericDataModel>,
     component: UseApi<typeof api>,
     betterAuthOptions: O,
-    config?: {
-      onCreateUser?: OnCreateUser;
-      onDeleteUser?: OnDeleteUser;
-      onCreateSession?: OnCreateSession;
-      verbose?: boolean;
-    }
+    config: InstanceType<typeof BetterAuth>["config"]
   ) =>
-  (): Adapter =>
-    ({
+  (): Adapter => {
+    const getModelName = (model: string) => {
+      if (model === "user") {
+        return betterAuthOptions.user?.modelName || "user";
+      }
+      return model;
+    };
+    const shouldUseInternalFunction = (model: string) => {
+      return model !== "user";
+    };
+    return {
       id: "convex",
       create: async ({ model, data, select }): Promise<any> => {
         if (config?.verbose) {
@@ -70,9 +73,13 @@ export const database =
         if (select) {
           throw new Error("select is not supported");
         }
-        return ctx.runMutation(component.auth.create, {
+        const modelName = getModelName(model);
+        const createFn = shouldUseInternalFunction(model)
+          ? component.auth.create
+          : await createFunctionHandle(config.authApi.create);
+        return ctx.runMutation(createFn, {
           input: {
-            table: model,
+            table: modelName,
             ...transformInput(model, data),
           },
           onCreateHandle:
@@ -97,10 +104,15 @@ export const database =
         if (where.length === 1) {
           const { value, field } = where[0];
           const schema = getSchema(betterAuthOptions);
-          const result = await ctx.runQuery(component.auth.getBy, {
-            table: model,
+          const modelName = getModelName(model);
+          const getByFn = shouldUseInternalFunction(model)
+            ? component.auth.getBy
+            : await createFunctionHandle(config.authApi.getBy);
+          const result = await ctx.runQuery(getByFn, {
+            table: modelName,
             field,
-            unique: field === "id" ? true : schema[model].fields[field].unique,
+            unique:
+              field === "id" ? true : schema[modelName].fields[field].unique,
             value: value instanceof Date ? value.getTime() : value,
           });
           if (config?.verbose) {
@@ -152,7 +164,7 @@ export const database =
           where[0].field === "userId"
         ) {
           return ctx.runQuery(component.auth.getAccountsByUserId, {
-            userId: where[0].value as Id<"user">,
+            userId: where[0].value as any,
           });
         }
         if (model === "jwks") {
@@ -192,11 +204,15 @@ export const database =
             "where clause with operator or connector is not supported"
           );
         }
+        const modelName = getModelName(model);
         if (where?.length === 1) {
           const { value, field } = where[0];
-          return ctx.runMutation(component.auth.update, {
+          const updateFn = shouldUseInternalFunction(model)
+            ? component.auth.update
+            : await createFunctionHandle(config.authApi.update);
+          return ctx.runMutation(updateFn, {
             input: {
-              table: model as any,
+              table: modelName,
               where: {
                 field,
                 value: value instanceof Date ? value.getTime() : value,
@@ -216,10 +232,14 @@ export const database =
             "where clause with operator or connector is not supported"
           );
         }
+        const modelName = getModelName(model);
         if (where?.length === 1) {
           const { field, value } = where[0];
-          await ctx.runMutation(component.auth.deleteBy, {
-            table: model,
+          const deleteFn = shouldUseInternalFunction(model)
+            ? component.auth.deleteBy
+            : await createFunctionHandle(config.authApi.deleteBy);
+          await ctx.runMutation(deleteFn, {
+            table: modelName,
             field,
             value: value instanceof Date ? value.getTime() : value,
             onDeleteHandle:
@@ -253,7 +273,7 @@ export const database =
         if (where?.length === 1 && where[0].field === "userId") {
           return ctx.runAction(component.auth.deleteAllForUser, {
             table: model,
-            userId: where[0].value as Id<"user">,
+            userId: where[0].value as any,
           });
         }
         throw new Error("no matching function found");
@@ -280,4 +300,5 @@ export const database =
           return res[0] || null;
           */
       },
-    }) satisfies Adapter;
+    } satisfies Adapter;
+  };

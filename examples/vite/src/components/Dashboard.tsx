@@ -7,7 +7,6 @@ import { authClient } from "@/auth-client";
 
 export function Dashboard() {
   const user = useQuery(api.example.getCurrentUser);
-  const deleteAccount = useMutation(api.example.deleteAccount);
 
   if (!user) {
     return <div>Loading...</div>;
@@ -19,7 +18,6 @@ export function Dashboard() {
         "Are you sure you want to delete your account? This action cannot be undone."
       )
     ) {
-      await deleteAccount();
       await authClient.deleteUser();
     }
   };

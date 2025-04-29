@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as auth from "../auth.js";
 import type * as email from "../email.js";
 import type * as emails_components_BaseEmail from "../emails/components/BaseEmail.js";
 import type * as emails_magicLink from "../emails/magicLink.js";
@@ -17,6 +18,7 @@ import type * as emails_verifyOTP from "../emails/verifyOTP.js";
 import type * as example from "../example.js";
 import type * as http from "../http.js";
 import type * as todos from "../todos.js";
+import type * as util from "../util.js";
 
 import type {
   ApiFromModules,
@@ -33,6 +35,7 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
   email: typeof email;
   "emails/components/BaseEmail": typeof emails_components_BaseEmail;
   "emails/magicLink": typeof emails_magicLink;
@@ -42,6 +45,7 @@ declare const fullApi: ApiFromModules<{
   example: typeof example;
   http: typeof http;
   todos: typeof todos;
+  util: typeof util;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 
@@ -62,16 +66,6 @@ export declare const components: {
         "internal",
         {
           input:
-            | {
-                createdAt: number;
-                email: string;
-                emailVerified: boolean;
-                image?: string;
-                name: string;
-                table: string;
-                twoFactorEnabled?: boolean;
-                updatedAt: number;
-              }
             | {
                 createdAt: number;
                 expiresAt: number;
@@ -117,41 +111,6 @@ export declare const components: {
                 privateKey: string;
                 publicKey: string;
                 table: string;
-              }
-            | {
-                clientId: string;
-                clientSecret?: string;
-                createdAt?: number;
-                disabled?: boolean;
-                icon?: string;
-                metadata?: string;
-                name?: string;
-                redirectURLs?: string;
-                table: string;
-                type?: string;
-                updatedAt?: number;
-                userId?: string;
-              }
-            | {
-                accessToken: string;
-                accessTokenExpiresAt?: number;
-                clientId?: string;
-                createdAt?: number;
-                refreshToken?: string;
-                refreshTokenExpiresAt?: number;
-                scopes?: string;
-                table: string;
-                updatedAt?: number;
-                userId?: string;
-              }
-            | {
-                clientId?: string;
-                consentGiven?: boolean;
-                createdAt?: number;
-                scopes?: string;
-                table: string;
-                updatedAt?: number;
-                userId?: string;
               };
           onCreateHandle?: string;
         },
@@ -187,6 +146,7 @@ export declare const components: {
           field: string;
           onDeleteHandle?: string;
           table: string;
+          unique?: boolean;
           value:
             | string
             | number
@@ -237,6 +197,7 @@ export declare const components: {
         {
           field: string;
           table: string;
+          unique?: boolean;
           value:
             | string
             | number
@@ -253,6 +214,7 @@ export declare const components: {
         {
           field: string;
           table: string;
+          unique?: boolean;
           value:
             | string
             | number
@@ -279,20 +241,6 @@ export declare const components: {
         "internal",
         {
           input:
-            | {
-                table: "user";
-                value: Record<string, any>;
-                where: {
-                  field: string;
-                  value:
-                    | string
-                    | number
-                    | boolean
-                    | Array<string>
-                    | Array<number>
-                    | null;
-                };
-              }
             | {
                 table: "account";
                 value: Record<string, any>;
@@ -334,13 +282,24 @@ export declare const components: {
                     | Array<number>
                     | null;
                 };
+              }
+            | {
+                table: "user";
+                value: Record<string, any>;
+                where: {
+                  field: string;
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                };
               };
         },
         any
       >;
-    };
-    lib: {
-      getUserById: FunctionReference<"query", "internal", { id: string }, any>;
     };
   };
 };

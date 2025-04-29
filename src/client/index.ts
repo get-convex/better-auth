@@ -3,27 +3,29 @@ import {
   type Auth,
   type DefaultFunctionArgs,
   type Expand,
+  FunctionHandle,
   type FunctionReference,
   type GenericDataModel,
-  type GenericMutationCtx,
   type GenericQueryCtx,
   type HttpRouter,
   httpActionGeneric,
+  internalMutationGeneric,
+  internalQueryGeneric,
 } from "convex/server";
-import { type GenericId, type Infer, v } from "convex/values";
+import { type GenericId, Infer, v } from "convex/values";
 import type { api } from "../component/_generated/api";
-import type { Id } from "../component/_generated/dataModel";
 import schema from "../component/schema";
 import { auth, database } from "./auth";
 import corsRouter from "./cors";
+import {
+  createArgsValidator,
+  getByArgsValidator,
+  getByHelper,
+  transformOutput,
+  updateArgs,
+} from "../component/auth";
 
 export { schema };
-
-export const userValidator = v.object({
-  ...schema.tables.user.validator.fields,
-  _id: v.string(),
-  _creationTime: v.number(),
-});
 
 export const sessionValidator = v.object({
   ...schema.tables.session.validator.fields,
@@ -38,20 +40,36 @@ export type EventFunction<T extends DefaultFunctionArgs> = FunctionReference<
   T
 >;
 
-export type OnCreateUser = EventFunction<{ user: Infer<typeof userValidator> }>;
-export type OnDeleteUser = EventFunction<{ id: string }>;
-export type OnCreateSession = EventFunction<{
-  session: Infer<typeof sessionValidator>;
-}>;
-
-export class BetterAuth<O extends BetterAuthOptions = BetterAuthOptions> {
+export class BetterAuth<
+  DataModel extends GenericDataModel,
+  O extends BetterAuthOptions = BetterAuthOptions,
+  Id extends string = string,
+> {
   constructor(
     public component: UseApi<typeof api>,
-    public betterAuthOptions?: O,
-    public config?: {
-      onCreateUser?: OnCreateUser;
-      onDeleteUser?: OnDeleteUser;
-      onCreateSession?: OnCreateSession;
+    public betterAuthOptions: O,
+    public config: {
+      authApi: {
+        create: FunctionReference<"mutation", "internal", any>;
+        getBy: FunctionReference<"query", "internal", any>;
+        update: FunctionReference<"mutation", "internal", any>;
+        deleteBy: FunctionReference<"mutation", "internal", any>;
+      };
+      onCreateUser?: FunctionReference<"mutation", "internal", { userId: Id }>;
+      onDeleteUser?: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          id: DataModel["users"]["document"]["_id"];
+        }
+      >;
+      onCreateSession?: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          session: Infer<typeof sessionValidator>;
+        }
+      >;
       verbose?: boolean;
     }
   ) {}
@@ -61,22 +79,95 @@ export class BetterAuth<O extends BetterAuthOptions = BetterAuthOptions> {
     if (!identity) {
       return null;
     }
-    return identity.subject;
+    return identity.subject as Id;
   }
-  async getAuthUser(ctx: RunQueryCtx & { auth: Auth }) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return null;
-    }
-    return ctx.runQuery(this.component.lib.getUserById, {
-      id: identity.subject as Id<"user">,
-    });
+
+  authApi() {
+    return {
+      create: internalMutationGeneric({
+        args: v.object({
+          input: v.union(
+            // User is the only table that can be located
+            // in the user's app for now
+            v.object({
+              // The table name may be custom
+              table: v.string(),
+              name: v.string(),
+              email: v.string(),
+              emailVerified: v.boolean(),
+              image: v.optional(v.string()),
+              twoFactorEnabled: v.optional(v.boolean()),
+              createdAt: v.number(),
+              updatedAt: v.number(),
+            })
+          ),
+          onCreateHandle: v.optional(v.string()),
+        }),
+        handler: async (ctx, args) => {
+          const { table, ...input } = args.input;
+          const id = await ctx.db.insert(table as any, {
+            ...input,
+          });
+          const doc = await ctx.db.get(id);
+          if (!doc) {
+            throw new Error(`Failed to create ${table}`);
+          }
+          if (args.onCreateHandle) {
+            await ctx.runMutation(
+              args.onCreateHandle as FunctionHandle<
+                "mutation",
+                {
+                  doc: any;
+                }
+              >,
+              { doc }
+            );
+          }
+          return transformOutput(doc, table);
+        },
+      }),
+      getBy: internalQueryGeneric({
+        args: getByArgsValidator,
+        handler: async (ctx, args) => {
+          const doc = await getByHelper(ctx, args);
+          if (!doc) {
+            return;
+          }
+          return transformOutput(doc, args.table);
+        },
+      }),
+      update: internalMutationGeneric({
+        args: updateArgs,
+        handler: async (ctx, args) => {
+          return ctx.runMutation(this.component.auth.update, args);
+        },
+      }),
+      deleteBy: internalMutationGeneric({
+        args: v.object({
+          ...getByArgsValidator,
+          onDeleteHandle: v.optional(v.string()),
+        }),
+        handler: async (ctx, args) => {
+          const doc = await getByHelper(ctx, args);
+          if (!doc) {
+            return;
+          }
+          await ctx.db.delete(doc._id);
+          if (args.onDeleteHandle) {
+            await ctx.runMutation(
+              args.onDeleteHandle as FunctionHandle<
+                "mutation",
+                { id: string },
+                void
+              >,
+              { id: doc._id }
+            );
+          }
+        },
+      }),
+    };
   }
-  async getAnyUserById(ctx: RunQueryCtx, id: string) {
-    return ctx.runQuery(this.component.lib.getUserById, {
-      id,
-    });
-  }
+
   registerRoutes(
     http: HttpRouter,
     {
@@ -97,13 +188,8 @@ export class BetterAuth<O extends BetterAuthOptions = BetterAuthOptions> {
 
     const authRequestHandler = httpActionGeneric(async (ctx, request) => {
       const response = await auth(
-        database(
-          ctx,
-          this.component,
-          this.betterAuthOptions || {},
-          this.config
-        ),
-        this.betterAuthOptions || {}
+        database(ctx, this.component, this.betterAuthOptions, this.config),
+        this.betterAuthOptions
       ).handler(request);
       if (this.config?.verbose) {
         console.log("response headers", response.headers);
@@ -182,60 +268,12 @@ export class BetterAuth<O extends BetterAuthOptions = BetterAuthOptions> {
       handler: authRequestHandler,
     });
   }
-  /*
-  async add<Name extends string = keyof Shards & string>(
-    ctx: RunMutationCtx,
-    name: Name,
-    count: number = 1
-  ) {
-    const shards = this.options?.shards?.[name] ?? this.options?.defaultShards;
-    return ctx.runMutation(this.component.lib.add, {
-      name,
-      count,
-      shards,
-    });
-  }
-  async count<Name extends string = keyof Shards & string>(
-    ctx: RunQueryCtx,
-    name: Name
-  ) {
-    return ctx.runQuery(this.component.lib.count, { name });
-  }
-    */
-  /**
-   * For easy re-exporting.
-   * Apps can do
-   * ```ts
-   * export const { add, count } = shardedCounter.api();
-   * ```
-   */
-  /*
-  api() {
-    return {
-      add: mutationGeneric({
-        args: { name: v.string() },
-        handler: async (ctx, args) => {
-          await this.add(ctx, args.name);
-        },
-      }),
-      count: queryGeneric({
-        args: { name: v.string() },
-        handler: async (ctx, args) => {
-          return await this.count(ctx, args.name);
-        },
-      }),
-    };
-  }
-  */
 }
 
 /* Type utils follow */
 
 type RunQueryCtx = {
   runQuery: GenericQueryCtx<GenericDataModel>["runQuery"];
-};
-type RunMutationCtx = {
-  runMutation: GenericMutationCtx<GenericDataModel>["runMutation"];
 };
 
 export type OpaqueIds<T> =

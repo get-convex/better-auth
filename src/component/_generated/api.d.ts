@@ -9,7 +9,6 @@
  */
 
 import type * as auth from "../auth.js";
-import type * as lib from "../lib.js";
 
 import type {
   ApiFromModules,
@@ -27,7 +26,6 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
-  lib: typeof lib;
 }>;
 export type Mounts = {
   auth: {
@@ -36,16 +34,6 @@ export type Mounts = {
       "public",
       {
         input:
-          | {
-              createdAt: number;
-              email: string;
-              emailVerified: boolean;
-              image?: string;
-              name: string;
-              table: string;
-              twoFactorEnabled?: boolean;
-              updatedAt: number;
-            }
           | {
               createdAt: number;
               expiresAt: number;
@@ -91,41 +79,6 @@ export type Mounts = {
               privateKey: string;
               publicKey: string;
               table: string;
-            }
-          | {
-              clientId: string;
-              clientSecret?: string;
-              createdAt?: number;
-              disabled?: boolean;
-              icon?: string;
-              metadata?: string;
-              name?: string;
-              redirectURLs?: string;
-              table: string;
-              type?: string;
-              updatedAt?: number;
-              userId?: string;
-            }
-          | {
-              accessToken: string;
-              accessTokenExpiresAt?: number;
-              clientId?: string;
-              createdAt?: number;
-              refreshToken?: string;
-              refreshTokenExpiresAt?: number;
-              scopes?: string;
-              table: string;
-              updatedAt?: number;
-              userId?: string;
-            }
-          | {
-              clientId?: string;
-              consentGiven?: boolean;
-              createdAt?: number;
-              scopes?: string;
-              table: string;
-              updatedAt?: number;
-              userId?: string;
             };
         onCreateHandle?: string;
       },
@@ -239,20 +192,6 @@ export type Mounts = {
       {
         input:
           | {
-              table: "user";
-              value: Record<string, any>;
-              where: {
-                field: string;
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              };
-            }
-          | {
               table: "account";
               value: Record<string, any>;
               where: {
@@ -293,13 +232,24 @@ export type Mounts = {
                   | Array<number>
                   | null;
               };
+            }
+          | {
+              table: "user";
+              value: Record<string, any>;
+              where: {
+                field: string;
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              };
             };
       },
       any
     >;
-  };
-  lib: {
-    getUserById: FunctionReference<"query", "public", { id: string }, any>;
   };
 };
 // For now fullApiWithMounts is only fullApi which provides

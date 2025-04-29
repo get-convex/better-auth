@@ -2,16 +2,6 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 const schema = defineSchema({
-  user: defineTable({
-    name: v.string(),
-    email: v.string(),
-    emailVerified: v.boolean(),
-    image: v.optional(v.string()),
-    twoFactorEnabled: v.optional(v.boolean()),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-  }).index("email", ["email"]),
-
   session: defineTable({
     expiresAt: v.number(),
     token: v.string(),
@@ -19,7 +9,7 @@ const schema = defineSchema({
     updatedAt: v.number(),
     ipAddress: v.optional(v.string()),
     userAgent: v.optional(v.string()),
-    userId: v.id("user"),
+    userId: v.string(),
   })
     .index("token", ["token"])
     .index("userId", ["userId"]),
@@ -27,7 +17,7 @@ const schema = defineSchema({
   account: defineTable({
     accountId: v.string(),
     providerId: v.string(),
-    userId: v.id("user"),
+    userId: v.string(),
     accessToken: v.optional(v.string()),
     refreshToken: v.optional(v.string()),
     idToken: v.optional(v.string()),
@@ -44,7 +34,7 @@ const schema = defineSchema({
   twoFactor: defineTable({
     secret: v.string(),
     backupCodes: v.string(),
-    userId: v.id("user"),
+    userId: v.string(),
   }).index("userId", ["userId"]),
 
   verification: defineTable({
@@ -64,43 +54,6 @@ const schema = defineSchema({
     // no longer used
     id: v.optional(v.string()),
   }),
-
-  oauthApplication: defineTable({
-    name: v.optional(v.string()),
-    icon: v.optional(v.string()),
-    metadata: v.optional(v.string()),
-    clientId: v.string(),
-    clientSecret: v.optional(v.string()),
-    redirectURLs: v.optional(v.string()),
-    type: v.optional(v.string()),
-    disabled: v.optional(v.boolean()),
-    userId: v.optional(v.id("user")),
-    createdAt: v.optional(v.number()),
-    updatedAt: v.optional(v.number()),
-  }).index("clientId", ["clientId"]),
-
-  oauthAccessToken: defineTable({
-    accessToken: v.string(),
-    refreshToken: v.optional(v.string()),
-    accessTokenExpiresAt: v.optional(v.number()),
-    refreshTokenExpiresAt: v.optional(v.number()),
-    clientId: v.optional(v.string()),
-    userId: v.optional(v.id("user")),
-    scopes: v.optional(v.string()),
-    createdAt: v.optional(v.number()),
-    updatedAt: v.optional(v.number()),
-  })
-    .index("accessToken", ["accessToken"])
-    .index("refreshToken", ["refreshToken"]),
-
-  oauthConsent: defineTable({
-    clientId: v.optional(v.string()),
-    userId: v.optional(v.id("user")),
-    scopes: v.optional(v.string()),
-    createdAt: v.optional(v.number()),
-    updatedAt: v.optional(v.number()),
-    consentGiven: v.optional(v.boolean()),
-  }).index("clientId_userId", ["clientId", "userId"]),
 });
 
 export default schema;

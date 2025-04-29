@@ -14,13 +14,10 @@ import { authClient } from "@/app/auth-client";
 import EnableTwoFactor from "@/app/(auth)/settings/EnableTwoFactor";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 import Link from "next/link";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
 
 export default function SettingsPage() {
   const [showEnable2FA, setShowEnable2FA] = useState(false);
   const [loading, setLoading] = useState(false);
-  const deleteAccount = useMutation(api.example.deleteAccount);
 
   const handleDisable2FA = async () => {
     try {
@@ -43,7 +40,6 @@ export default function SettingsPage() {
       )
     ) {
       try {
-        await deleteAccount();
         await authClient.deleteUser();
       } catch {
         alert("Failed to delete account. Please try again.");
