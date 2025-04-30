@@ -730,34 +730,35 @@ function Home() {
                         filename="convex/userHooks.ts"
                         code={stripIndent`
                           import { userValidator } from '@erquhart/convex-better-auth'
+                          import { asyncMap } from 'convex-helpers'
+                          import { typedV } from 'convex-helpers/validators'
                           import { internalMutation } from './_generated/server'
+                          import schema from './schema'
+                          const vv = typedV(schema)
 
                           export const onCreateUser = internalMutation({
-                            args: { user: userValidator },
-                            handler: async (ctx, { user }) => {
-                              // Create your app's user record
-                              await ctx.db.insert("users", {
-                                authId: user._id,
-                                role: "user",
-                                preferences: {
-                                  theme: "light",
-                                  notifications: true
-                                }
+                            args: { doc: vv.doc("users") },
+                            handler: async (ctx, { doc }) => {
+                              // Do something in your app
+                              await ctx.db.insert("todos", {
+                                userId: doc._id,
+                                text: "Test todo",
+                                completed: false,
                               })
                             }
                           })
 
                           export const onDeleteUser = internalMutation({
-                            args: { id: v.string() },
+                            args: { id: v.id("users") },
                             handler: async (ctx, { id }) => {
-                              const user = await ctx.db
-                                .query("users")
-                                .withIndex("authId", q => q.eq("authId", id))
-                                .unique()
+                              const todos = await ctx.db
+                                .query("todos")
+                                .withIndex("userId", q => q.eq("userId", id))
+                                .collect()
                               
-                              if (user) {
-                                await ctx.db.delete(user._id)
-                              }
+                              await asyncMap(todos, async todo => {
+                                await ctx.db.delete(todo._id)
+                              })
                             }
                           })`}
                       />
@@ -775,6 +776,12 @@ function Home() {
                           import { BetterAuth } from '@erquhart/convex-better-auth'
                           import { components, internal } from './_generated/api'
 
+                          // Define these outside of the config object to avoid circular
+                          // inference issues. The functions themselves can be
+                          // defined in this same file or any convex file.
+                          const onCreateUserFn = internal.userHooks.onCreateUser as any
+                          const onDeleteUserFn = internal.userHooks.onDeleteUser as any
+
                           export const betterAuth: BetterAuth = new BetterAuth(
                             components.betterAuth,
                             // Better Auth options (e.g., social providers)
@@ -788,8 +795,8 @@ function Home() {
                             },
                             // Event hooks configuration
                             {
-                              onCreateUser: internal.userHooks.onCreateUser,
-                              onDeleteUser: internal.userHooks.onDeleteUser,
+                              onCreateUser: onCreateUserFn,
+                              onDeleteUser: onDeleteUserFn,
                             }
                           )`}
                       />

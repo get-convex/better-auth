@@ -186,7 +186,7 @@ export const deleteBy = mutation({
 
 // Single purpose functions
 export const getAccountsByUserId = query({
-  args: { userId: v.id("user") },
+  args: { userId: v.string() },
   handler: async (ctx, args) => {
     const docs = await ctx.db
       .query("account")

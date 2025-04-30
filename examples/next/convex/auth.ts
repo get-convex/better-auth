@@ -7,8 +7,8 @@ import { sendEmailVerification, sendResetPassword } from "./email";
 import { magicLink } from "better-auth/plugins";
 import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
-import schema from "./schema";
 import { asyncMap } from "convex-helpers";
+import { vv } from "./util";
 
 const authApi = internal.auth as any;
 const onCreateUserFn = internal.auth.onCreateUser as any;
@@ -74,6 +74,7 @@ export const betterAuthComponent = new BetterAuth(
       deleteUser: {
         enabled: true,
       },
+      modelName: "users",
     },
   },
   {
@@ -89,11 +90,7 @@ export const { create, getBy, update, deleteBy } =
 
 export const onCreateUser = internalMutation({
   args: {
-    user: v.object({
-      ...schema.tables.users.validator.fields,
-      _id: v.string(),
-      _creationTime: v.number(),
-    }),
+    doc: vv.doc("users"),
   },
   handler: async (ctx, args) => {
     // Use this to make database changes when a user is created.
@@ -101,7 +98,7 @@ export const onCreateUser = internalMutation({
     // mutation is guaranteed to run if the user is created, or
     // else the user is not created.
     await ctx.db.insert("todos", {
-      userId: args.user._id,
+      userId: args.doc._id,
       text: "Test todo",
       completed: false,
       createdAt: Date.now(),
@@ -112,7 +109,7 @@ export const onCreateUser = internalMutation({
 
 export const onDeleteUser = internalMutation({
   args: {
-    id: v.string(),
+    id: v.id("users"),
   },
   handler: async (ctx, args) => {
     const todos = await ctx.db
@@ -128,7 +125,7 @@ export const onDeleteUser = internalMutation({
 export const onCreateSession = internalMutation({
   args: {
     session: sessionValidator,
-    user: schema.tables.users.validator,
+    user: vv.doc("users"),
   },
   handler: async () => {
     // do something with the session and user

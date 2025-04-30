@@ -1,3 +1,6 @@
+import { typedV } from "convex-helpers/validators";
+import schema from "./schema";
+
 export const requireEnv = (name: string) => {
   const value = process.env[name];
   if (value === undefined) {
@@ -5,3 +8,5 @@ export const requireEnv = (name: string) => {
   }
   return value;
 };
+
+export const vv = typedV(schema);
