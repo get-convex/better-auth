@@ -52,32 +52,9 @@ export default function SignIn() {
       {
         onRequest: (ctx) => {
           setLoading(true);
-          console.log(
-            "onRequest GITHUB",
-            typeof ctx.url === "string" ? ctx.url : ctx.url.toString()
-          );
         },
-        onResponse: (ctx) => {
-          console.log(
-            "onResponse GITHUB",
-            ctx,
-            ctx.response.headers.get("set-auth-token")
-          );
-        },
-        onSuccess: async (ctx) => {
-          console.log("onSuccess GITHUB", JSON.stringify(ctx, null, 2));
-          console.log(
-            "success request",
-            ctx.response.headers.get("set-auth-token")
-          );
-          if (ctx.data.token) {
-            console.log("setting token", ctx.data.token);
-            localStorage.setItem("bearer_token", ctx.data.token);
-          }
-          setLoading(false);
-        },
+        onResponse: () => setLoading(false),
         onError: (ctx) => {
-          setLoading(false);
           alert(ctx.error.message);
         },
       }

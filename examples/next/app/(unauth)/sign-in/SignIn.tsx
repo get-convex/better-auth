@@ -103,22 +103,8 @@ export default function SignIn() {
         onRequest: () => {
           setOtpLoading(true);
         },
-        onResponse: (ctx) => {
-          console.log(
-            "onResponse GITHUB",
-            ctx.response.headers.get("set-auth-token"),
-          );
-        },
-        onSuccess: async () => {
-          /*
-          if (ctx.data.token) {
-            localStorage.setItem("bearer_token", ctx.data.token);
-          }
-            */
-          setOtpLoading(false);
-        },
+        onResponse: () => setOtpLoading(false),
         onError: (ctx) => {
-          setOtpLoading(false);
           alert(ctx.error.message);
         },
       },
