@@ -9,11 +9,7 @@ import { v } from "convex/values";
 import { api } from "../component/_generated/api";
 import { Doc, Id, TableNames } from "../component/_generated/dataModel";
 import schema from "../component/schema";
-import {
-  FunctionHandle,
-  paginationOptsValidator,
-  PaginationResult,
-} from "convex/server";
+import { paginationOptsValidator, PaginationResult } from "convex/server";
 import { paginator } from "convex-helpers/server/pagination";
 
 export const transformInput = (model: string, data: Record<string, any>) => {
@@ -83,20 +79,17 @@ export const getByQuery = query({
 });
 export { getByQuery as getBy };
 
-export const createArgsValidator = v.object({
-  input: v.union(
-    ...Object.values(schema.tables).map((table) =>
-      v.object({
-        table: v.string(),
-        ...table.validator.fields,
-      })
-    )
-  ),
-  onCreateHandle: v.optional(v.string()),
-});
-
 export const create = mutation({
-  args: createArgsValidator,
+  args: v.object({
+    input: v.union(
+      ...Object.values(schema.tables).map((table) =>
+        v.object({
+          table: v.string(),
+          ...table.validator.fields,
+        })
+      )
+    ),
+  }),
   handler: async (ctx, args) => {
     const { table, ...input } = args.input;
     const id = await ctx.db.insert(table as any, {
@@ -106,26 +99,11 @@ export const create = mutation({
     if (!doc) {
       throw new Error(`Failed to create ${table}`);
     }
-    if (args.onCreateHandle) {
-      await ctx.runMutation(
-        args.onCreateHandle as FunctionHandle<
-          "mutation",
-          {
-            [table: string]: any;
-          }
-        >,
-        {
-          [table]: doc,
-        }
-      );
-    }
     return transformOutput(doc, table);
   },
 });
 
-export const updateArgsInputValidator = <T extends TableNames | "user">(
-  table: T
-) => {
+export const updateArgsInputValidator = <T extends TableNames>(table: T) => {
   return v.object({
     table: v.literal(table),
     where: v.object({ field: v.string(), value: getByArgsValidator.value }),
@@ -133,20 +111,17 @@ export const updateArgsInputValidator = <T extends TableNames | "user">(
   });
 };
 
-export const updateArgs = {
+const updateArgsValidator = {
   input: v.union(
     updateArgsInputValidator("account"),
     updateArgsInputValidator("session"),
     updateArgsInputValidator("verification"),
-
-    // this table is in the parent, but keeping
-    // validators together for this shared function
     updateArgsInputValidator("user")
   ),
 };
 
 export const update = mutation({
-  args: updateArgs,
+  args: updateArgsValidator,
   handler: async (ctx, args) => {
     const { table, where, value } = args.input;
     const doc =
@@ -164,23 +139,18 @@ export const update = mutation({
     return transformOutput(updatedDoc, table);
   },
 });
+
 export const deleteBy = mutation({
-  args: {
-    ...getByArgsValidator,
-    onDeleteHandle: v.optional(v.string()),
-  },
+  args: getByArgsValidator,
   handler: async (ctx, args) => {
     const doc = await getByHelper(ctx, args);
     if (!doc) {
       return;
     }
     await ctx.db.delete(doc._id);
-    if (args.onDeleteHandle) {
-      await ctx.runMutation(
-        args.onDeleteHandle as FunctionHandle<"mutation", { id: string }, void>,
-        { id: doc._id }
-      );
-    }
+    // onDeleteUser requires userId from the doc,
+    // so just return the whole thing
+    return doc;
   },
 });
 
@@ -266,7 +236,7 @@ export const deleteOldVerifications = action({
     do {
       const result: Omit<PaginationResult<Doc<"verification">>, "page"> & {
         count: number;
-      } = await ctx.runMutation(api.auth.deleteOldVerificationsPage, {
+      } = await ctx.runMutation(api.lib.deleteOldVerificationsPage, {
         currentTimestamp: args.currentTimestamp,
         paginationOpts: {
           numItems: 500,
@@ -320,7 +290,7 @@ export const deleteAllForUser = action({
     do {
       const result: Omit<PaginationResult<Doc<"session">>, "page"> & {
         count: number;
-      } = await ctx.runMutation(api.auth.deleteAllForUserPage, {
+      } = await ctx.runMutation(api.lib.deleteAllForUserPage, {
         table: args.table,
         userId: args.userId,
         paginationOpts: {

@@ -1,12 +1,14 @@
 import SignIn from "./SignIn";
 import SignUp from "./SignUp";
 import { Dashboard } from "./components/Dashboard";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useConvexAuth } from "convex/react";
 
 export default function App() {
   const [showSignIn, setShowSignIn] = useState(true);
   const { isAuthenticated, isLoading } = useConvexAuth();
+  console.log("isAuthenticated", isAuthenticated);
+  console.log("isLoading", isLoading);
   if (isLoading) {
     return <div>Loading...</div>;
   }

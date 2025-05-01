@@ -234,14 +234,17 @@ export const onDeleteUser = internalMutation({
 // Get the currently authenticated user's ID
 const userId = await betterAuth.getAuthUserId(ctx);
 
-// Get the currently authenticated user
-const user = await betterAuth.getAuthUser(ctx);
-
-// Get any user by ID - typically for admin functionality
-const user = await betterAuth.getAnyUserById(ctx, id);
-
 // You can also use the standard Convex ctx.auth method
 const identity = await ctx.auth.getUserIdentity();
+
+// If config.useAppUserTable is true, these next two methods will throw,
+// as the user table is not in the component's space
+
+// Get the currently authenticated user (if config.useAppUserTable is not enabled)
+const user = await betterAuth.getAuthUser(ctx);
+
+// Get any user by AuthID - typically for admin functionality (if config.useAppUserTable is enabled)
+const user = await betterAuth.getAnyUserByAuthId(ctx, id);
 ```
 
 ### Event Hooks

@@ -1,37 +1,50 @@
-import type { BetterAuthOptions } from "better-auth";
+import { betterAuth, type BetterAuthOptions } from "better-auth";
 import {
   type Auth,
   type DefaultFunctionArgs,
   type Expand,
-  FunctionHandle,
   type FunctionReference,
   type GenericDataModel,
+  GenericMutationCtx,
   type GenericQueryCtx,
   type HttpRouter,
+  WithoutSystemFields,
   httpActionGeneric,
   internalMutationGeneric,
-  internalQueryGeneric,
 } from "convex/server";
 import { type GenericId, Infer, v } from "convex/values";
+import { customSession, jwt } from "better-auth/plugins";
+import { bearer } from "better-auth/plugins";
+import { oidcProvider } from "better-auth/plugins";
+import { oneTimeToken } from "better-auth/plugins/one-time-token";
 import type { api } from "../component/_generated/api";
-import schema from "../component/schema";
-import { auth, database } from "./auth";
-import corsRouter from "./cors";
 import {
-  createArgsValidator,
-  getByArgsValidator,
-  getByHelper,
-  transformOutput,
-  updateArgs,
-} from "../component/auth";
+  Doc,
+  type DataModel as ComponentDataModel,
+} from "../component/_generated/dataModel";
+import schema from "../component/schema";
+import { database } from "./auth";
+import corsRouter from "./cors";
+import { vv } from "../component/util";
+import { convex } from "./plugin";
+import { getByArgsValidator, updateArgsInputValidator } from "../component/lib";
+import { omit } from "convex-helpers";
 
 export { schema };
 
-export const sessionValidator = v.object({
-  ...schema.tables.session.validator.fields,
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const { userId, ...createUserFields } = schema.tables.user.validator.fields;
+export const createUserArgsValidator = v.object(createUserFields);
+export const updateUserArgsValidator = v.object(
+  schema.tables.user.validator.fields
+);
+export const deleteUserArgsValidator = v.object({
   userId: v.string(),
+});
+
+export const onCreateSessionArgsValidator = v.object({
+  ...vv.doc("session").fields,
   _id: v.string(),
-  _creationTime: v.number(),
 });
 
 export type EventFunction<T extends DefaultFunctionArgs> = FunctionReference<
@@ -50,29 +63,75 @@ export class BetterAuth<
     public betterAuthOptions: O,
     public config: {
       authApi: {
-        create: FunctionReference<"mutation", "internal", any>;
-        getBy: FunctionReference<"query", "internal", any>;
-        update: FunctionReference<"mutation", "internal", any>;
-        deleteBy: FunctionReference<"mutation", "internal", any>;
+        createUser: FunctionReference<
+          "mutation",
+          "internal",
+          typeof schema.tables.user.validator.fields
+        >;
+        deleteUser: FunctionReference<"mutation", "internal", { userId: Id }>;
+        updateUser?: FunctionReference<
+          "mutation",
+          "internal",
+          typeof schema.tables.user.validator.fields
+        >;
+        createSession?: FunctionReference<
+          "mutation",
+          "internal",
+          { session: Infer<typeof onCreateSessionArgsValidator> }
+        >;
       };
-      onCreateUser?: FunctionReference<"mutation", "internal", { userId: Id }>;
-      onDeleteUser?: FunctionReference<
-        "mutation",
-        "internal",
-        {
-          id: DataModel["users"]["document"]["_id"];
-        }
-      >;
-      onCreateSession?: FunctionReference<
-        "mutation",
-        "internal",
-        {
-          session: Infer<typeof sessionValidator>;
-        }
-      >;
       verbose?: boolean;
     }
-  ) {}
+  ) {
+    this.betterAuthOptions = {
+      ...this.betterAuthOptions,
+      user: {
+        additionalFields: {
+          userId: {
+            type: "string",
+            required: true,
+            input: false,
+          },
+        },
+        deleteUser: this.betterAuthOptions.user?.deleteUser,
+      },
+      plugins: [
+        ...(betterAuthOptions.plugins || []),
+        customSession(async ({ user, session }) => {
+          const userData = omit(user, ["id"]) as typeof user & {
+            userId: string;
+          };
+          return {
+            user: userData,
+            session: {
+              ...session,
+              userId: userData.userId as string,
+            },
+          };
+        }),
+        oidcProvider({
+          loginPage: "/not-used",
+        }),
+        bearer(),
+        jwt({
+          jwt: {
+            issuer: `${process.env.CONVEX_SITE_URL}`,
+            audience: "convex",
+            getSubject: (session) => session.user.userId,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            definePayload: ({ user: { id, userId, ...user } }) => user,
+          },
+        }),
+        oneTimeToken({ disableClientRequest: true }),
+        convex(),
+      ],
+      advanced: {
+        database: {
+          generateId: false,
+        },
+      },
+    };
+  }
 
   async getAuthUserId(ctx: RunQueryCtx & { auth: Auth }) {
     const identity = await ctx.auth.getUserIdentity();
@@ -82,87 +141,101 @@ export class BetterAuth<
     return identity.subject as Id;
   }
 
-  authApi() {
+  async getAuthUser(ctx: RunQueryCtx & { auth: Auth }) {
+    const identity = await ctx.auth.getUserIdentity();
+    console.log("identity", identity);
+    if (!identity) {
+      return null;
+    }
+    const doc = await ctx.runQuery(this.component.lib.getBy, {
+      table: "user",
+      field: "userId",
+      value: identity.subject,
+    });
+    return doc as WithoutSystemFields<Doc<"user">>;
+  }
+
+  async getAnyUser(ctx: GenericQueryCtx<ComponentDataModel>, id: string) {
+    return ctx.db
+      .query("user")
+      .withIndex("userId", (q) => q.eq("userId", id))
+      .unique();
+  }
+
+  authApi(opts: {
+    onCreateUser: (
+      ctx: GenericMutationCtx<DataModel>,
+      user: Omit<WithoutSystemFields<Doc<"user">>, "userId">
+    ) => Promise<Id>;
+    onDeleteUser: (
+      ctx: GenericMutationCtx<DataModel>,
+      id: Id
+    ) => void | Promise<void>;
+    onUpdateUser?: (
+      ctx: GenericMutationCtx<DataModel>,
+      user: WithoutSystemFields<Doc<"user">>
+    ) => void | Promise<void>;
+    onCreateSession?: (
+      ctx: GenericMutationCtx<DataModel>,
+      session: Doc<"session">
+    ) => void | Promise<void>;
+  }) {
     return {
-      create: internalMutationGeneric({
-        args: v.object({
-          input: v.union(
-            // User is the only table that can be located
-            // in the user's app for now
-            v.object({
-              // The table name may be custom
-              table: v.string(),
-              name: v.string(),
-              email: v.string(),
-              emailVerified: v.boolean(),
-              image: v.optional(v.string()),
-              twoFactorEnabled: v.optional(v.boolean()),
-              createdAt: v.number(),
-              updatedAt: v.number(),
-            })
-          ),
-          onCreateHandle: v.optional(v.string()),
-        }),
+      createUser: internalMutationGeneric({
+        args: {
+          input: v.object({
+            table: v.literal("user"),
+            ...omit(schema.tables.user.validator.fields, ["userId"]),
+          }),
+        },
+        returns: v.any(),
         handler: async (ctx, args) => {
-          const { table, ...input } = args.input;
-          const id = await ctx.db.insert(table as any, {
-            ...input,
+          const userId = await opts.onCreateUser(ctx, args.input);
+          const input = { ...args.input, table: "user", userId };
+          return ctx.runMutation(this.component.lib.create, {
+            input,
           });
-          const doc = await ctx.db.get(id);
-          if (!doc) {
-            throw new Error(`Failed to create ${table}`);
-          }
-          if (args.onCreateHandle) {
-            await ctx.runMutation(
-              args.onCreateHandle as FunctionHandle<
-                "mutation",
-                {
-                  doc: any;
-                }
-              >,
-              { doc }
-            );
-          }
-          return transformOutput(doc, table);
         },
       }),
-      getBy: internalQueryGeneric({
+      deleteUser: internalMutationGeneric({
         args: getByArgsValidator,
+        returns: v.any(),
         handler: async (ctx, args) => {
-          const doc = await getByHelper(ctx, args);
-          if (!doc) {
-            return;
-          }
-          return transformOutput(doc, args.table);
+          const doc = await ctx.runMutation(this.component.lib.deleteBy, args);
+          await opts.onDeleteUser(ctx, doc.userId as Id);
         },
       }),
-      update: internalMutationGeneric({
-        args: updateArgs,
+      updateUser: internalMutationGeneric({
+        args: {
+          input: updateArgsInputValidator("user"),
+        },
+        returns: v.any(),
         handler: async (ctx, args) => {
-          return ctx.runMutation(this.component.auth.update, args);
+          const updatedUser = await ctx.runMutation(
+            this.component.lib.update,
+            args
+          );
+          if (opts?.onUpdateUser) {
+            await opts.onUpdateUser(ctx, updatedUser as any);
+          }
+          return updatedUser;
         },
       }),
-      deleteBy: internalMutationGeneric({
-        args: v.object({
-          ...getByArgsValidator,
-          onDeleteHandle: v.optional(v.string()),
-        }),
+      createSession: internalMutationGeneric({
+        args: {
+          input: v.object({
+            table: v.literal("session"),
+            ...schema.tables.session.validator.fields,
+          }),
+        },
+        returns: v.any(),
         handler: async (ctx, args) => {
-          const doc = await getByHelper(ctx, args);
-          if (!doc) {
-            return;
-          }
-          await ctx.db.delete(doc._id);
-          if (args.onDeleteHandle) {
-            await ctx.runMutation(
-              args.onDeleteHandle as FunctionHandle<
-                "mutation",
-                { id: string },
-                void
-              >,
-              { id: doc._id }
-            );
-          }
+          const session = await ctx.runMutation(
+            this.component.lib.create,
+            args
+          );
+          await opts.onCreateSession?.(ctx, session as any);
+          return session;
         },
       }),
     };
@@ -187,10 +260,15 @@ export class BetterAuth<
     };
 
     const authRequestHandler = httpActionGeneric(async (ctx, request) => {
-      const response = await auth(
-        database(ctx, this.component, this.betterAuthOptions, this.config),
-        this.betterAuthOptions
-      ).handler(request);
+      const response = await betterAuth({
+        ...this.betterAuthOptions,
+        database: database(
+          ctx,
+          this.component,
+          this.betterAuthOptions,
+          this.config
+        ),
+      }).handler(request);
       if (this.config?.verbose) {
         console.log("response headers", response.headers);
       }

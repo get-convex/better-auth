@@ -48,12 +48,23 @@ export declare const internal: FilterApi<
 
 export declare const components: {
   betterAuth: {
-    auth: {
+    lib: {
       create: FunctionReference<
         "mutation",
         "internal",
         {
           input:
+            | {
+                createdAt: number;
+                email: string;
+                emailVerified: boolean;
+                image?: string;
+                name: string;
+                table: string;
+                twoFactorEnabled?: boolean;
+                updatedAt: number;
+                userId: string;
+              }
             | {
                 createdAt: number;
                 expiresAt: number;
@@ -100,7 +111,6 @@ export declare const components: {
                 publicKey: string;
                 table: string;
               };
-          onCreateHandle?: string;
         },
         any
       >;
@@ -132,7 +142,6 @@ export declare const components: {
         "internal",
         {
           field: string;
-          onDeleteHandle?: string;
           table: string;
           unique?: boolean;
           value:

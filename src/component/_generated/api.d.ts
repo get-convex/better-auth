@@ -8,7 +8,8 @@
  * @module
  */
 
-import type * as auth from "../auth.js";
+import type * as lib from "../lib.js";
+import type * as util from "../util.js";
 
 import type {
   ApiFromModules,
@@ -25,15 +26,27 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  auth: typeof auth;
+  lib: typeof lib;
+  util: typeof util;
 }>;
 export type Mounts = {
-  auth: {
+  lib: {
     create: FunctionReference<
       "mutation",
       "public",
       {
         input:
+          | {
+              createdAt: number;
+              email: string;
+              emailVerified: boolean;
+              image?: string;
+              name: string;
+              table: string;
+              twoFactorEnabled?: boolean;
+              updatedAt: number;
+              userId: string;
+            }
           | {
               createdAt: number;
               expiresAt: number;
@@ -80,7 +93,6 @@ export type Mounts = {
               publicKey: string;
               table: string;
             };
-        onCreateHandle?: string;
       },
       any
     >;
@@ -112,7 +124,6 @@ export type Mounts = {
       "public",
       {
         field: string;
-        onDeleteHandle?: string;
         table: string;
         unique?: boolean;
         value: string | number | boolean | Array<string> | Array<number> | null;
