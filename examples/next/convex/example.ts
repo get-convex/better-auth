@@ -26,10 +26,6 @@ export const onCreateUser = internalMutation({
     }),
   },
   handler: async (ctx, args) => {
-    // Use this to make database changes when a user is created.
-    // This mutation runs within the create user mutation, so this
-    // mutation is guaranteed to run if the user is created, or
-    // else the user is not created.
     await ctx.db.insert("todos", {
       userId: args.user._id,
       text: "Test todo",

@@ -13,6 +13,7 @@ import { vv } from "./util";
 const authApi = internal.auth as any;
 const onCreateUserFn = internal.auth.onCreateUser as any;
 const onDeleteUserFn = internal.example.onDeleteUser as any;
+const onCreateSessionFn = internal.auth.onCreateSession as any;
 
 export const betterAuthComponent = new BetterAuth(
   components.betterAuth,
@@ -78,10 +79,14 @@ export const betterAuthComponent = new BetterAuth(
     },
   },
   {
-    verbose: true,
     authApi,
+
+    // Optional
     onCreateUser: onCreateUserFn,
     onDeleteUser: onDeleteUserFn,
+    onCreateSession: onCreateSessionFn,
+    useAppUserTable: true,
+    verbose: true,
   },
 );
 
@@ -93,10 +98,6 @@ export const onCreateUser = internalMutation({
     doc: vv.doc("users"),
   },
   handler: async (ctx, args) => {
-    // Use this to make database changes when a user is created.
-    // This mutation runs within the create user mutation, so this
-    // mutation is guaranteed to run if the user is created, or
-    // else the user is not created.
     await ctx.db.insert("todos", {
       userId: args.doc._id,
       text: "Test todo",
@@ -124,10 +125,10 @@ export const onDeleteUser = internalMutation({
 
 export const onCreateSession = internalMutation({
   args: {
-    session: sessionValidator,
-    user: vv.doc("users"),
+    doc: sessionValidator,
   },
-  handler: async () => {
+  handler: async (ctx, args) => {
+    const user = await betterAuthComponent.getAuthUserId;
     // do something with the session and user
   },
 });

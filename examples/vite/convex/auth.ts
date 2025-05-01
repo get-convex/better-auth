@@ -1,4 +1,8 @@
-import { BetterAuth, sessionValidator } from "@convex-dev/better-auth";
+import {
+  BetterAuth,
+  sessionValidator,
+  userValidator,
+} from "@convex-dev/better-auth";
 import { components, internal } from "./_generated/api";
 import { requireEnv } from "./util";
 import { v } from "convex/values";
@@ -9,6 +13,7 @@ import { asyncMap } from "convex-helpers";
 const authApi = internal.auth as any;
 const onCreateUserFn = internal.auth.onCreateUser as any;
 const onDeleteUserFn = internal.auth.onDeleteUser as any;
+const onCreateSessionFn = internal.auth.onCreateSession as any;
 
 export const betterAuthComponent = new BetterAuth(
   components.betterAuth,
@@ -35,6 +40,7 @@ export const betterAuthComponent = new BetterAuth(
     authApi,
     onCreateUser: onCreateUserFn,
     onDeleteUser: onDeleteUserFn,
+    onCreateSession: onCreateSessionFn,
   }
 );
 
@@ -43,19 +49,15 @@ export const { create, getBy, update, deleteBy } =
 
 export const onCreateUser = internalMutation({
   args: {
-    doc: v.object({
-      ...schema.tables.users.validator.fields,
-      _id: v.string(),
-      _creationTime: v.number(),
-    }),
+    doc: userValidator,
   },
   handler: async (ctx, args) => {
-    // Use this to make database changes when a user is created.
-    // This mutation runs within the create user mutation, so this
-    // mutation is guaranteed to run if the user is created, or
-    // else the user is not created.
+    const userId = await ctx.db.insert("users", {
+      email: args.doc.email,
+      name: args.doc.name,
+    });
     await ctx.db.insert("todos", {
-      userId: args.doc._id,
+      userId,
       text: "Test todo",
       completed: false,
       createdAt: Date.now(),
@@ -66,9 +68,10 @@ export const onCreateUser = internalMutation({
 
 export const onDeleteUser = internalMutation({
   args: {
-    id: v.string(),
+    id: v.id("users"),
   },
   handler: async (ctx, args) => {
+    await ctx.db.delete(args.id);
     const todos = await ctx.db
       .query("todos")
       .withIndex("userId", (q) => q.eq("userId", args.id))

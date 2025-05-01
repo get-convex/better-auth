@@ -8,7 +8,8 @@
  * @module
  */
 
-import type * as auth from "../auth.js";
+import type * as lib from "../lib.js";
+import type * as util from "../util.js";
 
 import type {
   ApiFromModules,
@@ -25,15 +26,26 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  auth: typeof auth;
+  lib: typeof lib;
+  util: typeof util;
 }>;
 export type Mounts = {
-  auth: {
+  lib: {
     create: FunctionReference<
       "mutation",
       "public",
       {
         input:
+          | {
+              createdAt: number;
+              email: string;
+              emailVerified: boolean;
+              image?: string;
+              name: string;
+              table: string;
+              twoFactorEnabled?: boolean;
+              updatedAt: number;
+            }
           | {
               createdAt: number;
               expiresAt: number;

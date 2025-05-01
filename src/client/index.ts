@@ -14,25 +14,22 @@ import {
 } from "convex/server";
 import { type GenericId, Infer, v } from "convex/values";
 import type { api } from "../component/_generated/api";
+import { Id as ComponentId } from "../component/_generated/dataModel";
 import schema from "../component/schema";
 import { auth, database } from "./auth";
 import corsRouter from "./cors";
 import {
-  createArgsValidator,
   getByArgsValidator,
   getByHelper,
   transformOutput,
   updateArgs,
-} from "../component/auth";
+} from "../component/lib";
+import { vv } from "../component/util";
 
 export { schema };
 
-export const sessionValidator = v.object({
-  ...schema.tables.session.validator.fields,
-  userId: v.string(),
-  _id: v.string(),
-  _creationTime: v.number(),
-});
+export const userValidator = vv.doc("user");
+export const sessionValidator = vv.doc("session");
 
 export type EventFunction<T extends DefaultFunctionArgs> = FunctionReference<
   "mutation",
@@ -49,12 +46,6 @@ export class BetterAuth<
     public component: UseApi<typeof api>,
     public betterAuthOptions: O,
     public config: {
-      authApi: {
-        create: FunctionReference<"mutation", "internal", any>;
-        getBy: FunctionReference<"query", "internal", any>;
-        update: FunctionReference<"mutation", "internal", any>;
-        deleteBy: FunctionReference<"mutation", "internal", any>;
-      };
       onCreateUser?: FunctionReference<"mutation", "internal", { userId: Id }>;
       onDeleteUser?: FunctionReference<
         "mutation",
@@ -71,7 +62,24 @@ export class BetterAuth<
         }
       >;
       verbose?: boolean;
-    }
+    } & (
+      | {
+          useAppUserTable?: false;
+          authApi?: undefined;
+        }
+      | {
+          useAppUserTable: true;
+          // These are the authApi methods from below, exported out by the
+          // parent app, and their references are passed in here. These are
+          // only required if useAppUserTable is true (currently).
+          authApi: {
+            create: FunctionReference<"mutation", "internal", any>;
+            getBy: FunctionReference<"query", "internal", any>;
+            update: FunctionReference<"mutation", "internal", any>;
+            deleteBy: FunctionReference<"mutation", "internal", any>;
+          };
+        }
+    )
   ) {}
 
   async getAuthUserId(ctx: RunQueryCtx & { auth: Auth }) {
@@ -80,6 +88,25 @@ export class BetterAuth<
       return null;
     }
     return identity.subject as Id;
+  }
+
+  async getAuthUser(ctx: RunQueryCtx & { auth: Auth }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
+    return ctx.runQuery(this.component.lib.getBy, {
+      table: "user",
+      field: "id",
+      value: identity.subject,
+    });
+  }
+
+  async getAnyUserByAuthId(
+    ctx: GenericQueryCtx<DataModel>,
+    id: ComponentId<"user">
+  ) {
+    return ctx.db.get(id);
   }
 
   authApi() {
@@ -139,7 +166,7 @@ export class BetterAuth<
       update: internalMutationGeneric({
         args: updateArgs,
         handler: async (ctx, args) => {
-          return ctx.runMutation(this.component.auth.update, args);
+          return ctx.runMutation(this.component.lib.update, args);
         },
       }),
       deleteBy: internalMutationGeneric({

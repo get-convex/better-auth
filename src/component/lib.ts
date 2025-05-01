@@ -115,7 +115,7 @@ export const create = mutation({
           }
         >,
         {
-          [table]: doc,
+          doc,
         }
       );
     }
@@ -266,7 +266,7 @@ export const deleteOldVerifications = action({
     do {
       const result: Omit<PaginationResult<Doc<"verification">>, "page"> & {
         count: number;
-      } = await ctx.runMutation(api.auth.deleteOldVerificationsPage, {
+      } = await ctx.runMutation(api.lib.deleteOldVerificationsPage, {
         currentTimestamp: args.currentTimestamp,
         paginationOpts: {
           numItems: 500,
@@ -320,7 +320,7 @@ export const deleteAllForUser = action({
     do {
       const result: Omit<PaginationResult<Doc<"session">>, "page"> & {
         count: number;
-      } = await ctx.runMutation(api.auth.deleteAllForUserPage, {
+      } = await ctx.runMutation(api.lib.deleteAllForUserPage, {
         table: args.table,
         userId: args.userId,
         paginationOpts: {

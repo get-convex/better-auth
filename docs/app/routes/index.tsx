@@ -679,6 +679,9 @@ function Home() {
                     users table and use the event hooks to keep it synchronized
                     with the component's table.
                   </p>
+                  {/*
+                  // This isn't actually true currently, could change if better
+                  // auth handler can run inside of a mutation
                   <div className="mt-8 mb-8 flex gap-3 rounded-md border bg-muted/50 p-4">
                     <div className="select-none text-primary">💡</div>
                     <div className="text-sm text-muted-foreground">
@@ -692,6 +695,7 @@ function Home() {
                       </p>
                     </div>
                   </div>
+                  */}
 
                   <div className="space-y-12">
                     <div>

@@ -10,7 +10,7 @@ import {
 } from "convex/server";
 import { UseApi, BetterAuth } from "./index";
 import { api } from "../component/_generated/api";
-import { transformInput } from "../component/auth";
+import { transformInput } from "../component/lib";
 import { convex } from "./plugin";
 import { getSchema } from "better-auth/db";
 
@@ -56,14 +56,15 @@ export const database =
   ) =>
   (): Adapter => {
     const getModelName = (model: string) => {
-      if (model === "user") {
+      if (model === "user" && config.useAppUserTable) {
         return betterAuthOptions.user?.modelName || "user";
       }
       return model;
     };
-    const shouldUseInternalFunction = (model: string) => {
-      return model !== "user";
+    const useAppTable = (model: string) => {
+      return config.authApi && model === "user" && config.useAppUserTable;
     };
+    const authApi = config.authApi;
     return {
       id: "convex",
       create: async ({ model, data, select }): Promise<any> => {
@@ -74,9 +75,9 @@ export const database =
           throw new Error("select is not supported");
         }
         const modelName = getModelName(model);
-        const createFn = shouldUseInternalFunction(model)
-          ? component.auth.create
-          : await createFunctionHandle(config.authApi.create);
+        const createFn = useAppTable(model)
+          ? await createFunctionHandle(config.authApi?.create)
+          : component.lib.create;
         return ctx.runMutation(createFn, {
           input: {
             table: modelName,
@@ -105,9 +106,9 @@ export const database =
           const { value, field } = where[0];
           const schema = getSchema(betterAuthOptions);
           const modelName = getModelName(model);
-          const getByFn = shouldUseInternalFunction(model)
-            ? component.auth.getBy
-            : await createFunctionHandle(config.authApi.getBy);
+          const getByFn = useAppTable(model)
+            ? await createFunctionHandle(config.authApi.getBy)
+            : component.lib.getBy;
           const result = await ctx.runQuery(getByFn, {
             table: modelName,
             field,
@@ -127,7 +128,7 @@ export const database =
           where[1].field === "providerId"
         ) {
           return ctx.runQuery(
-            component.auth.getAccountByAccountIdAndProviderId,
+            component.lib.getAccountByAccountIdAndProviderId,
             {
               accountId: where[0].value as string,
               providerId: where[1].value as string,
@@ -163,12 +164,12 @@ export const database =
           where?.length === 1 &&
           where[0].field === "userId"
         ) {
-          return ctx.runQuery(component.auth.getAccountsByUserId, {
+          return ctx.runQuery(component.lib.getAccountsByUserId, {
             userId: where[0].value as any,
           });
         }
         if (model === "jwks") {
-          return ctx.runQuery(component.auth.getJwks);
+          return ctx.runQuery(component.lib.getJwks);
         }
         if (
           model === "verification" &&
@@ -176,7 +177,7 @@ export const database =
           where[0].field === "identifier" &&
           !offset
         ) {
-          return ctx.runQuery(component.auth.listVerificationsByIdentifier, {
+          return ctx.runQuery(component.lib.listVerificationsByIdentifier, {
             identifier: where[0].value as string,
             sortBy,
           });
@@ -207,9 +208,9 @@ export const database =
         const modelName = getModelName(model);
         if (where?.length === 1) {
           const { value, field } = where[0];
-          const updateFn = shouldUseInternalFunction(model)
-            ? component.auth.update
-            : await createFunctionHandle(config.authApi.update);
+          const updateFn = useAppTable(model)
+            ? await createFunctionHandle(config.authApi.update)
+            : component.lib.update;
           return ctx.runMutation(updateFn, {
             input: {
               table: modelName,
@@ -235,9 +236,9 @@ export const database =
         const modelName = getModelName(model);
         if (where?.length === 1) {
           const { field, value } = where[0];
-          const deleteFn = shouldUseInternalFunction(model)
-            ? component.auth.deleteBy
-            : await createFunctionHandle(config.authApi.deleteBy);
+          const deleteFn = useAppTable(model)
+            ? await createFunctionHandle(config.authApi.deleteBy)
+            : component.lib.deleteBy;
           await ctx.runMutation(deleteFn, {
             table: modelName,
             field,
@@ -266,12 +267,12 @@ export const database =
           where[0].field === "expiresAt" &&
           !where[0].connector
         ) {
-          return ctx.runAction(component.auth.deleteOldVerifications, {
+          return ctx.runAction(component.lib.deleteOldVerifications, {
             currentTimestamp: Date.now(),
           });
         }
         if (where?.length === 1 && where[0].field === "userId") {
-          return ctx.runAction(component.auth.deleteAllForUser, {
+          return ctx.runAction(component.lib.deleteAllForUser, {
             table: model,
             userId: where[0].value as any,
           });
