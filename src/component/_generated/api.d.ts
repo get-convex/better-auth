@@ -35,6 +35,7 @@ export type Mounts = {
       "mutation",
       "public",
       {
+        createHandle?: string;
         input:
           | {
               createdAt: number;
@@ -45,6 +46,7 @@ export type Mounts = {
               table: string;
               twoFactorEnabled?: boolean;
               updatedAt: number;
+              userId: string;
             }
           | {
               createdAt: number;
@@ -92,6 +94,25 @@ export type Mounts = {
               publicKey: string;
               table: string;
             };
+        onCreateHandle?: string;
+      },
+      any
+    >;
+    createUser: FunctionReference<
+      "mutation",
+      "public",
+      {
+        createHandle: string;
+        input: {
+          createdAt: number;
+          email: string;
+          emailVerified: boolean;
+          image?: string;
+          name: string;
+          twoFactorEnabled?: boolean;
+          updatedAt: number;
+          userId?: any;
+        };
         onCreateHandle?: string;
       },
       any

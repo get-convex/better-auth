@@ -53,7 +53,19 @@ export declare const components: {
         "mutation",
         "internal",
         {
+          createHandle?: string;
           input:
+            | {
+                createdAt: number;
+                email: string;
+                emailVerified: boolean;
+                image?: string;
+                name: string;
+                table: string;
+                twoFactorEnabled?: boolean;
+                updatedAt: number;
+                userId: string;
+              }
             | {
                 createdAt: number;
                 expiresAt: number;
@@ -100,6 +112,25 @@ export declare const components: {
                 publicKey: string;
                 table: string;
               };
+          onCreateHandle?: string;
+        },
+        any
+      >;
+      createUser: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          createHandle: string;
+          input: {
+            createdAt: number;
+            email: string;
+            emailVerified: boolean;
+            image?: string;
+            name: string;
+            twoFactorEnabled?: boolean;
+            updatedAt: number;
+            userId?: any;
+          };
           onCreateHandle?: string;
         },
         any

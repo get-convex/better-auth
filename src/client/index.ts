@@ -8,13 +8,18 @@ import {
   type GenericDataModel,
   type GenericQueryCtx,
   type HttpRouter,
+  WithoutSystemFields,
+  createFunctionHandle,
   httpActionGeneric,
   internalMutationGeneric,
   internalQueryGeneric,
 } from "convex/server";
 import { type GenericId, Infer, v } from "convex/values";
 import type { api } from "../component/_generated/api";
-import { Id as ComponentId } from "../component/_generated/dataModel";
+import {
+  Doc,
+  type DataModel as ComponentDataModel,
+} from "../component/_generated/dataModel";
 import schema from "../component/schema";
 import { auth, database } from "./auth";
 import corsRouter from "./cors";
@@ -25,11 +30,18 @@ import {
   updateArgs,
 } from "../component/lib";
 import { vv } from "../component/util";
+import { RequireAllOrNone } from "type-fest";
 
 export { schema };
 
-export const userValidator = vv.doc("user");
-export const sessionValidator = vv.doc("session");
+export const userValidator = v.object({
+  ...vv.doc("user").fields,
+  _id: v.string(),
+});
+export const sessionValidator = v.object({
+  ...vv.doc("session").fields,
+  _id: v.string(),
+});
 
 export type EventFunction<T extends DefaultFunctionArgs> = FunctionReference<
   "mutation",
@@ -45,41 +57,42 @@ export class BetterAuth<
   constructor(
     public component: UseApi<typeof api>,
     public betterAuthOptions: O,
-    public config: {
-      onCreateUser?: FunctionReference<"mutation", "internal", { userId: Id }>;
-      onDeleteUser?: FunctionReference<
-        "mutation",
-        "internal",
-        {
-          id: DataModel["users"]["document"]["_id"];
-        }
-      >;
-      onCreateSession?: FunctionReference<
-        "mutation",
-        "internal",
-        {
-          session: Infer<typeof sessionValidator>;
-        }
-      >;
-      verbose?: boolean;
-    } & (
-      | {
-          useAppUserTable?: false;
-          authApi?: undefined;
-        }
-      | {
-          useAppUserTable: true;
-          // These are the authApi methods from below, exported out by the
-          // parent app, and their references are passed in here. These are
-          // only required if useAppUserTable is true (currently).
-          authApi: {
-            create: FunctionReference<"mutation", "internal", any>;
-            getBy: FunctionReference<"query", "internal", any>;
-            update: FunctionReference<"mutation", "internal", any>;
-            deleteBy: FunctionReference<"mutation", "internal", any>;
-          };
-        }
-    )
+    public config: RequireAllOrNone<
+      {
+        createUser: FunctionReference<"mutation", "internal">;
+        onCreateUser?: FunctionReference<
+          "mutation",
+          "internal",
+          { userId: Id }
+        >;
+        onDeleteUser?: FunctionReference<
+          "mutation",
+          "internal",
+          {
+            id: DataModel["users"]["document"]["_id"];
+          }
+        >;
+        onCreateSession?: FunctionReference<
+          "mutation",
+          "internal",
+          {
+            session: Infer<typeof sessionValidator>;
+          }
+        >;
+        verbose?: boolean;
+        // These are the authApi methods from below, exported out by the
+        // parent app, and their references are passed in here. These are
+        // only required if useAppUserTable is true (currently).
+        authApi?: {
+          create: FunctionReference<"mutation", "internal", any>;
+          getBy: FunctionReference<"query", "internal", any>;
+          update: FunctionReference<"mutation", "internal", any>;
+          deleteBy: FunctionReference<"mutation", "internal", any>;
+        };
+        useAppUserTable?: boolean;
+      },
+      "useAppUserTable" | "authApi"
+    >
   ) {}
 
   async getAuthUserId(ctx: RunQueryCtx & { auth: Auth }) {
@@ -95,18 +108,22 @@ export class BetterAuth<
     if (!identity) {
       return null;
     }
-    return ctx.runQuery(this.component.lib.getBy, {
+    const getBy = this.config.useAppUserTable
+      ? await createFunctionHandle(this.config.authApi?.getBy)
+      : this.component.lib.getBy;
+    const doc = await ctx.runQuery(getBy, {
       table: "user",
-      field: "id",
+      field: "userId",
       value: identity.subject,
     });
+    return doc as WithoutSystemFields<Doc<"user">>;
   }
 
-  async getAnyUserByAuthId(
-    ctx: GenericQueryCtx<DataModel>,
-    id: ComponentId<"user">
-  ) {
-    return ctx.db.get(id);
+  async getAnyUser(ctx: GenericQueryCtx<ComponentDataModel>, id: string) {
+    return ctx.db
+      .query("user")
+      .withIndex("userId", (q) => q.eq("userId", id))
+      .unique();
   }
 
   authApi() {
@@ -216,7 +233,8 @@ export class BetterAuth<
     const authRequestHandler = httpActionGeneric(async (ctx, request) => {
       const response = await auth(
         database(ctx, this.component, this.betterAuthOptions, this.config),
-        this.betterAuthOptions
+        this.betterAuthOptions,
+        this.config
       ).handler(request);
       if (this.config?.verbose) {
         console.log("response headers", response.headers);

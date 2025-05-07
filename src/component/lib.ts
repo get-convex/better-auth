@@ -92,6 +92,7 @@ export const createArgsValidator = v.object({
       })
     )
   ),
+  createHandle: v.optional(v.string()),
   onCreateHandle: v.optional(v.string()),
 });
 
@@ -107,19 +108,44 @@ export const create = mutation({
       throw new Error(`Failed to create ${table}`);
     }
     if (args.onCreateHandle) {
-      await ctx.runMutation(
-        args.onCreateHandle as FunctionHandle<
-          "mutation",
-          {
-            [table: string]: any;
-          }
-        >,
-        {
-          doc,
-        }
-      );
+      await ctx.runMutation(args.onCreateHandle as FunctionHandle<"mutation">, {
+        doc,
+      });
     }
     return transformOutput(doc, table);
+  },
+});
+
+export const createUserArgsValidator = v.object({
+  input: v.object({
+    ...schema.tables.user.validator.fields,
+    // we don't expect a userId here, overwrite the field
+    userId: v.optional(v.any()),
+  }),
+  createHandle: v.string(),
+  onCreateHandle: v.optional(v.string()),
+});
+
+export const createUser = mutation({
+  args: createUserArgsValidator,
+  handler: async (ctx, args) => {
+    const userId = await ctx.runMutation(
+      args.createHandle as FunctionHandle<"mutation">
+    );
+    const internalId = await ctx.db.insert("user", {
+      ...args.input,
+      userId,
+    });
+    const doc = await ctx.db.get(internalId);
+    if (!doc) {
+      throw new Error(`Failed to create user`);
+    }
+    if (args.onCreateHandle) {
+      await ctx.runMutation(args.onCreateHandle as FunctionHandle<"mutation">, {
+        doc,
+      });
+    }
+    return transformOutput(doc, "user");
   },
 });
 

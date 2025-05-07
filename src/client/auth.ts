@@ -5,6 +5,7 @@ import { oidcProvider } from "better-auth/plugins";
 import { oneTimeToken } from "better-auth/plugins/one-time-token";
 import {
   createFunctionHandle,
+  FunctionReference,
   GenericActionCtx,
   GenericDataModel,
 } from "convex/server";
@@ -14,14 +15,24 @@ import { transformInput } from "../component/lib";
 import { convex } from "./plugin";
 import { getSchema } from "better-auth/db";
 
+const getFunctionHandle = <T extends FunctionReference<any, any, any, any>>(
+  fn?: T
+) => {
+  if (!fn) {
+    throw Error("Function reference is undefined");
+  }
+  return createFunctionHandle(fn);
+};
+
 export const auth = (
   database: () => Adapter,
-  config: BetterAuthOptions
+  betterAuthOptions: BetterAuthOptions,
+  config: InstanceType<typeof BetterAuth>["config"]
 ): ReturnType<typeof betterAuth> => {
   return betterAuth({
-    ...config,
+    ...betterAuthOptions,
     plugins: [
-      ...(config.plugins || []),
+      ...(betterAuthOptions.plugins || []),
       oidcProvider({
         loginPage: "/not-used",
       }),
@@ -30,15 +41,29 @@ export const auth = (
         jwt: {
           issuer: `${process.env.CONVEX_SITE_URL}`,
           audience: "convex",
-          definePayload: (session) => ({
-            sub: `${session.user.id}|${session.session.id}`,
-          }),
+          definePayload: (session) => {
+            const userId = config.useAppUserTable
+              ? session.user.id
+              : session.user.userId;
+            return {
+              sub: `${userId}|${session.session.id}`,
+            };
+          },
         },
       }),
       oneTimeToken({ disableClientRequest: true }),
       convex(),
     ],
     database,
+    user: {
+      additionalFields: {
+        userId: {
+          type: "string",
+          required: true,
+          input: false,
+        },
+      },
+    },
     advanced: {
       database: {
         generateId: false,
@@ -61,10 +86,12 @@ export const database =
       }
       return model;
     };
+    const isUserModel = (model: string) => {
+      return model === betterAuthOptions.user?.modelName || model === "user";
+    };
     const useAppTable = (model: string) => {
       return config.authApi && model === "user" && config.useAppUserTable;
     };
-    const authApi = config.authApi;
     return {
       id: "convex",
       create: async ({ model, data, select }): Promise<any> => {
@@ -76,8 +103,10 @@ export const database =
         }
         const modelName = getModelName(model);
         const createFn = useAppTable(model)
-          ? await createFunctionHandle(config.authApi?.create)
-          : component.lib.create;
+          ? await getFunctionHandle(config.authApi?.create)
+          : isUserModel(model)
+            ? await getFunctionHandle(config.createUser)
+            : component.lib.create;
         return ctx.runMutation(createFn, {
           input: {
             table: modelName,
@@ -107,8 +136,9 @@ export const database =
           const schema = getSchema(betterAuthOptions);
           const modelName = getModelName(model);
           const getByFn = useAppTable(model)
-            ? await createFunctionHandle(config.authApi.getBy)
+            ? await getFunctionHandle(config.authApi?.getBy)
             : component.lib.getBy;
+          console.log("modelName", modelName, model, schema[modelName], schema);
           const result = await ctx.runQuery(getByFn, {
             table: modelName,
             field,
@@ -209,7 +239,7 @@ export const database =
         if (where?.length === 1) {
           const { value, field } = where[0];
           const updateFn = useAppTable(model)
-            ? await createFunctionHandle(config.authApi.update)
+            ? await getFunctionHandle(config.authApi?.update)
             : component.lib.update;
           return ctx.runMutation(updateFn, {
             input: {
@@ -237,7 +267,7 @@ export const database =
         if (where?.length === 1) {
           const { field, value } = where[0];
           const deleteFn = useAppTable(model)
-            ? await createFunctionHandle(config.authApi.deleteBy)
+            ? await getFunctionHandle(config.authApi?.deleteBy)
             : component.lib.deleteBy;
           await ctx.runMutation(deleteFn, {
             table: modelName,

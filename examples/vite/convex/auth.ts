@@ -29,7 +29,6 @@ export const betterAuthComponent = new BetterAuth(
       deleteUser: {
         enabled: true,
       },
-      modelName: "users",
       fields: {
         name: "full_name",
       },
@@ -37,7 +36,6 @@ export const betterAuthComponent = new BetterAuth(
   },
   {
     verbose: true,
-    authApi,
     onCreateUser: onCreateUserFn,
     onDeleteUser: onDeleteUserFn,
     onCreateSession: onCreateSessionFn,
@@ -84,8 +82,7 @@ export const onDeleteUser = internalMutation({
 
 export const onCreateSession = internalMutation({
   args: {
-    session: sessionValidator,
-    user: schema.tables.users.validator,
+    doc: sessionValidator,
   },
   handler: async () => {
     // do something with the session and user

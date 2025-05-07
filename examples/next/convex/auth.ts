@@ -127,8 +127,7 @@ export const onCreateSession = internalMutation({
   args: {
     doc: sessionValidator,
   },
-  handler: async (ctx, args) => {
-    const user = await betterAuthComponent.getAuthUserId;
+  handler: async () => {
     // do something with the session and user
   },
 });

@@ -8,9 +8,12 @@ const schema = defineSchema({
     emailVerified: v.boolean(),
     image: v.optional(v.string()),
     twoFactorEnabled: v.optional(v.boolean()),
+    userId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
-  }).index("email", ["email"]),
+  })
+    .index("email", ["email"])
+    .index("userId", ["userId"]),
 
   session: defineTable({
     expiresAt: v.number(),

@@ -36,5 +36,19 @@ export const convex = () => {
         },
       ],
     },
+    /*
+    init: (ctx) => {
+      console.log("init", ctx);
+      return {
+        options: {
+          advanced: {
+            database: {
+              generateId: false,
+            },
+          },
+        },
+      };
+    },
+    */
   } satisfies BetterAuthPlugin;
 };
