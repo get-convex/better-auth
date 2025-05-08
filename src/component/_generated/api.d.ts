@@ -93,27 +93,6 @@ export type Mounts = {
               publicKey: string;
               table: string;
             };
-        onCreateHandle?: string;
-      },
-      any
-    >;
-    createUser: FunctionReference<
-      "mutation",
-      "public",
-      {
-        createHandle: string;
-        input: {
-          createdAt: number;
-          email: string;
-          emailVerified: boolean;
-          image?: string;
-          name: string;
-          table: "user";
-          twoFactorEnabled?: boolean;
-          updatedAt: number;
-          userId?: any;
-        };
-        onCreateHandle?: string;
       },
       any
     >;
@@ -145,7 +124,6 @@ export type Mounts = {
       "public",
       {
         field: string;
-        onDeleteHandle?: string;
         table: string;
         unique?: boolean;
         value: string | number | boolean | Array<string> | Array<number> | null;
@@ -171,18 +149,6 @@ export type Mounts = {
           maximumRowsRead?: number;
           numItems: number;
         };
-      },
-      any
-    >;
-    deleteUser: FunctionReference<
-      "mutation",
-      "public",
-      {
-        deleteHandle: string;
-        field: string;
-        table: string;
-        unique?: boolean;
-        value: string | number | boolean | Array<string> | Array<number> | null;
       },
       any
     >;
@@ -277,29 +243,21 @@ export type Mounts = {
                   | Array<number>
                   | null;
               };
+            }
+          | {
+              table: "user";
+              value: Record<string, any>;
+              where: {
+                field: string;
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              };
             };
-      },
-      any
-    >;
-    updateUser: FunctionReference<
-      "mutation",
-      "public",
-      {
-        input: {
-          table: "user";
-          value: Record<string, any>;
-          where: {
-            field: string;
-            value:
-              | string
-              | number
-              | boolean
-              | Array<string>
-              | Array<number>
-              | null;
-          };
-        };
-        updateHandle: string;
       },
       any
     >;

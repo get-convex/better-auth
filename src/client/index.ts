@@ -3,7 +3,6 @@ import {
   type Auth,
   type DefaultFunctionArgs,
   type Expand,
-  FunctionHandle,
   type FunctionReference,
   type GenericDataModel,
   GenericMutationCtx,
@@ -12,10 +11,8 @@ import {
   WithoutSystemFields,
   httpActionGeneric,
   internalMutationGeneric,
-  internalQueryGeneric,
-  mutationGeneric,
 } from "convex/server";
-import { type GenericId, Infer, v, VString } from "convex/values";
+import { type GenericId, Infer, v } from "convex/values";
 import { customSession, jwt } from "better-auth/plugins";
 import { bearer } from "better-auth/plugins";
 import { oidcProvider } from "better-auth/plugins";
@@ -30,7 +27,7 @@ import { database } from "./auth";
 import corsRouter from "./cors";
 import { vv } from "../component/util";
 import { convex } from "./plugin";
-import { getByArgsValidator, transformOutput } from "../component/lib";
+import { getByArgsValidator, updateArgsInputValidator } from "../component/lib";
 import { omit } from "convex-helpers";
 
 export { schema };
@@ -65,31 +62,24 @@ export class BetterAuth<
     public component: UseApi<typeof api>,
     public betterAuthOptions: O,
     public config: {
-      createUser: FunctionReference<
-        "mutation",
-        "internal",
-        typeof schema.tables.user.validator.fields
-      >;
-      updateUser: FunctionReference<
-        "mutation",
-        "internal",
-        typeof schema.tables.user.validator.fields
-      >;
-      deleteUser: FunctionReference<"mutation", "internal", { userId: Id }>;
-      onCreateSession?: FunctionReference<
-        "mutation",
-        "internal",
-        { session: Infer<typeof onCreateSessionArgsValidator> }
-      >;
-        // These are the authApi methods from below, exported out by the
-        // parent app, and their references are passed in here. These are
-        // only required if useAppUserTable is true (currently).
-        authApi?: {
-          create: FunctionReference<"mutation", "internal", any>;
-          getBy: FunctionReference<"query", "internal", any>;
-          update: FunctionReference<"mutation", "internal", any>;
-          deleteBy: FunctionReference<"mutation", "internal", any>;
-        };
+      authApi: {
+        createUser: FunctionReference<
+          "mutation",
+          "internal",
+          typeof schema.tables.user.validator.fields
+        >;
+        deleteUser: FunctionReference<"mutation", "internal", { userId: Id }>;
+        updateUser?: FunctionReference<
+          "mutation",
+          "internal",
+          typeof schema.tables.user.validator.fields
+        >;
+        createSession?: FunctionReference<
+          "mutation",
+          "internal",
+          { session: Infer<typeof onCreateSessionArgsValidator> }
+        >;
+      };
       verbose?: boolean;
     }
   ) {
@@ -108,7 +98,7 @@ export class BetterAuth<
       plugins: [
         ...(betterAuthOptions.plugins || []),
         customSession(async ({ user, session }) => {
-          const { id, ...userData } = user as typeof user & {
+          const userData = omit(user, ["id"]) as typeof user & {
             userId: string;
           };
           return {
@@ -171,130 +161,85 @@ export class BetterAuth<
       .withIndex("userId", (q) => q.eq("userId", id))
       .unique();
   }
-  syncApi(opts: {
+
+  authApi(opts: {
     onCreateUser: (
       ctx: GenericMutationCtx<DataModel>,
-      user: Omit<WithoutSystemFields<Doc<'user'>>, 'userId'>,
+      user: Omit<WithoutSystemFields<Doc<"user">>, "userId">
     ) => Promise<Id>;
     onDeleteUser: (
       ctx: GenericMutationCtx<DataModel>,
-      id: Id,
+      id: Id
     ) => void | Promise<void>;
     onUpdateUser?: (
       ctx: GenericMutationCtx<DataModel>,
-      user: WithoutSystemFields<Doc<'user'>>,
+      user: WithoutSystemFields<Doc<"user">>
     ) => void | Promise<void>;
     onCreateSession?: (
       ctx: GenericMutationCtx<DataModel>,
-      session: Doc<'session'>
+      session: Doc<"session">
     ) => void | Promise<void>;
   }) {
-    const id = v.string() as VString<Id>;
     return {
-      onCreateUser: mutationGeneric({
+      createUser: internalMutationGeneric({
         args: {
           input: v.object({
+            table: v.literal("user"),
             ...omit(schema.tables.user.validator.fields, ["userId"]),
           }),
         },
-        returns: id,
+        returns: v.any(),
         handler: async (ctx, args) => {
           const userId = await opts.onCreateUser(ctx, args.input);
+          const input = { ...args.input, table: "user", userId };
           return ctx.runMutation(this.component.lib.create, {
-            table: "user",
-            input: { ...args.input, userId },
+            input,
           });
         },
       }),
-      onUpdateUser: mutationGeneric({
-        args: {
-          input: schema.tables.user.validator,
-        },
-        returns: v.null(),
+      deleteUser: internalMutationGeneric({
+        args: getByArgsValidator,
+        returns: v.any(),
         handler: async (ctx, args) => {
-          const updatedUser = await ctx.runMutation(this.component.lib.update, args)
-          if (opts?.onUpdateUser) {
-            await opts.onUpdateUser(ctx, updatedUser);
-          }
-          return updatedUser
+          const doc = await ctx.runMutation(this.component.lib.deleteBy, args);
+          await opts.onDeleteUser(ctx, doc.userId as Id);
         },
       }),
-      onDeleteUser: mutationGeneric({
-        args: getByArgsValidator,
-        returns: v.null(),
+      updateUser: internalMutationGeneric({
+        args: {
+          input: updateArgsInputValidator("user"),
+        },
+        returns: v.any(),
         handler: async (ctx, args) => {
-          await opts.onDeleteUser(ctx, args.value as Id);
+          const updatedUser = await ctx.runMutation(
+            this.component.lib.update,
+            args
+          );
+          if (opts?.onUpdateUser) {
+            await opts.onUpdateUser(ctx, updatedUser as any);
+          }
+          return updatedUser;
+        },
+      }),
+      createSession: internalMutationGeneric({
+        args: {
+          input: v.object({
+            table: v.literal("session"),
+            ...schema.tables.session.validator.fields,
+          }),
+        },
+        returns: v.any(),
+        handler: async (ctx, args) => {
+          const session = await ctx.runMutation(
+            this.component.lib.create,
+            args
+          );
+          await opts.onCreateSession?.(ctx, session as any);
+          return session;
         },
       }),
     };
   }
-
-  authApi() {
-    return {
-      create: internalMutationGeneric({
-        args: v.object({
-          input: v.object({
-            table: v.literal("user"),
-            ...schema.tables.user.validator.fields,
-            // we don't expect a userId here, overwrite the field
-            userId: v.optional(v.any()),
-          }),
-          createHandle: v.string(),
-          onCreateHandle: v.optional(v.string()),
-        }),
-        handler: async (ctx, args) => {
-          const { table, ...input } = args.input;
-          const id = await ctx.db.insert(table as any, {
-            ...input,
-          });
-          const doc = await ctx.db.get(id);
-          if (!doc) {
-            throw new Error(`Failed to create ${table}`);
-          }
-          if (args.onCreateHandle) {
-            await ctx.runMutation(
-              args.onCreateHandle as FunctionHandle<
-                "mutation",
-                {
-                  doc: any;
-                }
-              >,
-              { doc }
-            );
-          }
-          return transformOutput(doc, table);
-        },
-      }),
-      update: internalMutationGeneric({
-        args: updateArgs,
-        handler: async (ctx, args) => {
-          return ctx.runMutation(this.component.lib.update, args);
-        },
-      }),
-      deleteBy: internalMutationGeneric({
-        args: v.object({
-          ...getByArgsValidator,
-          onDeleteHandle: v.optional(v.string()),
-        }),
-        handler: async (ctx, args) => {
-          const doc = await getByHelper(ctx, args);
-          if (!doc) {
-            return;
-          }
-          await ctx.db.delete(doc._id);
-          if (args.onDeleteHandle) {
-            await ctx.runMutation(
-              args.onDeleteHandle as FunctionHandle<
-                "mutation",
-                { id: string },
-                void
-              >,
-              { id: doc._id }
-            );
-          }
-        },
-      }),
-    };
 
   registerRoutes(
     http: HttpRouter,

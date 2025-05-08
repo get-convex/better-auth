@@ -9,11 +9,7 @@ import { v } from "convex/values";
 import { api } from "../component/_generated/api";
 import { Doc, Id, TableNames } from "../component/_generated/dataModel";
 import schema from "../component/schema";
-import {
-  FunctionHandle,
-  paginationOptsValidator,
-  PaginationResult,
-} from "convex/server";
+import { paginationOptsValidator, PaginationResult } from "convex/server";
 import { paginator } from "convex-helpers/server/pagination";
 
 export const transformInput = (model: string, data: Record<string, any>) => {
@@ -107,7 +103,7 @@ export const create = mutation({
   },
 });
 
-const updateArgsInputValidator = <T extends TableNames | "user">(table: T) => {
+export const updateArgsInputValidator = <T extends TableNames>(table: T) => {
   return v.object({
     table: v.literal(table),
     where: v.object({ field: v.string(), value: getByArgsValidator.value }),
@@ -115,11 +111,12 @@ const updateArgsInputValidator = <T extends TableNames | "user">(table: T) => {
   });
 };
 
-export const updateArgsValidator = {
+const updateArgsValidator = {
   input: v.union(
     updateArgsInputValidator("account"),
     updateArgsInputValidator("session"),
-    updateArgsInputValidator("verification")
+    updateArgsInputValidator("verification"),
+    updateArgsInputValidator("user")
   ),
 };
 
@@ -151,6 +148,9 @@ export const deleteBy = mutation({
       return;
     }
     await ctx.db.delete(doc._id);
+    // onDeleteUser requires userId from the doc,
+    // so just return the whole thing
+    return doc;
   },
 });
 

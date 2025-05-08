@@ -1,23 +1,9 @@
 import { Adapter, BetterAuthOptions } from "better-auth";
-import {
-  createFunctionHandle,
-  FunctionReference,
-  GenericActionCtx,
-  GenericDataModel,
-} from "convex/server";
+import { GenericActionCtx, GenericDataModel } from "convex/server";
 import { UseApi, BetterAuth } from "./index";
 import { api } from "../component/_generated/api";
 import { transformInput } from "../component/lib";
 import { getSchema } from "better-auth/db";
-
-const getFunctionHandle = <T extends FunctionReference<any, any, any, any>>(
-  fn?: T
-) => {
-  if (!fn) {
-    throw Error("Function reference is undefined");
-  }
-  return createFunctionHandle(fn);
-};
 
 export const database =
   <O extends BetterAuthOptions>(
@@ -37,22 +23,16 @@ export const database =
           throw new Error("select is not supported");
         }
         const createFn =
-          model === "user" ? component.lib.createUser : component.lib.create;
+          model === "user"
+            ? config.authApi.createUser
+            : model === "session" && config.authApi.createSession
+              ? config.authApi.createSession
+              : component.lib.create;
         return ctx.runMutation(createFn, {
           input: {
             table: model,
             ...transformInput(model, data),
           },
-          ...(model === "user"
-            ? {
-                createHandle: await getFunctionHandle(config.createUser),
-              }
-            : {}),
-          onCreateHandle:
-            (config?.onCreateSession &&
-              model === "session" &&
-              (await createFunctionHandle(config.onCreateSession))) ||
-            undefined,
         });
       },
       findOne: async ({ model, where, select }): Promise<any> => {
@@ -165,7 +145,9 @@ export const database =
         if (where?.length === 1) {
           const { value, field } = where[0];
           const updateFn =
-            model === "user" ? component.lib.updateUser : component.lib.update;
+            model === "user" && config.authApi.updateUser
+              ? config.authApi.updateUser
+              : component.lib.update;
           return ctx.runMutation(updateFn, {
             input: {
               table: model as any,
@@ -175,11 +157,6 @@ export const database =
               },
               value: transformInput(model, update),
             },
-            ...(model === "user"
-              ? {
-                  updateHandle: await getFunctionHandle(config.updateUser),
-                }
-              : {}),
           });
         }
         throw new Error("Not implemented");
@@ -197,17 +174,12 @@ export const database =
           const { field, value } = where[0];
           const deleteFn =
             model === "user"
-              ? component.lib.deleteUser
+              ? config.authApi.deleteUser
               : component.lib.deleteBy;
           await ctx.runMutation(deleteFn, {
             table: model,
             field,
             value: value instanceof Date ? value.getTime() : value,
-            ...(model === "user"
-              ? {
-                  deleteHandle: await getFunctionHandle(config.deleteUser),
-                }
-              : {}),
           });
           return;
         }
