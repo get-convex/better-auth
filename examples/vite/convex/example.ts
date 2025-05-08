@@ -5,11 +5,10 @@ import { betterAuthComponent } from "./auth";
 import { Id } from "./_generated/dataModel";
 
 export const getCurrentUser = query({
-  args: {},
   handler: async (ctx) => {
     const userMetadata = await betterAuthComponent.getAuthUser(ctx);
     if (!userMetadata) {
-      throw new Error("Not authenticated");
+      return null;
     }
     // If desired you can merge the user metadata from Better Auth with
     // your appliation user data.
@@ -22,7 +21,6 @@ export const getCurrentUser = query({
 });
 
 export const get = query({
-  args: {},
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
