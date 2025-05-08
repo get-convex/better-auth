@@ -56,7 +56,7 @@ export const getByHelper = async (
   return args.unique ? await query.unique() : await query.first();
 };
 
-const getByArgsValidator = {
+export const getByArgsValidator = {
   table: v.string(),
   field: v.string(),
   unique: v.optional(v.boolean()),
@@ -83,20 +83,17 @@ export const getByQuery = query({
 });
 export { getByQuery as getBy };
 
-const createArgsValidator = v.object({
-  input: v.union(
-    ...Object.values(schema.tables).map((table) =>
-      v.object({
-        table: v.string(),
-        ...table.validator.fields,
-      })
-    )
-  ),
-  onCreateHandle: v.optional(v.string()),
-});
-
 export const create = mutation({
-  args: createArgsValidator,
+  args: v.object({
+    input: v.union(
+      ...Object.values(schema.tables).map((table) =>
+        v.object({
+          table: v.string(),
+          ...table.validator.fields,
+        })
+      )
+    ),
+  }),
   handler: async (ctx, args) => {
     const { table, ...input } = args.input;
     const id = await ctx.db.insert(table as any, {
@@ -106,52 +103,7 @@ export const create = mutation({
     if (!doc) {
       throw new Error(`Failed to create ${table}`);
     }
-    if (args.onCreateHandle) {
-      await ctx.runMutation(
-        args.onCreateHandle as FunctionHandle<"mutation">,
-        doc
-      );
-    }
     return transformOutput(doc, table);
-  },
-});
-
-const createUserArgsValidator = v.object({
-  input: v.object({
-    table: v.literal("user"),
-    ...schema.tables.user.validator.fields,
-    // we don't expect a userId here, overwrite the field
-    userId: v.optional(v.any()),
-  }),
-  createHandle: v.string(),
-  onCreateHandle: v.optional(v.string()),
-});
-
-export const createUser = mutation({
-  args: createUserArgsValidator,
-  handler: async (ctx, args) => {
-    if (args.input.userId) {
-      throw new Error("userId is not expected in args");
-    }
-    const { table, ...userData } = args.input;
-    const userId = await ctx.runMutation(
-      args.createHandle as FunctionHandle<"mutation">,
-      userData
-    );
-    const internalId = await ctx.db.insert("user", {
-      ...userData,
-      userId,
-    });
-    const doc = await ctx.db.get(internalId);
-    if (!doc) {
-      throw new Error(`Failed to create user`);
-    }
-    if (args.onCreateHandle) {
-      await ctx.runMutation(args.onCreateHandle as FunctionHandle<"mutation">, {
-        doc,
-      });
-    }
-    return transformOutput(doc, "user");
   },
 });
 
@@ -163,7 +115,7 @@ const updateArgsInputValidator = <T extends TableNames | "user">(table: T) => {
   });
 };
 
-const updateArgs = {
+export const updateArgsValidator = {
   input: v.union(
     updateArgsInputValidator("account"),
     updateArgsInputValidator("session"),
@@ -172,7 +124,7 @@ const updateArgs = {
 };
 
 export const update = mutation({
-  args: updateArgs,
+  args: updateArgsValidator,
   handler: async (ctx, args) => {
     const { table, where, value } = args.input;
     const doc =
@@ -191,69 +143,14 @@ export const update = mutation({
   },
 });
 
-const updateUserArgs = {
-  input: v.union(updateArgsInputValidator("user")),
-  updateHandle: v.string(),
-};
-
-export const updateUser = mutation({
-  args: updateUserArgs,
-  handler: async (ctx, args) => {
-    const { where, value } = args.input;
-    const doc =
-      where.field === "id"
-        ? await ctx.db.get(where.value as Id<"user">)
-        : await getByHelper(ctx, { table: "user", ...where });
-    if (!doc) {
-      throw new Error(`Failed to update user`);
-    }
-    await ctx.db.patch(doc._id, value as any);
-    const updatedDoc = await ctx.db.get(doc._id);
-    if (!updatedDoc) {
-      throw new Error(`Failed to update user`);
-    }
-    await ctx.runMutation(
-      args.updateHandle as FunctionHandle<"mutation">,
-      updatedDoc
-    );
-    return transformOutput(updatedDoc, "user");
-  },
-});
-
-export const deleteUser = mutation({
-  args: {
-    ...getByArgsValidator,
-    deleteHandle: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const doc = await getByHelper(ctx, { ...args, table: "user" });
-    if (!doc) {
-      throw new Error(`Failed to delete user`);
-    }
-    await ctx.runMutation(args.deleteHandle as FunctionHandle<"mutation">, {
-      userId: doc.userId,
-    });
-    await ctx.db.delete(doc._id);
-  },
-});
-
 export const deleteBy = mutation({
-  args: {
-    ...getByArgsValidator,
-    onDeleteHandle: v.optional(v.string()),
-  },
+  args: getByArgsValidator,
   handler: async (ctx, args) => {
     const doc = await getByHelper(ctx, args);
     if (!doc) {
       return;
     }
     await ctx.db.delete(doc._id);
-    if (args.onDeleteHandle) {
-      await ctx.runMutation(
-        args.onDeleteHandle as FunctionHandle<"mutation", { id: string }, void>,
-        { id: doc._id }
-      );
-    }
   },
 });
 
