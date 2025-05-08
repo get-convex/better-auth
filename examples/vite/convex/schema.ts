@@ -3,7 +3,6 @@ import { v } from "convex/values";
 
 const schema = defineSchema({
   users: defineTable({
-    name: v.string(),
     email: v.string(),
   }).index("email", ["email"]),
 

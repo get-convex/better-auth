@@ -1,8 +1,4 @@
-import { Adapter, betterAuth, BetterAuthOptions } from "better-auth";
-import { jwt } from "better-auth/plugins";
-import { bearer } from "better-auth/plugins";
-import { oidcProvider } from "better-auth/plugins";
-import { oneTimeToken } from "better-auth/plugins/one-time-token";
+import { Adapter, BetterAuthOptions } from "better-auth";
 import {
   createFunctionHandle,
   FunctionReference,
@@ -12,7 +8,6 @@ import {
 import { UseApi, BetterAuth } from "./index";
 import { api } from "../component/_generated/api";
 import { transformInput } from "../component/lib";
-import { convex } from "./plugin";
 import { getSchema } from "better-auth/db";
 
 const getFunctionHandle = <T extends FunctionReference<any, any, any, any>>(
@@ -24,54 +19,6 @@ const getFunctionHandle = <T extends FunctionReference<any, any, any, any>>(
   return createFunctionHandle(fn);
 };
 
-export const auth = (
-  database: () => Adapter,
-  betterAuthOptions: BetterAuthOptions,
-  config: InstanceType<typeof BetterAuth>["config"]
-): ReturnType<typeof betterAuth> => {
-  return betterAuth({
-    ...betterAuthOptions,
-    plugins: [
-      ...(betterAuthOptions.plugins || []),
-      oidcProvider({
-        loginPage: "/not-used",
-      }),
-      bearer(),
-      jwt({
-        jwt: {
-          issuer: `${process.env.CONVEX_SITE_URL}`,
-          audience: "convex",
-          definePayload: (session) => {
-            const userId = config.useAppUserTable
-              ? session.user.id
-              : session.user.userId;
-            return {
-              sub: `${userId}|${session.session.id}`,
-            };
-          },
-        },
-      }),
-      oneTimeToken({ disableClientRequest: true }),
-      convex(),
-    ],
-    database,
-    user: {
-      additionalFields: {
-        userId: {
-          type: "string",
-          required: true,
-          input: false,
-        },
-      },
-    },
-    advanced: {
-      database: {
-        generateId: false,
-      },
-    },
-  });
-};
-
 export const database =
   <O extends BetterAuthOptions>(
     ctx: GenericActionCtx<GenericDataModel>,
@@ -80,18 +27,6 @@ export const database =
     config: InstanceType<typeof BetterAuth>["config"]
   ) =>
   (): Adapter => {
-    const getModelName = (model: string) => {
-      if (model === "user" && config.useAppUserTable) {
-        return betterAuthOptions.user?.modelName || "user";
-      }
-      return model;
-    };
-    const isUserModel = (model: string) => {
-      return model === betterAuthOptions.user?.modelName || model === "user";
-    };
-    const useAppTable = (model: string) => {
-      return config.authApi && model === "user" && config.useAppUserTable;
-    };
     return {
       id: "convex",
       create: async ({ model, data, select }): Promise<any> => {
@@ -101,21 +36,19 @@ export const database =
         if (select) {
           throw new Error("select is not supported");
         }
-        const modelName = getModelName(model);
-        const createFn = useAppTable(model)
-          ? await getFunctionHandle(config.authApi?.create)
-          : isUserModel(model)
-            ? await getFunctionHandle(config.createUser)
-            : component.lib.create;
+        const createFn =
+          model === "user" ? component.lib.createUser : component.lib.create;
         return ctx.runMutation(createFn, {
           input: {
-            table: modelName,
+            table: model,
             ...transformInput(model, data),
           },
+          ...(model === "user"
+            ? {
+                createHandle: await getFunctionHandle(config.createUser),
+              }
+            : {}),
           onCreateHandle:
-            (config?.onCreateUser &&
-              model === "user" &&
-              (await createFunctionHandle(config.onCreateUser))) ||
             (config?.onCreateSession &&
               model === "session" &&
               (await createFunctionHandle(config.onCreateSession))) ||
@@ -134,16 +67,10 @@ export const database =
         if (where.length === 1) {
           const { value, field } = where[0];
           const schema = getSchema(betterAuthOptions);
-          const modelName = getModelName(model);
-          const getByFn = useAppTable(model)
-            ? await getFunctionHandle(config.authApi?.getBy)
-            : component.lib.getBy;
-          console.log("modelName", modelName, model, schema[modelName], schema);
-          const result = await ctx.runQuery(getByFn, {
-            table: modelName,
+          const result = await ctx.runQuery(component.lib.getBy, {
+            table: model,
             field,
-            unique:
-              field === "id" ? true : schema[modelName].fields[field].unique,
+            unique: field === "id" ? true : schema[model].fields[field].unique,
             value: value instanceof Date ? value.getTime() : value,
           });
           if (config?.verbose) {
@@ -235,21 +162,24 @@ export const database =
             "where clause with operator or connector is not supported"
           );
         }
-        const modelName = getModelName(model);
         if (where?.length === 1) {
           const { value, field } = where[0];
-          const updateFn = useAppTable(model)
-            ? await getFunctionHandle(config.authApi?.update)
-            : component.lib.update;
+          const updateFn =
+            model === "user" ? component.lib.updateUser : component.lib.update;
           return ctx.runMutation(updateFn, {
             input: {
-              table: modelName,
+              table: model as any,
               where: {
                 field,
                 value: value instanceof Date ? value.getTime() : value,
               },
               value: transformInput(model, update),
             },
+            ...(model === "user"
+              ? {
+                  updateHandle: await getFunctionHandle(config.updateUser),
+                }
+              : {}),
           });
         }
         throw new Error("Not implemented");
@@ -263,20 +193,21 @@ export const database =
             "where clause with operator or connector is not supported"
           );
         }
-        const modelName = getModelName(model);
         if (where?.length === 1) {
           const { field, value } = where[0];
-          const deleteFn = useAppTable(model)
-            ? await getFunctionHandle(config.authApi?.deleteBy)
-            : component.lib.deleteBy;
+          const deleteFn =
+            model === "user"
+              ? component.lib.deleteUser
+              : component.lib.deleteBy;
           await ctx.runMutation(deleteFn, {
-            table: modelName,
+            table: model,
             field,
             value: value instanceof Date ? value.getTime() : value,
-            onDeleteHandle:
-              config?.onDeleteUser && model === "user"
-                ? await createFunctionHandle(config.onDeleteUser)
-                : undefined,
+            ...(model === "user"
+              ? {
+                  deleteHandle: await getFunctionHandle(config.deleteUser),
+                }
+              : {}),
           });
           return;
         }

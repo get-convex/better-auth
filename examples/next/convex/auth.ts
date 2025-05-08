@@ -1,4 +1,10 @@
-import { BetterAuth, sessionValidator } from "@convex-dev/better-auth";
+import {
+  BetterAuth,
+  createUserArgsValidator,
+  updateUserArgsValidator,
+  deleteUserArgsValidator,
+  onCreateSessionArgsValidator,
+} from "@convex-dev/better-auth";
 import { components, internal } from "./_generated/api";
 import { twoFactor } from "better-auth/plugins";
 import { emailOTP } from "better-auth/plugins";
@@ -6,13 +12,12 @@ import { sendMagicLink, sendOTPVerification } from "./email";
 import { sendEmailVerification, sendResetPassword } from "./email";
 import { magicLink } from "better-auth/plugins";
 import { internalMutation } from "./_generated/server";
-import { v } from "convex/values";
 import { asyncMap } from "convex-helpers";
-import { vv } from "./util";
+import { Id } from "./_generated/dataModel";
 
-const authApi = internal.auth as any;
-const onCreateUserFn = internal.auth.onCreateUser as any;
-const onDeleteUserFn = internal.example.onDeleteUser as any;
+const createUserFn = internal.auth.createUser as any;
+const updateUserFn = internal.auth.updateUser as any;
+const deleteUserFn = internal.auth.deleteUser as any;
 const onCreateSessionFn = internal.auth.onCreateSession as any;
 
 export const betterAuthComponent = new BetterAuth(
@@ -79,54 +84,62 @@ export const betterAuthComponent = new BetterAuth(
     },
   },
   {
-    authApi,
+    createUser: createUserFn,
+    updateUser: updateUserFn,
+    deleteUser: deleteUserFn,
 
-    // Optional
-    onCreateUser: onCreateUserFn,
-    onDeleteUser: onDeleteUserFn,
+    // optional
     onCreateSession: onCreateSessionFn,
-    useAppUserTable: true,
     verbose: true,
   },
 );
 
-export const { create, getBy, update, deleteBy } =
-  betterAuthComponent.authApi();
-
-export const onCreateUser = internalMutation({
-  args: {
-    doc: vv.doc("users"),
-  },
+export const createUser = internalMutation({
+  args: createUserArgsValidator,
   handler: async (ctx, args) => {
+    const userId = await ctx.db.insert("users", {
+      email: args.email,
+    });
     await ctx.db.insert("todos", {
-      userId: args.doc._id,
+      userId,
       text: "Test todo",
       completed: false,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
+    return userId;
   },
 });
 
-export const onDeleteUser = internalMutation({
-  args: {
-    id: v.id("users"),
-  },
+export const updateUser = internalMutation({
+  args: updateUserArgsValidator,
   handler: async (ctx, args) => {
-    const todos = await ctx.db
-      .query("todos")
-      .withIndex("userId", (q) => q.eq("userId", args.id))
-      .collect();
-    await asyncMap(todos, async (todo) => {
-      await ctx.db.delete(todo._id);
+    // TODO: use correct id type
+    const userId = args.userId as Id<"users">;
+    await ctx.db.patch(userId, {
+      email: args.email,
     });
   },
 });
 
-export const onCreateSession = internalMutation({
-  args: {
-    doc: sessionValidator,
+export const deleteUser = internalMutation({
+  args: deleteUserArgsValidator,
+  handler: async (ctx, args) => {
+    // TODO: use correct id type
+    const userId = args.userId as Id<"users">;
+    const todos = await ctx.db
+      .query("todos")
+      .withIndex("userId", (q) => q.eq("userId", userId))
+      .collect();
+    await asyncMap(todos, async (todo) => {
+      await ctx.db.delete(todo._id);
+    });
+    await ctx.db.delete(userId);
   },
+});
+
+export const onCreateSession = internalMutation({
+  args: onCreateSessionArgsValidator,
   handler: async () => {
     // do something with the session and user
   },

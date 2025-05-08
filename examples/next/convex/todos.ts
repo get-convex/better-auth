@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 
 export const get = query({
   args: {},
@@ -8,10 +9,12 @@ export const get = query({
     if (!identity) {
       return [];
     }
-
+    console.log("identity", identity);
     return await ctx.db
       .query("todos")
-      .withIndex("userId", (q) => q.eq("userId", identity.subject))
+      .withIndex("userId", (q) =>
+        q.eq("userId", identity.subject as Id<"users">),
+      )
       .order("desc")
       .collect();
   },
@@ -29,7 +32,7 @@ export const create = mutation({
     await ctx.db.insert("todos", {
       text: args.text,
       completed: false,
-      userId: identity.subject,
+      userId: identity.subject as Id<"users">,
       createdAt: now,
       updatedAt: now,
     });

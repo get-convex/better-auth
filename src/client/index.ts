@@ -1,44 +1,44 @@
-import type { BetterAuthOptions } from "better-auth";
+import { betterAuth, type BetterAuthOptions } from "better-auth";
 import {
   type Auth,
   type DefaultFunctionArgs,
   type Expand,
-  FunctionHandle,
   type FunctionReference,
   type GenericDataModel,
   type GenericQueryCtx,
   type HttpRouter,
   WithoutSystemFields,
-  createFunctionHandle,
   httpActionGeneric,
-  internalMutationGeneric,
-  internalQueryGeneric,
 } from "convex/server";
 import { type GenericId, Infer, v } from "convex/values";
+import { customSession, jwt } from "better-auth/plugins";
+import { bearer } from "better-auth/plugins";
+import { oidcProvider } from "better-auth/plugins";
+import { oneTimeToken } from "better-auth/plugins/one-time-token";
 import type { api } from "../component/_generated/api";
 import {
   Doc,
   type DataModel as ComponentDataModel,
 } from "../component/_generated/dataModel";
 import schema from "../component/schema";
-import { auth, database } from "./auth";
+import { database } from "./auth";
 import corsRouter from "./cors";
-import {
-  getByArgsValidator,
-  getByHelper,
-  transformOutput,
-  updateArgs,
-} from "../component/lib";
 import { vv } from "../component/util";
-import { RequireAllOrNone } from "type-fest";
+import { convex } from "./plugin";
 
 export { schema };
 
-export const userValidator = v.object({
-  ...vv.doc("user").fields,
-  _id: v.string(),
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const { userId, ...createUserFields } = schema.tables.user.validator.fields;
+export const createUserArgsValidator = v.object(createUserFields);
+export const updateUserArgsValidator = v.object(
+  schema.tables.user.validator.fields
+);
+export const deleteUserArgsValidator = v.object({
+  userId: v.string(),
 });
-export const sessionValidator = v.object({
+
+export const onCreateSessionArgsValidator = v.object({
   ...vv.doc("session").fields,
   _id: v.string(),
 });
@@ -57,43 +57,75 @@ export class BetterAuth<
   constructor(
     public component: UseApi<typeof api>,
     public betterAuthOptions: O,
-    public config: RequireAllOrNone<
-      {
-        createUser: FunctionReference<"mutation", "internal">;
-        onCreateUser?: FunctionReference<
-          "mutation",
-          "internal",
-          { userId: Id }
-        >;
-        onDeleteUser?: FunctionReference<
-          "mutation",
-          "internal",
-          {
-            id: DataModel["users"]["document"]["_id"];
-          }
-        >;
-        onCreateSession?: FunctionReference<
-          "mutation",
-          "internal",
-          {
-            session: Infer<typeof sessionValidator>;
-          }
-        >;
-        verbose?: boolean;
-        // These are the authApi methods from below, exported out by the
-        // parent app, and their references are passed in here. These are
-        // only required if useAppUserTable is true (currently).
-        authApi?: {
-          create: FunctionReference<"mutation", "internal", any>;
-          getBy: FunctionReference<"query", "internal", any>;
-          update: FunctionReference<"mutation", "internal", any>;
-          deleteBy: FunctionReference<"mutation", "internal", any>;
-        };
-        useAppUserTable?: boolean;
+    public config: {
+      createUser: FunctionReference<
+        "mutation",
+        "internal",
+        typeof schema.tables.user.validator.fields
+      >;
+      updateUser: FunctionReference<
+        "mutation",
+        "internal",
+        typeof schema.tables.user.validator.fields
+      >;
+      deleteUser: FunctionReference<"mutation", "internal", { userId: Id }>;
+      onCreateSession?: FunctionReference<
+        "mutation",
+        "internal",
+        { session: Infer<typeof onCreateSessionArgsValidator> }
+      >;
+      verbose?: boolean;
+    }
+  ) {
+    this.betterAuthOptions = {
+      ...this.betterAuthOptions,
+      user: {
+        additionalFields: {
+          userId: {
+            type: "string",
+            required: true,
+            input: false,
+          },
+        },
+        deleteUser: this.betterAuthOptions.user?.deleteUser,
       },
-      "useAppUserTable" | "authApi"
-    >
-  ) {}
+      plugins: [
+        ...(betterAuthOptions.plugins || []),
+        customSession(async ({ user, session }) => {
+          const { id, ...userData } = user as typeof user & {
+            userId: string;
+          };
+          return {
+            user: userData,
+            session: {
+              ...session,
+              userId: userData.userId as string,
+            },
+          };
+        }),
+        oidcProvider({
+          loginPage: "/not-used",
+        }),
+        bearer(),
+        jwt({
+          jwt: {
+            issuer: `${process.env.CONVEX_SITE_URL}`,
+            audience: "convex",
+            getSubject: (session) => session.user.userId,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            definePayload: ({ user: { id, userId, ...user } }) => user,
+          },
+        }),
+        oneTimeToken({ disableClientRequest: true }),
+        convex(),
+      ],
+      advanced: {
+        database: {
+          generateId: false,
+        },
+      },
+    };
+  }
 
   async getAuthUserId(ctx: RunQueryCtx & { auth: Auth }) {
     const identity = await ctx.auth.getUserIdentity();
@@ -105,13 +137,11 @@ export class BetterAuth<
 
   async getAuthUser(ctx: RunQueryCtx & { auth: Auth }) {
     const identity = await ctx.auth.getUserIdentity();
+    console.log("identity", identity);
     if (!identity) {
       return null;
     }
-    const getBy = this.config.useAppUserTable
-      ? await createFunctionHandle(this.config.authApi?.getBy)
-      : this.component.lib.getBy;
-    const doc = await ctx.runQuery(getBy, {
+    const doc = await ctx.runQuery(this.component.lib.getBy, {
       table: "user",
       field: "userId",
       value: identity.subject,
@@ -124,92 +154,6 @@ export class BetterAuth<
       .query("user")
       .withIndex("userId", (q) => q.eq("userId", id))
       .unique();
-  }
-
-  authApi() {
-    return {
-      create: internalMutationGeneric({
-        args: v.object({
-          input: v.union(
-            // User is the only table that can be located
-            // in the user's app for now
-            v.object({
-              // The table name may be custom
-              table: v.string(),
-              name: v.string(),
-              email: v.string(),
-              emailVerified: v.boolean(),
-              image: v.optional(v.string()),
-              twoFactorEnabled: v.optional(v.boolean()),
-              createdAt: v.number(),
-              updatedAt: v.number(),
-            })
-          ),
-          onCreateHandle: v.optional(v.string()),
-        }),
-        handler: async (ctx, args) => {
-          const { table, ...input } = args.input;
-          const id = await ctx.db.insert(table as any, {
-            ...input,
-          });
-          const doc = await ctx.db.get(id);
-          if (!doc) {
-            throw new Error(`Failed to create ${table}`);
-          }
-          if (args.onCreateHandle) {
-            await ctx.runMutation(
-              args.onCreateHandle as FunctionHandle<
-                "mutation",
-                {
-                  doc: any;
-                }
-              >,
-              { doc }
-            );
-          }
-          return transformOutput(doc, table);
-        },
-      }),
-      getBy: internalQueryGeneric({
-        args: getByArgsValidator,
-        handler: async (ctx, args) => {
-          const doc = await getByHelper(ctx, args);
-          if (!doc) {
-            return;
-          }
-          return transformOutput(doc, args.table);
-        },
-      }),
-      update: internalMutationGeneric({
-        args: updateArgs,
-        handler: async (ctx, args) => {
-          return ctx.runMutation(this.component.lib.update, args);
-        },
-      }),
-      deleteBy: internalMutationGeneric({
-        args: v.object({
-          ...getByArgsValidator,
-          onDeleteHandle: v.optional(v.string()),
-        }),
-        handler: async (ctx, args) => {
-          const doc = await getByHelper(ctx, args);
-          if (!doc) {
-            return;
-          }
-          await ctx.db.delete(doc._id);
-          if (args.onDeleteHandle) {
-            await ctx.runMutation(
-              args.onDeleteHandle as FunctionHandle<
-                "mutation",
-                { id: string },
-                void
-              >,
-              { id: doc._id }
-            );
-          }
-        },
-      }),
-    };
   }
 
   registerRoutes(
@@ -231,11 +175,15 @@ export class BetterAuth<
     };
 
     const authRequestHandler = httpActionGeneric(async (ctx, request) => {
-      const response = await auth(
-        database(ctx, this.component, this.betterAuthOptions, this.config),
-        this.betterAuthOptions,
-        this.config
-      ).handler(request);
+      const response = await betterAuth({
+        ...this.betterAuthOptions,
+        database: database(
+          ctx,
+          this.component,
+          this.betterAuthOptions,
+          this.config
+        ),
+      }).handler(request);
       if (this.config?.verbose) {
         console.log("response headers", response.headers);
       }
