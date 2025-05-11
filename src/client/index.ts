@@ -1,9 +1,9 @@
-import { betterAuth, type BetterAuthOptions } from "better-auth";
 import {
-  type Auth,
+  type Auth as ConvexAuth,
   type DefaultFunctionArgs,
   type Expand,
   type FunctionReference,
+  GenericActionCtx,
   type GenericDataModel,
   GenericMutationCtx,
   type GenericQueryCtx,
@@ -12,25 +12,21 @@ import {
   httpActionGeneric,
   internalMutationGeneric,
 } from "convex/server";
-import { type GenericId, Infer, v } from "convex/values";
-import { customSession, jwt } from "better-auth/plugins";
-import { bearer } from "better-auth/plugins";
-import { oidcProvider } from "better-auth/plugins";
-import { oneTimeToken } from "better-auth/plugins/one-time-token";
+import { type GenericId, v } from "convex/values";
 import type { api } from "../component/_generated/api";
 import {
   Doc,
   type DataModel as ComponentDataModel,
 } from "../component/_generated/dataModel";
 import schema from "../component/schema";
-import { database } from "./auth";
+import { convexAdapter } from "./adapter";
 import corsRouter from "./cors";
 import { vv } from "../component/util";
-import { convex } from "./plugin";
 import { getByArgsValidator, updateArgsInputValidator } from "../component/lib";
 import { omit } from "convex-helpers";
-
-export { schema };
+import { Auth } from "better-auth";
+import { convex } from "./plugin";
+export { schema, convexAdapter, convex };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { userId, ...createUserFields } = schema.tables.user.validator.fields;
@@ -53,87 +49,39 @@ export type EventFunction<T extends DefaultFunctionArgs> = FunctionReference<
   T
 >;
 
+export type AuthApi = {
+  createUser: FunctionReference<
+    "mutation",
+    "internal",
+    typeof schema.tables.user.validator.fields
+  >;
+  deleteUser: FunctionReference<"mutation", "internal", { userId: string }>;
+  updateUser?: FunctionReference<
+    "mutation",
+    "internal",
+    typeof schema.tables.user.validator.fields
+  >;
+  createSession?: FunctionReference<
+    "mutation",
+    "internal",
+    typeof schema.tables.session.validator.fields
+  >;
+};
+
 export class BetterAuth<
   DataModel extends GenericDataModel,
-  O extends BetterAuthOptions = BetterAuthOptions,
+  BA extends Auth,
   Id extends string = string,
 > {
   constructor(
     public component: UseApi<typeof api>,
-    public betterAuthOptions: O,
-    public config: {
-      authApi: {
-        createUser: FunctionReference<
-          "mutation",
-          "internal",
-          typeof schema.tables.user.validator.fields
-        >;
-        deleteUser: FunctionReference<"mutation", "internal", { userId: Id }>;
-        updateUser?: FunctionReference<
-          "mutation",
-          "internal",
-          typeof schema.tables.user.validator.fields
-        >;
-        createSession?: FunctionReference<
-          "mutation",
-          "internal",
-          { session: Infer<typeof onCreateSessionArgsValidator> }
-        >;
-      };
+    public createAuth: (ctx: GenericActionCtx<DataModel>) => Promise<BA>,
+    public config?: {
       verbose?: boolean;
     }
-  ) {
-    this.betterAuthOptions = {
-      ...this.betterAuthOptions,
-      user: {
-        additionalFields: {
-          userId: {
-            type: "string",
-            required: true,
-            input: false,
-          },
-        },
-        deleteUser: this.betterAuthOptions.user?.deleteUser,
-      },
-      plugins: [
-        ...(betterAuthOptions.plugins || []),
-        customSession(async ({ user, session }) => {
-          const userData = omit(user, ["id"]) as typeof user & {
-            userId: string;
-          };
-          return {
-            user: userData,
-            session: {
-              ...session,
-              userId: userData.userId as string,
-            },
-          };
-        }),
-        oidcProvider({
-          loginPage: "/not-used",
-        }),
-        bearer(),
-        jwt({
-          jwt: {
-            issuer: `${process.env.CONVEX_SITE_URL}`,
-            audience: "convex",
-            getSubject: (session) => session.user.userId,
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            definePayload: ({ user: { id, userId, ...user } }) => user,
-          },
-        }),
-        oneTimeToken({ disableClientRequest: true }),
-        convex(),
-      ],
-      advanced: {
-        database: {
-          generateId: false,
-        },
-      },
-    };
-  }
+  ) {}
 
-  async getAuthUserId(ctx: RunQueryCtx & { auth: Auth }) {
+  async getAuthUserId(ctx: RunQueryCtx & { auth: ConvexAuth }) {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       return null;
@@ -141,7 +89,7 @@ export class BetterAuth<
     return identity.subject as Id;
   }
 
-  async getAuthUser(ctx: RunQueryCtx & { auth: Auth }) {
+  async getAuthUser(ctx: RunQueryCtx & { auth: ConvexAuth }) {
     const identity = await ctx.auth.getUserIdentity();
     console.log("identity", identity);
     if (!identity) {
@@ -260,15 +208,8 @@ export class BetterAuth<
     };
 
     const authRequestHandler = httpActionGeneric(async (ctx, request) => {
-      const response = await betterAuth({
-        ...this.betterAuthOptions,
-        database: database(
-          ctx,
-          this.component,
-          this.betterAuthOptions,
-          this.config
-        ),
-      }).handler(request);
+      const auth = await this.createAuth(ctx as any);
+      const response = await auth.handler(request);
       if (this.config?.verbose) {
         console.log("response headers", response.headers);
       }
@@ -287,25 +228,19 @@ export class BetterAuth<
       path: "/.well-known/openid-configuration",
       method: "GET",
       handler: httpActionGeneric(async () => {
-        const url = `${requireEnv("CONVEX_SITE_URL")}/api/auth/.well-known/openid-configuration`;
+        const url = `${requireEnv("CONVEX_SITE_URL")}/api/auth/convex/.well-known/openid-configuration`;
         return Response.redirect(url);
       }),
     });
 
     http.route({
-      path: `${path}/.well-known/openid-configuration`,
+      path: `${path}/.well-known/convex/openid-configuration`,
       method: "GET",
       handler: authRequestHandler,
     });
 
     http.route({
-      pathPrefix: `${path}/oauth2/`,
-      method: "GET",
-      handler: authRequestHandler,
-    });
-
-    http.route({
-      path: `${path}/jwks`,
+      path: `${path}/convex/jwks`,
       method: "GET",
       handler: authRequestHandler,
     });

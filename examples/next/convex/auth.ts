@@ -1,4 +1,9 @@
-import { BetterAuth } from "@convex-dev/better-auth";
+import {
+  AuthApi,
+  BetterAuth,
+  convexAdapter,
+  convex,
+} from "@convex-dev/better-auth";
 import { components, internal } from "./_generated/api";
 import { twoFactor } from "better-auth/plugins";
 import { emailOTP } from "better-auth/plugins";
@@ -6,16 +11,24 @@ import { sendMagicLink, sendOTPVerification } from "./email";
 import { sendEmailVerification, sendResetPassword } from "./email";
 import { magicLink } from "better-auth/plugins";
 import { asyncMap } from "convex-helpers";
-import { Id } from "./_generated/dataModel";
+import { DataModel, Id } from "./_generated/dataModel";
+import { betterAuth } from "better-auth";
+import { GenericActionCtx } from "convex/server";
 
-const createUserFn = internal.auth.createUser as any;
-const updateUserFn = internal.auth.updateUser as any;
-const deleteUserFn = internal.auth.deleteUser as any;
-const createSessionFn = internal.auth.createSession as any;
+const authApi: AuthApi = {
+  createUser: internal.auth.createUser as any,
+  deleteUser: internal.auth.deleteUser as any,
+  updateUser: internal.auth.updateUser as any,
+  createSession: internal.auth.createSession as any,
+};
 
-export const betterAuthComponent = new BetterAuth(
-  components.betterAuth,
-  {
+export const createAuth = (ctx: GenericActionCtx<DataModel>) =>
+  betterAuth({
+    database: convexAdapter<DataModel, GenericActionCtx<DataModel>>(
+      ctx,
+      components.betterAuth,
+      { authApi, verbose: true },
+    ),
     trustedOrigins: ["http://localhost:3000", "https://localhost:3000"],
     account: {
       accountLinking: {
@@ -40,6 +53,23 @@ export const betterAuthComponent = new BetterAuth(
         });
       },
     },
+    socialProviders: {
+      github: {
+        clientId: process.env.GITHUB_CLIENT_ID as string,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+      },
+      google: {
+        clientId: process.env.GOOGLE_CLIENT_ID as string,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      },
+    },
+    /*
+    user: {
+      deleteUser: {
+        enabled: true,
+      },
+    },
+    */
     plugins: [
       magicLink({
         sendMagicLink: async ({ email, url }) => {
@@ -58,35 +88,14 @@ export const betterAuthComponent = new BetterAuth(
         },
       }),
       twoFactor(),
+      convex(),
     ],
-    socialProviders: {
-      github: {
-        clientId: process.env.GITHUB_CLIENT_ID as string,
-        clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-      },
-      google: {
-        clientId: process.env.GOOGLE_CLIENT_ID as string,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      },
-    },
-    user: {
-      deleteUser: {
-        enabled: true,
-      },
-      modelName: "users",
-    },
-  },
-  {
-    authApi: {
-      createUser: createUserFn,
-      deleteUser: deleteUserFn,
+  });
 
-      // optional
-      updateUser: updateUserFn,
-      createSession: createSessionFn,
-    },
-    verbose: true,
-  },
+export const betterAuthComponent = new BetterAuth(
+  components.betterAuth,
+  createAuth as any,
+  { verbose: true },
 );
 
 export const { createUser, deleteUser, updateUser, createSession } =
@@ -108,7 +117,7 @@ export const { createUser, deleteUser, updateUser, createSession } =
       // TODO: use correct id type
       const todos = await ctx.db
         .query("todos")
-        .withIndex("userId", (q) => q.eq("userId", userId))
+        .withIndex("userId", (q) => q.eq("userId", userId as Id<"users">))
         .collect();
       await asyncMap(todos, async (todo) => {
         await ctx.db.delete(todo._id as Id<"todos">);
