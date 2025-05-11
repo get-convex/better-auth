@@ -45,7 +45,7 @@ export const createAuth = (ctx: GenericActionCtx<DataModel>) =>
 
 export const betterAuthComponent = new BetterAuth(
   components.betterAuth,
-  createAuth as any,
+  createAuth,
   { verbose: true }
 );
 

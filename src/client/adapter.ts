@@ -49,7 +49,6 @@ export const convexAdapter = <
                 field === "id" ? true : schema[model].fields[field].unique,
               value: value instanceof Date ? value.getTime() : value,
             });
-            console.log("result", result);
             return result;
           }
           if (
@@ -69,17 +68,23 @@ export const convexAdapter = <
           }
           throw new Error("where clause not supported");
         },
-        findMany: async ({ model, where, sortBy, offset }): Promise<any[]> => {
+        findMany: async ({
+          model,
+          where,
+          sortBy,
+          offset,
+          limit,
+        }): Promise<any[]> => {
           if (offset) {
             throw new Error("where clause not supported");
           }
           if (
             model === "jwks" &&
             !where &&
-            sortBy?.field === "createdAt" &&
-            sortBy?.direction === "desc"
+            (!sortBy ||
+              (sortBy?.field === "createdAt" && sortBy?.direction === "desc"))
           ) {
-            return ctx.runQuery(component.lib.getJwks);
+            return ctx.runQuery(component.lib.getJwks, { limit });
           }
           if (where?.length !== 1 || where[0].operator !== "eq") {
             throw new Error("where clause not supported");
@@ -90,12 +95,14 @@ export const convexAdapter = <
           if (model === "account" && where[0].field === "userId") {
             return ctx.runQuery(component.lib.getAccountsByUserId, {
               userId: where[0].value as any,
+              limit,
             });
           }
           if (model === "verification" && where[0].field === "identifier") {
             return ctx.runQuery(component.lib.listVerificationsByIdentifier, {
               identifier: where[0].value as string,
               sortBy,
+              limit,
             });
           }
           throw new Error("where clause not supported");

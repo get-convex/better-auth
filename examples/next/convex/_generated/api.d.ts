@@ -197,7 +197,7 @@ export declare const components: {
       getAccountsByUserId: FunctionReference<
         "query",
         "internal",
-        { userId: string },
+        { limit?: number; userId: string },
         any
       >;
       getBy: FunctionReference<
@@ -234,7 +234,7 @@ export declare const components: {
         },
         any
       >;
-      getJwks: FunctionReference<"query", "internal", {}, any>;
+      getJwks: FunctionReference<"query", "internal", { limit?: number }, any>;
       listVerificationsByIdentifier: FunctionReference<
         "query",
         "internal",

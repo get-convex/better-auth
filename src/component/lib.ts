@@ -156,20 +156,27 @@ export const deleteBy = mutation({
 
 // Single purpose functions
 export const getAccountsByUserId = query({
-  args: { userId: v.string() },
+  args: { userId: v.string(), limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
-    const docs = await ctx.db
+    const query = ctx.db
       .query("account")
-      .withIndex("userId", (q) => q.eq("userId", args.userId))
-      .collect();
+      .withIndex("userId", (q) => q.eq("userId", args.userId));
+    const docs = args.limit
+      ? await query.take(args.limit)
+      : await query.collect();
     return docs.map((doc) => transformOutput(doc, "account"));
   },
 });
 
 export const getJwks = query({
-  args: {},
-  handler: async (ctx) => {
-    const docs = await ctx.db.query("jwks").collect();
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const query = ctx.db.query("jwks");
+    const docs = args.limit
+      ? await query.take(args.limit)
+      : await query.collect();
     return docs.map((doc) => transformOutput(doc, "jwks"));
   },
 });
