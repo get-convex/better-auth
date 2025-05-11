@@ -1,5 +1,6 @@
 import type { BetterAuthClientPlugin, Store } from "better-auth";
 import { BetterFetchOption } from "better-auth/client";
+import { convex } from "../client";
 
 const SESSION_STORAGE_KEY = "__better_auth_session";
 
@@ -10,6 +11,7 @@ export const convexClient = () => {
   const storage = typeof window === "undefined" ? undefined : localStorage;
   return {
     id: "convex",
+    $InferServerPlugin: {} as ReturnType<typeof convex>,
     getActions(_, $store) {
       store = $store;
       return {

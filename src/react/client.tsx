@@ -1,6 +1,3 @@
-import { BetterAuthClientPlugin, ClientOptions } from "better-auth/client";
-import { jwtClient, oneTimeTokenClient } from "better-auth/client/plugins";
-import { createAuthClient as createBetterAuthClient } from "better-auth/react";
 import { ConvexReactClient } from "convex/react";
 import isNetworkError from "is-network-error";
 import {
@@ -11,48 +8,8 @@ import {
   useEffect,
   useMemo,
 } from "react";
+import { createAuthClient } from "better-auth/react";
 import { convexClient } from "./clientPlugin";
-
-export const createAuthClient = <O extends ClientOptions>(
-  options: O
-): ReturnType<
-  typeof createBetterAuthClient<
-    O & {
-      fetchOptions: O["fetchOptions"] & {
-        auth: {
-          type: "Bearer";
-          token: () => string | null;
-        };
-      };
-      plugins: O["plugins"] extends BetterAuthClientPlugin[]
-        ? [
-            ...O["plugins"],
-            ReturnType<typeof jwtClient>,
-            ReturnType<typeof oneTimeTokenClient>,
-            ReturnType<typeof convexClient>,
-          ]
-        : [
-            ReturnType<typeof jwtClient>,
-            ReturnType<typeof oneTimeTokenClient>,
-            ReturnType<typeof convexClient>,
-          ];
-    }
-  >
-> => {
-  if (!options?.baseURL) {
-    throw new Error(
-      `baseURL should be set to your Convex deployment site URL, which ends in "convex.site".`
-    );
-  }
-  return createBetterAuthClient({
-    ...options,
-    plugins: (options.plugins ?? []).concat(
-      jwtClient(),
-      oneTimeTokenClient(),
-      convexClient()
-    ),
-  });
-};
 
 const ConvexAuthInternalContext = createContext<{
   isLoading: boolean;
@@ -73,17 +30,15 @@ export type ConvexAuthClient = {
   logger?: ConvexReactClient["logger"];
 };
 
-export type ConvexBetterAuthClient = ReturnType<
-  typeof createAuthClient<{ baseURL: string }>
->;
-
 export function AuthProvider({
   client,
   authClient,
   children,
 }: {
   client: ConvexAuthClient;
-  authClient: ConvexBetterAuthClient;
+  authClient: ReturnType<
+    typeof createAuthClient<{ plugins: [ReturnType<typeof convexClient>] }>
+  >;
   children: ReactNode;
 }) {
   const { data: session, isPending: isSessionPending } =
@@ -115,7 +70,8 @@ export function AuthProvider({
 
     const fetchWithRetry = async () => {
       try {
-        const { data } = await authClient.token();
+        console.log("fetching token");
+        const { data } = await authClient.convex.token();
         return data?.token || null;
       } catch (e) {
         if (!isNetworkError(e)) {
@@ -155,10 +111,12 @@ export function AuthProvider({
       (async () => {
         const url = new URL(window.location.href);
         const token = url.searchParams.get("ott");
+        console.log("token", token);
         if (token) {
           url.searchParams.delete("ott");
-          const result = await authClient.oneTimeToken.verify({ token });
+          const result = await authClient.convex.oneTimeToken.verify({ token });
           const session = result.data?.session;
+          console.log("session", session);
           if (!session) {
             return;
           }
