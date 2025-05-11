@@ -14,17 +14,14 @@ import {
 } from "convex/server";
 import { type GenericId, v } from "convex/values";
 import type { api } from "../component/_generated/api";
-import {
-  Doc,
-  type DataModel as ComponentDataModel,
-} from "../component/_generated/dataModel";
+import { Doc } from "../component/_generated/dataModel";
 import schema from "../component/schema";
 import { convexAdapter } from "./adapter";
 import corsRouter from "./cors";
 import { vv } from "../component/util";
 import { getByArgsValidator, updateArgsInputValidator } from "../component/lib";
 import { omit } from "convex-helpers";
-import { Auth, betterAuth } from "better-auth";
+import { betterAuth } from "better-auth";
 import { convex } from "./plugin";
 export { schema, convexAdapter, convex };
 
@@ -70,28 +67,29 @@ export type AuthApi = {
 
 export class BetterAuth<
   DataModel extends GenericDataModel,
-  BA extends ReturnType<typeof betterAuth>,
   Id extends string = string,
 > {
   constructor(
     public component: UseApi<typeof api>,
-    public createAuth: (ctx: GenericActionCtx<DataModel>) => BA,
     public config?: {
       verbose?: boolean;
     }
   ) {}
 
-  async getAuthUserId(ctx: RunQueryCtx & { auth: ConvexAuth }) {
+  async getHeaders(ctx: RunQueryCtx & { auth: ConvexAuth }) {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      return null;
+      return new Headers();
     }
-    return identity.subject as Id;
+    const session = await ctx.runQuery(this.component.lib.getCurrentSession);
+    return new Headers({
+      authorization: `Bearer ${session?.token}`,
+    });
   }
 
+  // Convenience function for getting the Better Auth user
   async getAuthUser(ctx: RunQueryCtx & { auth: ConvexAuth }) {
     const identity = await ctx.auth.getUserIdentity();
-    console.log("identity", identity);
     if (!identity) {
       return null;
     }
@@ -101,13 +99,6 @@ export class BetterAuth<
       value: identity.subject,
     });
     return doc as WithoutSystemFields<Doc<"user">>;
-  }
-
-  async getAnyUser(ctx: GenericQueryCtx<ComponentDataModel>, id: string) {
-    return ctx.db
-      .query("user")
-      .withIndex("userId", (q) => q.eq("userId", id))
-      .unique();
   }
 
   authApi(opts: {
@@ -189,8 +180,9 @@ export class BetterAuth<
     };
   }
 
-  registerRoutes(
+  registerRoutes<Ctx extends GenericActionCtx<DataModel>>(
     http: HttpRouter,
+    createAuth: (ctx: Ctx) => ReturnType<typeof betterAuth>,
     {
       path = "/api/auth",
       allowedOrigins,
@@ -208,7 +200,7 @@ export class BetterAuth<
     };
 
     const authRequestHandler = httpActionGeneric(async (ctx, request) => {
-      const auth = this.createAuth(ctx as any);
+      const auth = createAuth(ctx as any);
       const response = await auth.handler(request);
       if (this.config?.verbose) {
         console.log("response headers", response.headers);

@@ -1,11 +1,21 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { GenericCtx, mutation, query } from "./_generated/server";
 import { betterAuthComponent } from "./auth";
+import { DataModel, Id } from "./_generated/dataModel";
+import { GenericQueryCtx } from "convex/server";
+
+const getUserId = async (ctx: GenericCtx) => {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
+    return null;
+  }
+  return identity.subject as Id<"users">;
+};
 
 export const get = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await betterAuthComponent.getAuthUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) {
       return [];
     }
@@ -20,7 +30,7 @@ export const get = query({
 export const create = mutation({
   args: { text: v.string() },
   handler: async (ctx, args) => {
-    const userId = await betterAuthComponent.getAuthUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) {
       throw new Error("Not authenticated");
     }
@@ -39,7 +49,7 @@ export const create = mutation({
 export const toggle = mutation({
   args: { id: v.id("todos") },
   handler: async (ctx, args) => {
-    const userId = await betterAuthComponent.getAuthUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) {
       throw new Error("Not authenticated");
     }
@@ -59,7 +69,7 @@ export const toggle = mutation({
 export const remove = mutation({
   args: { id: v.id("todos") },
   handler: async (ctx, args) => {
-    const userId = await betterAuthComponent.getAuthUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) {
       throw new Error("Not authenticated");
     }

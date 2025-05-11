@@ -1,10 +1,10 @@
 import "./polyfills";
 import { httpRouter } from "convex/server";
-import { betterAuthComponent } from "./auth";
+import { betterAuthComponent, createAuth } from "./auth";
 
 const http = httpRouter();
 
-betterAuthComponent.registerRoutes(http, {
+betterAuthComponent.registerRoutes(http, createAuth, {
   allowedOrigins: ["http://localhost:3000", "https://localhost:3000"],
 });
 

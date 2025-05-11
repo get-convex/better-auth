@@ -7,9 +7,13 @@ import {
 import { components, internal } from "./_generated/api";
 import { requireEnv } from "./util";
 import { asyncMap } from "convex-helpers";
-import { DataModel, Id } from "./_generated/dataModel";
+import { Id } from "./_generated/dataModel";
 import { betterAuth } from "better-auth";
-import { GenericActionCtx } from "convex/server";
+import {
+  GenericActionCtx,
+  GenericDataModel,
+  GenericQueryCtx,
+} from "convex/server";
 
 const authApi: AuthApi = {
   createUser: internal.auth.createUser as any,
@@ -18,13 +22,17 @@ const authApi: AuthApi = {
   createSession: internal.auth.createSession as any,
 };
 
-export const createAuth = (ctx: GenericActionCtx<DataModel>) =>
+export const createAuth = <
+  DataModel extends GenericDataModel,
+  Ctx extends GenericActionCtx<DataModel> | GenericQueryCtx<DataModel>,
+>(
+  ctx: Ctx
+) =>
   betterAuth({
-    database: convexAdapter<DataModel, GenericActionCtx<DataModel>>(
-      ctx,
-      components.betterAuth,
-      { authApi, verbose: true }
-    ),
+    database: convexAdapter<DataModel, Ctx>(ctx, components.betterAuth, {
+      authApi,
+      verbose: true,
+    }),
     trustedOrigins: [requireEnv("SITE_URL")],
     socialProviders: {
       github: {
@@ -43,11 +51,9 @@ export const createAuth = (ctx: GenericActionCtx<DataModel>) =>
     },
   });
 
-export const betterAuthComponent = new BetterAuth(
-  components.betterAuth,
-  createAuth,
-  { verbose: true }
-);
+export const betterAuthComponent = new BetterAuth(components.betterAuth, {
+  verbose: true,
+});
 
 export const { createUser, deleteUser, updateUser, createSession } =
   betterAuthComponent.authApi({

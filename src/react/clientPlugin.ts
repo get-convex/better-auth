@@ -2,7 +2,7 @@ import type { BetterAuthClientPlugin, Store } from "better-auth";
 import { BetterFetchOption } from "better-auth/client";
 import { convex } from "../client";
 
-const SESSION_STORAGE_KEY = "__better_auth_session";
+export const SESSION_STORAGE_KEY = "__better_auth_session";
 
 // Based on portions of the Expo integration
 export const convexClient = () => {

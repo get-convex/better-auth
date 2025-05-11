@@ -34,6 +34,18 @@ export const transformOutput = (
   return { id: _id, ...data };
 };
 
+// Get the session via sessionId in jwt claims
+export const getCurrentSession = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
+    return ctx.db.get(identity.sessionId as Id<"session">);
+  },
+});
+
 export const getByHelper = async (
   ctx: QueryCtx,
   args: {

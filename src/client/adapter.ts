@@ -1,4 +1,8 @@
-import { GenericActionCtx, GenericDataModel } from "convex/server";
+import {
+  GenericActionCtx,
+  GenericDataModel,
+  GenericQueryCtx,
+} from "convex/server";
 import { AuthApi, UseApi } from "./index";
 import { api } from "../component/_generated/api";
 import { transformInput } from "../component/lib";
@@ -6,7 +10,7 @@ import { createAdapter } from "better-auth/adapters";
 
 export const convexAdapter = <
   DataModel extends GenericDataModel,
-  Ctx extends GenericActionCtx<DataModel>,
+  Ctx extends GenericActionCtx<DataModel> | GenericQueryCtx<DataModel>,
 >(
   ctx: Ctx,
   component: UseApi<typeof api>,
@@ -26,6 +30,9 @@ export const convexAdapter = <
       return {
         id: "convex",
         create: async ({ model, data, select }): Promise<any> => {
+          if (!("runMutation" in ctx)) {
+            throw new Error("ctx is not an action ctx");
+          }
           if (select) {
             throw new Error("select is not supported");
           }
@@ -112,6 +119,9 @@ export const convexAdapter = <
           // return 0;
         },
         update: async ({ model, where, update }): Promise<any> => {
+          if (!("runMutation" in ctx)) {
+            throw new Error("ctx is not an action ctx");
+          }
           if (where?.length === 1 && where[0].operator === "eq") {
             const { value, field } = where[0];
             const updateFn =
@@ -132,6 +142,9 @@ export const convexAdapter = <
           throw new Error("where clause not supported");
         },
         delete: async ({ model, where }) => {
+          if (!("runMutation" in ctx)) {
+            throw new Error("ctx is not an action ctx");
+          }
           if (where?.length === 1 && where[0].operator === "eq") {
             const { field, value } = where[0];
             const deleteFn =
@@ -149,6 +162,9 @@ export const convexAdapter = <
           // return null
         },
         deleteMany: async ({ model, where }) => {
+          if (!("runMutation" in ctx)) {
+            throw new Error("ctx is not an action ctx");
+          }
           if (
             model === "verification" &&
             where?.length === 1 &&
@@ -169,6 +185,9 @@ export const convexAdapter = <
           // return count;
         },
         updateMany: async ({ where }) => {
+          if (!("runMutation" in ctx)) {
+            throw new Error("ctx is not an action ctx");
+          }
           throw new Error("updateMany not implemented");
           //return 0;
           /*

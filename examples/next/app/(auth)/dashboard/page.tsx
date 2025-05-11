@@ -13,6 +13,7 @@ import { authClient } from "@/app/auth-client";
 
 export default function AppPage() {
   const user = useQuery(api.example.getCurrentUser);
+  console.log("user", user);
 
   const handleSignOut = async () => {
     await authClient.signOut();

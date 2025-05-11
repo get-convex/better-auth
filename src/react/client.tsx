@@ -70,7 +70,6 @@ export function AuthProvider({
 
     const fetchWithRetry = async () => {
       try {
-        console.log("fetching token");
         const { data } = await authClient.convex.token();
         return data?.token || null;
       } catch (e) {

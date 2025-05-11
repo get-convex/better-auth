@@ -1,15 +1,27 @@
 import { query } from "./_generated/server";
-import { betterAuthComponent } from "./auth";
-import { Id } from "./_generated/dataModel";
+import { betterAuthComponent, createAuth } from "./auth";
+import { DataModel, Id } from "./_generated/dataModel";
+import { GenericQueryCtx } from "convex/server";
 
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    const userMetadata = await betterAuthComponent.getAuthUser(ctx);
-    if (!userMetadata) {
-      return null;
+    // This function shows the pure Better Auth way of:
+    // - Getting the session
+    // - Getting the Better Auth user (effectively metadata for the user)
+    // - Merging the application user with metadata
+    //
+    // You can also use the convenience function from the component for getting
+    // the user metadata: betterAuthComponent.getAuthUser(ctx)
+    const auth = createAuth<DataModel, GenericQueryCtx<DataModel>>(ctx);
+    const headers = await betterAuthComponent.getHeaders(ctx);
+    const session = await auth.api.getSession({
+      headers,
+    });
+    if (!session) {
+      throw new Error("No session found");
     }
-    const user = await ctx.db.get(userMetadata.userId as Id<"users">);
-    return { ...userMetadata, ...user };
+    const user = await ctx.db.get(session.user.id as Id<"users">);
+    return { ...session.user, ...user };
   },
 });

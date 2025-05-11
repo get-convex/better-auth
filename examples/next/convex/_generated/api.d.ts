@@ -234,6 +234,7 @@ export declare const components: {
         },
         any
       >;
+      getCurrentSession: FunctionReference<"query", "internal", {}, any>;
       getJwks: FunctionReference<"query", "internal", { limit?: number }, any>;
       listVerificationsByIdentifier: FunctionReference<
         "query",

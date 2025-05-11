@@ -186,6 +186,7 @@ export type Mounts = {
       },
       any
     >;
+    getCurrentSession: FunctionReference<"query", "public", {}, any>;
     getJwks: FunctionReference<"query", "public", { limit?: number }, any>;
     listVerificationsByIdentifier: FunctionReference<
       "query",

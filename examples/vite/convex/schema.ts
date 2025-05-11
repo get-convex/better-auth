@@ -9,7 +9,7 @@ const schema = defineSchema({
   todos: defineTable({
     text: v.string(),
     completed: v.boolean(),
-    userId: v.string(),
+    userId: v.id("users"),
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("userId", ["userId"]),

@@ -15,14 +15,14 @@ import { z } from "zod";
 
 export const convex = () => {
   const customSession = customSessionPlugin(async ({ user, session }) => {
-    const userData = omit(user, ["id"]) as typeof user & {
+    const { userId, ...userData } = omit(user, ["id"]) as typeof user & {
       userId: string;
     };
     return {
-      user: userData,
+      user: { ...userData, id: userId },
       session: {
         ...session,
-        userId: userData.userId as string,
+        userId,
       },
     };
   });
@@ -42,7 +42,10 @@ export const convex = () => {
         return session.user.userId;
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      definePayload: ({ user: { id, userId, ...user } }) => user,
+      definePayload: ({ user: { id, userId, ...user }, session }) => ({
+        ...user,
+        sessionId: session.id,
+      }),
     },
   });
   const oneTimeToken = oneTimeTokenPlugin();
