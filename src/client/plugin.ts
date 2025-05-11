@@ -29,7 +29,7 @@ export const convex = () => {
   const oidcProvider = oidcProviderPlugin({
     loginPage: "/not-used",
     metadata: {
-      jwks_uri: "/convex/jwks",
+      jwks_uri: `${process.env.CONVEX_SITE_URL}/api/auth/convex/jwks`,
     },
   });
   const bearer = bearerPlugin();
@@ -37,7 +37,10 @@ export const convex = () => {
     jwt: {
       issuer: `${process.env.CONVEX_SITE_URL}`,
       audience: "convex",
-      getSubject: (session) => session.user.userId,
+      getSubject: (session) => {
+        // Return the userId from the app user table
+        return session.user.userId;
+      },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       definePayload: ({ user: { id, userId, ...user } }) => user,
     },
@@ -49,7 +52,12 @@ export const convex = () => {
     ...oidcProvider.hooks.after,
     ...jwt.hooks.after,
   ];
-  const schema = jwt.schema;
+  const schema = {
+    user: {
+      fields: { userId: { type: "string", required: true, input: false } },
+    } as const,
+    ...jwt.schema,
+  };
   return {
     id: "convex",
     hooks: {
@@ -94,10 +102,8 @@ export const convex = () => {
           method: "GET",
           query: z.optional(
             z.object({
-              /**
-               * If cookie cache is enabled, it will disable the cache
-               * and fetch the session from the database
-               */
+              // If cookie cache is enabled, it will disable the cache
+              // and fetch the session from the database
               disableCookieCache: z
                 .boolean({
                   description:
@@ -138,8 +144,10 @@ export const convex = () => {
           requireHeaders: true,
         },
         async (ctx) => {
-          const response = await customSession.endpoints.getSession(ctx);
-          console.log("getSession response", response);
+          const response = await customSession.endpoints.getSession({
+            ...ctx,
+            returnHeaders: false,
+          });
           return response;
         }
       ),
@@ -152,7 +160,10 @@ export const convex = () => {
           },
         },
         async (ctx) => {
-          const response = await oidcProvider.endpoints.getOpenIdConfig(ctx);
+          const response = await oidcProvider.endpoints.getOpenIdConfig({
+            ...ctx,
+            returnHeaders: false,
+          });
           return response;
         }
       ),
@@ -244,7 +255,10 @@ export const convex = () => {
           },
         },
         async (ctx) => {
-          const response = await jwt.endpoints.getJwks(ctx);
+          const response = await jwt.endpoints.getJwks({
+            ...ctx,
+            returnHeaders: false,
+          });
           return response;
         }
       ),
@@ -278,8 +292,10 @@ export const convex = () => {
           },
         },
         async (ctx) => {
-          const response = await jwt.endpoints.getToken(ctx);
-          console.log("getToken response", response);
+          const response = await jwt.endpoints.getToken({
+            ...ctx,
+            returnHeaders: false,
+          });
           return response;
         }
       ),
@@ -291,32 +307,14 @@ export const convex = () => {
             token: z.string(),
           }),
         },
-        async (c) => {
-          const response = await oneTimeToken.endpoints.verifyOneTimeToken(c);
-          console.log("verifyOneTimeToken response", response);
+        async (ctx) => {
+          const response = await oneTimeToken.endpoints.verifyOneTimeToken({
+            ...ctx,
+            returnHeaders: false,
+          });
           return response;
         }
       ),
-    },
-    init: () => {
-      return {
-        options: {
-          user: {
-            additionalFields: {
-              userId: {
-                type: "string",
-                required: true,
-                input: false,
-              },
-            },
-          },
-          advanced: {
-            database: {
-              generateId: false,
-            },
-          },
-        },
-      };
     },
     schema,
   } satisfies BetterAuthPlugin;

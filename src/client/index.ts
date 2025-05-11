@@ -24,7 +24,7 @@ import corsRouter from "./cors";
 import { vv } from "../component/util";
 import { getByArgsValidator, updateArgsInputValidator } from "../component/lib";
 import { omit } from "convex-helpers";
-import { Auth } from "better-auth";
+import { Auth, betterAuth } from "better-auth";
 import { convex } from "./plugin";
 export { schema, convexAdapter, convex };
 
@@ -70,12 +70,12 @@ export type AuthApi = {
 
 export class BetterAuth<
   DataModel extends GenericDataModel,
-  BA extends Auth,
+  BA extends ReturnType<typeof betterAuth>,
   Id extends string = string,
 > {
   constructor(
     public component: UseApi<typeof api>,
-    public createAuth: (ctx: GenericActionCtx<DataModel>) => Promise<BA>,
+    public createAuth: (ctx: GenericActionCtx<DataModel>) => BA,
     public config?: {
       verbose?: boolean;
     }
@@ -208,7 +208,7 @@ export class BetterAuth<
     };
 
     const authRequestHandler = httpActionGeneric(async (ctx, request) => {
-      const auth = await this.createAuth(ctx as any);
+      const auth = this.createAuth(ctx as any);
       const response = await auth.handler(request);
       if (this.config?.verbose) {
         console.log("response headers", response.headers);
@@ -234,7 +234,7 @@ export class BetterAuth<
     });
 
     http.route({
-      path: `${path}/.well-known/convex/openid-configuration`,
+      path: `${path}/convex/.well-known/openid-configuration`,
       method: "GET",
       handler: authRequestHandler,
     });

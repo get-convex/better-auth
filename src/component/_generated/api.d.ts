@@ -161,7 +161,7 @@ export type Mounts = {
     getAccountsByUserId: FunctionReference<
       "query",
       "public",
-      { userId: string },
+      { limit?: number; userId: string },
       any
     >;
     getBy: FunctionReference<
@@ -186,7 +186,7 @@ export type Mounts = {
       },
       any
     >;
-    getJwks: FunctionReference<"query", "public", {}, any>;
+    getJwks: FunctionReference<"query", "public", { limit?: number }, any>;
     listVerificationsByIdentifier: FunctionReference<
       "query",
       "public",

@@ -63,13 +63,11 @@ export const createAuth = (ctx: GenericActionCtx<DataModel>) =>
         clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
       },
     },
-    /*
     user: {
       deleteUser: {
         enabled: true,
       },
     },
-    */
     plugins: [
       magicLink({
         sendMagicLink: async ({ email, url }) => {

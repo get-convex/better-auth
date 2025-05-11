@@ -105,6 +105,13 @@ export function AuthProvider({
     [fetchToken]
   );
 
+  useEffect(() => {
+    console.log("mounting");
+    return () => {
+      console.log("unmounting");
+    };
+  }, []);
+
   useEffect(
     () => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -114,6 +121,7 @@ export function AuthProvider({
         console.log("token", token);
         if (token) {
           url.searchParams.delete("ott");
+          console.log("verifying token");
           const result = await authClient.convex.oneTimeToken.verify({ token });
           const session = result.data?.session;
           console.log("session", session);

@@ -9,7 +9,7 @@ export function Dashboard() {
   const user = useQuery(api.example.getCurrentUser);
 
   if (!user) {
-    return <div>Loading...</div>;
+    return <div>Loading dashboard...</div>;
   }
 
   const handleDeleteAccount = async () => {
