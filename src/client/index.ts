@@ -211,9 +211,9 @@ export class BetterAuth<
     const cors = corsRouter(http, {
       allowedOrigins,
       allowCredentials: true,
-      allowedHeaders: ["Authorization", "Set-Auth-Token", "Content-Type"],
+      allowedHeaders: ["Authorization", "Content-Type", "Better-Auth-Cookie"],
       verbose: this.config?.verbose,
-      exposedHeaders: ["Set-Auth-Token"],
+      exposedHeaders: ["Set-Better-Auth-Cookie"],
     });
 
     http.route({

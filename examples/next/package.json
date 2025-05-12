@@ -17,7 +17,7 @@
     "@radix-ui/react-label": "^2.1.2",
     "@radix-ui/react-slot": "^1.1.2",
     "@react-email/components": "0.0.35",
-    "better-auth": "^1.2.7",
+    "better-auth": "file:../../node_modules/better-auth",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "convex": "file:../../node_modules/convex",

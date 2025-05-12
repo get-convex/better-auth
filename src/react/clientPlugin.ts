@@ -1,20 +1,129 @@
 import type { BetterAuthClientPlugin, Store } from "better-auth";
-import { BetterFetchOption } from "better-auth/client";
-import { convex } from "../client";
+import { BetterFetchOption } from "@better-fetch/fetch";
+import { convex } from "../client/plugin";
 
-export const SESSION_STORAGE_KEY = "__better_auth_session";
+interface CookieAttributes {
+  value: string;
+  expires?: Date;
+  "max-age"?: number;
+  domain?: string;
+  path?: string;
+  secure?: boolean;
+  httpOnly?: boolean;
+  sameSite?: "Strict" | "Lax" | "None";
+}
 
-// Based on portions of the Expo integration
-export const convexClient = () => {
+export function parseSetCookieHeader(
+  header: string
+): Map<string, CookieAttributes> {
+  const cookieMap = new Map<string, CookieAttributes>();
+  const cookies = header.split(", ");
+  cookies.forEach((cookie) => {
+    const [nameValue, ...attributes] = cookie.split("; ");
+    const [name, value] = nameValue.split("=");
+
+    const cookieObj: CookieAttributes = { value };
+
+    attributes.forEach((attr) => {
+      const [attrName, attrValue] = attr.split("=");
+      cookieObj[attrName.toLowerCase() as "value"] = attrValue;
+    });
+
+    cookieMap.set(name, cookieObj);
+  });
+
+  return cookieMap;
+}
+
+interface StoredCookie {
+  value: string;
+  expires: Date | null;
+}
+
+export function getSetCookie(header: string, prevCookie?: string) {
+  const parsed = parseSetCookieHeader(header);
+  let toSetCookie: Record<string, StoredCookie> = {};
+  parsed.forEach((cookie, key) => {
+    const expiresAt = cookie["expires"];
+    const maxAge = cookie["max-age"];
+    const expires = expiresAt
+      ? new Date(String(expiresAt))
+      : maxAge
+        ? new Date(Date.now() + Number(maxAge))
+        : null;
+    toSetCookie[key] = {
+      value: cookie["value"],
+      expires,
+    };
+  });
+  if (prevCookie) {
+    try {
+      const prevCookieParsed = JSON.parse(prevCookie);
+      toSetCookie = {
+        ...prevCookieParsed,
+        ...toSetCookie,
+      };
+    } catch {
+      //
+    }
+  }
+  return JSON.stringify(toSetCookie);
+}
+
+export function getCookie(cookie: string) {
+  let parsed = {} as Record<string, StoredCookie>;
+  try {
+    parsed = JSON.parse(cookie) as Record<string, StoredCookie>;
+  } catch {
+    // noop
+  }
+  const toSend = Object.entries(parsed).reduce((acc, [key, value]) => {
+    if (value.expires && value.expires < new Date()) {
+      return acc;
+    }
+    return `${acc}; ${key}=${value.value}`;
+  }, "");
+  return toSend;
+}
+
+export const convexClient = (opts: {
+  storage?: {
+    setItem: (key: string, value: string) => any;
+    getItem: (key: string) => string | null;
+  };
+  storagePrefix?: string;
+  disableCache?: boolean;
+}) => {
   let store: Store | null = null;
-  // No localstorage in non-browser environments
-  const storage = typeof window === "undefined" ? undefined : localStorage;
+  const cookieName = `${opts?.storagePrefix || "better-auth"}_cookie`;
+  const localCacheName = `${opts?.storagePrefix || "better-auth"}_session_data`;
+  const storage = opts?.storage;
+
   return {
     id: "convex",
     $InferServerPlugin: {} as ReturnType<typeof convex>,
     getActions(_, $store) {
       store = $store;
       return {
+        /**
+         * Get the stored cookie.
+         *
+         * You can use this to get the cookie stored in the device and use it in your fetch
+         * requests.
+         *
+         * @example
+         * ```ts
+         * const cookie = client.getCookie();
+         * fetch("https://api.example.com", {
+         * 	headers: {
+         * 		cookie,
+         * 	},
+         * });
+         */
+        getCookie: () => {
+          const cookie = storage?.getItem(cookieName);
+          return getCookie(cookie || "{}");
+        },
         /**
          * Notify the session signal.
          *
@@ -26,8 +135,7 @@ export const convexClient = () => {
          * client.notifySessionSignal();
          * ```
          */
-        setSession: (sessionToken: string) => {
-          storage?.setItem(SESSION_STORAGE_KEY, sessionToken);
+        updateSession: () => {
           $store.notify("$sessionSignal");
         },
       };
@@ -37,32 +145,57 @@ export const convexClient = () => {
         id: "convex",
         name: "Convex",
         hooks: {
-          onRequest: async (context) => {
-            context.headers.set(
-              "Authorization",
-              `Bearer ${storage?.getItem(SESSION_STORAGE_KEY)}`
+          async onSuccess(context) {
+            if (!storage) {
+              return;
+            }
+            const setCookie = context.response.headers.get(
+              "set-better-auth-cookie"
             );
-            return context;
-          },
-          onResponse: async (context) => {
-            if (context.response.headers.get("set-auth-token")) {
-              storage?.setItem(
-                SESSION_STORAGE_KEY,
-                context.response.headers.get("set-auth-token")!
+            if (setCookie) {
+              const prevCookie = await storage.getItem(cookieName);
+              const toSetCookie = getSetCookie(
+                setCookie || "",
+                prevCookie ?? undefined
               );
+              await storage.setItem(cookieName, toSetCookie);
               store?.notify("$sessionSignal");
             }
-            return context;
+
+            if (
+              context.request.url.toString().includes("/get-session") &&
+              !opts?.disableCache
+            ) {
+              const data = context.data;
+              storage.setItem(localCacheName, JSON.stringify(data));
+            }
           },
         },
         async init(url, options) {
+          if (!storage) {
+            return {
+              url,
+              options: options as BetterFetchOption,
+            };
+          }
+          options = options || {};
+          const storedCookie = storage.getItem(cookieName);
+          console.log("storedCookie", cookieName, storedCookie);
+          const cookie = getCookie(storedCookie || "{}");
+          options.credentials = "omit";
+          options.headers = {
+            ...options.headers,
+            "Better-Auth-Cookie": cookie,
+          };
+          console.log("options.headers", options.headers);
           if (url.includes("/sign-out")) {
-            storage?.removeItem(SESSION_STORAGE_KEY);
+            await storage.setItem(cookieName, "{}");
             store?.atoms.session?.set({
               data: null,
               error: null,
               isPending: false,
             });
+            storage.setItem(localCacheName, "{}");
           }
           return {
             url,

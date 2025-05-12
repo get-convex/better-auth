@@ -104,30 +104,26 @@ export function AuthProvider({
     [fetchToken]
   );
 
-  useEffect(() => {
-    console.log("mounting");
-    return () => {
-      console.log("unmounting");
-    };
-  }, []);
-
   useEffect(
     () => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       (async () => {
         const url = new URL(window.location.href);
         const token = url.searchParams.get("ott");
-        console.log("token", token);
         if (token) {
           url.searchParams.delete("ott");
-          console.log("verifying token");
           const result = await authClient.convex.oneTimeToken.verify({ token });
           const session = result.data?.session;
-          console.log("session", session);
-          if (!session) {
-            return;
+          if (session) {
+            await authClient.getSession({
+              fetchOptions: {
+                headers: {
+                  Authorization: `Bearer ${session.token}`,
+                },
+              },
+            });
+            authClient.updateSession();
           }
-          authClient.setSession(session.token);
           window.history.replaceState({}, "", url);
         }
       })();

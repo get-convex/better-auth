@@ -53,7 +53,7 @@ export const createAuth = <
     },
     emailAndPassword: {
       enabled: true,
-      requireEmailVerification: true,
+      requireEmailVerification: false,
       sendResetPassword: async ({ user, url }) => {
         await sendResetPassword({
           to: user.email,

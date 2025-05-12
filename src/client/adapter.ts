@@ -30,6 +30,7 @@ export const convexAdapter = <
       return {
         id: "convex",
         create: async ({ model, data, select }): Promise<any> => {
+          console.log("RUNNING CREATE");
           if (!("runMutation" in ctx)) {
             throw new Error("ctx is not an action ctx");
           }

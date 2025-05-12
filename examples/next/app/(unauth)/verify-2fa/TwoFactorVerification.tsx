@@ -207,6 +207,15 @@ export default function TwoFactorVerification() {
               "Verify"
             )}
           </Button>
+          <Button
+            type="button"
+            className="w-full"
+            variant="outline"
+            disabled={loading}
+            onClick={() => router.push("/sign-in")}
+          >
+            Cancel
+          </Button>
         </form>
       </CardContent>
     </Card>

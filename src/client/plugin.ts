@@ -1,4 +1,5 @@
 import { sessionMiddleware } from "better-auth/api";
+import { setSessionCookie } from "better-auth/cookies";
 import { generateRandomString } from "better-auth/crypto";
 import {
   BetterAuthPlugin,
@@ -6,9 +7,9 @@ import {
   createAuthMiddleware,
   customSession as customSessionPlugin,
   jwt as jwtPlugin,
+  bearer as bearerPlugin,
   oidcProvider as oidcProviderPlugin,
   oneTimeToken as oneTimeTokenPlugin,
-  bearer as bearerPlugin,
 } from "better-auth/plugins";
 import { omit } from "convex-helpers";
 import { z } from "zod";
@@ -32,7 +33,6 @@ export const convex = () => {
       jwks_uri: `${process.env.CONVEX_SITE_URL}/api/auth/convex/jwks`,
     },
   });
-  const bearer = bearerPlugin();
   const jwt = jwtPlugin({
     jwt: {
       issuer: `${process.env.CONVEX_SITE_URL}`,
@@ -48,28 +48,71 @@ export const convex = () => {
       }),
     },
   });
+  // We only need bearer to convert the session token to a cookie
+  // for cross domain social login, after code verification.
+  const bearer = bearerPlugin();
   const oneTimeToken = oneTimeTokenPlugin();
-  const beforeHooks = [...bearer.hooks.before];
-  const afterHooks = [
-    ...bearer.hooks.after,
-    ...oidcProvider.hooks.after,
-    ...jwt.hooks.after,
-  ];
   const schema = {
     user: {
-      fields: { userId: { type: "string", required: true, input: false } },
+      fields: { userId: { type: "string", required: false, input: false } },
     } as const,
     ...jwt.schema,
   };
   return {
     id: "convex",
     hooks: {
-      before: beforeHooks,
+      before: [
+        ...bearer.hooks.before,
+        {
+          matcher(context) {
+            return Boolean(
+              context.request?.headers.get("better-auth-cookie") ||
+                context.headers?.get("better-auth-cookie")
+            );
+          },
+          handler: createAuthMiddleware(async (c) => {
+            const existingHeaders = (c.request?.headers ||
+              c.headers) as Headers;
+            const headers = new Headers({
+              ...Object.fromEntries(existingHeaders?.entries()),
+            });
+            // Skip if the request has an authorization header
+            if (headers.get("authorization")) {
+              console.log("skipping hook");
+              return;
+            }
+            const cookie = headers.get("better-auth-cookie");
+            if (!cookie) {
+              return;
+            }
+            headers.append("cookie", cookie);
+            return {
+              context: {
+                headers,
+              },
+            };
+          }),
+        },
+      ],
       after: [
         {
+          matcher() {
+            return true;
+          },
+          handler: createAuthMiddleware(async (ctx) => {
+            const setCookie = ctx.context.responseHeaders?.get("set-cookie");
+            if (!setCookie) {
+              return;
+            }
+            ctx.setHeader("Set-Better-Auth-Cookie", setCookie);
+          }),
+        },
+        {
           matcher: (ctx) => {
-            const ottPaths = ["/callback/"];
-            return ottPaths.some((path) => ctx.path.startsWith(path));
+            return (
+              ctx.path?.startsWith("/callback") ||
+              ctx.path?.startsWith("/oauth2/callback")
+            );
           },
           handler: createAuthMiddleware(async (ctx) => {
             // Mostly copied from the one-time-token plugin
@@ -95,7 +138,7 @@ export const convex = () => {
             throw ctx.redirect(url.toString());
           }),
         },
-        ...afterHooks,
+        ...oidcProvider.hooks.after,
       ],
     },
     endpoints: {
@@ -149,9 +192,10 @@ export const convex = () => {
         async (ctx) => {
           const response = await customSession.endpoints.getSession({
             ...ctx,
-            returnHeaders: false,
+            returnHeaders: true,
           });
-          return response;
+          console.log("custom session headers", ...response.headers.entries());
+          return response.response;
         }
       ),
       getOpenIdConfig: createAuthEndpoint(
@@ -315,6 +359,7 @@ export const convex = () => {
             ...ctx,
             returnHeaders: false,
           });
+          await setSessionCookie(ctx, response);
           return response;
         }
       ),

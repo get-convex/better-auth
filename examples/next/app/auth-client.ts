@@ -9,9 +9,11 @@ import { convexClient } from "@convex-dev/better-auth/react";
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_CONVEX_SITE_URL,
   plugins: [
-    convexClient(),
     magicLinkClient(),
     emailOTPClient(),
     twoFactorClient(),
+    convexClient({
+      storage: typeof window !== "undefined" ? localStorage : undefined,
+    }),
   ],
 });
