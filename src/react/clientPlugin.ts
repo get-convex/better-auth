@@ -180,14 +180,12 @@ export const convexClient = (opts: {
           }
           options = options || {};
           const storedCookie = storage.getItem(cookieName);
-          console.log("storedCookie", cookieName, storedCookie);
           const cookie = getCookie(storedCookie || "{}");
           options.credentials = "omit";
           options.headers = {
             ...options.headers,
             "Better-Auth-Cookie": cookie,
           };
-          console.log("options.headers", options.headers);
           if (url.includes("/sign-out")) {
             await storage.setItem(cookieName, "{}");
             store?.atoms.session?.set({

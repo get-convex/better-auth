@@ -262,6 +262,38 @@ export type Mounts = {
       },
       any
     >;
+    updateTwoFactor: FunctionReference<
+      "mutation",
+      "public",
+      {
+        update: { backupCodes?: string; secret?: string; userId?: string };
+        userId: string;
+      },
+      any
+    >;
+    updateUserProviderAccounts: FunctionReference<
+      "mutation",
+      "public",
+      {
+        providerId: string;
+        update: {
+          accessToken?: string;
+          accessTokenExpiresAt?: number;
+          accountId?: string;
+          createdAt?: number;
+          idToken?: string;
+          password?: string;
+          providerId?: string;
+          refreshToken?: string;
+          refreshTokenExpiresAt?: number;
+          scope?: string;
+          updatedAt?: number;
+          userId?: string;
+        };
+        userId: string;
+      },
+      any
+    >;
   };
 };
 // For now fullApiWithMounts is only fullApi which provides

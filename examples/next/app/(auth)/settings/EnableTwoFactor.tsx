@@ -41,14 +41,11 @@ export default function EnableTwoFactor() {
         const hasCredential = accounts.data.some(
           (account) => account.provider === "credential",
         );
-        console.log("hasCredential", hasCredential);
-        console.log("accounts", accounts);
         setStep(hasCredential ? "password" : "need-password");
       }
     };
     checkAccounts();
   }, []);
-  console.log("step", step);
 
   const handlePasswordSubmit = async () => {
     try {

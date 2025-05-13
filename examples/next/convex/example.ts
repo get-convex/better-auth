@@ -14,9 +14,6 @@ export const getCurrentUser = query({
     // You can also use the convenience function from the component for getting
     // the user metadata: betterAuthComponent.getAuthUser(ctx)
     const auth = createAuth<DataModel, GenericQueryCtx<DataModel>>(ctx);
-    const testUser = await betterAuthComponent.getAuthUser(ctx);
-    console.log("identity", await ctx.auth.getUserIdentity());
-    console.log("testUser", testUser);
     const headers = await betterAuthComponent.getHeaders(ctx);
     const session = await auth.api.getSession({
       headers,

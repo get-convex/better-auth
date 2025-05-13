@@ -1,7 +1,7 @@
 "use client";
 
 import { ConvexProviderWithAuth, ConvexReactClient } from "convex/react";
-import { PropsWithChildren, useEffect, useMemo } from "react";
+import { PropsWithChildren, useMemo } from "react";
 import { AuthProvider, useAuth, type ConvexAuthClient } from "./client";
 import { convexClient } from "./clientPlugin";
 import { createAuthClient } from "better-auth/react";
@@ -26,12 +26,6 @@ export function ConvexBetterAuthProvider({
       }) satisfies ConvexAuthClient,
     [client]
   );
-  useEffect(() => {
-    console.log("mounting ConvexBetterAuthProvider");
-    return () => {
-      console.log("unmounting ConvexBetterAuthProvider");
-    };
-  }, []);
   return (
     <AuthProvider client={convexAuthClient} authClient={authClient}>
       <ConvexProviderWithAuth client={client} useAuth={useAuth}>

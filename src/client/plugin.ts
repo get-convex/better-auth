@@ -78,7 +78,6 @@ export const convex = () => {
             });
             // Skip if the request has an authorization header
             if (headers.get("authorization")) {
-              console.log("skipping hook");
               return;
             }
             const cookie = headers.get("better-auth-cookie");
@@ -192,10 +191,9 @@ export const convex = () => {
         async (ctx) => {
           const response = await customSession.endpoints.getSession({
             ...ctx,
-            returnHeaders: true,
+            returnHeaders: false,
           });
-          console.log("custom session headers", ...response.headers.entries());
-          return response.response;
+          return response;
         }
       ),
       getOpenIdConfig: createAuthEndpoint(

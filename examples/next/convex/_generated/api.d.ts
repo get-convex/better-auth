@@ -310,6 +310,38 @@ export declare const components: {
         },
         any
       >;
+      updateTwoFactor: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          update: { backupCodes?: string; secret?: string; userId?: string };
+          userId: string;
+        },
+        any
+      >;
+      updateUserProviderAccounts: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          providerId: string;
+          update: {
+            accessToken?: string;
+            accessTokenExpiresAt?: number;
+            accountId?: string;
+            createdAt?: number;
+            idToken?: string;
+            password?: string;
+            providerId?: string;
+            refreshToken?: string;
+            refreshTokenExpiresAt?: number;
+            scope?: string;
+            updatedAt?: number;
+            userId?: string;
+          };
+          userId: string;
+        },
+        any
+      >;
     };
   };
 };

@@ -30,7 +30,6 @@ export const convexAdapter = <
       return {
         id: "convex",
         create: async ({ model, data, select }): Promise<any> => {
-          console.log("RUNNING CREATE");
           if (!("runMutation" in ctx)) {
             throw new Error("ctx is not an action ctx");
           }
@@ -185,9 +184,37 @@ export const convexAdapter = <
           throw new Error("where clause not supported");
           // return count;
         },
-        updateMany: async ({ where }) => {
+        updateMany: async ({ model, where, update }) => {
+          if (config.verbose) {
+            console.log("updateMany", model, where, update);
+          }
           if (!("runMutation" in ctx)) {
             throw new Error("ctx is not an action ctx");
+          }
+          if (
+            model === "twoFactor" &&
+            where?.length === 1 &&
+            where[0].operator === "eq" &&
+            where[0].field === "userId"
+          ) {
+            return ctx.runMutation(component.lib.updateTwoFactor, {
+              userId: where[0].value as string,
+              update: transformInput(model, update as any),
+            });
+          }
+          if (
+            model === "account" &&
+            where?.length === 2 &&
+            where[0].operator === "eq" &&
+            where[0].connector === "AND" &&
+            where[0].field === "userId" &&
+            where[1].field === "providerId"
+          ) {
+            return ctx.runMutation(component.lib.updateUserProviderAccounts, {
+              userId: where[0].value as string,
+              providerId: where[1].value as string,
+              update: transformInput(model, update as any),
+            });
           }
           throw new Error("updateMany not implemented");
           //return 0;

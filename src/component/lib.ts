@@ -11,6 +11,7 @@ import { Doc, Id, TableNames } from "../component/_generated/dataModel";
 import schema from "../component/schema";
 import { paginationOptsValidator, PaginationResult } from "convex/server";
 import { paginator } from "convex-helpers/server/pagination";
+import { partial } from "convex-helpers/validators";
 
 export const transformInput = (model: string, data: Record<string, any>) => {
   return {
@@ -343,5 +344,48 @@ export const getAccountByAccountIdAndProviderId = query({
       return;
     }
     return transformOutput(doc, "account");
+  },
+});
+
+export const updateUserProviderAccounts = mutation({
+  args: {
+    userId: v.string(),
+    providerId: v.string(),
+    update: v.object(partial(schema.tables.account.validator.fields)),
+  },
+  handler: async (ctx, args) => {
+    const docs = await ctx.db
+      .query("account")
+      .withIndex("userId_providerId", (q) =>
+        q.eq("userId", args.userId).eq("providerId", args.providerId)
+      )
+      .collect();
+    if (docs.length === 0) {
+      return 0;
+    }
+    await asyncMap(docs, async (doc) => {
+      await ctx.db.patch(doc._id, args.update);
+    });
+    return docs.length;
+  },
+});
+
+export const updateTwoFactor = mutation({
+  args: {
+    userId: v.string(),
+    update: v.object(partial(schema.tables.twoFactor.validator.fields)),
+  },
+  handler: async (ctx, args) => {
+    const docs = await ctx.db
+      .query("twoFactor")
+      .withIndex("userId", (q) => q.eq("userId", args.userId))
+      .collect();
+    if (docs.length === 0) {
+      return 0;
+    }
+    await asyncMap(docs, async (doc) => {
+      await ctx.db.patch(doc._id, args.update);
+    });
+    return docs.length;
   },
 });

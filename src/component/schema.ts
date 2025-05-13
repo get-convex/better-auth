@@ -41,8 +41,9 @@ const schema = defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   })
+    .index("userId", ["userId"])
     .index("providerId_accountId", ["providerId", "accountId"])
-    .index("userId", ["userId"]),
+    .index("userId_providerId", ["userId", "providerId"]),
 
   twoFactor: defineTable({
     secret: v.string(),
