@@ -31,6 +31,7 @@ import {
   useSidebar,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+import { useTheme } from "next-themes";
 
 export function SmoothScrollLink({
   href,
@@ -156,6 +157,7 @@ export default function DocsLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { theme } = useTheme();
   return (
     <SidebarProvider>
       <Sidebar variant="inset" collapsible="icon">
@@ -164,8 +166,16 @@ export default function DocsLayout({
             <SidebarMenuItem>
               <SidebarMenuButton asChild size="lg">
                 <SmoothScrollLink href="/">
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-[rgb(243,176,28)] from-30% to-[#FF3366] to-100% text-white">
-                    <Layers className="size-4" />
+                  <div className="flex aspect-square size-8 items-center justify-center">
+                    <img
+                      src={
+                        theme === "dark"
+                          ? "/convex-mark-white.svg"
+                          : "/convex-mark-black.svg"
+                      }
+                      alt="Convex + Better Auth"
+                      className="size-8"
+                    />
                   </div>
                   <div className="flex flex-col gap-0.5 leading-none">
                     <span className="font-semibold">Convex + Better Auth</span>

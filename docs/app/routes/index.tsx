@@ -1,14 +1,7 @@
 import * as fs from "node:fs";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import {
-  Link as LinkIcon,
-  Check,
-  Info,
-  AlertCircle,
-  X,
-  ChevronDown,
-} from "lucide-react";
+import { Link as LinkIcon, Check, Info, X, ChevronDown } from "lucide-react";
 import DocsLayout, { SmoothScrollLink } from "@/components/docs-layout";
 import { CodeBlock } from "@/components/code-block";
 import { stripIndent } from "common-tags";
@@ -107,7 +100,7 @@ function Home() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
         <div className="py-8 sm:py-20 space-y-6 sm:space-y-10">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4 sm:mb-6">
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight bg-gradient-to-br from-[rgb(243,176,28)] from-30% to-[#FF3366] to-100% bg-clip-text text-transparent">
+            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
               Convex
             </h1>
             <span className="text-3xl sm:text-4xl font-light text-muted-foreground">
