@@ -49,7 +49,7 @@ export function getSetCookie(header: string, prevCookie?: string) {
     const expires = expiresAt
       ? new Date(String(expiresAt))
       : maxAge
-        ? new Date(Date.now() + Number(maxAge))
+        ? new Date(Date.now() + Number(maxAge) * 1000)
         : null;
     toSetCookie[key] = {
       value: cookie["value"],
