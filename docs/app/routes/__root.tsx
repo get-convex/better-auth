@@ -26,12 +26,12 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "Type-safe, secure authentication for Convex applications. Supports email/password, social auth, magic links, and 2FA with a beautiful developer experience.",
+          "Type-safe, secure authentication with Better Auth for Convex applications.",
       },
       {
         name: "keywords",
         content:
-          "convex, authentication, typescript, better-auth, oauth, 2fa, magic links",
+          "convex, authentication, typescript, better-auth, oauth, 2fa, magic links, social auth",
       },
     ],
     links: [
@@ -54,7 +54,7 @@ function RootComponent() {
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html>
+    <html suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>

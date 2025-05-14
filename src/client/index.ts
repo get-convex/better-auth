@@ -180,9 +180,9 @@ export class BetterAuth<
     };
   }
 
-  registerRoutes<Ctx extends GenericActionCtx<DataModel>>(
+  registerRoutes(
     http: HttpRouter,
-    createAuth: (ctx: Ctx) => ReturnType<typeof betterAuth>,
+    createAuth: (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>,
     {
       path = "/api/auth",
       allowedOrigins,

@@ -1,7 +1,6 @@
 import { query } from "./_generated/server";
 import { betterAuthComponent, createAuth } from "./auth";
-import { DataModel, Id } from "./_generated/dataModel";
-import { GenericQueryCtx } from "convex/server";
+import { Id } from "./_generated/dataModel";
 
 export const getCurrentUser = query({
   args: {},
@@ -13,7 +12,7 @@ export const getCurrentUser = query({
     //
     // You can also use the convenience function from the component for getting
     // the user metadata: betterAuthComponent.getAuthUser(ctx)
-    const auth = createAuth<DataModel, GenericQueryCtx<DataModel>>(ctx);
+    const auth = createAuth(ctx);
     const headers = await betterAuthComponent.getHeaders(ctx);
     const session = await auth.api.getSession({
       headers,

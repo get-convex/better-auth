@@ -86,18 +86,21 @@ export function getCookie(cookie: string) {
   return toSend;
 }
 
-export const convexClient = (opts: {
-  storage?: {
-    setItem: (key: string, value: string) => any;
-    getItem: (key: string) => string | null;
-  };
-  storagePrefix?: string;
-  disableCache?: boolean;
-}) => {
+export const convexClient = (
+  opts: {
+    storage?: {
+      setItem: (key: string, value: string) => any;
+      getItem: (key: string) => string | null;
+    };
+    storagePrefix?: string;
+    disableCache?: boolean;
+  } = {}
+) => {
   let store: Store | null = null;
   const cookieName = `${opts?.storagePrefix || "better-auth"}_cookie`;
   const localCacheName = `${opts?.storagePrefix || "better-auth"}_session_data`;
-  const storage = opts?.storage;
+  const storage =
+    opts?.storage || (typeof window !== "undefined" ? localStorage : undefined);
 
   return {
     id: "convex",

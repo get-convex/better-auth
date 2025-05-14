@@ -1,16 +1,18 @@
-import {
-  GenericActionCtx,
-  GenericDataModel,
-  GenericQueryCtx,
-} from "convex/server";
 import { AuthApi, UseApi } from "./index";
 import { api } from "../component/_generated/api";
 import { transformInput } from "../component/lib";
 import { createAdapter } from "better-auth/adapters";
+import {
+  GenericActionCtx,
+  GenericMutationCtx,
+  GenericQueryCtx,
+} from "convex/server";
 
 export const convexAdapter = <
-  DataModel extends GenericDataModel,
-  Ctx extends GenericActionCtx<DataModel> | GenericQueryCtx<DataModel>,
+  Ctx extends
+    | GenericQueryCtx<any>
+    | GenericMutationCtx<any>
+    | GenericActionCtx<any>,
 >(
   ctx: Ctx,
   component: UseApi<typeof api>,
@@ -162,7 +164,7 @@ export const convexAdapter = <
           // return null
         },
         deleteMany: async ({ model, where }) => {
-          if (!("runMutation" in ctx)) {
+          if (!("runAction" in ctx)) {
             throw new Error("ctx is not an action ctx");
           }
           if (

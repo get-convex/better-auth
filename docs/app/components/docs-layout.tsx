@@ -1,13 +1,5 @@
 import type * as React from "react";
-import {
-  BookOpen,
-  FileText,
-  Github,
-  Home,
-  Layers,
-  AlertTriangle,
-  PanelLeft,
-} from "lucide-react";
+import { Github, AlertTriangle, PanelLeft } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 
 import {
@@ -16,7 +8,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
@@ -27,29 +18,12 @@ import {
   SidebarMenuSubItem,
   SidebarProvider,
   SidebarRail,
+  SidebarSeparator,
   SidebarTrigger,
   useSidebar,
-  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { useTheme } from "next-themes";
-
-export function SmoothScrollLink({
-  href,
-  children,
-  ...props
-}: {
-  href: string;
-  children: React.ReactNode;
-  [key: string]: unknown;
-}) {
-  // Remove the handleClick logic entirely
-  // Let the browser handle default anchor link behavior
-  return (
-    <a href={href} {...props}>
-      {children}
-    </a>
-  );
-}
+import { useEffect, useState } from "react";
 
 function SidebarFooterContent() {
   const { state, toggleSidebar } = useSidebar();
@@ -157,7 +131,15 @@ export default function DocsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const { resolvedTheme: theme } = useTheme();
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  if (!mounted) {
+    return null;
+  }
+  // make scrollable
   return (
     <SidebarProvider>
       <Sidebar variant="inset" collapsible="icon">
@@ -165,7 +147,7 @@ export default function DocsLayout({
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild size="lg">
-                <SmoothScrollLink href="/">
+                <a href="/">
                   <div className="flex aspect-square size-8 items-center justify-center">
                     <img
                       src={
@@ -183,22 +165,20 @@ export default function DocsLayout({
                       v0.1.0-alpha
                     </span>
                   </div>
-                </SmoothScrollLink>
+                </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>
-        <SidebarContent>
+        <SidebarContent className="no-scrollbar">
           <SidebarGroup>
-            <SidebarGroupLabel>Documentation</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Home">
-                    <SmoothScrollLink href="#">
-                      <Home className="size-4" />
-                      <span>Home</span>
-                    </SmoothScrollLink>
+                    <a href="#">
+                      <span className="text-base font-semibold">Home</span>
+                    </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
@@ -207,97 +187,141 @@ export default function DocsLayout({
                     tooltip="Alpha Status"
                     className="text-yellow-600 dark:text-yellow-400"
                   >
-                    <SmoothScrollLink href="#alpha-status">
+                    <a href="#alpha-status">
                       <AlertTriangle className="size-4" />
                       <span>Alpha Status</span>
-                    </SmoothScrollLink>
+                    </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild tooltip="What is this?">
+                    <a href="#what-is-this">
+                      <span>What is this?</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild tooltip="Examples">
+                    <a href="#examples">
+                      <span>Examples</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+          <SidebarSeparator />
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Getting Started">
-                    <SmoothScrollLink href="#getting-started">
-                      <BookOpen className="size-4" />
-                      <span>Getting Started</span>
-                    </SmoothScrollLink>
+                    <a href="#getting-started">
+                      <span className="text-base font-semibold">
+                        Getting Started
+                      </span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <a href="#installation">Installation</a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <a href="#users-table">Users table</a>
                   </SidebarMenuButton>
                   <SidebarMenuSub>
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
-                        <SmoothScrollLink href="#installation">
-                          Installation
-                        </SmoothScrollLink>
+                        <a href="#user-creation">User creation</a>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
-                        <SmoothScrollLink href="#setup-better-auth">
-                          Setup Better Auth
-                        </SmoothScrollLink>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton asChild>
-                        <SmoothScrollLink href="#setup-client">
-                          Setup Client
-                        </SmoothScrollLink>
+                        <a href="#indexing-on-metadata">Indexing on metadata</a>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   </SidebarMenuSub>
                 </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <a href="#better-auth-instance">Initialize Better Auth</a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <a href="#better-auth-client">Set up client</a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+          <SidebarSeparator />
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Authorization">
-                    <SmoothScrollLink href="#authorization">
-                      <FileText className="size-4" />
-                      <span>Authorization</span>
-                    </SmoothScrollLink>
+                    <a href="#basic-usage">
+                      <span className="text-base font-semibold">
+                        Basic Usage
+                      </span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <a href="#basic-usage-server-side">Server side</a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <a href="#basic-usage-working-with-users">
+                      Working with users
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <a href="#authorization">Authorization</a>
                   </SidebarMenuButton>
                   <SidebarMenuSub>
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
-                        <SmoothScrollLink href="#authorization-client">
-                          Client
-                        </SmoothScrollLink>
+                        <a href="#authorization-react">React</a>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
-                        <SmoothScrollLink href="#authorization-convex-functions">
+                        <a href="#authorization-convex-functions">
                           Convex Functions
-                        </SmoothScrollLink>
+                        </a>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   </SidebarMenuSub>
                 </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+          <SidebarSeparator />
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild tooltip="Basic Usage">
-                    <SmoothScrollLink href="#basic-usage">
-                      <FileText className="size-4" />
-                      <span>Basic Usage</span>
-                    </SmoothScrollLink>
+                  <SidebarMenuButton asChild>
+                    <a href="#guides">
+                      <span className="text-base font-semibold">Guides</span>
+                    </a>
                   </SidebarMenuButton>
-                  <SidebarMenuSub>
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton asChild>
-                        <SmoothScrollLink href="#working-with-users">
-                          Working with Users
-                        </SmoothScrollLink>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton asChild>
-                        <SmoothScrollLink href="#migrating-existing-users">
-                          Migrating Existing Users
-                        </SmoothScrollLink>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton asChild>
-                        <SmoothScrollLink href="#event-hooks">
-                          Event Hooks
-                        </SmoothScrollLink>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  </SidebarMenuSub>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <a href="#migrating-existing-users">
+                      Migrating existing users
+                    </a>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
@@ -309,8 +333,8 @@ export default function DocsLayout({
         <SidebarRail />
       </Sidebar>
       <SidebarInset>
-        <header className="flex h-14 items-center gap-4 border-b px-4 lg:h-[60px]">
-          <SidebarTrigger className="md:hidden size-4" />
+        <header className="md:hidden flex h-14 items-center gap-4 border-b px-4 lg:h-[60px]">
+          <SidebarTrigger className="size-4" />
           <div className="flex-1" />
           <a
             href="https://github.com/erquhart/convex-better-auth"

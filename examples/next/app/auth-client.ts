@@ -12,8 +12,6 @@ export const authClient = createAuthClient({
     magicLinkClient(),
     emailOTPClient(),
     twoFactorClient(),
-    convexClient({
-      storage: typeof window !== "undefined" ? localStorage : undefined,
-    }),
+    convexClient(),
   ],
 });
