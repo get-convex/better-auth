@@ -110,7 +110,8 @@ export const convex = () => {
           matcher: (ctx) => {
             return (
               ctx.path?.startsWith("/callback") ||
-              ctx.path?.startsWith("/oauth2/callback")
+              ctx.path?.startsWith("/oauth2/callback") ||
+              ctx.path?.startsWith("/magic-link/verify")
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
