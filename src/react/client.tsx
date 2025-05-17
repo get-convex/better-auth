@@ -9,7 +9,9 @@ import {
   useMemo,
 } from "react";
 import { createAuthClient } from "better-auth/react";
-import { convexClient } from "./clientPlugin";
+import { convexClient } from "../plugins/convexClient";
+import { crossDomainClient } from "../plugins/crossDomainClient";
+import { BetterAuthClientPlugin } from "better-auth";
 
 const ConvexAuthInternalContext = createContext<{
   isLoading: boolean;
@@ -37,7 +39,15 @@ export function AuthProvider({
 }: {
   client: ConvexAuthClient;
   authClient: ReturnType<
-    typeof createAuthClient<{ plugins: [ReturnType<typeof convexClient>] }>
+    typeof createAuthClient<{
+      plugins: [
+        ReturnType<typeof convexClient>,
+        ...(
+          | [ReturnType<typeof crossDomainClient>, ...BetterAuthClientPlugin[]]
+          | BetterAuthClientPlugin[]
+        ),
+      ];
+    }>
   >;
   children: ReactNode;
 }) {
@@ -108,11 +118,16 @@ export function AuthProvider({
     () => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       (async () => {
+        if (!("crossDomain" in authClient)) {
+          return;
+        }
         const url = new URL(window.location.href);
         const token = url.searchParams.get("ott");
         if (token) {
           url.searchParams.delete("ott");
-          const result = await authClient.convex.oneTimeToken.verify({ token });
+          const result = await authClient.crossDomain.oneTimeToken.verify({
+            token,
+          });
           const session = result.data?.session;
           if (session) {
             await authClient.getSession({

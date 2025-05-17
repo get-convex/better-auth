@@ -461,7 +461,8 @@ function Home() {
               language="typescript"
               filename="convex/auth.ts"
               code={stripIndent`
-                import { BetterAuth, convexAdapter, convex } from "@convex-dev/better-auth";
+                import { BetterAuth, convexAdapter } from "@convex-dev/better-auth";
+                import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
                 import { components, internal } from "./_generated/api";
                 import { betterAuth } from "better-auth";
                 import { GenericCtx } from "./_generated/server";
@@ -485,8 +486,14 @@ function Home() {
                         clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
                       },
                     },
-                    // The Convex plugin is required
-                    plugins: [convex()],
+                    plugins: [
+                      // The Convex plugin is required
+                      convex(),
+                      // Adds support for your client and Convex backend
+                      // being on separate domains, which is pretty much all
+                      // apps except Expo right now.
+                      crossDomain(),
+                    ],
                   });
                 `}
             />
@@ -522,12 +529,14 @@ function Home() {
               filename="lib/auth-client.ts"
               code={stripIndent`
                 import { createAuthClient } from "better-auth/react";
-                import { convexClient } from "@convex-dev/better-auth/react";
+                import { convexClient, crossDomainClient } from "@convex-dev/better-auth/client/plugins";
 
                 export const authClient = createAuthClient({
                   baseURL: process.env.NEXT_PUBLIC_CONVEX_SITE_URL,
                   plugins: [
                     convexClient(),
+                    // Required if using the cross domain server plugin
+                    crossDomainClient(),
                   ],
                 });
               `}
@@ -563,6 +572,14 @@ function Home() {
                 export default ConvexProvider
               `}
             />
+          </Subsection>
+
+          <Subsection id="cross-domain-support" title="Cross-domain support">
+            <P>
+              The cross domain plugin adds support for your client and Convex
+              backend being on separate domains, which is pretty much all apps
+              except Expo right now.
+            </P>
           </Subsection>
         </Section>
 

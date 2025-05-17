@@ -1,4 +1,5 @@
-import { BetterAuth, convexAdapter, convex } from "@convex-dev/better-auth";
+import { BetterAuth, convexAdapter } from "@convex-dev/better-auth";
+import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
 import { components, internal } from "./_generated/api";
 import { twoFactor } from "better-auth/plugins";
 import { emailOTP } from "better-auth/plugins";
@@ -79,5 +80,6 @@ export const createAuth = (ctx: GenericCtx) =>
       }),
       twoFactor(),
       convex(),
+      crossDomain(),
     ],
   });

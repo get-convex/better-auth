@@ -1,0 +1,5 @@
+{
+  "main": "../dist/commonjs/./convex.config/index.js",
+  "module": "../dist/esm/./convex.config/index.js",
+  "types": "../dist/commonjs/./convex.config/index.d.ts"
+}

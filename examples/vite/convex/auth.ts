@@ -1,4 +1,5 @@
-import { BetterAuth, convexAdapter, convex } from "@convex-dev/better-auth";
+import { BetterAuth, convexAdapter } from "@convex-dev/better-auth";
+import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
 import { components, internal } from "./_generated/api";
 import { betterAuth } from "better-auth";
 import { GenericCtx } from "./_generated/server";
@@ -29,7 +30,7 @@ export const createAuth = (ctx: GenericCtx) =>
         enabled: true,
       },
     },
-    plugins: [convex()],
+    plugins: [convex(), crossDomain()],
     logger: {
       level: "debug",
     },

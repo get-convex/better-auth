@@ -3,10 +3,10 @@
 import { ConvexProviderWithAuth, ConvexReactClient } from "convex/react";
 import { PropsWithChildren, useMemo } from "react";
 import { AuthProvider, useAuth, type ConvexAuthClient } from "./client";
-import { convexClient } from "./clientPlugin";
 import { createAuthClient } from "better-auth/react";
-
-export { convexClient };
+import { BetterAuthClientPlugin, ClientOptions } from "better-auth";
+import { convexClient } from "../plugins/convexClient";
+import { crossDomainClient } from "../plugins/crossDomainClient";
 
 export function ConvexBetterAuthProvider({
   client,
@@ -15,7 +15,20 @@ export function ConvexBetterAuthProvider({
 }: PropsWithChildren<{
   client: ConvexReactClient;
   authClient: ReturnType<
-    typeof createAuthClient<{ plugins: [ReturnType<typeof convexClient>] }>
+    typeof createAuthClient<
+      ClientOptions & {
+        plugins: [
+          ReturnType<typeof convexClient>,
+          ...(
+            | [
+                ReturnType<typeof crossDomainClient>,
+                ...BetterAuthClientPlugin[],
+              ]
+            | BetterAuthClientPlugin[]
+          ),
+        ];
+      }
+    >
   >;
 }>) {
   const convexAuthClient = useMemo(

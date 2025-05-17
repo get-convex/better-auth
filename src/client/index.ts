@@ -22,8 +22,7 @@ import { vv } from "../component/util";
 import { getByArgsValidator, updateArgsInputValidator } from "../component/lib";
 import { omit } from "convex-helpers";
 import { betterAuth } from "better-auth";
-import { convex } from "./plugin";
-export { schema, convexAdapter, convex };
+export { convexAdapter };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { userId, ...createUserFields } = schema.tables.user.validator.fields;

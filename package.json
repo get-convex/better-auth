@@ -29,7 +29,8 @@
   "files": [
     "dist",
     "src",
-    "react"
+    "react",
+    "plugins"
   ],
   "exports": {
     "./package.json": "./package.json",
@@ -43,6 +44,30 @@
         "@convex-dev/component-source": "./src/client/index.ts",
         "types": "./dist/commonjs/client/index.d.ts",
         "default": "./dist/commonjs/client/index.js"
+      }
+    },
+    "./client/plugins": {
+      "import": {
+        "@convex-dev/component-source": "./src/plugins/clientPlugins.ts",
+        "types": "./dist/esm/plugins/clientPlugins.d.ts",
+        "default": "./dist/esm/plugins/clientPlugins.js"
+      },
+      "require": {
+        "@convex-dev/component-source": "./src/plugins/clientPlugins.ts",
+        "types": "./dist/commonjs/plugins/clientPlugins.d.ts",
+        "default": "./dist/commonjs/plugins/clientPlugins.js"
+      }
+    },
+    "./plugins": {
+      "import": {
+        "@convex-dev/component-source": "./src/plugins/plugins.ts",
+        "types": "./dist/esm/plugins/plugins.d.ts",
+        "default": "./dist/esm/plugins/plugins.js"
+      },
+      "require": {
+        "@convex-dev/component-source": "./src/plugins/plugins.ts",
+        "types": "./dist/commonjs/plugins/plugins.d.ts",
+        "default": "./dist/commonjs/plugins/plugins.js"
       }
     },
     "./react": {

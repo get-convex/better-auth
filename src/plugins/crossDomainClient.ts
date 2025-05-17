@@ -1,6 +1,6 @@
 import type { BetterAuthClientPlugin, Store } from "better-auth";
 import { BetterFetchOption } from "@better-fetch/fetch";
-import { convex } from "../client/plugin";
+import { crossDomain } from "./crossDomain";
 
 interface CookieAttributes {
   value: string;
@@ -86,7 +86,7 @@ export function getCookie(cookie: string) {
   return toSend;
 }
 
-export const convexClient = (
+export const crossDomainClient = (
   opts: {
     storage?: {
       setItem: (key: string, value: string) => any;
@@ -103,8 +103,8 @@ export const convexClient = (
     opts?.storage || (typeof window !== "undefined" ? localStorage : undefined);
 
   return {
-    id: "convex",
-    $InferServerPlugin: {} as ReturnType<typeof convex>,
+    id: "cross-domain",
+    $InferServerPlugin: {} as ReturnType<typeof crossDomain>,
     getActions(_, $store) {
       store = $store;
       return {
