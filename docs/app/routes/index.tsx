@@ -327,19 +327,9 @@ function Home() {
 
           <Subsection id="users-table" title="Users table">
             <P>
-              The Better Auth component, like all Convex components, has it's
-              own tables in a separate space from your application tables,
-              including a <Code>user</Code> table. These tables are only
-              accessible to your application through methods provided by the
-              component, and your application tables are likewise not directly
-              accessible to the component. This is good both for security and
-              data integrity.
-            </P>
-            <P>
-              This separation of tables can be problematic for central tables,
-              like a users table. It's good to have authentication fields on the
-              uesrs table managed by Better Auth, but non-authentication fields
-              should belong to your application.
+              The Better Auth component has it's own tables in it's own space in
+              your Convex project, like all Convex components. This means the
+              Better Auth user table is separate from your application tables.
             </P>
             <P>
               Because of this, the Better Auth component requires that you
