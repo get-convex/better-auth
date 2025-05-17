@@ -448,12 +448,13 @@ function Home() {
             </P>
             <P>
               Instead of creating a Better Auth instance, serverless
-              environments like Convex functions require that you provide that
-              returns the Better Auth instance so a context can be passed in.
+              environments like Convex functions require that you provide a
+              function that returns the Better Auth instance so a context can be
+              passed in.
             </P>
             <P>
-              The <Code>createAuth</Code> function will be required for http
-              actions, and can be imported for use in your Convex functions.
+              The <Code>createAuth</Code> function is used for setting up http
+              actions and can be imported for use in your Convex functions.
             </P>
 
             <CodeBlock
@@ -648,15 +649,19 @@ function Home() {
                 export const getCurrentUser = query({
                   args: {},
                   handler: async (ctx) => {
-                    // The most basic approach is to get the user id directly
-                    // from Convex via ctx.auth
+                    // You can get the user id directly from Convex via ctx.auth
                     const identity = await ctx.auth.getUserIdentity();
                     if (!identity) {
                       return null;
                     }
                     const ctxUserId = identity.subject
                     const user = await ctx.db.get(identity.userId as Id<"users">);
-                    return user;
+
+                    // Get user email and such from the Better Auth component
+                    const userMetadata = await betterAuthComponent.getAuthUser(ctx);
+
+                    // You can combine them if you want
+                    return { ...userMetadata, ...user };
                   }
                 });
               `}
