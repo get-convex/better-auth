@@ -20,11 +20,13 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "convex": "file:../../node_modules/convex",
+    "convex-helpers": "file:../../node_modules/convex-helpers",
     "lucide-react": "^0.486.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "sonner": "^2.0.2",
     "tailwind-merge": "^3.1.0",
+    "tailwindcss": "^4.1.7",
     "tw-animate-css": "^1.2.5"
   },
   "devDependencies": {

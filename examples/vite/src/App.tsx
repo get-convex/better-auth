@@ -6,13 +6,16 @@ import { useConvexAuth } from "convex/react";
 
 export default function App() {
   const [showSignIn, setShowSignIn] = useState(true);
-  const { isAuthenticated, isLoading } = useConvexAuth();
-  console.log("isAuthenticated", isAuthenticated);
-  console.log("isLoading", isLoading);
-  if (isLoading) {
+  const authState = useConvexAuth();
+
+  useEffect(() => {
+    console.log("Auth state changed:", authState);
+  }, [authState]);
+
+  if (authState.isLoading) {
     return <div>Loading...</div>;
   }
-  if (isAuthenticated) {
+  if (authState.isAuthenticated) {
     return <Dashboard />;
   }
 
