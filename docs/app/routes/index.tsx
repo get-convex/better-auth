@@ -381,6 +381,12 @@ function Home() {
 
                     // Delete the user when they are deleted from Better Auth
                     onDeleteUser: async (ctx, userId) => {
+                      await ctx.db.delete(userId as Id<"users">);
+
+                      // Optionally delete any related data. You can also do
+                      // this first however you like, and then trigger user
+                      // deletion on the backend via Better Auth's
+                      // auth.api.deleteUser().
                       const todos = await ctx.db
                         .query("todos")
                         .withIndex("userId", (q) => q.eq("userId", userId as Id<"users">))
@@ -388,7 +394,6 @@ function Home() {
                       await asyncMap(todos, async (todo) => {
                         await ctx.db.delete(todo._id as Id<"todos">);
                       });
-                      await ctx.db.delete(userId as Id<"users">);
                     },
                   });
                 `}
@@ -461,8 +466,8 @@ function Home() {
               language="typescript"
               filename="convex/auth.ts"
               code={stripIndent`
-                import { BetterAuth, convexAdapter } from "@convex-dev/better-auth";
-                import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
+                import { BetterAuth, convexAdapter } from "@erquhart/convex-better-auth";
+                import { convex, crossDomain } from "@erquhart/convex-better-auth/plugins";
                 import { components, internal } from "./_generated/api";
                 import { betterAuth } from "better-auth";
                 import { GenericCtx } from "./_generated/server";
@@ -529,7 +534,7 @@ function Home() {
               filename="lib/auth-client.ts"
               code={stripIndent`
                 import { createAuthClient } from "better-auth/react";
-                import { convexClient, crossDomainClient } from "@convex-dev/better-auth/client/plugins";
+                import { convexClient, crossDomainClient } from "@erquhart/convex-better-auth/client/plugins";
 
                 export const authClient = createAuthClient({
                   baseURL: process.env.NEXT_PUBLIC_CONVEX_SITE_URL,
@@ -728,7 +733,11 @@ function Home() {
 
                 export const myFunction = async (ctx) => {
                   // Get the user id from the jwt
-                  const { subject } = await ctx.auth.getUserIdentity();
+                  const identity = await ctx.auth.getUserIdentity();
+                  if (!identity) {
+                    return null;
+                  }
+                  const userId = identity.subject;
 
                   // Get the Better Auth user (metadata) object for the currently
                   // authenticated user

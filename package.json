@@ -91,7 +91,8 @@
     }
   },
   "peerDependencies": {
-    "convex": "~1.16.5 || >=1.17.0 <1.25.0"
+    "convex": "~1.16.5 || >=1.17.0 <1.25.0",
+    "better-auth": "1.2.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
@@ -110,7 +111,6 @@
   "module": "./dist/esm/client/index.js",
   "dependencies": {
     "@better-auth/utils": "^0.2.5",
-    "better-auth": "1.2.7",
     "better-call": "^1.0.9",
     "convex-helpers": "^0.1.76",
     "is-network-error": "^1.1.0",
