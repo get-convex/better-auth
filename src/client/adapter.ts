@@ -150,7 +150,7 @@ export const convexAdapter = <
           if (where?.length === 1 && where[0].operator === "eq") {
             const { field, value } = where[0];
             const deleteFn =
-              model === "user"
+              model === "user" && config.authApi.deleteUser
                 ? config.authApi.deleteUser
                 : component.lib.deleteBy;
             await ctx.runMutation(deleteFn, {

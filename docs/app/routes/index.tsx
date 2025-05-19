@@ -351,10 +351,10 @@ function Home() {
               Convex.
             </P>
             <P>
-              <Code>onCreateUser</Code> and <Code>onDeleteUser</Code> hooks are
-              required for keeping your users table transactionally synced with
-              the Better Auth user table. There is also an optional{" "}
-              <Code>onUpdateUser</Code> hook. These hooks can also do whatever
+              <Code>onCreateUser</Code> is required for keeping your users table
+              transactionally synced with the Better Auth user table. There are
+              also optional <Code>onUpdateUser</Code> and{" "}
+              <Code>onDeleteUser</Code> hooks. These hooks can also do whatever
               else you want for each event.
             </P>
 
@@ -380,13 +380,13 @@ function Home() {
                     },
 
                     // Delete the user when they are deleted from Better Auth
+                    // You can also omit this and use Better Auth's
+                    // auth.api.deleteUser() function to trigger user deletion
+                    // from within your own user deletion logic.
                     onDeleteUser: async (ctx, userId) => {
                       await ctx.db.delete(userId as Id<"users">);
 
-                      // Optionally delete any related data. You can also do
-                      // this first however you like, and then trigger user
-                      // deletion on the backend via Better Auth's
-                      // auth.api.deleteUser().
+                      // Optionally delete any related data
                       const todos = await ctx.db
                         .query("todos")
                         .withIndex("userId", (q) => q.eq("userId", userId as Id<"users">))
@@ -514,11 +514,11 @@ function Home() {
               highlightedLines={[2, 6, 7, 8]}
               code={stripIndent`
                   import { httpRouter } from 'convex/server'
-                  import { betterAuth } from './auth'
+                  import { betterAuthComponent, createAuth } from './auth'
 
                   const http = httpRouter()
 
-                  betterAuth.registerRoutes(http, {
+                  betterAuthComponent.registerRoutes(http, createAuth, {
                     allowedOrigins: [process.env.SITE_URL],
                   })
 
@@ -556,7 +556,7 @@ function Home() {
 
             <CodeBlock
               language="typescript"
-              filename="src/index.tsx"
+              filename="src/ConvexClientProvider.tsx"
               code={stripIndent`
                 "use client"
 
@@ -780,30 +780,30 @@ function Home() {
                   betterAuthComponent.authApi({
                     onCreateUser: async (ctx, user) => {
                       const existingUser = await ctx.db
-                        .query("users")
-                        .withIndex("email", q => q.eq(q.field("email"), user.email))
+                        .query('users')
+                        .withIndex('email', (q) => q.eq('email', user.email))
                         .unique()
 
                       if (existingUser && !user.emailVerified) {
                         // This would be due to a social login provider where the email is not
                         // verified.
-                        throw new ConvexError("Email not verified")
+                        throw new ConvexError('Email not verified')
                       }
 
                       if (existingUser) {
                         // Drop old auth system fields (if any)
-                        await ctx.db.patch(existingUser._id, {
+                        await ctx.db.patch(existingUser._id as Id<'users'>, {
                           oldAuthField: undefined,
                           otherOldAuthField: undefined,
-                          foo: "bar",
-                        });
-                        return existingUser._id;
+                          foo: 'bar',
+                        })
+                        return existingUser._id as Id<'users'>
                       }
 
                       // No existing user found, create a new one and return the id
-                      return await ctx.db.insert("users", {
-                        foo: "bar",
-                      });
+                      return await ctx.db.insert('users', {
+                        foo: 'bar',
+                      })
                     },
                     // ...
                   })

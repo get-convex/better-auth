@@ -51,7 +51,7 @@ export type AuthApi = {
     "internal",
     typeof schema.tables.user.validator.fields
   >;
-  deleteUser: FunctionReference<"mutation", "internal", { userId: string }>;
+  deleteUser?: FunctionReference<"mutation", "internal", { userId: string }>;
   updateUser?: FunctionReference<
     "mutation",
     "internal",
@@ -86,6 +86,15 @@ export class BetterAuth<
     });
   }
 
+  // TODO: use the proper id type for auth functions
+  async getAuthUserId(ctx: RunQueryCtx & { auth: ConvexAuth }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
+    return identity.subject;
+  }
+
   // Convenience function for getting the Better Auth user
   async getAuthUser(ctx: RunQueryCtx & { auth: ConvexAuth }) {
     const identity = await ctx.auth.getUserIdentity();
@@ -105,7 +114,7 @@ export class BetterAuth<
       ctx: GenericMutationCtx<DataModel>,
       user: Omit<WithoutSystemFields<Doc<"user">>, "userId">
     ) => Promise<Id>;
-    onDeleteUser: (
+    onDeleteUser?: (
       ctx: GenericMutationCtx<DataModel>,
       id: Id
     ) => void | Promise<void>;
@@ -140,7 +149,9 @@ export class BetterAuth<
         returns: v.any(),
         handler: async (ctx, args) => {
           const doc = await ctx.runMutation(this.component.lib.deleteBy, args);
-          await opts.onDeleteUser(ctx, doc.userId as Id);
+          if (opts.onDeleteUser) {
+            await opts.onDeleteUser(ctx, doc.userId as Id);
+          }
         },
       }),
       updateUser: internalMutationGeneric({

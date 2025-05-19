@@ -1,5 +1,0 @@
-{
-  "main": "../dist/commonjs/./client/plugins/index.js",
-  "module": "../dist/esm/./client/plugins/index.js",
-  "types": "../dist/commonjs/./client/plugins/index.d.ts"
-}

@@ -11,7 +11,7 @@ import {
 import { createAuthClient } from "better-auth/react";
 import { convexClient } from "../plugins/convexClient";
 import { crossDomainClient } from "../plugins/crossDomainClient";
-import { BetterAuthClientPlugin } from "better-auth";
+import { BetterAuthClientPlugin, ClientOptions } from "better-auth";
 
 const ConvexAuthInternalContext = createContext<{
   isLoading: boolean;
@@ -32,23 +32,34 @@ export type ConvexAuthClient = {
   logger?: ConvexReactClient["logger"];
 };
 
+type CrossDomainClient = ReturnType<typeof crossDomainClient>;
+type ConvexClient = ReturnType<typeof convexClient>;
+type PluginsWithCrossDomain = (
+  | CrossDomainClient
+  | ConvexClient
+  | BetterAuthClientPlugin
+)[];
+type PluginsWithoutCrossDomain = (ConvexClient | BetterAuthClientPlugin)[];
+type AuthClientWithPlugins<
+  Plugins extends PluginsWithCrossDomain | PluginsWithoutCrossDomain,
+> = ReturnType<
+  typeof createAuthClient<
+    ClientOptions & {
+      plugins: Plugins;
+    }
+  >
+>;
+export type AuthClient =
+  | AuthClientWithPlugins<PluginsWithCrossDomain>
+  | AuthClientWithPlugins<PluginsWithoutCrossDomain>;
+
 export function AuthProvider({
   client,
   authClient,
   children,
 }: {
   client: ConvexAuthClient;
-  authClient: ReturnType<
-    typeof createAuthClient<{
-      plugins: [
-        ReturnType<typeof convexClient>,
-        ...(
-          | [ReturnType<typeof crossDomainClient>, ...BetterAuthClientPlugin[]]
-          | BetterAuthClientPlugin[]
-        ),
-      ];
-    }>
-  >;
+  authClient: AuthClient;
   children: ReactNode;
 }) {
   const { data: session, isPending: isSessionPending } =
