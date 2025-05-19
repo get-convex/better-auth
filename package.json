@@ -48,9 +48,9 @@
     },
     "./client/plugins": {
       "import": {
-        "@convex-dev/component-source": "./src/plugins/clientPlugins.ts",
-        "types": "./dist/esm/plugins/clientPlugins.d.ts",
-        "default": "./dist/esm/plugins/clientPlugins.js"
+        "@convex-dev/component-source": "./src/client/plugins/index.ts",
+        "types": "./dist/esm/client/plugins/index.d.ts",
+        "default": "./dist/esm/client/plugins/index.js"
       },
       "require": {
         "@convex-dev/component-source": "./src/plugins/clientPlugins.ts",
@@ -60,14 +60,14 @@
     },
     "./plugins": {
       "import": {
-        "@convex-dev/component-source": "./src/plugins/plugins.ts",
-        "types": "./dist/esm/plugins/plugins.d.ts",
-        "default": "./dist/esm/plugins/plugins.js"
+        "@convex-dev/component-source": "./src/plugins/index.ts",
+        "types": "./dist/esm/plugins/index.d.ts",
+        "default": "./dist/esm/plugins/index.js"
       },
       "require": {
-        "@convex-dev/component-source": "./src/plugins/plugins.ts",
-        "types": "./dist/commonjs/plugins/plugins.d.ts",
-        "default": "./dist/commonjs/plugins/plugins.js"
+        "@convex-dev/component-source": "./src/plugins/index.ts",
+        "types": "./dist/commonjs/plugins/index.d.ts",
+        "default": "./dist/commonjs/plugins/index.js"
       }
     },
     "./react": {

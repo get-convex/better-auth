@@ -9,8 +9,7 @@ import {
   useMemo,
 } from "react";
 import { createAuthClient } from "better-auth/react";
-import { convexClient } from "../plugins/convexClient";
-import { crossDomainClient } from "../plugins/crossDomainClient";
+import { convexClient, crossDomainClient } from "../client/plugins";
 import { BetterAuthClientPlugin, ClientOptions } from "better-auth";
 
 const ConvexAuthInternalContext = createContext<{
@@ -129,16 +128,22 @@ export function AuthProvider({
     () => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       (async () => {
-        if (!("crossDomain" in authClient)) {
+        // Return early if cross domain plugin is not configured.
+        // Apparently there's no sane way to do this type check. Only the in
+        // keyword narrows the type effectively but it doesn't work on functions.
+        if (!(authClient as any)["crossDomain"]) {
           return;
         }
+        const authClientWithCrossDomain =
+          authClient as AuthClientWithPlugins<PluginsWithCrossDomain>;
         const url = new URL(window.location.href);
         const token = url.searchParams.get("ott");
         if (token) {
           url.searchParams.delete("ott");
-          const result = await authClient.crossDomain.oneTimeToken.verify({
-            token,
-          });
+          const result =
+            await authClientWithCrossDomain.crossDomain.oneTimeToken.verify({
+              token,
+            });
           const session = result.data?.session;
           if (session) {
             await authClient.getSession({
@@ -148,7 +153,7 @@ export function AuthProvider({
                 },
               },
             });
-            authClient.updateSession();
+            authClientWithCrossDomain.updateSession();
           }
           window.history.replaceState({}, "", url);
         }

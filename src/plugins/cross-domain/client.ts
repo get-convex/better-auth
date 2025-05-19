@@ -1,6 +1,6 @@
 import type { BetterAuthClientPlugin, Store } from "better-auth";
 import { BetterFetchOption } from "@better-fetch/fetch";
-import { crossDomain } from "./crossDomain";
+import { crossDomain } from ".";
 
 interface CookieAttributes {
   value: string;
