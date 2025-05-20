@@ -264,6 +264,21 @@ function Home() {
         </Section>
 
         <Section id="getting-started" title="Getting Started">
+          <Subsection id="prerequisites" title="Prerequisites">
+            <P>
+              You'll first need a project on Convex where{" "}
+              <Code>npx convex dev</Code> has been run on your local machine. If
+              you don't have one, run <Code>npm create convex@latest</Code> to
+              get started, and{" "}
+              <a
+                href="https://docs.convex.dev/getting-started/installation"
+                className="underline"
+              >
+                check out the docs
+              </a>{" "}
+              to learn more.
+            </P>
+          </Subsection>
           <Subsection id="installation" title="Installation">
             <P>
               To get started, install the component and a pinned version of
