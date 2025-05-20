@@ -111,6 +111,7 @@
   "module": "./dist/esm/client/index.js",
   "dependencies": {
     "@better-auth/utils": "^0.2.5",
+    "@radix-ui/react-popover": "^1.1.13",
     "better-call": "^1.0.9",
     "convex-helpers": "^0.1.76",
     "is-network-error": "^1.1.0",

@@ -1,6 +1,7 @@
 import type * as React from "react";
 import { Github, AlertTriangle, PanelLeft } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
+import VersionSelector from "./VersionSelector";
 
 import {
   Sidebar,
@@ -147,7 +148,7 @@ export default function DocsLayout({
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild size="lg">
-                <a href="/">
+                <div>
                   <div className="flex aspect-square size-8 items-center justify-center">
                     <img
                       src={
@@ -161,11 +162,9 @@ export default function DocsLayout({
                   </div>
                   <div className="flex flex-col gap-0.5 leading-none">
                     <span className="font-semibold">Convex + Better Auth</span>
-                    <span className="text-xs text-muted-foreground">
-                      v0.1.0-alpha
-                    </span>
+                    <VersionSelector version="v0.4.1" />
                   </div>
-                </a>
+                </div>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
