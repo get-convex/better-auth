@@ -15,26 +15,24 @@ type Version = {
 
 const getVersions = async () => {
   try {
-    const versions = (
+    const versions = await (
       await fetch(
         "https://raw.githubusercontent.com/erquhart/convex-better-auth/refs/heads/main/docs/versions.json"
       )
     ).json();
     const isArray = Array.isArray(versions);
     if (!isArray) {
-      console.error("versions is not an array");
-      return localVersions;
+      throw Error("versions is not an array");
     }
     return versions;
   } catch (error) {
     console.error(error);
-    return localVersions;
   }
 };
 
 export function VersionSelector() {
   const [open, setOpen] = React.useState(false);
-  const [versions, setVersions] = React.useState<Version[]>([]);
+  const [versions, setVersions] = React.useState<Version[]>(localVersions);
   const triggerRef = useRef<HTMLSpanElement>(null);
   const current =
     versions.find((v) => {
@@ -49,10 +47,10 @@ export function VersionSelector() {
 
   useEffect(() => {
     const fetchVersions = async () => {
-      console.log("fetching versions");
       const versions = await getVersions();
-      console.log("versions", versions);
-      setVersions(versions);
+      if (versions && versions.length > 0) {
+        setVersions(versions);
+      }
     };
     void fetchVersions();
   }, []);
