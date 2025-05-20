@@ -1,22 +1,57 @@
 import * as React from "react";
 import * as Popover from "@radix-ui/react-popover";
-import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
 import { useEffect, useRef } from "react";
+import localVersions from "../../versions.json";
 
-const versions = [
-  { label: "latest", value: "latest", version: "v0.4.1" },
-  // Add more versions here as needed
-];
+console.log(localVersions);
+
+const DOCS_DOMAIN = "convex-better-auth.netlify.app";
+
+type Version = {
+  label: string;
+  version: string;
+};
+
+const getVersions = async () => {
+  try {
+    const versions = (
+      await fetch(
+        "https://raw.githubusercontent.com/erquhart/convex-better-auth/refs/heads/main/docs/versions.json"
+      )
+    ).json();
+    const isArray = Array.isArray(versions);
+    if (!isArray) {
+      console.error("versions is not an array");
+      return localVersions;
+    }
+    return versions;
+  } catch (error) {
+    console.error(error);
+    return localVersions;
+  }
+};
 
 export function VersionSelector({ version }: { version: string }) {
   const [open, setOpen] = React.useState(false);
+  const [versions, setVersions] = React.useState<Version[]>([]);
   const triggerRef = useRef<HTMLSpanElement>(null);
   // Find the current version object by version string, fallback to first
   const current = versions.find((v) => v.version === version) ?? versions[0];
 
+  useEffect(() => {
+    const fetchVersions = async () => {
+      console.log("fetching versions");
+      const versions = await getVersions();
+      console.log("versions", versions);
+      setVersions(versions);
+    };
+    void fetchVersions();
+  }, []);
+
   // Set data-open on the closest SidebarMenuButton ancestor when open
   useEffect(() => {
+    if (!current) return;
     const trigger = triggerRef.current;
     if (!trigger) return;
     const button = trigger.closest(
@@ -32,6 +67,8 @@ export function VersionSelector({ version }: { version: string }) {
       button.removeAttribute("data-open");
     };
   }, [open]);
+
+  if (!current) return null;
 
   // The trigger covers the parent area, but only the version line is visible
   return (
@@ -91,20 +128,22 @@ export function VersionSelector({ version }: { version: string }) {
       >
         <div className="flex flex-col">
           {versions.map((v) => (
-            <button
-              key={v.value}
+            <a
+              key={v.version}
+              href={
+                v.label === "latest"
+                  ? `https://${DOCS_DOMAIN}`
+                  : v.label
+                    ? `https://${v.label}.${DOCS_DOMAIN}`
+                    : `https://${v.version}.${DOCS_DOMAIN}`
+              }
               className={cn(
                 "w-full text-left px-3 py-1.5 text-xs font-mono rounded hover:bg-accent focus:bg-accent focus:outline-none",
-                v.value === current.value && "bg-accent"
+                v.version === current.version && "bg-accent"
               )}
-              onClick={() => {
-                setOpen(false);
-                window.location.reload();
-              }}
-              disabled={v.value === current.value}
             >
               {v.version} <span className="ml-1">({v.label})</span>
-            </button>
+            </a>
           ))}
         </div>
       </Popover.Content>
