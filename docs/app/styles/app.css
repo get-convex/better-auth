@@ -128,3 +128,15 @@
     scroll-padding-top: 56px;
   }
 }
+
+/* Remove blue focus ring from sidebar top button on all devices */
+[data-slot="sidebar-menu-button"][data-size="lg"] {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+[data-slot="sidebar-menu-button"][data-size="lg"]:focus,
+[data-slot="sidebar-menu-button"][data-size="lg"]:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
