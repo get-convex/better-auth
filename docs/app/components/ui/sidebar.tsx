@@ -712,6 +712,22 @@ function SidebarMenuSubButton({
   isActive?: boolean;
 }) {
   const Comp = asChild ? Slot : "a";
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (isMobile) {
+      const target = event.target as HTMLElement;
+      if (
+        (target.tagName === "A" || target.closest("a")) &&
+        typeof setOpenMobile === "function"
+      ) {
+        setOpenMobile(false);
+      }
+    }
+    if (typeof props.onClick === "function") {
+      props.onClick(event);
+    }
+  };
 
   return (
     <Comp
@@ -728,6 +744,7 @@ function SidebarMenuSubButton({
         className
       )}
       {...props}
+      onClick={handleClick}
     />
   );
 }
