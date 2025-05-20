@@ -162,7 +162,7 @@ export default function DocsLayout({
                   </div>
                   <div className="flex flex-col gap-0.5 leading-none">
                     <span className="font-semibold">Convex + Better Auth</span>
-                    <VersionSelector version="v0.4.1" />
+                    <VersionSelector />
                   </div>
                 </div>
               </SidebarMenuButton>

@@ -32,12 +32,20 @@ const getVersions = async () => {
   }
 };
 
-export function VersionSelector({ version }: { version: string }) {
+export function VersionSelector() {
   const [open, setOpen] = React.useState(false);
   const [versions, setVersions] = React.useState<Version[]>([]);
   const triggerRef = useRef<HTMLSpanElement>(null);
-  // Find the current version object by version string, fallback to first
-  const current = versions.find((v) => v.version === version) ?? versions[0];
+  const current =
+    versions.find((v) => {
+      const domain = window.location.hostname;
+      const domainParts = domain.split(".");
+      const labelOrVersion = domainParts[0].split("--")[0];
+      return (
+        v.label?.replace(".", "-") === labelOrVersion ||
+        v.version.replace(".", "-") === labelOrVersion
+      );
+    }) ?? versions.find((v) => v.label === "latest");
 
   useEffect(() => {
     const fetchVersions = async () => {
@@ -134,8 +142,8 @@ export function VersionSelector({ version }: { version: string }) {
                 v.label === "latest"
                   ? `https://${DOCS_DOMAIN}`
                   : v.label
-                    ? `https://${v.label}.${DOCS_DOMAIN}`
-                    : `https://${v.version}.${DOCS_DOMAIN}`
+                    ? `https://${v.label}--${DOCS_DOMAIN}`
+                    : `https://${v.version.replace(".", "-")}--${DOCS_DOMAIN}`
               }
               className={cn(
                 "w-full text-left px-3 py-1.5 text-xs font-mono rounded hover:bg-accent focus:bg-accent focus:outline-none",
