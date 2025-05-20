@@ -7,6 +7,7 @@ import {
   GenericMutationCtx,
   GenericQueryCtx,
 } from "convex/server";
+import { isEmpty } from "remeda";
 
 export const convexAdapter = <
   Ctx extends
@@ -41,7 +42,9 @@ export const convexAdapter = <
           const createFn =
             model === "user"
               ? config.authApi.createUser
-              : model === "session" && config.authApi.createSession
+              : model === "session" &&
+                  config.authApi.createSession &&
+                  !isEmpty(config.authApi.createSession)
                 ? config.authApi.createSession
                 : component.lib.create;
           return ctx.runMutation(createFn, {

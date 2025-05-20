@@ -193,14 +193,17 @@ export class BetterAuth<
   registerRoutes(
     http: HttpRouter,
     createAuth: (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>,
-    {
-      path = "/api/auth",
-      allowedOrigins,
-    }: {
+    opts?: {
       path?: string;
-      allowedOrigins: string[];
+      allowedOrigins?: string[];
     }
   ) {
+    const path = opts?.path ?? "/api/auth";
+    const trustedOrigins = createAuth({} as any).options.trustedOrigins;
+    if (typeof trustedOrigins === "function") {
+      throw new Error("trustedOrigins cannot be a function");
+    }
+    const allowedOrigins = opts?.allowedOrigins ?? trustedOrigins;
     const requireEnv = (name: string) => {
       const value = process.env[name];
       if (value === undefined) {

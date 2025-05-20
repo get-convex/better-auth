@@ -151,7 +151,7 @@ function handleExactRoute(
   tempRouter: HttpRouter,
   routeSpec: RouteSpecWithPath,
   config: CorsConfig,
-  allowedMethods: string[],
+  allowedMethods: string[]
 ): void {
   const currentMethodsForPath = tempRouter.exactRoutes.get(routeSpec.path);
   /**
@@ -171,7 +171,7 @@ function handlePrefixRoute(
   tempRouter: HttpRouter,
   routeSpec: RouteSpecWithPathPrefix,
   config: CorsConfig,
-  allowedMethods: string[],
+  allowedMethods: string[]
 ): void {
   /**
    * prefixRoutes is structured differently than exactRoutes. It's defined as
@@ -195,7 +195,7 @@ function handlePrefixRoute(
  */
 function createOptionsHandlerForMethods(
   methods: string[],
-  config: CorsConfig,
+  config: CorsConfig
 ): PublicHttpAction {
   return handleCors({
     ...config,
@@ -247,11 +247,11 @@ const handleCors = ({
 } & CorsConfig) => {
   const uniqueMethods = Array.from(
     new Set(
-      allowedMethods.map((method) => method.toUpperCase() as RoutableMethod),
-    ),
+      allowedMethods.map((method) => method.toUpperCase() as RoutableMethod)
+    )
   );
   const filteredMethods = uniqueMethods.filter((method) =>
-    ROUTABLE_HTTP_METHODS.includes(method),
+    ROUTABLE_HTTP_METHODS.includes(method)
   );
 
   if (filteredMethods.length === 0) {
@@ -312,7 +312,8 @@ const handleCors = ({
         console.log("origin", request.headers.get("origin"));
         console.log("headers", request.headers);
       }
-      const requestOrigin = request.headers.get("Origin");
+      const requestOrigin =
+        request.headers.get("Origin") ?? request.headers.get("Expo-Origin");
 
       // Handle origin matching
       let allowOrigins: string | null = null;
@@ -360,7 +361,7 @@ const handleCors = ({
         ? (originalHandler["_handler"] as PublicHttpAction)
         : originalHandler) as unknown as (
         ctx: GenericActionCtx<any>,
-        request: Request,
+        request: Request
       ) => Promise<Response>;
       const originalResponse = await innerHandler(ctx, request);
 
@@ -386,6 +387,6 @@ const handleCors = ({
         statusText: originalResponse.statusText,
         headers: newHeaders,
       });
-    },
+    }
   );
 };

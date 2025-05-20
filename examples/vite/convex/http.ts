@@ -1,11 +1,8 @@
 import { httpRouter } from "convex/server";
 import { betterAuthComponent, createAuth } from "./auth";
-import { requireEnv } from "./util";
 
 const http = httpRouter();
 
-betterAuthComponent.registerRoutes(http, createAuth, {
-  allowedOrigins: [requireEnv("SITE_URL")],
-});
+betterAuthComponent.registerRoutes(http, createAuth);
 
 export default http;

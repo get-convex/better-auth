@@ -2,7 +2,7 @@ import { asyncMap } from "convex-helpers";
 import { betterAuthComponent } from "./auth";
 import { Id } from "./_generated/dataModel";
 
-export const { createUser, deleteUser, updateUser, createSession } =
+export const { createUser, deleteUser, updateUser } =
   betterAuthComponent.authApi({
     onCreateUser: async (ctx, user) => {
       // Example: copy the user's email to the application users table.

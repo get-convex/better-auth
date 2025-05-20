@@ -513,17 +513,23 @@ function Home() {
               filename="convex/http.ts"
               highlightedLines={[2, 6, 7, 8]}
               code={stripIndent`
-                  import { httpRouter } from 'convex/server'
-                  import { betterAuthComponent, createAuth } from './auth'
+                import { httpRouter } from 'convex/server'
+                import { betterAuthComponent, createAuth } from './auth'
 
-                  const http = httpRouter()
+                const http = httpRouter()
 
-                  betterAuthComponent.registerRoutes(http, createAuth, {
-                    allowedOrigins: [process.env.SITE_URL],
-                  })
+                betterAuthComponent.registerRoutes(http, createAuth,
+                // Optional config
+                {
+                  // Defaults to trustedOrigins from your Better Auth config
+                  allowedOrigins: [process.env.SITE_URL],
 
-                  export default http
-                `}
+                  // Optional path to register the routes at
+                  path: "/api/auth",
+                })
+
+                export default http
+              `}
             />
           </Subsection>
 
