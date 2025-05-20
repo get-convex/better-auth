@@ -332,7 +332,7 @@ export default function DocsLayout({
         <SidebarRail />
       </Sidebar>
       <SidebarInset>
-        <header className="md:hidden flex h-14 items-center gap-4 border-b px-4 lg:h-[60px]">
+        <header className="md:hidden sticky top-0 z-30 flex h-14 items-center gap-4 border-b px-4 bg-background lg:h-[60px]">
           <SidebarTrigger className="size-4" />
           <div className="flex-1" />
           <a
@@ -345,7 +345,7 @@ export default function DocsLayout({
             <span className="hidden sm:inline">GitHub</span>
           </a>
         </header>
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 scroll-pt-14 md:scroll-pt-0">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

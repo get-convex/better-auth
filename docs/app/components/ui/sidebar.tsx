@@ -509,7 +509,25 @@ function SidebarMenuButton({
   tooltip?: string | React.ComponentProps<typeof TooltipContent>;
 } & VariantProps<typeof sidebarMenuButtonVariants>) {
   const Comp = asChild ? Slot : "button";
-  const { isMobile, state } = useSidebar();
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  // Handler to close sidebar on mobile if the button contains a link
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (isMobile) {
+      // If the button contains an anchor tag, close the sidebar
+      // (Don't close for buttons like theme toggle)
+      const target = event.target as HTMLElement;
+      if (
+        (target.tagName === "A" || target.closest("a")) &&
+        typeof setOpenMobile === "function"
+      ) {
+        setOpenMobile(false);
+      }
+    }
+    if (typeof props.onClick === "function") {
+      props.onClick(event);
+    }
+  };
 
   const button = (
     <Comp
@@ -519,6 +537,7 @@ function SidebarMenuButton({
       data-active={isActive}
       className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
       {...props}
+      onClick={handleClick}
     />
   );
 
@@ -538,7 +557,7 @@ function SidebarMenuButton({
       <TooltipContent
         side="right"
         align="center"
-        hidden={state !== "collapsed" || isMobile}
+        hidden={isMobile}
         {...tooltip}
       />
     </Tooltip>

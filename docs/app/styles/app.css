@@ -122,3 +122,9 @@
 @utility no-scrollbar {
   @apply [scrollbar-width:none] [&::-webkit-scrollbar]:hidden;
 }
+
+@media (max-width: 767px) {
+  html {
+    scroll-padding-top: 56px;
+  }
+}
