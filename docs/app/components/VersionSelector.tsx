@@ -9,7 +9,7 @@ console.log(localVersions);
 const DOCS_DOMAIN = "convex-better-auth.netlify.app";
 
 type Version = {
-  label: string;
+  label?: string;
   version: string;
 };
 
@@ -40,8 +40,8 @@ export function VersionSelector() {
       const domainParts = domain.split(".");
       const labelOrVersion = domainParts[0].split("--")[0];
       return (
-        v.label?.replace(".", "-") === labelOrVersion ||
-        v.version.replace(".", "-") === labelOrVersion
+        v.label === labelOrVersion ||
+        v.version.replaceAll(".", "-") === labelOrVersion
       );
     }) ?? versions.find((v) => v.label === "latest");
 
@@ -142,14 +142,15 @@ export function VersionSelector() {
                   ? `https://${DOCS_DOMAIN}`
                   : v.label
                     ? `https://${v.label}--${DOCS_DOMAIN}`
-                    : `https://${v.version.replace(".", "-")}--${DOCS_DOMAIN}`
+                    : `https://${v.version.replaceAll(".", "-")}--${DOCS_DOMAIN}`
               }
               className={cn(
                 "w-full text-left px-3 py-1.5 text-xs font-mono rounded hover:bg-accent focus:bg-accent focus:outline-none",
                 v.version === current.version && "bg-accent"
               )}
             >
-              {v.version} <span className="ml-1">({v.label})</span>
+              {v.version}
+              {v.label && <span className="ml-1">({v.label})</span>}
             </a>
           ))}
         </div>
