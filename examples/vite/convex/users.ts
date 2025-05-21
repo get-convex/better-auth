@@ -3,7 +3,7 @@ import { betterAuthComponent } from "./auth";
 import { Id } from "./_generated/dataModel";
 
 export const { createUser, deleteUser, updateUser, createSession } =
-  betterAuthComponent.authApi({
+  betterAuthComponent.createAuthFunctions({
     onCreateUser: async (ctx, user) => {
       // Example: copy the user's email to the application users table.
       // We'll use onUpdateUser to keep it synced.

@@ -1,23 +1,24 @@
-import { BetterAuth, convexAdapter } from "@convex-dev/better-auth";
+import {
+  AuthFunctions,
+  BetterAuth,
+  convexAdapter,
+} from "@convex-dev/better-auth";
 import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
 import { components, internal } from "./_generated/api";
 import { betterAuth } from "better-auth";
 import { GenericCtx } from "./_generated/server";
 import { requireEnv } from "./util";
 
-export const betterAuthComponent = new BetterAuth(components.betterAuth, {
-  verbose: true,
-});
+const authFunctions: AuthFunctions = internal.users;
 
-// Still some work to do on types 🙈
-const authApi = internal.users as any;
+export const betterAuthComponent = new BetterAuth(
+  components.betterAuth,
+  authFunctions
+);
 
 export const createAuth = (ctx: GenericCtx) =>
   betterAuth({
-    database: convexAdapter(ctx, components.betterAuth, {
-      authApi,
-      verbose: true,
-    }),
+    database: convexAdapter(ctx, betterAuthComponent),
     trustedOrigins: [requireEnv("SITE_URL")],
     socialProviders: {
       github: {

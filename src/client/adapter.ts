@@ -1,5 +1,4 @@
-import { AuthApi, UseApi } from "./index";
-import { api } from "../component/_generated/api";
+import { BetterAuth } from "./index";
 import { transformInput } from "../component/lib";
 import { createAdapter } from "better-auth/adapters";
 import {
@@ -7,7 +6,6 @@ import {
   GenericMutationCtx,
   GenericQueryCtx,
 } from "convex/server";
-import { isEmpty } from "remeda";
 
 export const convexAdapter = <
   Ctx extends
@@ -16,17 +14,16 @@ export const convexAdapter = <
     | GenericActionCtx<any>,
 >(
   ctx: Ctx,
-  component: UseApi<typeof api>,
-  config: {
+  component: BetterAuth,
+  config?: {
     verbose?: boolean;
-    authApi: AuthApi;
   }
 ) =>
   createAdapter({
     config: {
       adapterId: "convex",
       adapterName: "Convex Adapter",
-      debugLogs: config.verbose ?? false,
+      debugLogs: config?.verbose ?? false,
       disableIdGeneration: true,
     },
     adapter: ({ schema }) => {
@@ -41,12 +38,10 @@ export const convexAdapter = <
           }
           const createFn =
             model === "user"
-              ? config.authApi.createUser
-              : model === "session" &&
-                  config.authApi.createSession &&
-                  !isEmpty(config.authApi.createSession)
-                ? config.authApi.createSession
-                : component.lib.create;
+              ? component.authFunctions.createUser
+              : model === "session"
+                ? component.authFunctions.createSession
+                : component.component.lib.create;
           return ctx.runMutation(createFn, {
             input: { table: model, ...transformInput(model, data) },
           });
@@ -54,7 +49,7 @@ export const convexAdapter = <
         findOne: async ({ model, where }): Promise<any> => {
           if (where.length === 1 && where[0].operator === "eq") {
             const { value, field } = where[0];
-            const result = await ctx.runQuery(component.lib.getBy, {
+            const result = await ctx.runQuery(component.component.lib.getBy, {
               table: model,
               field,
               unique:
@@ -71,7 +66,7 @@ export const convexAdapter = <
             where[0].connector === "AND"
           ) {
             return ctx.runQuery(
-              component.lib.getAccountByAccountIdAndProviderId,
+              component.component.lib.getAccountByAccountIdAndProviderId,
               {
                 accountId: where[0].value as string,
                 providerId: where[1].value as string,
@@ -96,7 +91,7 @@ export const convexAdapter = <
             (!sortBy ||
               (sortBy?.field === "createdAt" && sortBy?.direction === "desc"))
           ) {
-            return ctx.runQuery(component.lib.getJwks, { limit });
+            return ctx.runQuery(component.component.lib.getJwks, { limit });
           }
           if (where?.length !== 1 || where[0].operator !== "eq") {
             throw new Error("where clause not supported");
@@ -105,17 +100,20 @@ export const convexAdapter = <
             throw new Error("offset not supported");
           }
           if (model === "account" && where[0].field === "userId") {
-            return ctx.runQuery(component.lib.getAccountsByUserId, {
+            return ctx.runQuery(component.component.lib.getAccountsByUserId, {
               userId: where[0].value as any,
               limit,
             });
           }
           if (model === "verification" && where[0].field === "identifier") {
-            return ctx.runQuery(component.lib.listVerificationsByIdentifier, {
-              identifier: where[0].value as string,
-              sortBy,
-              limit,
-            });
+            return ctx.runQuery(
+              component.component.lib.listVerificationsByIdentifier,
+              {
+                identifier: where[0].value as string,
+                sortBy,
+                limit,
+              }
+            );
           }
           throw new Error("where clause not supported");
         },
@@ -130,9 +128,9 @@ export const convexAdapter = <
           if (where?.length === 1 && where[0].operator === "eq") {
             const { value, field } = where[0];
             const updateFn =
-              model === "user" && config.authApi.updateUser
-                ? config.authApi.updateUser
-                : component.lib.update;
+              model === "user"
+                ? component.authFunctions.updateUser
+                : component.component.lib.update;
             return ctx.runMutation(updateFn, {
               input: {
                 table: model as any,
@@ -153,9 +151,9 @@ export const convexAdapter = <
           if (where?.length === 1 && where[0].operator === "eq") {
             const { field, value } = where[0];
             const deleteFn =
-              model === "user" && config.authApi.deleteUser
-                ? config.authApi.deleteUser
-                : component.lib.deleteBy;
+              model === "user"
+                ? component.authFunctions.deleteUser
+                : component.component.lib.deleteBy;
             await ctx.runMutation(deleteFn, {
               table: model,
               field,
@@ -176,12 +174,15 @@ export const convexAdapter = <
             where[0].operator === "lt" &&
             where[0].field === "expiresAt"
           ) {
-            return ctx.runAction(component.lib.deleteOldVerifications, {
-              currentTimestamp: Date.now(),
-            });
+            return ctx.runAction(
+              component.component.lib.deleteOldVerifications,
+              {
+                currentTimestamp: Date.now(),
+              }
+            );
           }
           if (where?.length === 1 && where[0].field === "userId") {
-            return ctx.runAction(component.lib.deleteAllForUser, {
+            return ctx.runAction(component.component.lib.deleteAllForUser, {
               table: model,
               userId: where[0].value as any,
             });
@@ -190,7 +191,7 @@ export const convexAdapter = <
           // return count;
         },
         updateMany: async ({ model, where, update }) => {
-          if (config.verbose) {
+          if (config?.verbose) {
             console.log("updateMany", model, where, update);
           }
           if (!("runMutation" in ctx)) {
@@ -202,7 +203,7 @@ export const convexAdapter = <
             where[0].operator === "eq" &&
             where[0].field === "userId"
           ) {
-            return ctx.runMutation(component.lib.updateTwoFactor, {
+            return ctx.runMutation(component.component.lib.updateTwoFactor, {
               userId: where[0].value as string,
               update: transformInput(model, update as any),
             });
@@ -215,11 +216,14 @@ export const convexAdapter = <
             where[0].field === "userId" &&
             where[1].field === "providerId"
           ) {
-            return ctx.runMutation(component.lib.updateUserProviderAccounts, {
-              userId: where[0].value as string,
-              providerId: where[1].value as string,
-              update: transformInput(model, update as any),
-            });
+            return ctx.runMutation(
+              component.component.lib.updateUserProviderAccounts,
+              {
+                userId: where[0].value as string,
+                providerId: where[1].value as string,
+                update: transformInput(model, update as any),
+              }
+            );
           }
           throw new Error("updateMany not implemented");
           //return 0;

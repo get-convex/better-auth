@@ -329,6 +329,9 @@ const handleCors = ({
 
       if (!allowOrigins) {
         // Origin not allowed
+        console.error(
+          `Request from origin ${requestOrigin} blocked, missing from allowed origins (${allowedOrigins.join()})`
+        );
         return new Response(null, { status: 403 });
       }
       /**

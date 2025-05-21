@@ -8,35 +8,37 @@ import {
   GenericMutationCtx,
   type GenericQueryCtx,
   type HttpRouter,
-  WithoutSystemFields,
   httpActionGeneric,
   internalMutationGeneric,
 } from "convex/server";
-import { type GenericId, v } from "convex/values";
+import { type GenericId, Infer, v } from "convex/values";
 import type { api } from "../component/_generated/api";
-import { Doc } from "../component/_generated/dataModel";
 import schema from "../component/schema";
 import { convexAdapter } from "./adapter";
 import corsRouter from "./cors";
-import { vv } from "../component/util";
 import { getByArgsValidator, updateArgsInputValidator } from "../component/lib";
-import { omit } from "convex-helpers";
 import { betterAuth } from "better-auth";
+import { omit } from "convex-helpers";
 export { convexAdapter };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { userId, ...createUserFields } = schema.tables.user.validator.fields;
-export const createUserArgsValidator = v.object(createUserFields);
-export const updateUserArgsValidator = v.object(
-  schema.tables.user.validator.fields
-);
-export const deleteUserArgsValidator = v.object({
-  userId: v.string(),
+const createUserFields = omit(schema.tables.user.validator.fields, ["userId"]);
+const createUserValidator = v.object(createUserFields);
+const createUserArgsValidator = v.object({
+  input: v.object({
+    ...createUserFields,
+    table: v.literal("user"),
+  }),
 });
+const updateUserArgsValidator = v.object({
+  input: updateArgsInputValidator("user"),
+});
+const deleteUserArgsValidator = v.object(getByArgsValidator);
 
-export const onCreateSessionArgsValidator = v.object({
-  ...vv.doc("session").fields,
-  _id: v.string(),
+const createSessionArgsValidator = v.object({
+  input: v.object({
+    table: v.literal("session"),
+    ...schema.tables.session.validator.fields,
+  }),
 });
 
 export type EventFunction<T extends DefaultFunctionArgs> = FunctionReference<
@@ -45,31 +47,33 @@ export type EventFunction<T extends DefaultFunctionArgs> = FunctionReference<
   T
 >;
 
-export type AuthApi = {
+export type AuthFunctions = {
   createUser: FunctionReference<
     "mutation",
     "internal",
-    typeof schema.tables.user.validator.fields
+    Infer<typeof createUserArgsValidator>
   >;
-  deleteUser?: FunctionReference<"mutation", "internal", { userId: string }>;
-  updateUser?: FunctionReference<
+  deleteUser: FunctionReference<
     "mutation",
     "internal",
-    typeof schema.tables.user.validator.fields
+    Infer<typeof deleteUserArgsValidator>
   >;
-  createSession?: FunctionReference<
+  updateUser: FunctionReference<
     "mutation",
     "internal",
-    typeof schema.tables.session.validator.fields
+    Infer<typeof updateUserArgsValidator>
+  >;
+  createSession: FunctionReference<
+    "mutation",
+    "internal",
+    Infer<typeof createSessionArgsValidator>
   >;
 };
 
-export class BetterAuth<
-  DataModel extends GenericDataModel,
-  Id extends string = string,
-> {
+export class BetterAuth<UserId extends string = string> {
   constructor(
     public component: UseApi<typeof api>,
+    public authFunctions: AuthFunctions,
     public config?: {
       verbose?: boolean;
     }
@@ -92,7 +96,7 @@ export class BetterAuth<
     if (!identity) {
       return null;
     }
-    return identity.subject;
+    return identity.subject as UserId;
   }
 
   // Convenience function for getting the Better Auth user
@@ -106,36 +110,38 @@ export class BetterAuth<
       field: "userId",
       value: identity.subject,
     });
-    return doc as WithoutSystemFields<Doc<"user">>;
+    if (!doc) {
+      return null;
+    }
+    // Type narrowing
+    if (!("emailVerified" in doc)) {
+      throw new Error("invalid user");
+    }
+    const { id: _id, ...user } = doc;
+    return user;
   }
 
-  authApi(opts: {
+  createAuthFunctions<DataModel extends GenericDataModel>(opts: {
     onCreateUser: (
       ctx: GenericMutationCtx<DataModel>,
-      user: Omit<WithoutSystemFields<Doc<"user">>, "userId">
-    ) => Promise<Id>;
+      user: Infer<typeof createUserValidator>
+    ) => Promise<UserId>;
     onDeleteUser?: (
       ctx: GenericMutationCtx<DataModel>,
-      id: Id
+      id: UserId
     ) => void | Promise<void>;
     onUpdateUser?: (
       ctx: GenericMutationCtx<DataModel>,
-      user: WithoutSystemFields<Doc<"user">>
+      user: Infer<typeof schema.tables.user.validator>
     ) => void | Promise<void>;
     onCreateSession?: (
       ctx: GenericMutationCtx<DataModel>,
-      session: Doc<"session">
+      session: Infer<typeof schema.tables.session.validator>
     ) => void | Promise<void>;
   }) {
     return {
       createUser: internalMutationGeneric({
-        args: {
-          input: v.object({
-            table: v.literal("user"),
-            ...omit(schema.tables.user.validator.fields, ["userId"]),
-          }),
-        },
-        returns: v.any(),
+        args: createUserArgsValidator,
         handler: async (ctx, args) => {
           const userId = await opts.onCreateUser(ctx, args.input);
           const input = { ...args.input, table: "user", userId };
@@ -145,45 +151,43 @@ export class BetterAuth<
         },
       }),
       deleteUser: internalMutationGeneric({
-        args: getByArgsValidator,
-        returns: v.any(),
+        args: deleteUserArgsValidator,
         handler: async (ctx, args) => {
           const doc = await ctx.runMutation(this.component.lib.deleteBy, args);
           if (opts.onDeleteUser) {
-            await opts.onDeleteUser(ctx, doc.userId as Id);
+            await opts.onDeleteUser(ctx, doc.userId as UserId);
           }
         },
       }),
       updateUser: internalMutationGeneric({
-        args: {
-          input: updateArgsInputValidator("user"),
-        },
-        returns: v.any(),
+        args: updateUserArgsValidator,
         handler: async (ctx, args) => {
           const updatedUser = await ctx.runMutation(
             this.component.lib.update,
             args
           );
-          if (opts?.onUpdateUser) {
-            await opts.onUpdateUser(ctx, updatedUser as any);
+          // Type narrowing
+          if (!("emailVerified" in updatedUser)) {
+            throw new Error("invalid user");
+          }
+          if (opts.onUpdateUser) {
+            await opts.onUpdateUser(ctx, omit(updatedUser, ["id"]));
           }
           return updatedUser;
         },
       }),
       createSession: internalMutationGeneric({
-        args: {
-          input: v.object({
-            table: v.literal("session"),
-            ...schema.tables.session.validator.fields,
-          }),
-        },
-        returns: v.any(),
+        args: createSessionArgsValidator,
         handler: async (ctx, args) => {
           const session = await ctx.runMutation(
             this.component.lib.create,
             args
           );
-          await opts.onCreateSession?.(ctx, session as any);
+          // Type narrowing
+          if (!("ipAddress" in session)) {
+            throw new Error("invalid session");
+          }
+          await opts.onCreateSession?.(ctx, session);
           return session;
         },
       }),
@@ -213,7 +217,7 @@ export class BetterAuth<
     };
 
     const authRequestHandler = httpActionGeneric(async (ctx, request) => {
-      const auth = createAuth(ctx as any);
+      const auth = createAuth(ctx);
       const response = await auth.handler(request);
       if (this.config?.verbose) {
         console.log("response headers", response.headers);

@@ -233,6 +233,16 @@ export default function DocsLayout({
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
+                    <a href="#better-auth-instance">Initialize Better Auth</a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <a href="#better-auth-client">Set up client</a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
                     <a href="#users-table">Users table</a>
                   </SidebarMenuButton>
                   <SidebarMenuSub>
@@ -247,16 +257,6 @@ export default function DocsLayout({
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   </SidebarMenuSub>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href="#better-auth-instance">Initialize Better Auth</a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href="#better-auth-client">Set up client</a>
-                  </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
@@ -277,13 +277,6 @@ export default function DocsLayout({
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     <a href="#basic-usage-server-side">Server side</a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href="#basic-usage-working-with-users">
-                      Working with users
-                    </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
@@ -324,6 +317,11 @@ export default function DocsLayout({
                     <a href="#migrating-existing-users">
                       Migrating existing users
                     </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <a href="#migrate-0-4-to-0-5">Migrate 0.4 &rarr; 0.5</a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>

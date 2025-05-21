@@ -72,6 +72,14 @@ const P = ({
   <p className={cx(className, "font-light mb-6 leading-relaxed")}>{children}</p>
 );
 
+const Ul = ({ children }: PropsWithChildren) => (
+  <ul className="list-disc font-light mb-6 leading-relaxed ml-4">{children}</ul>
+);
+
+const Li = ({ children }: PropsWithChildren) => (
+  <li className="mb-2">{children}</li>
+);
+
 const ContentHeading = ({
   className,
   id,
@@ -340,6 +348,159 @@ function Home() {
             />
           </Subsection>
 
+          <Subsection id="better-auth-instance" title="Initialize Better Auth">
+            <P>
+              Initialize the Convex component by importing the component class
+              and creating a new instance. The component class constructor
+              requires the generated component API object to be passed in.
+            </P>
+            <P>
+              Instead of creating a Better Auth instance, serverless
+              environments like Convex functions require that you provide a
+              function that returns the Better Auth instance so a context can be
+              passed in.
+            </P>
+            <P>
+              The <Code>createAuth</Code> function is used for setting up http
+              actions and can be imported for use in your Convex functions.
+            </P>
+
+            <CodeBlock
+              language="typescript"
+              filename="convex/auth.ts"
+              code={stripIndent`
+                import {
+                  BetterAuth,
+                  convexAdapter,
+                  type AuthFunctions,
+                } from "@erquhart/convex-better-auth";
+                import { convex, crossDomain } from "@erquhart/convex-better-auth/plugins";
+                import { betterAuth } from "better-auth";
+                import { components, internal } from "./_generated/api";
+                import type { GenericCtx } from "./_generated/server";
+                import type { Id, DataModel } from "./_generated/dataModel";
+
+                // Typesafe way to pass the functions below into the component
+                const authFunctions: AuthFunctions = internal.auth;
+
+                // Initialize the component
+                export const betterAuthComponent = new BetterAuth(
+                  components.betterAuth,
+                  authFunctions,
+                );
+
+                export const createAuth = (ctx: GenericCtx) =>
+                  // Configure your Better Auth instance here
+                  betterAuth({
+                    database: convexAdapter(ctx, betterAuthComponent),
+                    // Replace with your site url
+                    trustedOrigins: ["http://localhost:3000"],
+                    plugins: [
+                      // The Convex plugin is required
+                      convex(),
+                      // Adds support for your client and Convex backend being on separate
+                      // domains. Remove for Expo.
+                      crossDomain(),
+                    ],
+                  });
+
+                // These are required named exports
+                export const { createUser, updateUser, deleteUser, createSession } =
+                  betterAuthComponent.createAuthFunctions<DataModel>({
+                    // Must create a user and return the user id
+                    onCreateUser: async (ctx, user) => {
+                      const id = await ctx.db.insert("users", {});
+                      return id;
+                    },
+
+                    // Delete the user when they are deleted from Better Auth
+                    // You can also omit this and use Better Auth's
+                    // auth.api.deleteUser() function to trigger user deletion
+                    // from within your own user deletion logic.
+                    onDeleteUser: async (ctx, userId) => {
+                      await ctx.db.delete(userId as Id<"users">);
+                    },
+                  });
+
+                `}
+            />
+
+            <P>
+              Register route handlers. This creates http actions for the Better
+              Auth client to fetch from.
+            </P>
+
+            <CodeBlock
+              language="typescript"
+              filename="convex/http.ts"
+              highlightedLines={[2, 6, 7, 8]}
+              code={stripIndent`
+                import { httpRouter } from 'convex/server'
+                import { betterAuthComponent, createAuth } from './auth'
+
+                const http = httpRouter()
+
+                betterAuthComponent.registerRoutes(http, createAuth)
+
+                export default http
+              `}
+            />
+          </Subsection>
+
+          <Subsection id="better-auth-client" title="Set up client">
+            <P>Create a Better Auth client instance.</P>
+            <CodeBlock
+              language="typescript"
+              filename="lib/auth-client.ts"
+              code={stripIndent`
+                import { createAuthClient } from "better-auth/react";
+                import { convexClient, crossDomainClient } from "@erquhart/convex-better-auth/client/plugins";
+
+                export const authClient = createAuthClient({
+                  // Your Convex site URL
+                  baseURL: 'https://adjective-animal-123.convex.site',
+                  plugins: [
+                    convexClient(),
+                    // Required if using the cross domain server plugin
+                    crossDomainClient(),
+                  ],
+                });
+              `}
+            />
+
+            <P>
+              Set up the Convex client using{" "}
+              <Code>ConvexBetterAuthProvider</Code> instead of{" "}
+              <Code>ConvexProvider</Code>, passing in your Better Auth client as
+              a prop. Use it to wrap your app, which will look different
+              depending on your framework.
+            </P>
+
+            <CodeBlock
+              language="typescript"
+              filename="src/ConvexClientProvider.tsx"
+              code={stripIndent`
+                "use client"
+
+                import { ConvexReactClient } from "convex/react";
+                import { ConvexBetterAuthProvider } from "@erquhart/convex-better-auth/react";
+                import { authClient } from "./auth-client";
+                import { PropsWithChildren } from "react";
+
+                const convex = new ConvexReactClient(process.env.CONVEX_URL as string);
+
+                const ConvexProvider = ({ children }: PropsWithChildren) => (
+                  <ConvexBetterAuthProvider client={convex} authClient={authClient}>
+                    {children}
+                  </ConvexBetterAuthProvider>
+                );
+
+                export default ConvexProvider;
+
+              `}
+            />
+          </Subsection>
+
           <Subsection id="users-table" title="Users table">
             <P>
               The Better Auth component has it's own tables in it's own space in
@@ -375,14 +536,14 @@ function Home() {
 
             <CodeBlock
               language="typescript"
-              filename="convex/users.ts"
+              filename="convex/auth.ts"
               code={stripIndent`
                 import { asyncMap } from "convex-helpers";
                 import { betterAuthComponent } from "./auth";
                 import { Id } from "./_generated/dataModel";
 
                 export const { createUser, deleteUser, updateUser } =
-                  betterAuthComponent.authApi({
+                  betterAuthComponent.createAuthFunctions({
 
                     // Must create a user and return the user id
                     onCreateUser: async (ctx, user) => {
@@ -402,13 +563,6 @@ function Home() {
                       await ctx.db.delete(userId as Id<"users">);
 
                       // Optionally delete any related data
-                      const todos = await ctx.db
-                        .query("todos")
-                        .withIndex("userId", (q) => q.eq("userId", userId as Id<"users">))
-                        .collect();
-                      await asyncMap(todos, async (todo) => {
-                        await ctx.db.delete(todo._id as Id<"todos">);
-                      });
                     },
                   });
                 `}
@@ -434,12 +588,12 @@ function Home() {
 
             <CodeBlock
               language="typescript"
-              filename="convex/users.ts"
+              filename="convex/auth.ts"
               code={stripIndent`
                 // ...
 
                 export const { createUser, deleteUser, updateUser } =
-                  betterAuthComponent.authApi({
+                  betterAuthComponent.createAuthFunctions({
                     onCreateUser: async (ctx, user) => {
                       // Copy the user's email to the application users table.
                       return await ctx.db.insert("users", {
@@ -458,154 +612,6 @@ function Home() {
                   });
                 `}
             />
-          </Subsection>
-
-          <Subsection id="better-auth-instance" title="Initialize Better Auth">
-            <P>
-              Initialize the Convex component by importing the component class
-              and creating a new instance. The component class constructor
-              requires the generated component API object to be passed in.
-            </P>
-            <P>
-              Instead of creating a Better Auth instance, serverless
-              environments like Convex functions require that you provide a
-              function that returns the Better Auth instance so a context can be
-              passed in.
-            </P>
-            <P>
-              The <Code>createAuth</Code> function is used for setting up http
-              actions and can be imported for use in your Convex functions.
-            </P>
-
-            <CodeBlock
-              language="typescript"
-              filename="convex/auth.ts"
-              code={stripIndent`
-                import { BetterAuth, convexAdapter } from "@erquhart/convex-better-auth";
-                import { convex, crossDomain } from "@erquhart/convex-better-auth/plugins";
-                import { components, internal } from "./_generated/api";
-                import { betterAuth } from "better-auth";
-                import { GenericCtx } from "./_generated/server";
-
-                // Initialize the component
-                export const betterAuthComponent = new BetterAuth(components.betterAuth)
-
-                // Create an authApi object with your user hook functions
-                const authApi = internal.users as any;
-
-                export const createAuth = (ctx: GenericCtx) =>
-                  // Configure your Better Auth instance here
-                  betterAuth({
-                    database: convexAdapter(ctx, components.betterAuth, { authApi })
-                    trustedOrigins: ["http://localhost:3000"],
-
-                    // Configure authentication methods and add plugins
-                    socialProviders: {
-                      github: {
-                        clientId: process.env.GITHUB_CLIENT_ID as string,
-                        clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-                      },
-                    },
-                    plugins: [
-                      // The Convex plugin is required
-                      convex(),
-                      // Adds support for your client and Convex backend
-                      // being on separate domains, which is pretty much all
-                      // apps except Expo right now.
-                      crossDomain(),
-                    ],
-                  });
-                `}
-            />
-
-            <P>
-              Register route handlers. This creates http actions for the Better
-              Auth client to fetch from.
-            </P>
-
-            <CodeBlock
-              language="typescript"
-              filename="convex/http.ts"
-              highlightedLines={[2, 6, 7, 8]}
-              code={stripIndent`
-                import { httpRouter } from 'convex/server'
-                import { betterAuthComponent, createAuth } from './auth'
-
-                const http = httpRouter()
-
-                betterAuthComponent.registerRoutes(http, createAuth,
-                // Optional config
-                {
-                  // Defaults to trustedOrigins from your Better Auth config
-                  allowedOrigins: [process.env.SITE_URL],
-
-                  // Optional path to register the routes at
-                  path: "/api/auth",
-                })
-
-                export default http
-              `}
-            />
-          </Subsection>
-
-          <Subsection id="better-auth-client" title="Set up client">
-            <P>Create a Better Auth client instance.</P>
-            <CodeBlock
-              language="typescript"
-              filename="lib/auth-client.ts"
-              code={stripIndent`
-                import { createAuthClient } from "better-auth/react";
-                import { convexClient, crossDomainClient } from "@erquhart/convex-better-auth/client/plugins";
-
-                export const authClient = createAuthClient({
-                  baseURL: process.env.NEXT_PUBLIC_CONVEX_SITE_URL,
-                  plugins: [
-                    convexClient(),
-                    // Required if using the cross domain server plugin
-                    crossDomainClient(),
-                  ],
-                });
-              `}
-            />
-
-            <P>
-              Set up the Convex client using{" "}
-              <Code>ConvexBetterAuthProvider</Code> instead of{" "}
-              <Code>ConvexProvider</Code>, passing in your Better Auth client as
-              a prop.
-            </P>
-
-            <CodeBlock
-              language="typescript"
-              filename="src/ConvexClientProvider.tsx"
-              code={stripIndent`
-                "use client"
-
-                import { ConvexReactClient } from 'convex/react'
-                import { ConvexBetterAuthProvider } from '@erquhart/convex-better-auth/react'
-                import { authClient } from './auth-client'
-
-                const convex = new ConvexReactClient(
-                  process.env.CONVEX_URL as string,
-                );
-
-                const ConvexProvider = ({ children }: PropsWithChildren) => (
-                  <ConvexBetterAuthProvider client={convex} authClient={authClient}>
-                    {children}
-                  </ConvexBetterAuthProvider>
-                )
-
-                export default ConvexProvider
-              `}
-            />
-          </Subsection>
-
-          <Subsection id="cross-domain-support" title="Cross-domain support">
-            <P>
-              The cross domain plugin adds support for your client and Convex
-              backend being on separate domains, which is pretty much all apps
-              except Expo right now.
-            </P>
           </Subsection>
         </Section>
 
@@ -629,16 +635,19 @@ function Home() {
 
           <Subsection id="basic-usage-server-side" title="Server side">
             <P>
-              Get a Better Auth instance in your Convex functions by passing the
-              context object to <Code>createAuth()</Code>. Some api calls
-              require request headers, so the component provides a method for
-              getting a headers object tied to the current session.
+              Better Auth provides server side functionality via `auth.api`
+              methods.
             </P>
             <P>
-              <strong className="font-bold">Note:</strong> Only read methods can
-              be run in a query, use a mutation for anything that updates Better
-              Auth tables.
+              In a Convex function, you can get a Better Auth instance by
+              passing the context object to <Code>createAuth()</Code>. Some api
+              methods require request headers, so the component provides a
+              method for getting a headers object tied to the current session.
             </P>
+            <Callout>
+              <Code>auth.api</Code> read-only methods can be run in a query. Use
+              a mutation for anything that updates Better Auth tables.
+            </Callout>
 
             <CodeBlock
               language="typescript"
@@ -658,53 +667,6 @@ function Home() {
                       return null;
                     }
                     // Do something with the session
-                  }
-                });
-              `}
-            />
-          </Subsection>
-
-          <Subsection
-            id="basic-usage-working-with-users"
-            title="Working with users"
-          >
-            <P>
-              This component requires your application to have it's own users
-              table, and treats the Better Auth component's user table as a sort
-              of user metadata table. User metadata from this table can be
-              accessed in the session, just as you normally would with Better
-              Auth, via <Code>auth.api.getSession()</Code> (See{" "}
-              <a href="#basic-usage-server-side" className="underline">
-                Server side
-              </a>{" "}
-              for how to do this).
-            </P>
-            <P>
-              The component api also provides a convenience method for getting
-              the current user metadata.
-            </P>
-            <CodeBlock
-              language="typescript"
-              filename="convex/example.ts"
-              code={stripIndent`
-                import { createAuth, betterAuthComponent } from "./auth";
-
-                export const getCurrentUser = query({
-                  args: {},
-                  handler: async (ctx) => {
-                    // You can get the user id directly from Convex via ctx.auth
-                    const identity = await ctx.auth.getUserIdentity();
-                    if (!identity) {
-                      return null;
-                    }
-                    const ctxUserId = identity.subject
-                    const user = await ctx.db.get(identity.userId as Id<"users">);
-
-                    // Get user email and such from the Better Auth component
-                    const userMetadata = await betterAuthComponent.getAuthUser(ctx);
-
-                    // You can combine them if you want
-                    return { ...userMetadata, ...user };
                   }
                 });
               `}
@@ -744,26 +706,44 @@ function Home() {
           >
             <P>
               For authorization and user checks inside Convex functions
-              (queries, mutations, actions), use Convex's `ctx.auth` or the
-              `getAuthUser()` on the Better Auth Convex component:
+              (queries, mutations, actions), use Convex's <Code>ctx.auth</Code>{" "}
+              or the
+              <Code>getAuthUserId()</Code>/<Code>getAuthUser()</Code> methods on
+              the Better Auth Convex component:
             </P>
             <CodeBlock
               language="ts"
+              filename="convex/example.ts"
               code={stripIndent`
-                import { betterAuth } from "./auth";
+                import { betterAuthComponent } from "./auth";
+                import { Id } from "./_generated/dataModel";
+                export const getCurrentUser = query({
+                  args: {},
+                  handler: async (ctx) => {
+                    // You can get the user id directly from Convex via ctx.auth
+                    const identity = await ctx.auth.getUserIdentity();
+                    if (!identity) {
+                      return null;
+                    }
+                    // For now the id type requires an assertion
+                    const userIdFromCtx = identity.subject as Id<"users">;
 
-                export const myFunction = async (ctx) => {
-                  // Get the user id from the jwt
-                  const identity = await ctx.auth.getUserIdentity();
-                  if (!identity) {
-                    return null;
+                    // The component provides a convenience method to get the user id
+                    const userId = await betterAuthComponent.getAuthUserId(ctx);
+                    if (!userId) {
+                      return null
+                    }
+
+                    const user = await ctx.db.get(userId as Id<"users">);
+
+
+                    // Get user email and other metadata from the Better Auth component
+                    const userMetadata = await betterAuthComponent.getAuthUser(ctx);
+
+                    // You can combine them if you want
+                    return { ...userMetadata, ...user };
                   }
-                  const userId = identity.subject;
-
-                  // Get the Better Auth user (metadata) object for the currently
-                  // authenticated user
-                  const userMetadata = await betterAuth.getAuthUser(ctx);
-                };
+                });
               `}
             />
           </Subsection>
@@ -789,16 +769,16 @@ function Home() {
 
             <P>
               Implement the migration logic in your <Code>onCreateUser</Code>{" "}
-              hook in <Code>convex/users.ts</Code>. This will run when Better
+              hook in <Code>convex/auth.ts</Code>. This will run when Better
               Auth attempts to create a new user, allowing you to gradually
               migrate users as they access your app.
             </P>
             <CodeBlock
               language="typescript"
-              filename="convex/users.ts"
+              filename="convex/auth.ts"
               code={stripIndent`
                 export const { createUser, deleteUser, updateUser, createSession } =
-                  betterAuthComponent.authApi({
+                  betterAuthComponent.createAuthFunctions({
                     onCreateUser: async (ctx, user) => {
                       const existingUser = await ctx.db
                         .query('users')
@@ -828,6 +808,81 @@ function Home() {
                     },
                     // ...
                   })
+              `}
+            />
+          </Subsection>
+          <Subsection id="migrate-0-4-to-0-5" title="Migrate 0.4 &rarr; 0.5">
+            <Ul>
+              <Li>
+                The <Code>betterAuthComponent.authApi</Code> method is now{" "}
+                <Code>betterAuthComponent.createAuthFunctions</Code>.
+              </Li>
+              <Li>
+                All four named exports returned from{" "}
+                <Code>betterAuthComponent.createAuthFunctions</Code> are now
+                required, even if you're only providing an{" "}
+                <Code>onCreateUser</Code> hook.
+              </Li>
+              <Li>
+                If you pass your <Code>DataModel</Code> to{" "}
+                <Code>betterAuthComponent.createAuthFunctions</Code>, everything
+                is now typed except for Ids, which still need to be asserted.
+                Any other type assertions from before can be removed.
+              </Li>
+            </Ul>
+            <CodeBlock
+              language="typescript"
+              filename="convex/users.ts"
+              code={stripIndent`
+                import { betterAuthComponent } from "./auth";
+                import type { DataModel } from "./_generated/dataModel";
+
+                export const { createUser, deleteUser, updateUser, createSession } =
+                  betterAuthComponent.createAuthFunctions<DataModel>({
+                    onCreateUser: async (ctx, user) => {
+                      return await ctx.db.insert('users', {})
+                    },
+                  })
+              `}
+            />
+
+            <Ul>
+              <Li>
+                The <Code>authFunctions</Code> object (formerly{" "}
+                <Code>authApi</Code>) is now passed to the{" "}
+                <Code>BetterAuth</Code> constructor, and is no longer passed to{" "}
+                <Code>convexAdapter</Code>.
+              </Li>
+              <Li>
+                <Code>authFunctions</Code> is now typed using the{" "}
+                <Code>AuthFunctions</Code> type.
+              </Li>
+              <Li>
+                <Code>convexAdapter</Code> now takes the{" "}
+                <Code>betterAuthComponent</Code> instance instead of the{" "}
+                <Code>components.betterAuth</Code> object.
+              </Li>
+            </Ul>
+            <CodeBlock
+              language="typescript"
+              filename="convex/auth.ts"
+              code={stripIndent`
+                import { BetterAuth, type AuthFunctions } from "@convex-dev/better-auth";
+                import { components, internal } from "./_generated/api";
+
+                const authFunctions: AuthFunctions = internal.users;
+
+                export const betterAuthComponent = new BetterAuth(
+                  components.betterAuth,
+                  authFunctions,
+                );
+
+                export const createAuth = (ctx: GenericCtx) =>
+                  betterAuth({
+                    database: convexAdapter(ctx, betterAuthComponent),
+                    trustedOrigins: ["http://localhost:3000"],
+                    plugins: [convex()],
+                  });
               `}
             />
           </Subsection>
