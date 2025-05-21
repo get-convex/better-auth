@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { Loader2, Copy, Check, ArrowLeft } from "lucide-react";
-import { authClient } from "@/app/auth-client";
+import { authClient } from "@/lib/auth-client";
 import QRCode from "react-qr-code";
 import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
@@ -99,7 +99,7 @@ export default function EnableTwoFactor() {
       setLoading(true);
       await authClient.forgetPassword({
         email: user.email,
-        redirectTo: "http://localhost:3000/reset-password",
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
       });
       alert("Check your email for password reset instructions");
     } catch {

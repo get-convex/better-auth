@@ -10,12 +10,16 @@
   "license": "Apache-2.0",
   "keywords": [
     "convex",
-    "component"
+    "component",
+    "auth",
+    "authentication",
+    "better-auth",
+    "convex-auth"
   ],
   "type": "module",
   "scripts": {
     "build": "npm run build:esm && npm run build:cjs",
-    "build:esm": "tsc --project ./esm.json && echo '{\\n  \"type\": \"module\"\\n}' > dist/esm/package.json",
+    "build:esm": "tsc --project ./esm.json && tsc-alias -p ./esm.json && echo '{\\n  \"type\": \"module\"\\n}' > dist/esm/package.json",
     "build:cjs": "tsc --project ./commonjs.json && echo '{\\n  \"type\": \"commonjs\"\\n}' > dist/commonjs/package.json",
     "dev": "cd example; npm run dev",
     "typecheck": "tsc --noEmit",
@@ -58,6 +62,18 @@
         "default": "./dist/commonjs/plugins/clientPlugins.js"
       }
     },
+    "./nextjs": {
+      "import": {
+        "@convex-dev/component-source": "./src/nextjs/index.ts",
+        "types": "./dist/esm/nextjs/index.d.ts",
+        "default": "./dist/esm/nextjs/index.js"
+      },
+      "require": {
+        "@convex-dev/component-source": "./src/nextjs/index.ts",
+        "types": "./dist/commonjs/nextjs/index.d.ts",
+        "default": "./dist/commonjs/nextjs/index.js"
+      }
+    },
     "./plugins": {
       "import": {
         "@convex-dev/component-source": "./src/plugins/index.ts",
@@ -90,6 +106,13 @@
       }
     }
   },
+  "typesVersions": {
+    "*": {
+      "next-js": [
+        "./dist/esm/nextjs/index.d.ts"
+      ]
+    }
+  },
   "peerDependencies": {
     "better-auth": "1.2.7",
     "convex": "~1.16.5 || >=1.17.0 <1.35.0"
@@ -101,7 +124,9 @@
     "convex-test": "^0.0.33",
     "eslint": "^9.9.1",
     "globals": "^15.9.0",
+    "next": "^15.1.8",
     "prettier": "3.2.5",
+    "tsc-alias": "^1.8.16",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.4.0",
     "vitest": "^2.1.4"
@@ -112,7 +137,7 @@
   "dependencies": {
     "@better-auth/utils": "^0.2.5",
     "better-call": "^1.0.9",
-    "convex-helpers": "^0.1.76",
+    "convex-helpers": "^0.1.87",
     "is-network-error": "^1.1.0",
     "remeda": "^2.21.6",
     "type-fest": "^4.39.1",

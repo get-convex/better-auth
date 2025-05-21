@@ -14,16 +14,13 @@ export const convexAdapter = <
     | GenericActionCtx<any>,
 >(
   ctx: Ctx,
-  component: BetterAuth,
-  config?: {
-    verbose?: boolean;
-  }
+  component: BetterAuth
 ) =>
   createAdapter({
     config: {
       adapterId: "convex",
       adapterName: "Convex Adapter",
-      debugLogs: config?.verbose ?? false,
+      debugLogs: component.config.verbose ?? false,
       disableIdGeneration: true,
     },
     adapter: ({ schema }) => {
@@ -38,9 +35,9 @@ export const convexAdapter = <
           }
           const createFn =
             model === "user"
-              ? component.authFunctions.createUser
+              ? component.config.authFunctions.createUser
               : model === "session"
-                ? component.authFunctions.createSession
+                ? component.config.authFunctions.createSession
                 : component.component.lib.create;
           return ctx.runMutation(createFn, {
             input: { table: model, ...transformInput(model, data) },
@@ -129,7 +126,7 @@ export const convexAdapter = <
             const { value, field } = where[0];
             const updateFn =
               model === "user"
-                ? component.authFunctions.updateUser
+                ? component.config.authFunctions.updateUser
                 : component.component.lib.update;
             return ctx.runMutation(updateFn, {
               input: {
@@ -152,7 +149,7 @@ export const convexAdapter = <
             const { field, value } = where[0];
             const deleteFn =
               model === "user"
-                ? component.authFunctions.deleteUser
+                ? component.config.authFunctions.deleteUser
                 : component.component.lib.deleteBy;
             await ctx.runMutation(deleteFn, {
               table: model,
@@ -191,9 +188,6 @@ export const convexAdapter = <
           // return count;
         },
         updateMany: async ({ model, where, update }) => {
-          if (config?.verbose) {
-            console.log("updateMany", model, where, update);
-          }
           if (!("runMutation" in ctx)) {
             throw new Error("ctx is not an action ctx");
           }

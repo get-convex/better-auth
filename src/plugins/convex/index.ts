@@ -1,15 +1,23 @@
-import { getSession, sessionMiddleware } from "better-auth/api";
+import {
+  createAuthMiddleware,
+  getSession,
+  sessionMiddleware,
+} from "better-auth/api";
 import {
   BetterAuthPlugin,
   createAuthEndpoint,
   customSession as customSessionPlugin,
   jwt as jwtPlugin,
+  bearer as bearerPlugin,
   oidcProvider as oidcProviderPlugin,
 } from "better-auth/plugins";
 import { omit } from "convex-helpers";
 import { z } from "zod";
 
-export const convex = () => {
+const JWT_COOKIE_NAME = "convex_jwt";
+
+export const convex = (opts: { jwtExpirationSeconds?: number } = {}) => {
+  const { jwtExpirationSeconds = 60 * 15 } = opts;
   const customSession = customSessionPlugin(async ({ user, session }) => {
     const { userId, ...userData } = omit(user, ["id"]) as typeof user & {
       userId: string;
@@ -25,6 +33,7 @@ export const convex = () => {
   const oidcProvider = oidcProviderPlugin({
     loginPage: "/not-used",
     metadata: {
+      issuer: `${process.env.CONVEX_SITE_URL}`,
       jwks_uri: `${process.env.CONVEX_SITE_URL}/api/auth/convex/jwks`,
     },
   });
@@ -32,6 +41,7 @@ export const convex = () => {
     jwt: {
       issuer: `${process.env.CONVEX_SITE_URL}`,
       audience: "convex",
+      expirationTime: `${jwtExpirationSeconds}s`,
       getSubject: (session) => {
         // Return the userId from the app user table
         return session.user.userId;
@@ -43,6 +53,10 @@ export const convex = () => {
       }),
     },
   });
+  // Bearer plugin converts the session token to a cookie
+  // for cross domain social login after code verification, and is required for
+  // the headers() helper to work.
+  const bearer = bearerPlugin();
   const schema = {
     user: {
       fields: { userId: { type: "string", required: false, input: false } },
@@ -52,7 +66,21 @@ export const convex = () => {
   return {
     id: "convex",
     hooks: {
-      after: [...oidcProvider.hooks.after],
+      before: [...bearer.hooks.before],
+      after: [
+        ...oidcProvider.hooks.after,
+        {
+          matcher: (ctx) => {
+            return ctx.path?.startsWith("/sign-out");
+          },
+          handler: createAuthMiddleware(async (ctx) => {
+            const jwtCookie = ctx.context.createAuthCookie(JWT_COOKIE_NAME, {
+              maxAge: 0,
+            });
+            ctx.setCookie(jwtCookie.name, "", jwtCookie.attributes);
+          }),
+        },
+      ],
     },
     endpoints: {
       getSession: createAuthEndpoint(
@@ -255,6 +283,10 @@ export const convex = () => {
             ...ctx,
             returnHeaders: false,
           });
+          const jwtCookie = ctx.context.createAuthCookie(JWT_COOKIE_NAME, {
+            maxAge: jwtExpirationSeconds,
+          });
+          ctx.setCookie(jwtCookie.name, response.token, jwtCookie.attributes);
           return response;
         }
       ),

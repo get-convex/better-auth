@@ -4,26 +4,25 @@ import {
   BetterAuthPlugin,
   createAuthEndpoint,
   createAuthMiddleware,
-  bearer as bearerPlugin,
   oneTimeToken as oneTimeTokenPlugin,
 } from "better-auth/plugins";
 import { z } from "zod";
 
-export const crossDomain = () => {
-  // We only need bearer to convert the session token to a cookie
-  // for cross domain social login, after code verification.
-  const bearer = bearerPlugin();
+export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
   const oneTimeToken = oneTimeTokenPlugin();
-  const schema = {
-    user: {
-      fields: { userId: { type: "string", required: false, input: false } },
-    } as const,
+
+  const rewriteCallbackURL = (callbackURL?: string) => {
+    if (callbackURL && !callbackURL.startsWith("/")) {
+      return callbackURL;
+    }
+    const relativeCallbackURL = callbackURL || "/";
+    return new URL(relativeCallbackURL, siteUrl).toString();
   };
+
   return {
     id: "cross-domain",
     hooks: {
       before: [
-        ...bearer.hooks.before,
         {
           matcher(context) {
             return Boolean(
@@ -51,6 +50,35 @@ export const crossDomain = () => {
                 headers,
               },
             };
+          }),
+        },
+        {
+          matcher: (ctx) => {
+            return (
+              ctx.path.startsWith("/link-social") ||
+              ctx.path.startsWith("/send-verification-email") ||
+              ctx.path.startsWith("/verify-email") ||
+              ctx.path.startsWith("/sign-in/email") ||
+              ctx.path.startsWith("/sign-in/social") ||
+              ctx.path.startsWith("/sign-in/magic-link") ||
+              ctx.path.startsWith("/delete-user") ||
+              ctx.path.startsWith("/change-email")
+            );
+          },
+          handler: createAuthMiddleware(async (ctx) => {
+            const isSignIn = ctx.path.startsWith("/sign-in");
+            ctx.body.callbackURL = rewriteCallbackURL(ctx.body.callbackURL);
+            if (isSignIn && ctx.body.newUserCallbackURL) {
+              ctx.body.newUserCallbackURL = rewriteCallbackURL(
+                ctx.body.newUserCallbackURL
+              );
+            }
+            if (isSignIn && ctx.body.errorCallbackURL) {
+              ctx.body.errorCallbackURL = rewriteCallbackURL(
+                ctx.body.errorCallbackURL
+              );
+            }
+            return { context: ctx };
           }),
         },
       ],
@@ -121,6 +149,8 @@ export const crossDomain = () => {
         }
       ),
     },
-    schema,
+    options: {
+      trustedOrigins: [siteUrl],
+    },
   } satisfies BetterAuthPlugin;
 };

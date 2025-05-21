@@ -2,9 +2,10 @@ import {
   AuthFunctions,
   BetterAuth,
   convexAdapter,
+  PublicAuthFunctions,
 } from "@convex-dev/better-auth";
-import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
-import { components, internal } from "./_generated/api";
+import { convex } from "@convex-dev/better-auth/plugins";
+import { api, components, internal } from "./_generated/api";
 import { twoFactor } from "better-auth/plugins";
 import { emailOTP } from "better-auth/plugins";
 import { sendMagicLink, sendOTPVerification } from "./email";
@@ -16,16 +17,18 @@ import { DataModel, Id } from "./_generated/dataModel";
 import { asyncMap } from "convex-helpers";
 
 const authFunctions: AuthFunctions = internal.auth;
+const publicAuthFunctions: PublicAuthFunctions = api.auth;
 
-export const betterAuthComponent = new BetterAuth(
-  components.betterAuth,
+export const betterAuthComponent = new BetterAuth(components.betterAuth, {
   authFunctions,
-);
+  publicAuthFunctions,
+  verbose: true,
+});
 
 export const createAuth = (ctx: GenericCtx) =>
   betterAuth({
+    baseURL: `${process.env.NEXT_PUBLIC_SITE_URL}`,
     database: convexAdapter(ctx, betterAuthComponent),
-    trustedOrigins: ["http://localhost:3000", "https://localhost:3000"],
     account: {
       accountLinking: {
         enabled: true,
@@ -83,38 +86,42 @@ export const createAuth = (ctx: GenericCtx) =>
       }),
       twoFactor(),
       convex(),
-      crossDomain(),
     ],
   });
 
-export const { createUser, deleteUser, updateUser, createSession } =
-  betterAuthComponent.createAuthFunctions<DataModel>({
-    onCreateUser: async (ctx, user) => {
-      // Example: copy the user's email to the application users table.
-      // We'll use onUpdateUser to keep it synced.
-      const userId = await ctx.db.insert("users", {
-        email: user.email,
-      });
+export const {
+  createUser,
+  deleteUser,
+  updateUser,
+  createSession,
+  isAuthenticated,
+} = betterAuthComponent.createAuthFunctions<DataModel>({
+  onCreateUser: async (ctx, user) => {
+    // Example: copy the user's email to the application users table.
+    // We'll use onUpdateUser to keep it synced.
+    const userId = await ctx.db.insert("users", {
+      email: user.email,
+    });
 
-      // This function must return the user id.
-      return userId;
-    },
-    onDeleteUser: async (ctx, userId) => {
-      // Delete the user's data if the user is being deleted
-      const todos = await ctx.db
-        .query("todos")
-        .withIndex("userId", (q) => q.eq("userId", userId as Id<"users">))
-        .collect();
-      await asyncMap(todos, async (todo) => {
-        await ctx.db.delete(todo._id);
-      });
-      await ctx.db.delete(userId as Id<"users">);
-    },
-    onUpdateUser: async (ctx, user) => {
-      // Keep the user's email synced
-      const userId = user.userId as Id<"users">;
-      await ctx.db.patch(userId, {
-        email: user.email,
-      });
-    },
-  });
+    // This function must return the user id.
+    return userId;
+  },
+  onDeleteUser: async (ctx, userId) => {
+    // Delete the user's data if the user is being deleted
+    const todos = await ctx.db
+      .query("todos")
+      .withIndex("userId", (q) => q.eq("userId", userId as Id<"users">))
+      .collect();
+    await asyncMap(todos, async (todo) => {
+      await ctx.db.delete(todo._id);
+    });
+    await ctx.db.delete(userId as Id<"users">);
+  },
+  onUpdateUser: async (ctx, user) => {
+    // Keep the user's email synced
+    const userId = user.userId as Id<"users">;
+    await ctx.db.patch(userId, {
+      email: user.email,
+    });
+  },
+});

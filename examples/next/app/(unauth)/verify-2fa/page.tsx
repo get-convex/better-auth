@@ -4,8 +4,10 @@ import TwoFactorVerification from "@/app/(unauth)/verify-2fa/TwoFactorVerificati
 
 export default function VerifyTwoFactorPage() {
   return (
-    <div className="container flex items-center justify-center min-h-screen py-12">
-      <TwoFactorVerification />
+    <div className="min-h-screen w-full flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <TwoFactorVerification />
+      </div>
     </div>
   );
 }

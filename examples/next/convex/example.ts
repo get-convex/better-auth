@@ -5,7 +5,7 @@ import { Id } from "./_generated/dataModel";
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    // This function shows the pure Better Auth way of:
+    // This function demonstrates server side Better Auth api usage:
     // - Getting the session
     // - Getting the Better Auth user (effectively metadata for the user)
     // - Merging the application user with metadata
@@ -20,7 +20,8 @@ export const getCurrentUser = query({
     if (!session) {
       return null;
     }
-    const userMetadata = await ctx.db.get(session.user.id as Id<"users">);
-    return { ...session.user, ...userMetadata };
+    const userMetadata = session.user;
+    const user = await ctx.db.get(session.user.id as Id<"users">);
+    return { ...userMetadata, ...user };
   },
 });

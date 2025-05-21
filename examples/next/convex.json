@@ -1,0 +1,7 @@
+{
+  "node": {
+    "externalPackages": [
+      "@react-email/render"
+    ]
+  }
+}

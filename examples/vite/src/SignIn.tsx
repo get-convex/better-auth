@@ -46,8 +46,6 @@ export default function SignIn() {
     await authClient.signIn.social(
       {
         provider: "github",
-        callbackURL: "http://localhost:5173",
-        disableRedirect: false,
       },
       {
         onRequest: (ctx) => {

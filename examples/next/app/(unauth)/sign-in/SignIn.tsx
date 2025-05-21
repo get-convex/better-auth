@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { authClient } from "@/app/auth-client";
+import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 
 export default function SignIn() {
@@ -34,7 +34,6 @@ export default function SignIn() {
       {
         email,
         password,
-        callbackURL: "http://localhost:3000",
       },
       {
         onRequest: () => {
@@ -61,7 +60,7 @@ export default function SignIn() {
     try {
       await authClient.forgetPassword({
         email,
-        redirectTo: "http://localhost:3000/reset-password",
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
       });
       alert("Check your email for the reset password link!");
     } catch {
@@ -75,7 +74,6 @@ export default function SignIn() {
     await authClient.signIn.magicLink(
       {
         email,
-        callbackURL: "http://localhost:3000",
       },
       {
         onRequest: () => {
@@ -97,7 +95,6 @@ export default function SignIn() {
     await authClient.signIn.social(
       {
         provider: "github",
-        callbackURL: "http://localhost:3000",
       },
       {
         onRequest: () => {
@@ -115,7 +112,6 @@ export default function SignIn() {
     await authClient.signIn.social(
       {
         provider: "google",
-        callbackURL: "http://localhost:3000",
       },
       {
         onRequest: () => {
@@ -165,6 +161,7 @@ export default function SignIn() {
           },
           onSuccess: () => {
             setOtpLoading(false);
+            router.push("/dashboard/client-only");
           },
           onError: (ctx) => {
             setOtpLoading(false);

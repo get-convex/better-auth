@@ -312,8 +312,16 @@ const handleCors = ({
         console.log("origin", request.headers.get("origin"));
         console.log("headers", request.headers);
       }
+      const requestOriginRaw =
+        request.headers.get("Origin") ??
+        request.headers.get("Referer") ??
+        request.headers.get("Expo-Origin");
+
       const requestOrigin =
-        request.headers.get("Origin") ?? request.headers.get("Expo-Origin");
+        typeof requestOriginRaw === "string" &&
+        requestOriginRaw.startsWith("http")
+          ? new URL(requestOriginRaw).origin
+          : requestOriginRaw;
 
       // Handle origin matching
       let allowOrigins: string | null = null;

@@ -8,6 +8,15 @@ const nextConfig: NextConfig = {
       conditionNames: ["@convex-dev/component-source", "..."],
     },
   }),
+  async rewrites() {
+    return [
+      {
+        source: "/api/auth/:path*",
+        destination:
+          process.env.NEXT_PUBLIC_CONVEX_SITE_URL + "/api/auth/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

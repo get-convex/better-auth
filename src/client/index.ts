@@ -10,6 +10,7 @@ import {
   type HttpRouter,
   httpActionGeneric,
   internalMutationGeneric,
+  queryGeneric,
 } from "convex/server";
 import { type GenericId, Infer, v } from "convex/values";
 import type { api } from "../component/_generated/api";
@@ -19,6 +20,8 @@ import corsRouter from "./cors";
 import { getByArgsValidator, updateArgsInputValidator } from "../component/lib";
 import { betterAuth } from "better-auth";
 import { omit } from "convex-helpers";
+import { createCookieGetter } from "better-auth/cookies";
+import { fetchQuery } from "convex/nextjs";
 export { convexAdapter };
 
 const createUserFields = omit(schema.tables.user.validator.fields, ["userId"]);
@@ -70,14 +73,32 @@ export type AuthFunctions = {
   >;
 };
 
+export type PublicAuthFunctions = {
+  isAuthenticated: FunctionReference<"query", "public">;
+};
+
 export class BetterAuth<UserId extends string = string> {
   constructor(
     public component: UseApi<typeof api>,
-    public authFunctions: AuthFunctions,
-    public config?: {
+    public config: {
+      authFunctions: AuthFunctions;
+      publicAuthFunctions?: PublicAuthFunctions;
       verbose?: boolean;
     }
   ) {}
+
+  async isAuthenticated(token?: string | null) {
+    if (!this.config.publicAuthFunctions?.isAuthenticated) {
+      throw new Error(
+        "isAuthenticated function not found. It must be a named export in convex/auth.ts"
+      );
+    }
+    return fetchQuery(
+      this.config.publicAuthFunctions.isAuthenticated,
+      {},
+      { token: token ?? undefined }
+    );
+  }
 
   async getHeaders(ctx: RunQueryCtx & { auth: ConvexAuth }) {
     const identity = await ctx.auth.getUserIdentity();
@@ -121,6 +142,15 @@ export class BetterAuth<UserId extends string = string> {
     return user;
   }
 
+  async getIdTokenCookieName(
+    createAuth: (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>
+  ) {
+    const auth = createAuth({} as any);
+    const createCookie = createCookieGetter(auth.options);
+    const cookie = createCookie("convex_jwt");
+    return cookie.name;
+  }
+
   createAuthFunctions<DataModel extends GenericDataModel>(opts: {
     onCreateUser: (
       ctx: GenericMutationCtx<DataModel>,
@@ -140,6 +170,13 @@ export class BetterAuth<UserId extends string = string> {
     ) => void | Promise<void>;
   }) {
     return {
+      isAuthenticated: queryGeneric({
+        args: v.object({}),
+        handler: async (ctx) => {
+          const identity = await ctx.auth.getUserIdentity();
+          return identity !== null;
+        },
+      }),
       createUser: internalMutationGeneric({
         args: createUserArgsValidator,
         handler: async (ctx, args) => {
@@ -203,11 +240,27 @@ export class BetterAuth<UserId extends string = string> {
     }
   ) {
     const path = opts?.path ?? "/api/auth";
-    const trustedOrigins = createAuth({} as any).options.trustedOrigins;
-    if (typeof trustedOrigins === "function") {
-      throw new Error("trustedOrigins cannot be a function");
-    }
-    const allowedOrigins = opts?.allowedOrigins ?? trustedOrigins;
+    const options = createAuth({} as any).options;
+    const trustedOriginsOption: string[] = Array.isArray(options.trustedOrigins)
+      ? options.trustedOrigins
+      : [];
+
+    const trustedOrigins = createAuth({} as any).options.plugins?.reduce(
+      (acc, plugin) => {
+        if (plugin.options?.trustedOrigins) {
+          acc.push(...plugin.options.trustedOrigins);
+        }
+        return acc;
+      },
+      [...trustedOriginsOption, options.baseURL].filter(Boolean) as string[]
+    );
+    // Reuse trustedOrigins as default for allowedOrigins
+    const allowedOrigins =
+      opts?.allowedOrigins ??
+      trustedOrigins?.map((origin) =>
+        // Strip trailing wildcards, unsupported for allowedOrigins
+        origin.endsWith("*") && origin.length > 1 ? origin.slice(0, -1) : origin
+      );
     const requireEnv = (name: string) => {
       const value = process.env[name];
       if (value === undefined) {
