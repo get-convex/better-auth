@@ -42,6 +42,7 @@ const schema = defineSchema({
     updatedAt: v.number(),
   })
     .index("userId", ["userId"])
+    .index("accountId", ["accountId"])
     .index("providerId_accountId", ["providerId", "accountId"])
     .index("userId_providerId", ["userId", "providerId"]),
 
