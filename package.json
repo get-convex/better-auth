@@ -92,7 +92,7 @@
   },
   "peerDependencies": {
     "better-auth": "1.2.7",
-    "convex": "~1.16.5 || >=1.17.0 <1.25.0"
+    "convex": "~1.16.5 || >=1.17.0 <1.35.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
