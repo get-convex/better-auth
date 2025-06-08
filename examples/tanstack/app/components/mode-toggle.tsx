@@ -1,15 +1,15 @@
-"use client";
+'use client'
 
-import { Loader2 } from "lucide-react";
+import { Loader2 } from 'lucide-react'
 
 export function ModeToggle({
   isServer,
   onSwitch,
   isPending,
 }: {
-  isServer: boolean;
-  onSwitch?: (isServer: boolean) => void;
-  isPending?: boolean;
+  isServer: boolean
+  onSwitch?: (isServer: boolean) => void
+  isPending?: boolean
 }) {
   return (
     <div className="w-full flex justify-center mb-6">
@@ -27,16 +27,16 @@ export function ModeToggle({
           className={`px-6 py-2 rounded-full font-semibold transition-all outline-none
             ${
               !isServer
-                ? "bg-white text-black shadow font-bold"
-                : "bg-transparent text-neutral-400 hover:bg-neutral-700 hover:text-white cursor-pointer"
+                ? 'bg-white text-black shadow font-bold'
+                : 'bg-transparent text-neutral-400 hover:bg-neutral-700 hover:text-white cursor-pointer'
             }
-            ${isPending && !isServer ? "opacity-60" : ""}
+            ${isPending && !isServer ? 'opacity-60' : ''}
           `}
         >
           {!isServer && isPending ? (
             <Loader2 className="animate-spin inline w-4 h-4" />
           ) : (
-            "Client Only"
+            'Client Only'
           )}
         </button>
         <button
@@ -48,19 +48,19 @@ export function ModeToggle({
           className={`px-6 py-2 rounded-full font-semibold transition-all outline-none
             ${
               isServer
-                ? "bg-white text-black shadow font-bold"
-                : "bg-transparent text-neutral-400 hover:bg-neutral-700 hover:text-white cursor-pointer"
+                ? 'bg-white text-black shadow font-bold'
+                : 'bg-transparent text-neutral-400 hover:bg-neutral-700 hover:text-white cursor-pointer'
             }
-            ${isPending && isServer ? "opacity-60" : ""}
+            ${isPending && isServer ? 'opacity-60' : ''}
           `}
         >
           {isServer && isPending ? (
             <Loader2 className="animate-spin inline w-4 h-4" />
           ) : (
-            "Server"
+            'Server'
           )}
         </button>
       </div>
     </div>
-  );
+  )
 }

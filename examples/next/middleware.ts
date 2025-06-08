@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { betterFetch } from "@better-fetch/fetch";
 import { getSessionCookie } from "better-auth/cookies";
 import { createAuth } from "@/convex/auth";
 import { NextRequest, NextResponse } from "next/server";
+import { betterFetch } from "@better-fetch/fetch";
 
 type Session = ReturnType<typeof createAuth>["$Infer"]["Session"];
 const getSession = async (request: NextRequest) => {

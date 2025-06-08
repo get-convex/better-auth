@@ -3,31 +3,31 @@ import {
   BetterAuth,
   convexAdapter,
   PublicAuthFunctions,
-} from "@convex-dev/better-auth";
-import { convex } from "@convex-dev/better-auth/plugins";
-import { api, components, internal } from "./_generated/api";
-import { twoFactor } from "better-auth/plugins";
-import { emailOTP } from "better-auth/plugins";
-import { sendMagicLink, sendOTPVerification } from "./email";
-import { sendEmailVerification, sendResetPassword } from "./email";
-import { magicLink } from "better-auth/plugins";
-import { betterAuth } from "better-auth";
-import { GenericCtx } from "./_generated/server";
-import { DataModel, Id } from "./_generated/dataModel";
-import { asyncMap } from "convex-helpers";
+} from '@convex-dev/better-auth'
+import { convex } from '@convex-dev/better-auth/plugins'
+import { api, components, internal } from './_generated/api'
+import { twoFactor } from 'better-auth/plugins'
+import { emailOTP } from 'better-auth/plugins'
+import { sendMagicLink, sendOTPVerification } from './email'
+import { sendEmailVerification, sendResetPassword } from './email'
+import { magicLink } from 'better-auth/plugins'
+import { betterAuth } from 'better-auth'
+import { GenericCtx } from './_generated/server'
+import { DataModel, Id } from './_generated/dataModel'
+import { asyncMap } from 'convex-helpers'
 
-const authFunctions: AuthFunctions = internal.auth;
-const publicAuthFunctions: PublicAuthFunctions = api.auth;
+const authFunctions: AuthFunctions = internal.auth
+const publicAuthFunctions: PublicAuthFunctions = api.auth
 
 export const betterAuthComponent = new BetterAuth(components.betterAuth, {
   authFunctions,
   publicAuthFunctions,
-  verbose: true,
-});
+  verbose: false,
+})
 
 export const createAuth = (ctx: GenericCtx) =>
   betterAuth({
-    baseURL: process.env.NEXT_PUBLIC_SITE_URL,
+    baseURL: process.env.SITE_URL,
     database: convexAdapter(ctx, betterAuthComponent),
     account: {
       accountLinking: {
@@ -39,7 +39,7 @@ export const createAuth = (ctx: GenericCtx) =>
         await sendEmailVerification({
           to: user.email,
           url,
-        });
+        })
       },
     },
     emailAndPassword: {
@@ -49,7 +49,7 @@ export const createAuth = (ctx: GenericCtx) =>
         await sendResetPassword({
           to: user.email,
           url,
-        });
+        })
       },
     },
     socialProviders: {
@@ -73,7 +73,7 @@ export const createAuth = (ctx: GenericCtx) =>
           await sendMagicLink({
             to: email,
             url,
-          });
+          })
         },
       }),
       emailOTP({
@@ -81,13 +81,13 @@ export const createAuth = (ctx: GenericCtx) =>
           await sendOTPVerification({
             to: email,
             code: otp,
-          });
+          })
         },
       }),
       twoFactor(),
       convex(),
     ],
-  });
+  })
 
 export const {
   createUser,
@@ -99,29 +99,29 @@ export const {
   onCreateUser: async (ctx, user) => {
     // Example: copy the user's email to the application users table.
     // We'll use onUpdateUser to keep it synced.
-    const userId = await ctx.db.insert("users", {
+    const userId = await ctx.db.insert('users', {
       email: user.email,
-    });
+    })
 
     // This function must return the user id.
-    return userId;
+    return userId
   },
   onDeleteUser: async (ctx, userId) => {
     // Delete the user's data if the user is being deleted
     const todos = await ctx.db
-      .query("todos")
-      .withIndex("userId", (q) => q.eq("userId", userId as Id<"users">))
-      .collect();
+      .query('todos')
+      .withIndex('userId', (q) => q.eq('userId', userId as Id<'users'>))
+      .collect()
     await asyncMap(todos, async (todo) => {
-      await ctx.db.delete(todo._id);
-    });
-    await ctx.db.delete(userId as Id<"users">);
+      await ctx.db.delete(todo._id)
+    })
+    await ctx.db.delete(userId as Id<'users'>)
   },
   onUpdateUser: async (ctx, user) => {
     // Keep the user's email synced
-    const userId = user.userId as Id<"users">;
+    const userId = user.userId as Id<'users'>
     await ctx.db.patch(userId, {
       email: user.email,
-    });
+    })
   },
-});
+})

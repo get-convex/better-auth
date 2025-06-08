@@ -1,6 +1,6 @@
-## Convex + Better Auth + Next.js
+## Convex + Better Auth + TanStack Start
 
-This example shows how to use Better Auth with Convex and Next.js.
+This example shows how to use Better Auth with Convex and TanStack Start.
 
 Note that dependencies are set up to work with the local component in this repo,
 it is not set up for standalone use (but can be adapted).
@@ -17,7 +17,7 @@ npm install
 3. Install example dependencies
 
 ```bash
-cd examples/next
+cd examples/tanstack
 npm install
 ```
 
