@@ -629,24 +629,30 @@ export default function Home() {
               {
                 label: "Next.js",
                 language: "typescript",
-                filename: "next.config.ts",
+                filename: "app/api/auth/[...all]/route.ts",
                 code: stripIndent`
-                    import type { NextConfig } from "next";
+                  import { nextJsHandler } from "@erquhart/convex-better-auth/nextjs";
 
-                    const nextConfig: NextConfig = {
-                      async rewrites() {
-                        return [
-                          {
-                            source: "/api/auth/:path*",
-                            destination:
-                              "https://adjective-animal-123.convex.site/api/auth/:path*",
-                          },
-                        ];
-                      },
-                    };
+                  export const { GET, POST } = nextJsHandler;
+                `,
+              },
+              {
+                label: "TanStack Start",
+                language: "typescript",
+                filename: "app/routes/api/auth/$.ts",
+                code: stripIndent`
+                  import { reactStartHandler } from "@erquhart/convex-better-auth/react-start";
+                  import { createAPIFileRoute } from "@tanstack/react-start/api";
 
-                    export default nextConfig;
-                  `,
+                  export const APIRoute = createAPIFileRoute('/api/auth/$')({
+                    GET: ({ request }) => {
+                      return reactStartHandler(request)
+                    },
+                    POST: ({ request }) => {
+                      return reactStartHandler(request)
+                    },
+                  })
+                `,
               },
             ]}
           />
