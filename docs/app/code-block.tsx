@@ -18,11 +18,12 @@ interface HighlightedSection {
 }
 
 type CodeBlockVariant = {
-  label: string;
+  id: string;
+  label?: string;
   code: string;
   language: string;
   filename?: string;
-  highlightedLines?: number[];
+  highlightedLines?: (number | [number, number])[];
   addedLines?: number[];
   removedLines?: number[];
 };
@@ -34,7 +35,7 @@ interface CodeBlockProps {
   code?: string;
   className?: string;
   filename?: string;
-  highlightedLines?: number[];
+  highlightedLines?: (number | [number, number])[];
   addedLines?: number[];
   removedLines?: number[];
 }
@@ -54,7 +55,7 @@ function CodeBlockInternal({
   code: string;
   className?: string;
   filename?: string;
-  highlightedLines?: number[];
+  highlightedLines?: (number | [number, number])[];
   addedLines?: number[];
   removedLines?: number[];
   variantSelector?: React.ReactNode;
@@ -75,9 +76,24 @@ function CodeBlockInternal({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const getHighlightedSections = (lines: number[]): HighlightedSection[] => {
+  const getHighlightedSections = (
+    lines: (number | [number, number])[]
+  ): HighlightedSection[] => {
     if (lines.length === 0) return [];
-    const sorted = [...lines].sort((a, b) => a - b);
+    const expandedLines = lines.flatMap((line) => {
+      if (!Array.isArray(line)) {
+        return [line];
+      }
+      const [start, end] = line;
+      if (start >= end) {
+        throw new Error(`Invalid line range: ${start} >= ${end}`);
+      }
+      return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    });
+    const sorted = [...expandedLines].sort((a, b) => a - b);
+    if (lines.some((line) => Array.isArray(line))) {
+      console.log("sorted", sorted);
+    }
     const sections: HighlightedSection[] = [];
     let current: HighlightedSection = { start: sorted[0], end: sorted[0] };
 
@@ -90,6 +106,9 @@ function CodeBlockInternal({
       }
     }
     sections.push(current);
+    if (lines.some((line) => Array.isArray(line))) {
+      console.log("sections", sections);
+    }
     return sections;
   };
 
@@ -214,7 +233,11 @@ function CodeBlockInternal({
                     : "";
                   const isAdded = addedLines.includes(lineNumber);
                   const isRemoved = removedLines.includes(lineNumber);
-                  const isHighlighted = highlightedLines.includes(lineNumber);
+                  const isHighlighted = highlightedLines.some((line) =>
+                    Array.isArray(line)
+                      ? lineNumber >= line[0] && lineNumber <= line[1]
+                      : lineNumber === line
+                  );
                   const isDecorated = isAdded || isRemoved || isHighlighted;
                   return (
                     <div
@@ -310,13 +333,13 @@ export function CodeBlock(props: CodeBlockProps) {
     language?: string;
     code?: string;
     filename?: string;
-    highlightedLines?: number[];
+    highlightedLines?: (number | [number, number])[];
     addedLines?: number[];
     removedLines?: number[];
   } = { language, code, filename, highlightedLines, addedLines, removedLines };
 
   if (variants && variants.length > 0) {
-    const availableLabels = variants.map((v) => v.label);
+    const availableLabels = variants.map((v) => v.id);
     const selectedIndex = availableLabels.indexOf(globalSelected);
     const actualIndex = selectedIndex >= 0 ? selectedIndex : 0;
     active = variants[actualIndex] || variants[0];
@@ -325,7 +348,7 @@ export function CodeBlock(props: CodeBlockProps) {
         <div className="flex" role="tablist">
           {variants.map((v, i) => (
             <button
-              key={v.label}
+              key={v.id}
               className={cn(
                 "px-2 py-2 text-sm transition-colors cursor-pointer relative",
                 i === actualIndex
@@ -333,12 +356,12 @@ export function CodeBlock(props: CodeBlockProps) {
                   : "text-muted-foreground hover:text-foreground"
               )}
               style={{ boxShadow: "none" }}
-              onClick={() => setSelectedVariant(variantGroup, v.label)}
+              onClick={() => setSelectedVariant(variantGroup, v.id)}
               aria-selected={i === actualIndex}
               role="tab"
               type="button"
             >
-              {v.label}
+              {v.label || v.id}
               {i === actualIndex && (
                 <div className="absolute left-0 bottom-0.5 flex items-center justify-center w-full">
                   <div className="rounded-full bg-foreground w-4 h-0.5" />

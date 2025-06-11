@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Loader2, X } from "lucide-react";
-import { authClient } from "@/auth-client";
+import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 
 export default function SignUp() {
@@ -55,7 +55,7 @@ export default function SignUp() {
           setLoading(false);
           toast.error(ctx.error.message);
         },
-      },
+      }
     );
     console.log({ data, error });
   };

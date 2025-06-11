@@ -3,7 +3,7 @@ import { TodoList } from "./TodoList";
 import { Button } from "./ui/button";
 import { LogOut, Trash2 } from "lucide-react";
 import { api } from "../../convex/_generated/api";
-import { authClient } from "@/auth-client";
+import { authClient } from "@/lib/auth-client";
 
 export function Dashboard() {
   const user = useQuery(api.example.getCurrentUser);

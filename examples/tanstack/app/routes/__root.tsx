@@ -1,6 +1,5 @@
 import {
   Outlet,
-  ScrollRestoration,
   createRootRouteWithContext,
   useRouteContext,
 } from '@tanstack/react-router'
@@ -8,38 +7,17 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { Meta, Scripts, createServerFn } from '@tanstack/react-start'
 import { QueryClient } from '@tanstack/react-query'
 import * as React from 'react'
-import { getWebRequest } from 'vinxi/http'
-import { DefaultCatchBoundary } from '@/components/DefaultCatchBoundary.js'
-import { NotFound } from '@/components/NotFound.js'
 import appCss from '@/styles/app.css?url'
-import { ConvexQueryClient } from '@convex-dev/react-query'
-import { ConvexReactClient } from 'convex/react'
 import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
-import { getToken } from '@convex-dev/better-auth/react-start'
-
+import { fetchSession } from '@convex-dev/better-auth/react-start'
 import { createAuth } from '@convex/auth'
-import { betterFetch } from '@better-fetch/fetch'
 import { authClient } from '@/lib/auth-client'
+import { ConvexReactClient } from 'convex/react'
+import { ConvexQueryClient } from '@convex-dev/react-query'
 
-type Session = ReturnType<typeof createAuth>['$Infer']['Session']
-
+// Server side session request
 const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
-  const token = await getToken(createAuth)
-  const request = getWebRequest()
-  const baseURL = new URL(request.url).origin
-  console.log('request.url', request.url)
-  console.log('baseURL', baseURL)
-  const { data: session } = await betterFetch<Session>(
-    '/api/auth/get-session',
-    {
-      baseURL,
-      headers: {
-        cookie: request.headers.get('cookie') ?? '',
-        origin: baseURL,
-      },
-    },
-  )
-
+  const { session, token } = await fetchSession(createAuth)
   return {
     userId: session?.user.id,
     token,
@@ -63,24 +41,6 @@ export const Route = createRootRouteWithContext<{
     ],
     links: [
       { rel: 'stylesheet', href: appCss },
-      {
-        rel: 'apple-touch-icon',
-        sizes: '180x180',
-        href: '/apple-touch-icon.png',
-      },
-      {
-        rel: 'icon',
-        type: 'image/png',
-        sizes: '32x32',
-        href: '/favicon-32x32.png',
-      },
-      {
-        rel: 'icon',
-        type: 'image/png',
-        sizes: '16x16',
-        href: '/favicon-16x16.png',
-      },
-      { rel: 'manifest', href: '/site.webmanifest', color: '#fffff' },
       { rel: 'icon', href: '/favicon.ico' },
     ],
   }),
@@ -99,14 +59,6 @@ export const Route = createRootRouteWithContext<{
       token,
     }
   },
-  errorComponent: (props) => {
-    return (
-      <RootDocument>
-        <DefaultCatchBoundary {...props} />
-      </RootDocument>
-    )
-  },
-  notFoundComponent: () => <NotFound />,
   component: RootComponent,
 })
 
@@ -132,7 +84,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="bg-neutral-950 text-neutral-50">
         {children}
-        <ScrollRestoration />
         <TanStackRouterDevtools position="bottom-right" />
         <Scripts />
       </body>

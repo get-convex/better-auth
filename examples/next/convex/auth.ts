@@ -27,7 +27,7 @@ export const betterAuthComponent = new BetterAuth(components.betterAuth, {
 
 export const createAuth = (ctx: GenericCtx) =>
   betterAuth({
-    baseURL: process.env.NEXT_PUBLIC_SITE_URL,
+    baseURL: "http://localhost:3000",
     database: convexAdapter(ctx, betterAuthComponent),
     account: {
       accountLinking: {
