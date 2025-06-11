@@ -949,12 +949,11 @@ export default function Home() {
                     id: "tanstack",
                     label: "TanStack Start",
                     language: "typescript",
-                    filename: "app/routes/api/auth/$.ts",
+                    filename: "src/routes/api/auth/$.ts",
                     code: stripIndent`
                   import { reactStartHandler } from '@erquhart/convex-better-auth/react-start'
-                  import { createAPIFileRoute } from '@tanstack/react-start/api'
 
-                  export const APIRoute = createAPIFileRoute('/api/auth/$')({
+                  export const ServerRoute = createServerFileRoute().methods({
                     GET: ({ request }) => {
                       return reactStartHandler(request)
                     },
@@ -1023,7 +1022,7 @@ export default function Home() {
                 id: "tanstack",
                 label: "TanStack Start",
                 language: "typescript",
-                filename: "app/lib/auth-client.ts",
+                filename: "src/lib/auth-client.ts",
                 code: stripIndent`
                   import { createAuthClient } from "better-auth/react";
                   import { convexClient } from "@erquhart/convex-better-auth/client/plugins";
@@ -1113,7 +1112,7 @@ export default function Home() {
                 id: "tanstack",
                 label: "TanStack Start",
                 language: "typescript",
-                filename: "app/router.tsx",
+                filename: "src/router.tsx",
                 highlightedLines: [37],
                 code: stripIndent`
                   import { createRouter as createTanStackRouter } from '@tanstack/react-router'
@@ -1204,15 +1203,15 @@ export default function Home() {
                     id: "tanstack",
                     label: "TanStack Start",
                     language: "typescript",
-                    filename: "app/routes/__root.tsx",
+                    filename: "src/routes/__root.tsx",
                     highlightedLines: [
                       4,
-                      [10, 15],
-                      [17, 24],
-                      [28, 29],
-                      [46, 59],
-                      [64, 69],
-                      73,
+                      [10, 19],
+                      [21, 31],
+                      [35, 36],
+                      [53, 66],
+                      [71, 76],
+                      80,
                     ],
                     code: stripIndent`
                       import {
@@ -1226,14 +1225,21 @@ export default function Home() {
                       import appCss from '@/styles/app.css?url'
                       import { ConvexQueryClient } from '@convex-dev/react-query'
                       import { ConvexReactClient } from 'convex/react'
+                      import { getCookie, getWebRequest } from '@tanstack/react-start/server'
                       import { ConvexBetterAuthProvider } from '@erquhart/convex-better-auth/react'
-                      import { fetchSession } from '@erquhart/convex-better-auth/react-start'
+                      import {
+                        fetchSession,
+                        getCookieName,
+                      } from '@erquhart/convex-better-auth/react-start'
                       import { authClient } from '@/lib/auth-client'
                       import { createAuth } from '../../convex/auth'
 
                       // Server side session request
                       const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
-                        const { session, token } = await fetchSession(createAuth)
+                        const sessionCookieName = await getCookieName(createAuth)
+                        const token = getCookie(sessionCookieName)
+                        const request = getWebRequest()
+                        const { session } = await fetchSession(createAuth, request)
                         return {
                           userId: session?.user.id,
                           token,
@@ -1662,7 +1668,7 @@ export default function Home() {
                 id: "tanstack",
                 label: "TanStack Router",
                 language: "typescript",
-                filename: "app/routes/index.tsx",
+                filename: "src/routes/index.tsx",
                 code: stripIndent`
                   import { useState } from "react";
                   import {
@@ -1893,10 +1899,10 @@ export default function Home() {
                 id: "tanstack",
                 label: "TanStack Router",
                 language: "typescript",
-                filename: "app/routes/index.tsx",
+                filename: "src/routes/index.tsx",
                 code: stripIndent`
                   import { createServerFn } from "@tanstack/react-start";
-                  import { getToken } from "@convex-dev/better-auth/react-start";
+                  import { getCookieName } from "@convex-dev/better-auth/react-start";
                   import { createAuth } from "../../convex/auth";
                   import { api } from "../../convex/_generated/api";
                   import { ConvexHttpClient } from "convex/browser";
@@ -1911,9 +1917,14 @@ export default function Home() {
                     return client
                   }
 
+                  const getToken = async () => {
+                    const sessionCookieName = await getCookieName(createAuth)
+                    return getCookie(sessionCookieName)
+                  }
+
                   export const createPost = createServerFn({ method: 'POST' })
                     .handler(async ({ data: { title, content } }) => {
-                      const token = await getToken(createAuth)
+                      const token = await getToken()
                       await setupClient(token).mutation(api.posts.create, {
                         title,
                         content,

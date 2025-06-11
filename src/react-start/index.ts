@@ -1,28 +1,28 @@
-import { betterAuth } from "better-auth";
+import { Auth, betterAuth } from "better-auth";
 import { createCookieGetter } from "better-auth/cookies";
 import { betterFetch } from "@better-fetch/fetch";
 import { GenericActionCtx } from "convex/server";
 
-export const getToken = async (
+export const getCookieName = async (
   createAuth: (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>
 ) => {
-  const { getCookie } = await import("@tanstack/react-start/server");
   const auth = createAuth({} as any);
   const createCookie = createCookieGetter(auth.options);
   const cookie = createCookie("convex_jwt");
-  const token = getCookie(cookie.name);
-  return token;
+  return cookie.name;
 };
 
-export const fetchSession = async (
-  createAuth: (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>
+export const fetchSession = async <
+  T extends (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>,
+>(
+  createAuth: T,
+  request?: Request
 ) => {
-  type Session = ReturnType<typeof createAuth>["$Infer"]["Session"];
+  type Session = ReturnType<T>["$Infer"]["Session"];
 
-  const { getWebRequest } = await import("vinxi/http");
-  const token = await getToken(createAuth);
-
-  const request = getWebRequest();
+  if (!request) {
+    throw new Error("No request found");
+  }
   const baseURL = new URL(request.url).origin;
   const { data: session } = await betterFetch<Session>(
     "/api/auth/get-session",
@@ -36,7 +36,6 @@ export const fetchSession = async (
   );
   return {
     session,
-    token,
   };
 };
 

@@ -15,7 +15,7 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
+      "@/*": ["./app/*"],
       "@convex/*": ["./convex/*"]
     },
     "noEmit": true
