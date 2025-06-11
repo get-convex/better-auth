@@ -6,7 +6,7 @@ import { api } from "../../convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 
 export function Dashboard() {
-  const user = useQuery(api.example.getCurrentUser);
+  const user = useQuery(api.auth.getCurrentUser);
 
   if (!user) {
     return <div>Loading dashboard...</div>;

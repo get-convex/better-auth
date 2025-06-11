@@ -43,7 +43,7 @@ function ServerComponent() {
 }
 
 function Header() {
-  const user = useSuspenseQuery(convexQuery(api.example.getCurrentUser, {}))
+  const user = useSuspenseQuery(convexQuery(api.auth.getCurrentUser, {}))
   const navigate = useNavigate()
 
   const handleSignOut = async () => {

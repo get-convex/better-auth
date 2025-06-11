@@ -9,7 +9,6 @@
  */
 
 import type * as auth from "../auth.js";
-import type * as example from "../example.js";
 import type * as http from "../http.js";
 import type * as todos from "../todos.js";
 import type * as util from "../util.js";
@@ -30,7 +29,6 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
-  example: typeof example;
   http: typeof http;
   todos: typeof todos;
   util: typeof util;

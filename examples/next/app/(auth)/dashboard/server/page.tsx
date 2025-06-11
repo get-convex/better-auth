@@ -19,11 +19,7 @@ const Header = async () => {
   const token = await getToken(createAuth);
 
   // Preload query for SSR
-  const preloaded = await preloadQuery(
-    api.example.getCurrentUser,
-    {},
-    { token },
-  );
+  const preloaded = await preloadQuery(api.auth.getCurrentUser, {}, { token });
 
   return (
     <AppHeader>

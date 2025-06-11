@@ -293,6 +293,11 @@ export default function DocsSidebar({ children }: React.PropsWithChildren) {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
+                    <a href="#basic-usage-signing-in">Signing in</a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
                     <a href="#basic-usage-server-side">Server side</a>
                   </SidebarMenuButton>
                   <SidebarMenuSub>
@@ -304,6 +309,13 @@ export default function DocsSidebar({ children }: React.PropsWithChildren) {
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
                         <a href="#basic-usage-server-sessions">Sessions</a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <a href="#basic-usage-server-side-auth">
+                          Server-side auth
+                        </a>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   </SidebarMenuSub>

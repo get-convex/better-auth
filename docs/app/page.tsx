@@ -1458,13 +1458,312 @@ export default function Home() {
           documented here.
         </P>
 
+        <Subsection id="basic-usage-signing-in" title="Signing in">
+          <P>
+            Below is an extremely basic example of a working auth flow with
+            email (unverified) and password.
+          </P>
+          <CodeBlock
+            variantGroup="framework"
+            variants={[
+              {
+                id: "vite",
+                label: "Vite",
+                language: "typescript",
+                filename: "src/App.tsx",
+                code: stripIndent`
+                  import { useState } from "react";
+                  import {
+                    Authenticated,
+                    Unauthenticated,
+                    AuthLoading,
+                    useQuery,
+                  } from "convex/react";
+                  import { authClient } from "@/lib/auth-client";
+                  import { api } from "../convex/_generated/api";
+
+                  export default function App() {
+                    return (
+                      <>
+                        <AuthLoading>
+                          <div>Loading...</div>
+                        </AuthLoading>
+                        <Unauthenticated>
+                          <SignIn />
+                        </Unauthenticated>
+                        <Authenticated>
+                          <Dashboard />
+                        </Authenticated>
+                      </>
+                    );
+                  }
+
+                  function Dashboard() {
+                    const user = useQuery(api.auth.getCurrentUser);
+                    return (
+                      <div>
+                        <div>Hello {user?.name}!</div>
+                        <button onClick={() => authClient.signOut()}>Sign out</button>
+                      </div>
+                    );
+                  }
+
+                  function SignIn() {
+                    const [showSignIn, setShowSignIn] = useState(true);
+
+                    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.target as HTMLFormElement);
+                      if (showSignIn) {
+                        await authClient.signIn.email(
+                          {
+                            email: formData.get("email") as string,
+                            password: formData.get("password") as string,
+                          },
+                          {
+                            onError: (ctx) => {
+                              window.alert(ctx.error.message);
+                            },
+                          }
+                        );
+                      } else {
+                        await authClient.signUp.email(
+                          {
+                            name: formData.get("name") as string,
+                            email: formData.get("email") as string,
+                            password: formData.get("password") as string,
+                          },
+                          {
+                            onError: (ctx) => {
+                              window.alert(ctx.error.message);
+                            },
+                          }
+                        );
+                      }
+                    };
+
+                    return (
+                      <>
+                        <form onSubmit={handleSubmit}>
+                          {!showSignIn && <input name="name" placeholder="Name" />}
+                          <input type="email" name="email" placeholder="Email" />
+                          <input type="password" name="password" placeholder="Password" />
+                          <button type="submit">{showSignIn ? "Sign in" : "Sign up"}</button>
+                        </form>
+                        <p>
+                          {showSignIn ? "Don't have an account? " : "Already have an account? "}
+                          <button onClick={() => setShowSignIn(!showSignIn)}>
+                            {showSignIn ? "Sign up" : "Sign in"}
+                          </button>
+                        </p>
+                      </>
+                    );
+                  }
+                `,
+              },
+              {
+                id: "next",
+                label: "Next.js",
+                language: "typescript",
+                filename: "app/page.tsx",
+                code: stripIndent`
+                  "use client";
+
+                  import { useState } from "react";
+                  import {
+                    Authenticated,
+                    Unauthenticated,
+                    AuthLoading,
+                    useQuery,
+                  } from "convex/react";
+                  import { authClient } from "@/lib/auth-client";
+                  import { api } from "../convex/_generated/api";
+
+                  export default function App() {
+                    return (
+                      <>
+                        <AuthLoading>
+                          <div>Loading...</div>
+                        </AuthLoading>
+                        <Unauthenticated>
+                          <SignIn />
+                        </Unauthenticated>
+                        <Authenticated>
+                          <Dashboard />
+                        </Authenticated>
+                      </>
+                    );
+                  }
+
+                  function Dashboard() {
+                    const user = useQuery(api.auth.getCurrentUser);
+                    return (
+                      <div>
+                        <div>Hello {user?.name}!</div>
+                        <button onClick={() => authClient.signOut()}>Sign out</button>
+                      </div>
+                    );
+                  }
+
+                  function SignIn() {
+                    const [showSignIn, setShowSignIn] = useState(true);
+
+                    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.target as HTMLFormElement);
+                      if (showSignIn) {
+                        await authClient.signIn.email(
+                          {
+                            email: formData.get("email") as string,
+                            password: formData.get("password") as string,
+                          },
+                          {
+                            onError: (ctx) => {
+                              window.alert(ctx.error.message);
+                            },
+                          }
+                        );
+                      } else {
+                        await authClient.signUp.email(
+                          {
+                            name: formData.get("name") as string,
+                            email: formData.get("email") as string,
+                            password: formData.get("password") as string,
+                          },
+                          {
+                            onError: (ctx) => {
+                              window.alert(ctx.error.message);
+                            },
+                          }
+                        );
+                      }
+                    };
+
+                    return (
+                      <>
+                        <form onSubmit={handleSubmit}>
+                          {!showSignIn && <input name="name" placeholder="Name" />}
+                          <input type="email" name="email" placeholder="Email" />
+                          <input type="password" name="password" placeholder="Password" />
+                          <button type="submit">{showSignIn ? "Sign in" : "Sign up"}</button>
+                        </form>
+                        <p>
+                          {showSignIn ? "Don't have an account? " : "Already have an account? "}
+                          <button onClick={() => setShowSignIn(!showSignIn)}>
+                            {showSignIn ? "Sign up" : "Sign in"}
+                          </button>
+                        </p>
+                      </>
+                    );
+                  }
+                `,
+              },
+              {
+                id: "tanstack",
+                label: "TanStack Router",
+                language: "typescript",
+                filename: "app/routes/index.tsx",
+                code: stripIndent`
+                  import { useState } from "react";
+                  import {
+                    Authenticated,
+                    Unauthenticated,
+                    AuthLoading,
+                    useQuery,
+                  } from "convex/react";
+                  import { authClient } from "@/lib/auth-client";
+                  import { api } from "../convex/_generated/api";
+
+                  export default function App() {
+                    return (
+                      <>
+                        <AuthLoading>
+                          <div>Loading...</div>
+                        </AuthLoading>
+                        <Unauthenticated>
+                          <SignIn />
+                        </Unauthenticated>
+                        <Authenticated>
+                          <Dashboard />
+                        </Authenticated>
+                      </>
+                    );
+                  }
+
+                  function Dashboard() {
+                    const user = useQuery(api.auth.getCurrentUser);
+                    return (
+                      <div>
+                        <div>Hello {user?.name}!</div>
+                        <button onClick={() => authClient.signOut()}>Sign out</button>
+                      </div>
+                    );
+                  }
+
+                  function SignIn() {
+                    const [showSignIn, setShowSignIn] = useState(true);
+
+                    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.target as HTMLFormElement);
+                      if (showSignIn) {
+                        await authClient.signIn.email(
+                          {
+                            email: formData.get("email") as string,
+                            password: formData.get("password") as string,
+                          },
+                          {
+                            onError: (ctx) => {
+                              window.alert(ctx.error.message);
+                            },
+                          }
+                        );
+                      } else {
+                        await authClient.signUp.email(
+                          {
+                            name: formData.get("name") as string,
+                            email: formData.get("email") as string,
+                            password: formData.get("password") as string,
+                          },
+                          {
+                            onError: (ctx) => {
+                              window.alert(ctx.error.message);
+                            },
+                          }
+                        );
+                      }
+                    };
+
+                    return (
+                      <>
+                        <form onSubmit={handleSubmit}>
+                          {!showSignIn && <input name="name" placeholder="Name" />}
+                          <input type="email" name="email" placeholder="Email" />
+                          <input type="password" name="password" placeholder="Password" />
+                          <button type="submit">{showSignIn ? "Sign in" : "Sign up"}</button>
+                        </form>
+                        <p>
+                          {showSignIn ? "Don't have an account? " : "Already have an account? "}
+                          <button onClick={() => setShowSignIn(!showSignIn)}>
+                            {showSignIn ? "Sign up" : "Sign in"}
+                          </button>
+                        </p>
+                      </>
+                    );
+                  }
+                `,
+              },
+            ]}
+          />
+        </Subsection>
+
         <Subsection id="basic-usage-server-side" title="Server side">
           <ContentHeading id="using-auth-api" title="Using auth.api" />
           <P>
-            Better Auth provides server side functionality via{" "}
-            <Code>auth.api</Code>
-            methods. With Convex, all of these methods run in your Convex
-            functions.
+            For full stack frameworks like Next.js and TanStack Start, Better
+            Auth provides server side functionality via <Code>auth.api</Code>{" "}
+            methods. With Convex, you would instead run these methods in your
+            Convex functions.
           </P>
           <Callout>
             <Code>auth.api</Code> read-only methods can be run in a query. Use a
@@ -1473,11 +1772,13 @@ export default function Home() {
           <CodeBlock
             language="typescript"
             filename="convex/someFile.ts"
-            removedLines={[1, 4, 5, 6, 7, 8]}
-            addedLines={[2, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]}
+            removedLines={[1, 6, 7, 8, 9, 10]}
+            addedLines={[2, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]}
             code={stripIndent`
               import { auth } from "./auth";
               import { createAuth } from "./auth";
+
+              // Example: viewing backup codes with the Two Factor plugin
 
               export const getBackupCodes = () => {
                 return auth.api.viewBackupCodes({
@@ -1510,7 +1811,7 @@ export default function Home() {
 
           <CodeBlock
             language="typescript"
-            filename="convex/example.ts"
+            filename="convex/someFile.ts"
             code={stripIndent`
                 import { createAuth, betterAuthComponent } from "./auth";
 
@@ -1529,6 +1830,98 @@ export default function Home() {
                   }
                 });
               `}
+          />
+
+          <ContentHeading
+            id="basic-usage-server-side-auth"
+            title="Server-side auth"
+          />
+          <P>
+            Server-side authentication with the Better Auth component works
+            similar to other Convex authentication providers. See the Convex
+            docs for your framework for more details.
+          </P>
+          <Ul>
+            <Li>
+              <a
+                href="https://docs.convex.dev/client/react/nextjs/server-rendering#server-side-authentication"
+                className="underline"
+              >
+                Next.js
+              </a>
+            </Li>
+            <Li>
+              <a
+                href="https://docs.convex.dev/client/react/tanstack-start/#authentication"
+                className="underline"
+              >
+                TanStack Start
+              </a>
+            </Li>
+          </Ul>
+
+          <P>
+            Server side authentication with Convex requires a token. To get an
+            identity token with Better Auth, use the framework appropriate{" "}
+            <Code>getToken</Code> helper from the component.
+          </P>
+
+          <CodeBlock
+            variantGroup="framework"
+            variants={[
+              {
+                id: "next",
+                label: "Next.js",
+                language: "typescript",
+                filename: "app/actions.ts",
+                code: stripIndent`
+                "use server";
+
+                import { api } from "@/convex/_generated/api";
+                import { getToken } from "@convex-dev/better-auth/nextjs";
+                import { createAuth } from "@/convex/auth";
+                import { fetchMutation } from "convex/nextjs";
+
+                // Authenticated mutation via server function
+                export async function createPost(title: string, content: string) {
+                  const token = await getToken(createAuth);
+                  await fetchMutation(api.posts.create, { title, content }, { token });
+                }
+              `,
+              },
+              {
+                id: "tanstack",
+                label: "TanStack Router",
+                language: "typescript",
+                filename: "app/routes/index.tsx",
+                code: stripIndent`
+                  import { createServerFn } from "@tanstack/react-start";
+                  import { getToken } from "@convex-dev/better-auth/react-start";
+                  import { createAuth } from "../../convex/auth";
+                  import { api } from "../../convex/_generated/api";
+                  import { ConvexHttpClient } from "convex/browser";
+
+                  function setupClient(token?: string) {
+                    const client = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL)
+                    if (token) {
+                      client.setAuth(token)
+                    }
+                    // @ts-expect-error - internal function, may be removed or changed
+                    client.setFetchOptions({ cache: 'no-store' })
+                    return client
+                  }
+
+                  export const createPost = createServerFn({ method: 'POST' })
+                    .handler(async ({ data: { title, content } }) => {
+                      const token = await getToken(createAuth)
+                      await setupClient(token).mutation(api.posts.create, {
+                        title,
+                        content,
+                      })
+                    })
+                `,
+              },
+            ]}
           />
         </Subsection>
       </Section>
@@ -1576,7 +1969,7 @@ export default function Home() {
           </P>
           <CodeBlock
             language="ts"
-            filename="convex/example.ts"
+            filename="convex/someFile.ts"
             code={stripIndent`
                 import { betterAuthComponent } from "./auth";
                 import { Id } from "./_generated/dataModel";

@@ -1,21 +1,27 @@
 import SignIn from "./SignIn";
 import SignUp from "./SignUp";
 import { Dashboard } from "./components/Dashboard";
-import { useEffect, useState } from "react";
-import { useConvexAuth } from "convex/react";
+import { useState } from "react";
+import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 
 export default function App() {
-  const [showSignIn, setShowSignIn] = useState(true);
-  const { isAuthenticated, isLoading } = useConvexAuth();
-  console.log("isAuthenticated", isAuthenticated);
-  console.log("isLoading", isLoading);
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-  if (isAuthenticated) {
-    return <Dashboard />;
-  }
+  return (
+    <>
+      <AuthLoading>
+        <div>Loading...</div>
+      </AuthLoading>
+      <Authenticated>
+        <Dashboard />
+      </Authenticated>
+      <Unauthenticated>
+        <SignInForm />
+      </Unauthenticated>
+    </>
+  );
+}
 
+function SignInForm() {
+  const [showSignIn, setShowSignIn] = useState(true);
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4">
       <div className="w-full max-w-md">

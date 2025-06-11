@@ -19,7 +19,7 @@ export function SignOut() {
 export const UserProfile = ({
   preloadedUser,
 }: {
-  preloadedUser: Preloaded<typeof api.example.getCurrentUser>;
+  preloadedUser: Preloaded<typeof api.auth.getCurrentUser>;
 }) => {
   const user = usePreloadedQuery(preloadedUser);
   return (

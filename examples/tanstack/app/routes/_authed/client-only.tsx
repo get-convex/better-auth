@@ -43,7 +43,7 @@ function ClientOnlyComponent() {
 }
 
 function Header() {
-  const user = useQuery(convexQuery(api.example.getCurrentUser, {}))
+  const user = useQuery(convexQuery(api.auth.getCurrentUser, {}))
   const navigate = useNavigate()
 
   const handleSignOut = async () => {
