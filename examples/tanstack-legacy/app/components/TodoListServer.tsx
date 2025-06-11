@@ -1,5 +1,5 @@
 import { api } from '@convex/_generated/api'
-import { getToken } from '@convex-dev/better-auth/react-start'
+import { getCookieName } from '@convex-dev/better-auth/react-start'
 import { createAuth } from '@convex/auth'
 import { Id } from '@convex/_generated/dataModel'
 import {
@@ -13,17 +13,21 @@ import {
   TodoEmptyState,
 } from '@/components/server'
 import { createServerFn } from '@tanstack/react-start'
+import { getCookie } from '@tanstack/react-start/server'
 import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { ConvexHttpClient } from 'convex/browser'
+
+const getToken = async () => {
+  const sessionCookieName = await getCookieName(createAuth)
+  return getCookie(sessionCookieName)
+}
 
 function setupClient(token?: string) {
   const client = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL)
   if (token) {
     client.setAuth(token)
   }
-  // @ts-expect-error - internal function, may be removed or changed
-  client.setFetchOptions({ cache: 'no-store' })
   return client
 }
 
@@ -42,7 +46,7 @@ export const toggleCompletedTodo = createServerFn({ method: 'POST' })
     }
   })
   .handler(async ({ data: { id } }) => {
-    const token = await getToken(createAuth)
+    const token = await getToken()
     await setupClient(token).mutation(api.todos.toggle, {
       id: id as Id<'todos'>,
     })
@@ -56,7 +60,7 @@ export const removeTodo = createServerFn({ method: 'POST' })
     return data
   })
   .handler(async ({ data: { id } }) => {
-    const token = await getToken(createAuth)
+    const token = await getToken()
     await setupClient(token).mutation(api.todos.remove, {
       id: id as Id<'todos'>,
     })
@@ -76,7 +80,7 @@ export const addTodo = createServerFn({ method: 'POST' })
     }
   })
   .handler(async ({ data: { text } }) => {
-    const token = await getToken(createAuth)
+    const token = await getToken()
     await setupClient(token).mutation(api.todos.create, { text })
   })
 

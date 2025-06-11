@@ -1869,7 +1869,7 @@ export default function Home() {
           <P>
             Server side authentication with Convex requires a token. To get an
             identity token with Better Auth, use the framework appropriate{" "}
-            <Code>getToken</Code> helper from the component.
+            <Code>getToken</Code> approach.
           </P>
 
           <CodeBlock
@@ -1907,13 +1907,11 @@ export default function Home() {
                   import { api } from "../../convex/_generated/api";
                   import { ConvexHttpClient } from "convex/browser";
 
-                  function setupClient(token?: string) {
+                  const setupClient = (token?: string) => {
                     const client = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL)
                     if (token) {
                       client.setAuth(token)
                     }
-                    // @ts-expect-error - internal function, may be removed or changed
-                    client.setFetchOptions({ cache: 'no-store' })
                     return client
                   }
 

@@ -28,8 +28,6 @@ function setupClient(token?: string) {
   if (token) {
     client.setAuth(token)
   }
-  // @ts-expect-error - internal function, may be removed or changed
-  client.setFetchOptions({ cache: 'no-store' })
   return client
 }
 
