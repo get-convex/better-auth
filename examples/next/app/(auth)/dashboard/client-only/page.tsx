@@ -12,11 +12,11 @@ import {
   SettingsButton,
   SettingsButtonContent,
   UserProfile,
-} from "@/app/ui/server";
+} from "@/components/server";
 import { TodoList } from "./todo-list";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
-import { SignOutButton } from "@/app/ui/client";
+import { SignOutButton } from "@/components/client";
 
 const Header = () => {
   const router = useRouter();

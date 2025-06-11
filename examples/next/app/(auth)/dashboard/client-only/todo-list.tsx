@@ -10,7 +10,7 @@ import {
   TodoList as TodoListComponent,
   TodoRemoveButton,
   TodoText,
-} from "@/app/ui/server";
+} from "@/components/server";
 
 export const TodoList = () => {
   const todos = useQuery(api.todos.get) ?? [];

@@ -8,7 +8,7 @@ import {
   TodoText,
   TodoCompleteButton,
   TodoItem,
-} from "@/app/ui/server";
+} from "@/components/server";
 import { removeTodo } from "./actions";
 
 export const TodoItems = ({

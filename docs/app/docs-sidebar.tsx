@@ -4,6 +4,7 @@ import type * as React from "react";
 import { Github, AlertTriangle, PanelLeft } from "lucide-react";
 import VersionSelector from "./version-selector";
 import Link from "next/link";
+import Image from "next/image";
 
 import {
   Sidebar,
@@ -138,10 +139,12 @@ export default function DocsSidebar({ children }: React.PropsWithChildren) {
               <SidebarMenuButton asChild size="lg">
                 <div>
                   <div className="flex aspect-square size-8 items-center justify-center">
-                    <img
+                    <Image
                       src="/convex-mark-black.svg"
                       alt="Convex + Better Auth"
-                      className="size-8 dark:invert"
+                      className="dark:invert"
+                      width={32}
+                      height={32}
                     />
                   </div>
                   <div className="flex flex-col gap-0.5 leading-none">
@@ -214,30 +217,43 @@ export default function DocsSidebar({ children }: React.PropsWithChildren) {
                   <SidebarMenuButton asChild>
                     <a href="#installation">Installation</a>
                   </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href="#better-auth-instance">Initialize Better Auth</a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href="#better-auth-client">Set up client</a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href="#framework-integration">Framework integration</a>
-                  </SidebarMenuButton>
                   <SidebarMenuSub>
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
-                        <a href="#framework-client-only">Client only</a>
+                        <a href="#install-component">Install component</a>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
-                        <a href="#framework-full-stack">Full stack</a>
+                        <a href="#set-environment-variables">
+                          Environment variables
+                        </a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <a href="#better-auth-instance">
+                          Initialize Better Auth
+                        </a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <a href="#mount-handlers">Mount handlers</a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <a href="#create-better-auth-client">
+                          Better Auth client
+                        </a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <a href="#setup-convex-client">
+                          Convex client provider
+                        </a>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   </SidebarMenuSub>
@@ -279,6 +295,18 @@ export default function DocsSidebar({ children }: React.PropsWithChildren) {
                   <SidebarMenuButton asChild>
                     <a href="#basic-usage-server-side">Server side</a>
                   </SidebarMenuButton>
+                  <SidebarMenuSub>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <a href="#using-auth-api">Using auth.api</a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <a href="#basic-usage-server-sessions">Sessions</a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  </SidebarMenuSub>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>

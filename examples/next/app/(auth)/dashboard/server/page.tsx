@@ -6,7 +6,7 @@ import {
   AppNav,
   SettingsButton,
   SettingsButtonContent,
-} from "@/app/ui/server";
+} from "@/components/server";
 import { createAuth } from "@/convex/auth";
 import { preloadQuery } from "convex/nextjs";
 import { getToken } from "@convex-dev/better-auth/nextjs";

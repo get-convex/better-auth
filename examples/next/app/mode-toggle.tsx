@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { ModeToggle as ModeToggleComponent } from "@/app/ui/mode-toggle";
+import { ModeToggle as ModeToggleComponent } from "@/components/mode-toggle";
 
 export function ModeToggle() {
   const router = useRouter();

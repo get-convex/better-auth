@@ -12,7 +12,7 @@ import {
   AddTodoForm,
   TodoListContainer,
   TodoEmptyState,
-} from "@/app/ui/server";
+} from "@/components/server";
 
 export const TodoList = async () => {
   const token = await getToken(createAuth);
