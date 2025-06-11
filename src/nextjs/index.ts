@@ -14,15 +14,17 @@ export const getToken = async (
   return typeof token === "string" ? token : token?.value;
 };
 
-const handler = (request: Request) => {
+const handler = (request: Request, opts?: { convexSiteUrl?: string }) => {
   const requestUrl = new URL(request.url);
-  const nextUrl = `${process.env.NEXT_PUBLIC_CONVEX_SITE_URL}${requestUrl.pathname}${requestUrl.search}`;
+  const convexSiteUrl =
+    opts?.convexSiteUrl ?? process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
+  const nextUrl = `${convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
   const newRequest = new Request(nextUrl, request);
   newRequest.headers.set("accept-encoding", "application/json");
   return fetch(newRequest, { method: request.method, redirect: "manual" });
 };
 
-export const nextJsHandler = {
-  GET: handler,
-  POST: handler,
-};
+export const nextJsHandler = (opts?: { convexSiteUrl?: string }) => ({
+  GET: (request: Request) => handler(request, opts),
+  POST: (request: Request) => handler(request, opts),
+});

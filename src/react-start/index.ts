@@ -40,9 +40,13 @@ export const fetchSession = async (
   };
 };
 
-export const reactStartHandler = (request: Request) => {
+export const reactStartHandler = (
+  request: Request,
+  opts?: { convexSiteUrl?: string }
+) => {
+  const convexSiteUrl = opts?.convexSiteUrl ?? process.env.CONVEX_SITE_URL;
   const requestUrl = new URL(request.url);
-  const nextUrl = `${process.env.CONVEX_SITE_URL}${requestUrl.pathname}${requestUrl.search}`;
+  const nextUrl = `${convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
   request.headers.set("accept-encoding", "application/json");
   return fetch(nextUrl, new Request(request, { redirect: "manual" }));
 };
