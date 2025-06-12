@@ -1,6 +1,6 @@
 # Convex + Better Auth
 
-[![npm version](https://badge.fury.io/js/@erquhart%2Fconvex-better-auth.svg)](https://badge.fury.io/js/@erquhart/convex-better-auth)
+[![npm version](https://badge.fury.io/js/@convex-dev%2Fbetter-auth.svg)](https://badge.fury.io/js/@convex-dev/better-auth)
 
 <!-- START: Include on https://convex.dev/components -->
 

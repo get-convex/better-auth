@@ -153,7 +153,7 @@ export default function Home() {
             Get Started
           </a>
           <a
-            href="https://github.com/erquhart/convex-better-auth"
+            href="https://github.com/get-convex/better-auth"
             className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
             target="_blank"
             rel="noopener noreferrer"
@@ -178,7 +178,7 @@ export default function Home() {
             If your use case isn&apos;t supported, a plugin doesn&apos;t work,
             you hit a bug, etc, please open a{" "}
             <a
-              href="https://github.com/erquhart/convex-better-auth/issues"
+              href="https://github.com/get-convex/better-auth/issues"
               className="text-primary underline"
               target="_blank"
               rel="noopener noreferrer"
@@ -236,7 +236,7 @@ export default function Home() {
         <P>Check out complete working examples on GitHub.</P>
         <div className="grid sm:grid-cols-2 gap-4 mb-6sm:gap-6">
           <a
-            href="https://github.com/erquhart/convex-better-auth/tree/main/examples/react"
+            href="https://github.com/get-convex/better-auth/tree/main/examples/react"
             className={cn(
               "flex w-full flex-col items-center rounded-xl border bg-card p-6 text-card-foreground shadow transition-colors hover:bg-muted/50 sm:p-10"
             )}
@@ -254,7 +254,7 @@ export default function Home() {
             <p className="font-medium mt-2">React</p>
           </a>
           <a
-            href="https://github.com/erquhart/convex-better-auth/tree/main/examples/next"
+            href="https://github.com/get-convex/better-auth/tree/main/examples/next"
             className={cn(
               "flex w-full flex-col items-center rounded-xl border bg-card p-6 text-card-foreground shadow transition-colors hover:bg-muted/50 sm:p-10"
             )}
@@ -272,7 +272,7 @@ export default function Home() {
             <p className="font-medium mt-2">Next.js</p>
           </a>
           <a
-            href="https://github.com/erquhart/convex-better-auth/tree/main/examples/tanstack"
+            href="https://github.com/get-convex/better-auth/tree/main/examples/tanstack"
             className={cn(
               "flex w-full flex-col items-center rounded-xl border bg-card p-6 text-card-foreground shadow transition-colors hover:bg-muted/50 sm:p-10"
             )}
@@ -466,7 +466,7 @@ export default function Home() {
                 id: "npm",
                 label: "npm",
                 code: stripIndent`
-                    npm install @erquhart/convex-better-auth
+                    npm install @convex-dev/better-auth
                     npm install better-auth@1.2.7 --save-exact
                   `,
                 language: "shell",
@@ -475,7 +475,7 @@ export default function Home() {
                 id: "pnpm",
                 label: "pnpm",
                 code: stripIndent`
-                    pnpm add @erquhart/convex-better-auth
+                    pnpm add @convex-dev/better-auth
                     pnpm add better-auth@1.2.7 --save-exact
                   `,
                 language: "shell",
@@ -483,7 +483,7 @@ export default function Home() {
               {
                 id: "yarn",
                 code: stripIndent`
-                    yarn add @erquhart/convex-better-auth
+                    yarn add @convex-dev/better-auth
                     yarn add better-auth@1.2.7 --exact
                   `,
                 language: "shell",
@@ -491,7 +491,7 @@ export default function Home() {
               {
                 id: "bun",
                 code: stripIndent`
-                    bun add @erquhart/convex-better-auth
+                    bun add @convex-dev/better-auth
                     bun add better-auth@1.2.7 --exact
                   `,
                 language: "shell",
@@ -507,7 +507,7 @@ export default function Home() {
             highlightedLines={[2, 5]}
             code={stripIndent`
                 import { defineApp } from 'convex/server'
-                import betterAuth from '@erquhart/convex-better-auth/convex.config'
+                import betterAuth from '@convex-dev/better-auth/convex.config'
 
                 const app = defineApp()
                 app.use(betterAuth)
@@ -662,8 +662,8 @@ export default function Home() {
                     BetterAuth,
                     convexAdapter,
                     type AuthFunctions,
-                  } from "@erquhart/convex-better-auth";
-                  import { convex } from "@erquhart/convex-better-auth/plugins";
+                  } from "@convex-dev/better-auth";
+                  import { convex } from "@convex-dev/better-auth/plugins";
                   import { betterAuth } from "better-auth";
                   import { api, components, internal } from "./_generated/api";
                   import type { GenericCtx } from "./_generated/server";
@@ -726,8 +726,8 @@ export default function Home() {
                     BetterAuth,
                     convexAdapter,
                     type AuthFunctions,
-                  } from "@erquhart/convex-better-auth";
-                  import { convex } from "@erquhart/convex-better-auth/plugins";
+                  } from "@convex-dev/better-auth";
+                  import { convex } from "@convex-dev/better-auth/plugins";
                   import { betterAuth } from "better-auth";
                   import { api, components, internal } from "./_generated/api";
                   import type { GenericCtx } from "./_generated/server";
@@ -795,8 +795,8 @@ export default function Home() {
                     BetterAuth,
                     convexAdapter,
                     type AuthFunctions,
-                  } from "@erquhart/convex-better-auth";
-                  import { convex } from "@erquhart/convex-better-auth/plugins";
+                  } from "@convex-dev/better-auth";
+                  import { convex } from "@convex-dev/better-auth/plugins";
                   import { betterAuth } from "better-auth";
                   import { api, components, internal } from "./_generated/api";
                   import type { GenericCtx } from "./_generated/server";
@@ -940,7 +940,7 @@ export default function Home() {
                     language: "typescript",
                     filename: "app/api/auth/[...all]/route.ts",
                     code: stripIndent`
-                  import { nextJsHandler } from "@erquhart/convex-better-auth/nextjs";
+                  import { nextJsHandler } from "@convex-dev/better-auth/nextjs";
 
                   export const { GET, POST } = nextJsHandler();
                 `,
@@ -951,7 +951,7 @@ export default function Home() {
                     language: "typescript",
                     filename: "src/routes/api/auth/$.ts",
                     code: stripIndent`
-                  import { reactStartHandler } from '@erquhart/convex-better-auth/react-start'
+                  import { reactStartHandler } from '@convex-dev/better-auth/react-start'
 
                   export const ServerRoute = createServerFileRoute().methods({
                     GET: ({ request }) => {
@@ -991,7 +991,7 @@ export default function Home() {
                   import {
                     convexClient,
                     crossDomainClient,
-                  } from "@erquhart/convex-better-auth/client/plugins";
+                  } from "@convex-dev/better-auth/client/plugins";
 
                   export const authClient = createAuthClient({
                     baseURL: import.meta.env.VITE_CONVEX_SITE_URL,
@@ -1009,7 +1009,7 @@ export default function Home() {
                 filename: "lib/auth-client.ts",
                 code: stripIndent`
                   import { createAuthClient } from "better-auth/react";
-                  import { convexClient } from "@erquhart/convex-better-auth/client/plugins";
+                  import { convexClient } from "@convex-dev/better-auth/client/plugins";
 
                   export const authClient = createAuthClient({
                     plugins: [
@@ -1025,7 +1025,7 @@ export default function Home() {
                 filename: "src/lib/auth-client.ts",
                 code: stripIndent`
                   import { createAuthClient } from "better-auth/react";
-                  import { convexClient } from "@erquhart/convex-better-auth/client/plugins";
+                  import { convexClient } from "@convex-dev/better-auth/client/plugins";
 
                   export const authClient = createAuthClient({
                     plugins: [
@@ -1226,11 +1226,11 @@ export default function Home() {
                       import { ConvexQueryClient } from '@convex-dev/react-query'
                       import { ConvexReactClient } from 'convex/react'
                       import { getCookie, getWebRequest } from '@tanstack/react-start/server'
-                      import { ConvexBetterAuthProvider } from '@erquhart/convex-better-auth/react'
+                      import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
                       import {
                         fetchSession,
                         getCookieName,
-                      } from '@erquhart/convex-better-auth/react-start'
+                      } from '@convex-dev/better-auth/react-start'
                       import { authClient } from '@/lib/auth-client'
                       import { createAuth } from '../../convex/auth'
 
@@ -2144,7 +2144,7 @@ export default function Home() {
             language="typescript"
             filename="convex/auth.ts"
             code={stripIndent`
-                import { convex, crossDomain } from "@erquhart/convex-better-auth/plugins";
+                import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
                 import { betterAuth } from "better-auth";
                 import { GenericCtx } from "./_generated/server";
 
@@ -2163,7 +2163,7 @@ export default function Home() {
                 import {
                   convexClient,
                   crossDomainClient,
-                } from "@erquhart/convex-better-auth/client/plugins";
+                } from "@convex-dev/better-auth/client/plugins";
 
                 export const authClient = createAuthClient({
                   // ...
@@ -2226,8 +2226,8 @@ export default function Home() {
             language="typescript"
             filename="convex/auth.ts"
             code={stripIndent`
-                import { BetterAuth, type AuthFunctions } from "@erquhart/convex-better-auth";
-                import { convex, crossDomain } from "@erquhart/convex-better-auth/plugins";
+                import { BetterAuth, type AuthFunctions } from "@convex-dev/better-auth";
+                import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
                 import { components, internal } from "./_generated/api";
 
                 const authFunctions: AuthFunctions = internal.users;

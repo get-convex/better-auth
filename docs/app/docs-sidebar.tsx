@@ -33,7 +33,7 @@ const SidebarSocials = () => (
     <SidebarMenuItem>
       <SidebarMenuButton asChild tooltip="GitHub">
         <a
-          href="https://github.com/erquhart/convex-better-auth"
+          href="https://github.com/get-convex/better-auth"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center"
@@ -46,7 +46,7 @@ const SidebarSocials = () => (
     <SidebarMenuItem>
       <SidebarMenuButton asChild tooltip="NPM">
         <a
-          href="https://www.npmjs.com/package/@erquhart/convex-better-auth"
+          href="https://www.npmjs.com/package/@convex-dev/better-auth"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center"
@@ -389,7 +389,7 @@ export default function DocsSidebar({ children }: React.PropsWithChildren) {
           <SidebarTrigger className="size-4" />
           <div className="flex-1" />
           <a
-            href="https://github.com/erquhart/convex-better-auth"
+            href="https://github.com/get-convex/better-auth"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex h-9 items-center justify-center rounded-md px-2 md:px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground"
