@@ -348,6 +348,29 @@ export default function DocsSidebar({ children }: React.PropsWithChildren) {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
+                    <a href="#integrations">
+                      <span className="text-base font-semibold">
+                        Integrations
+                      </span>
+                    </a>
+                  </SidebarMenuButton>
+                  <SidebarMenuSub>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <a href="#integrations-hono">Hono</a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  </SidebarMenuSub>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+          <SidebarSeparator className="group-data-[collapsible=icon]:hidden" />
+          <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
                     <a href="#guides">
                       <span className="text-base font-semibold">Guides</span>
                     </a>
