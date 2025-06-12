@@ -2079,6 +2079,16 @@ export default function Home() {
         <Subsection id="migrate-0-5-to-0-6" title="Migrate 0.5 &rarr; 0.6">
           <Ul>
             <Li>
+              All imports from <Code>@erquhart/convex-better-auth</Code> have
+              been updated to <Code>@convex-dev/better-auth</Code>. Search and
+              replace this across your repo.
+            </Li>
+            <Li>
+              Your framework may work full stack without cross domain - go
+              checkout the <a href="#installation">installation</a> section for
+              more details.
+            </Li>
+            <Li>
               <Code>AuthFunctions</Code> are now passed to the{" "}
               <Code>BetterAuth</Code> component constructor via the{" "}
               <Code>config</Code> object.
@@ -2097,9 +2107,14 @@ export default function Home() {
           <CodeBlock
             language="typescript"
             filename="convex/auth.ts"
-            removedLines={[3, 10, 14]}
-            addedLines={[4, 5, 6, 15, 16, 17]}
+            removedLines={[1, 2, 8, 15, 19]}
+            addedLines={[3, 4, 9, 10, 11, 20, 21, 22]}
             code={stripIndent`
+                import { BetterAuth, type AuthFunctions, convexAdapter } from "@erquhart/convex-better-auth";
+                import { convex, crossDomain } from "@erquhart/convex-better-auth/plugins";
+                import { BetterAuth, type AuthFunctions, convexAdapter } from "@convex-dev/better-auth";
+                import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
+
                 export const betterAuthComponent = new BetterAuth(
                   components.betterAuth,
                   authFunctions,
@@ -2144,7 +2159,7 @@ export default function Home() {
             language="typescript"
             filename="convex/auth.ts"
             code={stripIndent`
-                import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
+                import { convex, crossDomain } from "@erquhart/convex-better-auth/plugins";
                 import { betterAuth } from "better-auth";
                 import { GenericCtx } from "./_generated/server";
 
@@ -2163,7 +2178,7 @@ export default function Home() {
                 import {
                   convexClient,
                   crossDomainClient,
-                } from "@convex-dev/better-auth/client/plugins";
+                } from "@erquhart/convex-better-auth/client/plugins";
 
                 export const authClient = createAuthClient({
                   // ...
@@ -2226,8 +2241,8 @@ export default function Home() {
             language="typescript"
             filename="convex/auth.ts"
             code={stripIndent`
-                import { BetterAuth, type AuthFunctions } from "@convex-dev/better-auth";
-                import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
+                import { BetterAuth, type AuthFunctions } from "@erquhart/convex-better-auth";
+                import { convex, crossDomain } from "@erquhart/convex-better-auth/plugins";
                 import { components, internal } from "./_generated/api";
 
                 const authFunctions: AuthFunctions = internal.users;
