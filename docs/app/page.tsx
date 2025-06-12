@@ -666,7 +666,7 @@ export default function Home() {
                   import { convex } from "@convex-dev/better-auth/plugins";
                   import { betterAuth } from "better-auth";
                   import { api, components, internal } from "./_generated/api";
-                  import type { GenericCtx } from "./_generated/server";
+                  import { query, type GenericCtx } from "./_generated/server";
                   import type { Id, DataModel } from "./_generated/dataModel";
 
                   // Typesafe way to pass Convex functions defined in this file
@@ -701,19 +701,25 @@ export default function Home() {
                       ],
                     });
 
-                  // These are required named exports
-                  export const { createUser, updateUser, deleteUser, createSession } =
-                    betterAuthComponent.createAuthFunctions<DataModel>({
-                      // Must create a user and return the user id
-                      onCreateUser: async (ctx, user) => {
-                        return ctx.db.insert("users", {});
-                      },
-
-                      // Delete the user when they are deleted from Better Auth
-                      onDeleteUser: async (ctx, userId) => {
-                        await ctx.db.delete(userId as Id<"users">);
-                      },
-                    });
+                  // Example function for getting the current user
+                  // Feel free to edit, omit, etc.
+                  export const getCurrentUser = query({
+                    args: {},
+                    handler: async (ctx) => {
+                      // Get user data from Better Auth - email, name, image, etc.
+                      const userMetadata = await betterAuthComponent.getAuthUser(ctx);
+                      if (!userMetadata) {
+                        return null;
+                      }
+                      // Get user data from your application's database
+                      // (skip this if you have no fields in your users table schema)
+                      const user = await ctx.db.get(userMetadata.userId as Id<"users">);
+                      return {
+                        ...user,
+                        ...userMetadata,
+                      };
+                    },
+                  });
                 `,
               },
               {
@@ -726,11 +732,12 @@ export default function Home() {
                     BetterAuth,
                     convexAdapter,
                     type AuthFunctions,
+                    type PublicAuthFunctions,
                   } from "@convex-dev/better-auth";
                   import { convex } from "@convex-dev/better-auth/plugins";
                   import { betterAuth } from "better-auth";
                   import { api, components, internal } from "./_generated/api";
-                  import type { GenericCtx } from "./_generated/server";
+                  import { query, type GenericCtx } from "./_generated/server";
                   import type { Id, DataModel } from "./_generated/dataModel";
 
                   // Typesafe way to pass Convex functions defined in this file
@@ -783,6 +790,26 @@ export default function Home() {
                         await ctx.db.delete(userId as Id<"users">);
                       },
                     });
+
+                  // Example function for getting the current user
+                  // Feel free to edit, omit, etc.
+                  export const getCurrentUser = query({
+                    args: {},
+                    handler: async (ctx) => {
+                      // Get user data from Better Auth - email, name, image, etc.
+                      const userMetadata = await betterAuthComponent.getAuthUser(ctx);
+                      if (!userMetadata) {
+                        return null;
+                      }
+                      // Get user data from your application's database
+                      // (skip this if you have no fields in your users table schema)
+                      const user = await ctx.db.get(userMetadata.userId as Id<"users">);
+                      return {
+                        ...user,
+                        ...userMetadata,
+                      };
+                    },
+                  });
                 `,
               },
               {
@@ -798,20 +825,18 @@ export default function Home() {
                   } from "@convex-dev/better-auth";
                   import { convex } from "@convex-dev/better-auth/plugins";
                   import { betterAuth } from "better-auth";
-                  import { api, components, internal } from "./_generated/api";
-                  import type { GenericCtx } from "./_generated/server";
+                  import { components, internal } from "./_generated/api";
+                  import { query, type GenericCtx } from "./_generated/server";
                   import type { Id, DataModel } from "./_generated/dataModel";
 
                   // Typesafe way to pass Convex functions defined in this file
                   const authFunctions: AuthFunctions = internal.auth;
-                  const publicAuthFunctions: PublicAuthFunctions = api.auth;
 
                   // Initialize the component
                   export const betterAuthComponent = new BetterAuth(
                     components.betterAuth,
                     {
                       authFunctions,
-                      publicAuthFunctions,
                     }
                   );
 
@@ -851,6 +876,26 @@ export default function Home() {
                         await ctx.db.delete(userId as Id<"users">);
                       },
                     });
+
+                  // Example function for getting the current user
+                  // Feel free to edit, omit, etc.
+                  export const getCurrentUser = query({
+                    args: {},
+                    handler: async (ctx) => {
+                      // Get user data from Better Auth - email, name, image, etc.
+                      const userMetadata = await betterAuthComponent.getAuthUser(ctx);
+                      if (!userMetadata) {
+                        return null;
+                      }
+                      // Get user data from your application's database
+                      // (skip this if you have no fields in your users table schema)
+                      const user = await ctx.db.get(userMetadata.userId as Id<"users">);
+                      return {
+                        ...user,
+                        ...userMetadata,
+                      };
+                    },
+                  });
                 `,
               },
             ]}
@@ -1117,8 +1162,6 @@ export default function Home() {
                 code: stripIndent`
                   import { createRouter as createTanStackRouter } from '@tanstack/react-router'
                   import { routeTree } from './routeTree.gen'
-                  import { DefaultCatchBoundary } from './components/DefaultCatchBoundary'
-                  import { NotFound } from './components/NotFound'
                   import { routerWithQueryClient } from '@tanstack/react-router-with-query'
                   import { ConvexProvider, ConvexReactClient } from 'convex/react'
                   import { ConvexQueryClient } from '@convex-dev/react-query'
@@ -1148,8 +1191,6 @@ export default function Home() {
                       createTanStackRouter({
                         routeTree,
                         defaultPreload: 'intent',
-                        defaultErrorComponent: DefaultCatchBoundary,
-                        defaultNotFoundComponent: () => <NotFound />,
                         scrollRestoration: true,
                         context: { queryClient, convexClient: convex, convexQueryClient },
                         Wrap: ({ children }) => (
@@ -1821,7 +1862,7 @@ export default function Home() {
             code={stripIndent`
                 import { createAuth, betterAuthComponent } from "./auth";
 
-                export const getCurrentUser = query({
+                export const getSession = query({
                   args: {},
                   handler: async (ctx) => {
                     const auth = createAuth(ctx);
@@ -1833,6 +1874,7 @@ export default function Home() {
                       return null;
                     }
                     // Do something with the session
+                    return session;
                   }
                 });
               `}
@@ -1982,7 +2024,8 @@ export default function Home() {
             code={stripIndent`
                 import { betterAuthComponent } from "./auth";
                 import { Id } from "./_generated/dataModel";
-                export const getCurrentUser = query({
+
+                export const myFunction = query({
                   args: {},
                   handler: async (ctx) => {
                     // You can get the user id directly from Convex via ctx.auth
