@@ -1087,135 +1087,6 @@ export default function Home() {
             title="Set up Convex client provider"
           />
 
-          {["react", "nextjs"].includes(selectedFramework) && (
-            <P>
-              Wrap your app with the <Code>ConvexBetterAuthProvider</Code>{" "}
-              component.
-            </P>
-          )}
-
-          {selectedFramework === "tanstack" && (
-            <P>Provide context from Convex to your routes.</P>
-          )}
-
-          <CodeBlock
-            variantGroup="framework"
-            variants={[
-              {
-                id: "react",
-                label: "React",
-                language: "typescript",
-                filename: "src/main.tsx",
-                highlightedLines: [6, 7, 13, 15],
-                code: stripIndent`
-                  import React from "react";
-                  import ReactDOM from "react-dom/client";
-                  import App from "./App";
-                  import "./index.css";
-                  import { ConvexReactClient } from "convex/react";
-                  import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
-                  import { authClient } from "@/lib/auth-client";
-
-                  const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
-
-                  ReactDOM.createRoot(document.getElementById("root")!).render(
-                    <React.StrictMode>
-                      <ConvexBetterAuthProvider client={convex} authClient={authClient}>
-                        <App />
-                      </ConvexBetterAuthProvider>
-                    </React.StrictMode>
-                  );
-
-              `,
-              },
-              {
-                id: "nextjs",
-                label: "Next.js",
-                language: "typescript",
-                filename: "app/ConvexClientProvider.tsx",
-                highlightedLines: [5, 6, 12, 14],
-                code: stripIndent`
-                  "use client";
-
-                  import { ReactNode } from "react";
-                  import { ConvexReactClient } from "convex/react";
-                  import { authClient } from "@/lib/auth-client";
-                  import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
-
-                  const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-
-                  export function ConvexClientProvider({ children }: { children: ReactNode }) {
-                    return (
-                      <ConvexBetterAuthProvider client={convex} authClient={authClient}>
-                        {children}
-                      </ConvexBetterAuthProvider>
-                    );
-                  }
-              `,
-              },
-              {
-                id: "tanstack",
-                label: "TanStack Start",
-                language: "typescript",
-                filename: "src/router.tsx",
-                highlightedLines: [37],
-                code: stripIndent`
-                  import { createRouter as createTanStackRouter } from '@tanstack/react-router'
-                  import { routeTree } from './routeTree.gen'
-                  import { routerWithQueryClient } from '@tanstack/react-router-with-query'
-                  import { ConvexProvider, ConvexReactClient } from 'convex/react'
-                  import { ConvexQueryClient } from '@convex-dev/react-query'
-                  import { QueryClient } from '@tanstack/react-query'
-
-                  export function createRouter() {
-                    const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!
-                    if (!CONVEX_URL) {
-                      throw new Error('missing VITE_CONVEX_URL envar')
-                    }
-                    const convex = new ConvexReactClient(CONVEX_URL, {
-                      unsavedChangesWarning: false,
-                    })
-                    const convexQueryClient = new ConvexQueryClient(convex)
-
-                    const queryClient: QueryClient = new QueryClient({
-                      defaultOptions: {
-                        queries: {
-                          queryKeyHashFn: convexQueryClient.hashFn(),
-                          queryFn: convexQueryClient.queryFn(),
-                        },
-                      },
-                    })
-                    convexQueryClient.connect(queryClient)
-
-                    const router = routerWithQueryClient(
-                      createTanStackRouter({
-                        routeTree,
-                        defaultPreload: 'intent',
-                        scrollRestoration: true,
-                        context: { queryClient, convexClient: convex, convexQueryClient },
-                        Wrap: ({ children }) => (
-                          <ConvexProvider client={convexQueryClient.convexClient}>
-                            {children}
-                          </ConvexProvider>
-                        ),
-                      }),
-                      queryClient,
-                    )
-
-                    return router
-                  }
-
-                  declare module '@tanstack/react-router' {
-                    interface Register {
-                      router: ReturnType<typeof createRouter>
-                    }
-                  }
-
-                `,
-              },
-            ]}
-          />
-
           {selectedFramework === "tanstack" && (
             <>
               <P>
@@ -1247,12 +1118,13 @@ export default function Home() {
                     filename: "src/routes/__root.tsx",
                     highlightedLines: [
                       4,
-                      [10, 19],
-                      [21, 31],
-                      [35, 36],
-                      [53, 66],
-                      [71, 76],
-                      80,
+                      9,
+                      [14, 23],
+                      [25, 35],
+                      [39, 40],
+                      [57, 70],
+                      [75, 79],
+                      84,
                     ],
                     code: stripIndent`
                       import {
@@ -1260,10 +1132,14 @@ export default function Home() {
                         createRootRouteWithContext,
                         useRouteContext,
                       } from '@tanstack/react-router'
-                      import { Meta, Scripts, createServerFn } from '@tanstack/react-start'
+                      import {
+                        Meta,
+                        Scripts,
+                        createServerFn,
+                      } from '@tanstack/react-start'
                       import { QueryClient } from '@tanstack/react-query'
                       import * as React from 'react'
-                      import appCss from '@/styles/app.css?url'
+                      import appCss from '~/styles/app.css?url'
                       import { ConvexQueryClient } from '@convex-dev/react-query'
                       import { ConvexReactClient } from 'convex/react'
                       import { getCookie, getWebRequest } from '@tanstack/react-start/server'
@@ -1272,7 +1148,7 @@ export default function Home() {
                         fetchSession,
                         getCookieName,
                       } from '@convex-dev/better-auth/react-start'
-                      import { authClient } from '@/lib/auth-client'
+                      import { authClient } from '~/lib/auth-client'
                       import { createAuth } from '../../convex/auth'
 
                       // Server side session request
@@ -1357,6 +1233,135 @@ export default function Home() {
               />
             </>
           )}
+
+          {["react", "nextjs"].includes(selectedFramework) && (
+            <P>
+              Wrap your app with the <Code>ConvexBetterAuthProvider</Code>{" "}
+              component.
+            </P>
+          )}
+
+          {selectedFramework === "tanstack" && (
+            <P>Provide context from Convex to your routes.</P>
+          )}
+
+          <CodeBlock
+            variantGroup="framework"
+            variants={[
+              {
+                id: "react",
+                label: "React",
+                language: "typescript",
+                filename: "src/main.tsx",
+                highlightedLines: [6, 7, 13, 15],
+                code: stripIndent`
+                  import React from "react";
+                  import ReactDOM from "react-dom/client";
+                  import App from "./App";
+                  import "./index.css";
+                  import { ConvexReactClient } from "convex/react";
+                  import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
+                  import { authClient } from "@/lib/auth-client";
+
+                  const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+
+                  ReactDOM.createRoot(document.getElementById("root")!).render(
+                    <React.StrictMode>
+                      <ConvexBetterAuthProvider client={convex} authClient={authClient}>
+                        <App />
+                      </ConvexBetterAuthProvider>
+                    </React.StrictMode>
+                  );
+
+              `,
+              },
+              {
+                id: "nextjs",
+                label: "Next.js",
+                language: "typescript",
+                filename: "app/ConvexClientProvider.tsx",
+                highlightedLines: [5, 6, 12, 14],
+                code: stripIndent`
+                  "use client";
+
+                  import { ReactNode } from "react";
+                  import { ConvexReactClient } from "convex/react";
+                  import { authClient } from "@/lib/auth-client";
+                  import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
+
+                  const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+
+                  export function ConvexClientProvider({ children }: { children: ReactNode }) {
+                    return (
+                      <ConvexBetterAuthProvider client={convex} authClient={authClient}>
+                        {children}
+                      </ConvexBetterAuthProvider>
+                    );
+                  }
+              `,
+              },
+              {
+                id: "tanstack",
+                label: "TanStack Start",
+                language: "typescript",
+                filename: "src/router.tsx",
+                highlightedLines: [[13, 16], 33],
+                code: stripIndent`
+                  import { createRouter as createTanStackRouter } from '@tanstack/react-router'
+                  import { routeTree } from './routeTree.gen'
+                  import { routerWithQueryClient } from '@tanstack/react-router-with-query'
+                  import { ConvexProvider, ConvexReactClient } from 'convex/react'
+                  import { ConvexQueryClient } from '@convex-dev/react-query'
+                  import { QueryClient } from '@tanstack/react-query'
+
+                  export function createRouter() {
+                    const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!
+                    if (!CONVEX_URL) {
+                      throw new Error('missing VITE_CONVEX_URL envar')
+                    }
+                    const convex = new ConvexReactClient(CONVEX_URL, {
+                      unsavedChangesWarning: false,
+                    })
+                    const convexQueryClient = new ConvexQueryClient(convex)
+
+                    const queryClient: QueryClient = new QueryClient({
+                      defaultOptions: {
+                        queries: {
+                          queryKeyHashFn: convexQueryClient.hashFn(),
+                          queryFn: convexQueryClient.queryFn(),
+                        },
+                      },
+                    })
+                    convexQueryClient.connect(queryClient)
+
+                    const router = routerWithQueryClient(
+                      createTanStackRouter({
+                        routeTree,
+                        defaultPreload: 'intent',
+                        scrollRestoration: true,
+                        context: { queryClient, convexClient: convex, convexQueryClient },
+                        Wrap: ({ children }) => (
+                          <ConvexProvider client={convexQueryClient.convexClient}>
+                            {children}
+                          </ConvexProvider>
+                        ),
+                      }),
+                      queryClient,
+                    )
+
+                    return router
+                  }
+
+                  declare module '@tanstack/react-router' {
+                    interface Register {
+                      router: ReturnType<typeof createRouter>
+                    }
+                  }
+
+                `,
+              },
+            ]}
+          />
         </Subsection>
 
         <Subsection id="users-table" title="Users table">
@@ -1718,7 +1723,7 @@ export default function Home() {
                     AuthLoading,
                     useQuery,
                   } from "convex/react";
-                  import { authClient } from "@/lib/auth-client";
+                  import { authClient } from "~/lib/auth-client";
                   import { api } from "../convex/_generated/api";
 
                   export default function App() {

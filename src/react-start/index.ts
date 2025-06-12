@@ -1,4 +1,4 @@
-import { Auth, betterAuth } from "better-auth";
+import { betterAuth } from "better-auth";
 import { createCookieGetter } from "better-auth/cookies";
 import { betterFetch } from "@better-fetch/fetch";
 import { GenericActionCtx } from "convex/server";
@@ -43,7 +43,7 @@ export const reactStartHandler = (
   request: Request,
   opts?: { convexSiteUrl?: string }
 ) => {
-  const convexSiteUrl = opts?.convexSiteUrl ?? process.env.CONVEX_SITE_URL;
+  const convexSiteUrl = opts?.convexSiteUrl ?? process.env.VITE_CONVEX_SITE_URL;
   const requestUrl = new URL(request.url);
   const nextUrl = `${convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
   request.headers.set("accept-encoding", "application/json");
