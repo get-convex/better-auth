@@ -2118,10 +2118,8 @@ export default function Home() {
                   );
 
                   // Redirect root well-known to api well-known
-                  app.get("/.well-known/openid-configuration", async () => {
-                    return Response.redirect(
-                      \`${process.env.CONVEX_SITE_URL}/api/auth/convex/.well-known/openid-configuration\`
-                    );
+                  app.get("/.well-known/openid-configuration", async (c) => {
+                    return c.redirect('/api/auth/convex/.well-known/openid-configuration')
                   });
 
                   app.on(["POST", "GET"], "/api/auth/*", async (c) => {
@@ -2148,10 +2146,8 @@ export default function Home() {
                   const app: HonoWithConvex<ActionCtx> = new Hono();
 
                   // Redirect root well-known to api well-known
-                  app.get("/.well-known/openid-configuration", async () => {
-                    return Response.redirect(
-                      \`${process.env.CONVEX_SITE_URL}/api/auth/convex/.well-known/openid-configuration\`
-                    );
+                  app.get("/.well-known/openid-configuration", async (c) => {
+                    return c.redirect('/api/auth/convex/.well-known/openid-configuration')
                   });
 
                   app.on(["POST", "GET"], "/api/auth/*", async (c) => {
@@ -2178,10 +2174,8 @@ export default function Home() {
                   const app: HonoWithConvex<ActionCtx> = new Hono();
 
                   // Redirect root well-known to api well-known
-                  app.get("/.well-known/openid-configuration", async () => {
-                    return Response.redirect(
-                      \`${process.env.CONVEX_SITE_URL}/api/auth/convex/.well-known/openid-configuration\`
-                    );
+                  app.get("/.well-known/openid-configuration", async (c) => {
+                    return c.redirect('/api/auth/convex/.well-known/openid-configuration')
                   });
 
                   app.on(["POST", "GET"], "/api/auth/*", async (c) => {
