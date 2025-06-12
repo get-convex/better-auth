@@ -156,7 +156,7 @@ export default function DocsSidebar({ children }: React.PropsWithChildren) {
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>
-        <SidebarContent className="no-scrollbar">
+        <SidebarContent className="no-scrollbar overflow-x-hidden">
           <SidebarGroup className="group-data-[collapsible=icon]:hidden">
             <SidebarGroupContent>
               <SidebarMenu>
