@@ -13,6 +13,11 @@ export default defineConfig({
     integrations: [
         starlight({
             title: 'Convex + Better Auth',
+            logo: {
+                replacesTitle: false,
+                light: './public/convex-mark-black.svg',
+                dark: './public/convex-mark-white.svg',
+            },
             social: [
                 { icon: 'github', label: 'GitHub', href: 'https://github.com/get-convex/better-auth' },
                 { icon: 'npm', label: 'NPM', href: 'https://www.npmjs.com/package/@convex-dev/better-auth' },
