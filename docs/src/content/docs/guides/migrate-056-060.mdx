@@ -1,0 +1,39 @@
+---
+title: Migrating from 0.5.6 to 0.6.0
+sidebar_position: 2
+description: Migrating from 0.5.6 to 0.6.0
+---
+
+- All imports from `@erquhart/convex-better-auth` have been updated to `@convex-dev/better-auth`. Search and replace this across your repo.
+- Your framework may work full stack without cross domain - go checkout the installation section for more details.
+- AuthFunctions are now passed to the BetterAuth component constructor via the config object.
+- The crossDomain plugin now requires a `siteUrl` option.
+- The `siteUrl` value will be added to `trustedOrigins` automatically. `trustedOrigins` can be removed if using the cross domain plugin and your site url was the only value.
+
+```diff lang="ts" title="convex/auth.ts"
+- import { BetterAuth, type AuthFunctions, convexAdapter } from "@erquhart/convex-better-auth";
+- import { convex, crossDomain } from "@erquhart/convex-better-auth/plugins";
++ import { BetterAuth, type AuthFunctions, convexAdapter } from "@convex-dev/better-auth";
++ import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
+
+export const betterAuthComponent = new BetterAuth(
+  components.betterAuth,
+-   authFunctions,
++   {
++    authFunctions: authFunctions,
++  }
+  }
+)
+export const createAuth = (ctx: GenericCtx) =>
+  betterAuth({
+-     trustedOrigins: ["http://localhost:3000"],
+    database: convexAdapter(ctx, betterAuthComponent),
+    plugins: [
+      convex(),
+-       crossDomain(),
++       crossDomain({
++         siteUrl: "http://localhost:3000",
++       }),
+    ],
+  });
+```

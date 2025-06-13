@@ -1,0 +1,478 @@
+---
+title: Basic Usage
+sidebar_position: 3
+description: Basic usage of the Better Auth component.
+---
+
+import { Aside, Tabs, TabItem } from "@astrojs/starlight/components";
+
+For most things, you can follow the [Better Auth documentation](https://better-auth.com/docs) for basic usage. The Convex component is designed to provide a compatibility layer, so things generally work as expected. However, there are some things that do work differently with this component, those are documented here.
+
+## Signing in
+
+Below is an extremely basic example of a working auth flow with email (unverified) and password.
+
+<Tabs syncKey="frameworks">
+  <TabItem label="React">
+    ```tsx title="src/App.tsx" collapse={1-3, 71-88}
+    import { useState } from "react";
+    import { authClient } from "@/lib/auth-client";
+    import { api } from "../convex/_generated/api";
+    import {
+      Authenticated,
+      Unauthenticated,
+      AuthLoading,
+      useQuery,
+    } from "convex/react";
+
+    export default function App() {
+      return (
+        <>
+          <AuthLoading>
+            <div>Loading...</div>
+          </AuthLoading>
+          <Unauthenticated>
+            <SignIn />
+          </Unauthenticated>
+          <Authenticated>
+            <Dashboard />
+          </Authenticated>
+        </>
+      );
+    }
+
+    function Dashboard() {
+      const user = useQuery(api.auth.getCurrentUser);
+      return (
+        <div>
+          <div>Hello {user?.name}!</div>
+          <button onClick={() => authClient.signOut()}>Sign out</button>
+        </div>
+      );
+    }
+
+    function SignIn() {
+      const [showSignIn, setShowSignIn] = useState(true);
+
+      const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const formData = new FormData(e.target as HTMLFormElement);
+        if (showSignIn) {
+          await authClient.signIn.email(
+            {
+              email: formData.get("email") as string,
+              password: formData.get("password") as string,
+            },
+            {
+              onError: (ctx) => {
+                window.alert(ctx.error.message);
+              },
+            }
+          );
+        } else {
+          await authClient.signUp.email(
+            {
+              name: formData.get("name") as string,
+              email: formData.get("email") as string,
+              password: formData.get("password") as string,
+            },
+            {
+              onError: (ctx) => {
+                window.alert(ctx.error.message);
+              },
+            }
+          );
+        }
+      };
+
+      return (
+        <>
+          <form onSubmit={handleSubmit}>
+            {!showSignIn && <input name="name" placeholder="Name" />}
+            <input type="email" name="email" placeholder="Email" />
+            <input type="password" name="password" placeholder="Password" />
+            <button type="submit">{showSignIn ? "Sign in" : "Sign up"}</button>
+          </form>
+          <p>
+            {showSignIn ? "Don't have an account? " : "Already have an account? "}
+            <button onClick={() => setShowSignIn(!showSignIn)}>
+              {showSignIn ? "Sign up" : "Sign in"}
+            </button>
+          </p>
+        </>
+      );
+    }
+    ```
+
+  </TabItem>
+  <TabItem label="Next.js">
+    ```tsx title="src/app/page.tsx" collapse={1-5, 73-90}
+    "use client";
+
+    import { useState } from "react";
+    import { authClient } from "@/lib/auth-client";
+    import { api } from "../convex/_generated/api";
+    import {
+      Authenticated,
+      Unauthenticated,
+      AuthLoading,
+      useQuery,
+    } from "convex/react";
+
+    export default function App() {
+      return (
+        <>
+          <AuthLoading>
+            <div>Loading...</div>
+          </AuthLoading>
+          <Unauthenticated>
+            <SignIn />
+          </Unauthenticated>
+          <Authenticated>
+            <Dashboard />
+          </Authenticated>
+        </>
+      );
+    }
+
+    function Dashboard() {
+      const user = useQuery(api.auth.getCurrentUser);
+      return (
+        <div>
+          <div>Hello {user?.name}!</div>
+          <button onClick={() => authClient.signOut()}>Sign out</button>
+        </div>
+      );
+    }
+
+    function SignIn() {
+      const [showSignIn, setShowSignIn] = useState(true);
+
+      const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const formData = new FormData(e.target as HTMLFormElement);
+        if (showSignIn) {
+          await authClient.signIn.email(
+            {
+              email: formData.get("email") as string,
+              password: formData.get("password") as string,
+            },
+            {
+              onError: (ctx) => {
+                window.alert(ctx.error.message);
+              },
+            }
+          );
+        } else {
+          await authClient.signUp.email(
+            {
+              name: formData.get("name") as string,
+              email: formData.get("email") as string,
+              password: formData.get("password") as string,
+            },
+            {
+              onError: (ctx) => {
+                window.alert(ctx.error.message);
+              },
+            }
+          );
+        }
+      };
+
+      return (
+        <>
+          <form onSubmit={handleSubmit}>
+            {!showSignIn && <input name="name" placeholder="Name" />}
+            <input type="email" name="email" placeholder="Email" />
+            <input type="password" name="password" placeholder="Password" />
+            <button type="submit">{showSignIn ? "Sign in" : "Sign up"}</button>
+          </form>
+          <p>
+            {showSignIn ? "Don't have an account? " : "Already have an account? "}
+            <button onClick={() => setShowSignIn(!showSignIn)}>
+              {showSignIn ? "Sign up" : "Sign in"}
+            </button>
+          </p>
+        </>
+      );
+    }
+    ```
+
+  </TabItem>
+  <TabItem label="Tanstack Start">
+    ```tsx title="src/app/page.tsx" collapse={1-3, 71-88}
+    import { useState } from "react";
+    import { authClient } from "~/lib/auth-client";
+    import { api } from "../convex/_generated/api";
+    import {
+      Authenticated,
+      Unauthenticated,
+      AuthLoading,
+      useQuery,
+    } from "convex/react";
+
+    export default function App() {
+      return (
+        <>
+          <AuthLoading>
+            <div>Loading...</div>
+          </AuthLoading>
+          <Unauthenticated>
+            <SignIn />
+          </Unauthenticated>
+          <Authenticated>
+            <Dashboard />
+          </Authenticated>
+        </>
+      );
+    }
+
+    function Dashboard() {
+      const user = useQuery(api.auth.getCurrentUser);
+      return (
+        <div>
+          <div>Hello {user?.name}!</div>
+          <button onClick={() => authClient.signOut()}>Sign out</button>
+        </div>
+      );
+    }
+
+    function SignIn() {
+      const [showSignIn, setShowSignIn] = useState(true);
+
+      const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const formData = new FormData(e.target as HTMLFormElement);
+        if (showSignIn) {
+          await authClient.signIn.email(
+            {
+              email: formData.get("email") as string,
+              password: formData.get("password") as string,
+            },
+            {
+              onError: (ctx) => {
+                window.alert(ctx.error.message);
+              },
+            }
+          );
+        } else {
+          await authClient.signUp.email(
+            {
+              name: formData.get("name") as string,
+              email: formData.get("email") as string,
+              password: formData.get("password") as string,
+            },
+            {
+              onError: (ctx) => {
+                window.alert(ctx.error.message);
+              },
+            }
+          );
+        }
+      };
+
+      return (
+        <>
+          <form onSubmit={handleSubmit}>
+            {!showSignIn && <input name="name" placeholder="Name" />}
+            <input type="email" name="email" placeholder="Email" />
+            <input type="password" name="password" placeholder="Password" />
+            <button type="submit">{showSignIn ? "Sign in" : "Sign up"}</button>
+          </form>
+          <p>
+            {showSignIn ? "Don't have an account? " : "Already have an account? "}
+            <button onClick={() => setShowSignIn(!showSignIn)}>
+              {showSignIn ? "Sign up" : "Sign in"}
+            </button>
+          </p>
+        </>
+      );
+    }
+    ```
+
+  </TabItem>
+  </Tabs>
+
+## Server side
+
+### Using `auth.api`
+
+For full stack frameworks like Next.js and TanStack Start, Better Auth provides server side functionality via `auth.api` methods. With Convex, you would instead run these methods in your Convex functions.
+
+<Aside type="note">
+  `auth.api` read-only methods can be run in a query. Use a mutation for
+  anything that updates Better Auth tables.
+</Aside>
+
+```diff lang="ts" title="convex/someFile.ts"
+- import { auth } from "./auth";
++ import { createAuth } from "./auth";
+
+// Example: viewing backup codes with the Two Factor plugin
+
+- export const getBackupCodes = () => {
+-   return auth.api.viewBackupCodes({
+-     body: { userId: "user-id" }
+-   })
+- }
++ export const getBackupCodes = query({
++   args: {
++     userId: v.id("users"),
++   },
++   handler: async (ctx, args) => {
++     const auth = createAuth(ctx);
++     return await auth.api.viewBackupCodes({
++       body: {
++         userId: args.userId,
++       },
++     });
++   },
++ });
+```
+
+### Sessions
+
+Accessing the session server side requires request headers. The Convex component provides a method for generating headers for the current session.
+
+```tsx title="convex/someFile.ts" "headers"
+import { createAuth, betterAuthComponent } from "./auth";
+
+export const getSession = query({
+  args: {},
+  handler: async (ctx) => {
+    const auth = createAuth(ctx);
+    const headers = await betterAuthComponent.getHeaders(ctx);
+    const session = await auth.api.getSession({
+      headers,
+    });
+    if (!session) {
+      return null;
+    }
+    // Do something with the session
+    return session;
+  },
+});
+```
+
+### Server-side auth
+
+Server-side authentication with the Better Auth component works similar to other Convex authentication providers. See the Convex docs for your framework for more details.
+
+- [Next.js](https://docs.convex.dev/client/react/nextjs/server-rendering#server-side-authentication)
+- [TanStack Start](https://docs.convex.dev/client/react/tanstack-start/#authentication)
+
+Server side authentication with Convex requires a token. To get an identity token with Better Auth, use the framework appropriate `getToken` approach.
+
+<Tabs syncKey="frameworks">
+  <TabItem label="Next.js">
+    ```tsx title="app/actions.ts" "getToken"
+    "use server";
+
+    import { api } from "@/convex/_generated/api";
+    import { getToken } from "@convex-dev/better-auth/nextjs";
+    import { createAuth } from "@/convex/auth";
+    import { fetchMutation } from "convex/nextjs";
+
+    // Authenticated mutation via server function
+    export async function createPost(title: string, content: string) {
+      const token = await getToken(createAuth);
+      await fetchMutation(api.posts.create, { title, content }, { token });
+    }
+    ```
+
+  </TabItem>
+  <TabItem label="TanStack Start">
+    ```tsx title="src/routes/index.tsx" "getToken"
+    import { createServerFn } from "@tanstack/react-start";
+    import { getCookieName } from "@convex-dev/better-auth/react-start";
+    import { createAuth } from "../../convex/auth";
+    import { api } from "../../convex/_generated/api";
+    import { ConvexHttpClient } from "convex/browser";
+
+    const setupClient = (token?: string) => {
+      const client = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL)
+      if (token) {
+        client.setAuth(token)
+      }
+      return client
+    }
+
+    const getToken = async () => {
+      const sessionCookieName = await getCookieName(createAuth)
+      return getCookie(sessionCookieName)
+    }
+
+    export const createPost = createServerFn({ method: 'POST' })
+      .handler(async ({ data: { title, content } }) => {
+        const token = await getToken()
+        await setupClient(token).mutation(api.posts.create, {
+          title,
+          content,
+        })
+      })
+    ```
+
+  </TabItem>
+  </Tabs>
+
+## Authorization
+
+### React
+
+To check authentication state in your React components, use the authentication state components from `convex/react`.
+
+```tsx title="App.tsx"
+import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
+
+export default function App() {
+  return (
+    <>
+      <AuthLoading>
+        <div>Loading...</div>
+      </AuthLoading>
+      <Authenticated>
+        <div>Dashboard</div>
+      </Authenticated>
+      <Unauthenticated>
+        <div>Sign In</div>
+      </Unauthenticated>
+    </>
+  );
+}
+```
+
+### Convex Functions
+
+For authorization and user checks inside Convex functions (queries, mutations, actions), use Convex's `ctx.auth` or the `getAuthUserId()`/`getAuthUser()` methods on the Better Auth Convex component:
+
+```ts title="convex/someFile.ts" "getAuthUserId" "getAuthUser"
+import { betterAuthComponent } from "./auth";
+import { Id } from "./_generated/dataModel";
+
+export const myFunction = query({
+  args: {},
+  handler: async (ctx) => {
+    // You can get the user id directly from Convex via ctx.auth
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
+    // For now the id type requires an assertion
+    const userIdFromCtx = identity.subject as Id<"users">;
+
+    // The component provides a convenience method to get the user id
+    const userId = await betterAuthComponent.getAuthUserId(ctx);
+    if (!userId) {
+      return null;
+    }
+
+    const user = await ctx.db.get(userId as Id<"users">);
+
+    // Get user email and other metadata from the Better Auth component
+    const userMetadata = await betterAuthComponent.getAuthUser(ctx);
+
+    // You can combine them if you want
+    return { ...userMetadata, ...user };
+  },
+});
+```

@@ -19,7 +19,15 @@ export default defineConfig({
                 { icon: 'discord', label: 'Discord', href: 'https://discord.gg/convex-dev' },
             ],
             sidebar: [
-                {slug: '', label: 'Quick Start', link: '/docs/'}
+                {slug: '', label: 'Quick Start', link: '/docs/'},
+                {slug: 'schemas-and-sync', label: 'Schemas & Data Syncing', link: '/docs/schemas-and-sync/'},
+                {slug: 'basic-usage', label: 'Basic Usage', link: '/docs/basic-usage/'},
+                {slug: 'integrations', label: 'Integrations', link: '/docs/integrations/'},
+                {label: 'Guides', collapsed: false, items: [
+                    {slug: 'guides/migrating-existing-users', label: 'Migrating Existing Users', link: '/docs/guides/migrating-existing-users/'},
+                    {slug: 'guides/migrate-056-060', label: 'Migrating from 0.5.6 to 0.6.0', link: '/docs/guides/migrate-056-060/'},
+                    {slug: 'guides/migrate-040-050', label: 'Migrating from 0.4.0 to 0.5.0', link: '/docs/guides/migrate-040-050/'},
+                ]},
             ],
             customCss: ['./src/styles/global.css'],
         }),

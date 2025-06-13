@@ -1,3 +1,24 @@
+# How to run:
+
+(Package manager of your choice, although pnpm is reccomended)
+1. `pnpm install`
+2. `pnpm dev`
+3. Find the file you want to edit in `src/content/docs/`.
+4. Edit it.
+5. Done!
+
+
+## Deployment:
+[Netlify](https://docs.netlify.com/frameworks/astro/)<br/>
+[Vercel](https://vercel.com/docs/frameworks/astro)
+
+
+
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+
+
 # Starlight Starter Kit: Basics
 
 [![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)

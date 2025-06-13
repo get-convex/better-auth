@@ -1,0 +1,45 @@
+---
+title: Migrating Existing Users
+sidebar_position: 1
+description: Migrating existing users to the Better Auth Convex component.
+---
+
+Note: This guide is for applications migrating users that are already in their Convex database, and does not cover email/password authentication due to differences in password hashing.
+
+If you're migrating from an existing authentication system, you can use a gradual migration approach that moves users over as they log in. This method is less disruptive than a bulk migration and allows you to handle edge cases more gracefully.
+
+Implement the migration logic in your `onCreateUser` hook in `convex/auth.ts`. This will run when Better Auth attempts to create a new user, allowing you to gradually migrate users as they access your app.
+
+```ts title="convex/auth.ts"
+export const { createUser, deleteUser, updateUser, createSession } =
+  betterAuthComponent.createAuthFunctions({
+    onCreateUser: async (ctx, user) => {
+      const existingUser = await ctx.db
+        .query("users")
+        .withIndex("email", (q) => q.eq("email", user.email))
+        .unique();
+
+      if (existingUser && !user.emailVerified) {
+        // This would be due to a social login provider where the email is not
+        // verified.
+        throw new ConvexError("Email not verified");
+      }
+
+      if (existingUser) {
+        // Drop old auth system fields (if any)
+        await ctx.db.patch(existingUser._id as Id<"users">, {
+          oldAuthField: undefined,
+          otherOldAuthField: undefined,
+          foo: "bar",
+        });
+        return existingUser._id as Id<"users">;
+      }
+
+      // No existing user found, create a new one and return the id
+      return await ctx.db.insert("users", {
+        foo: "bar",
+      });
+    },
+    // ...
+  });
+```
