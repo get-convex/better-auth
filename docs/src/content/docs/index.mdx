@@ -1,0 +1,696 @@
+---
+title: Convex + Better Auth
+sidebar_position: 1
+description: Comprehensive, secure authentication for Convex apps using Better Auth.
+---
+
+import { Aside, Code, Tabs, TabItem } from "@astrojs/starlight/components";
+import QuickStart from "../../components/quickStart.astro";
+
+
+
+**Comprehensive, secure authentication for Convex apps using Better Auth.**
+
+# What is this?
+
+This library is a Convex Component that provides an integration layer for using [Better Auth](https://better-auth.com) with [Convex](https://www.convex.dev).
+
+After following the installation and setup steps below, you can use Better Auth in the normal way. Some exceptions will apply for certain configuration options, apis, and plugins.
+
+Check out the [Better Auth docs](https://better-auth.com/docs) for usage information, plugins, and more.
+
+<br />
+<br />
+
+
+
+
+<Aside type="caution">
+  The Convex Better Auth component is in early alpha development. If your use
+  case isn't supported, a plugin doesn't work, you hit a bug, etc, please open a
+  [GitHub issue](https://github.com/get-convex/better-auth/issues) or reach out
+  on [Discord](https://discord.gg/convex).
+</Aside>
+
+
+
+
+
+
+## Quick Start
+
+To quickly setup and test out this plugin, try out one of these templates:
+
+<QuickStart />
+
+
+
+
+
+## Installation & Setup
+<br />
+### Prerequisites
+
+
+You'll first need a project on Convex where npx convex dev has been run on your local machine. If you don't have one, run npm create convex@latest to get started, and check out the docs to learn more.
+
+<Aside type="note">
+  It's helpful to have the Convex dev server (`npx convex dev`) running in the
+  background while setting up, otherwise you'll see type errors that won't
+  resolve until you run it.
+</Aside>
+
+
+
+
+
+### Setting up the plugin
+
+To get started, install the component, and a pinned version of Better Auth:
+
+<Tabs syncKey="packageManagers">
+<TabItem label="npm">
+```sh
+npm install @convex-dev/better-auth
+npm install better-auth@1.2.7 --save-exact
+```
+</TabItem>
+<TabItem label="pnpm">
+```sh
+pnpm add @convex-dev/better-auth
+pnpm add better-auth@1.2.7 --save-exact
+```
+</TabItem>
+<TabItem label="yarn">
+```sh
+yarn add @convex-dev/better-auth
+yarn add better-auth@1.2.7 --exact
+```
+</TabItem>
+<TabItem label="bun">
+```sh
+bun add @convex-dev/better-auth
+bun add better-auth@1.2.7 --exact
+```
+</TabItem>
+</Tabs>
+
+
+then in your `convex.config.ts` file, add the plugin:
+```ts title="convex/convex.config.ts" {2, 5}
+import { defineApp } from "convex/server";
+import betterAuth from "@convex-dev/better-auth/convex.config";
+
+const app = defineApp();
+app.use(betterAuth);
+export default app;
+```
+
+<br/>
+Add a `convex/auth.config.ts` file to configure Better Auth as an authentication provider:
+<br/>
+```ts title="convex/auth.config.ts"
+export default {
+  providers: [
+    {
+      domain: process.env.CONVEX_SITE_URL,
+      applicationID: "convex",
+    },
+  ],
+};
+```
+
+
+
+### Configure Better Auth
+
+Generate a secret for encryption and generating hashes. Use the command below if you have openssl installed, or generate a random value [here](https://www.better-auth.com/docs/installation#set-environment-variables), or whatever other method you prefer.
+
+{/* Tried for hours, couldn't get the random generation to work */}
+
+```sh
+npx convex env set BETTER_AUTH_SECRET=$(openssl rand -base64 32)
+```
+
+
+<br/>
+Add the Convex site URL environment variable to the `.env.local` file created by npx convex dev. It will be picked up by your framework dev server.
+<br/>
+
+
+
+<Tabs syncKey='frameworks'>
+  <TabItem label="React">
+```sh {6, 7}
+# Deployment used by npx convex dev
+CONVEX_DEPLOYMENT=dev:adjective-animal-123 # team: team-name, project: project-name
+
+VITE_CONVEX_URL=https://adjective-animal-123.convex.cloud
+
+# Same as VITE_CONVEX_URL but ends in .site
+VITE_CONVEX_SITE_URL=https://adjective-animal-123.convex.site
+```
+</TabItem>
+<TabItem label="Next.js">
+```sh {6, 7}
+# Deployment used by npx convex dev
+CONVEX_DEPLOYMENT=dev:adjective-animal-123 # team: team-name, project: project-name
+
+NEXT_PUBLIC_CONVEX_URL=https://adjective-animal-123.convex.cloud
+
+# Same as NEXT_PUBLIC_CONVEX_URL but ends in .site
+NEXT_PUBLIC_CONVEX_SITE_URL=https://adjective-animal-123.convex.site
+```
+</TabItem>
+<TabItem label="Tanstack Start">
+```sh {6, 7}
+# Deployment used by npx convex dev
+CONVEX_DEPLOYMENT=dev:adjective-animal-123 # team: team-name, project: project-name
+
+VITE_CONVEX_URL=https://adjective-animal-123.convex.cloud
+
+# Same as VITE_CONVEX_URL but ends in .site
+VITE_CONVEX_SITE_URL=https://adjective-animal-123.convex.site
+```
+</TabItem>
+</Tabs>
+
+
+
+
+
+
+### Intialize Better Auth
+
+
+
+First, add a users schema, name it whatever you'd like:
+
+```ts title="convex/schema.ts"
+import { defineSchema, defineTable } from "convex/server";
+
+export default defineSchema({
+  users: defineTable({
+    // Fields are optional
+  }),
+});
+```
+
+<br/>
+Now, create your Better Auth instance:
+<br/>
+
+
+
+<Aside type="note">
+Some errors will show while you're creating this, until you save the file, and convex generates the types. (Make sure `npx convex dev` is running)
+</Aside>
+<br/>
+
+
+
+
+
+
+<Tabs syncKey="frameworks">
+  <TabItem label="React">
+    ```ts title="convex/auth.ts" collapse={1-10, 27-31}
+    import {
+      BetterAuth,
+      convexAdapter,
+      type AuthFunctions,
+    } from "@convex-dev/better-auth";
+    import { convex } from "@convex-dev/better-auth/plugins";
+    import { betterAuth } from "better-auth";
+    import { api, components, internal } from "./_generated/api";
+    import { query, type GenericCtx } from "./_generated/server";
+    import type { Id, DataModel } from "./_generated/dataModel";
+
+    // Typesafe way to pass Convex functions defined in this file
+    const authFunctions: AuthFunctions = internal.auth;
+
+    // Initialize the component
+    export const betterAuthComponent = new BetterAuth(
+      components.betterAuth,
+      {
+        authFunctions,
+      }
+    );
+
+    export const createAuth = (ctx: GenericCtx) =>
+      // Configure your Better Auth instance here
+      betterAuth({
+        database: convexAdapter(ctx, betterAuthComponent),
+        // Simple non-verified email/password to get started
+        emailAndPassword: {
+          enabled: true,
+          requireEmailVerification: false,
+        },
+        plugins: [
+          // The Convex plugin is required
+          convex(),
+
+          // The cross domain plugin is required for client side frameworks
+          crossDomain({
+            siteUrl: "http://localhost:5173",
+          }),
+        ],
+      });
+    ```
+  </TabItem>
+  <TabItem label="Next.js">
+    ```ts title="convex/auth.ts" collapse={1-11, 32-36}
+    import {
+      BetterAuth,
+      convexAdapter,
+      type AuthFunctions,
+      type PublicAuthFunctions,
+    } from "@convex-dev/better-auth";
+    import { convex } from "@convex-dev/better-auth/plugins";
+    import { betterAuth } from "better-auth";
+    import { api, components, internal } from "./_generated/api";
+    import { query, type GenericCtx } from "./_generated/server";
+    import type { Id, DataModel } from "./_generated/dataModel";
+
+    // Typesafe way to pass Convex functions defined in this file
+    const authFunctions: AuthFunctions = internal.auth;
+    const publicAuthFunctions: PublicAuthFunctions = api.auth;
+
+    // Initialize the component
+    export const betterAuthComponent = new BetterAuth(
+      components.betterAuth,
+      {
+        authFunctions,
+        publicAuthFunctions,
+      }
+    );
+
+    export const createAuth = (ctx: GenericCtx) =>
+      // Configure your Better Auth instance here
+      betterAuth({
+        // All auth requests will be proxied through your next.js server
+        baseURL: "http://localhost:3000",
+        database: convexAdapter(ctx, betterAuthComponent),
+        // Simple non-verified email/password to get started
+        emailAndPassword: {
+          enabled: true,
+          requireEmailVerification: false,
+        },
+        plugins: [
+          // The Convex plugin is required
+          convex(),
+        ],
+      });
+
+    // These are required named exports
+    export const {
+      createUser,
+      updateUser,
+      deleteUser,
+      createSession,
+      isAuthenticated,
+    } =
+      betterAuthComponent.createAuthFunctions<DataModel>({
+        // Must create a user and return the user id
+        onCreateUser: async (ctx, user) => {
+          return ctx.db.insert("users", {});
+        },
+
+        // Delete the user when they are deleted from Better Auth
+        onDeleteUser: async (ctx, userId) => {
+          await ctx.db.delete(userId as Id<"users">);
+        },
+      });
+    ```
+  </TabItem>
+  <TabItem label="Tanstack Start">
+    ```ts title="convex/auth.ts" collapse={1-10, 29-33}
+    import {
+      BetterAuth,
+      convexAdapter,
+      type AuthFunctions,
+    } from "@convex-dev/better-auth";
+    import { convex } from "@convex-dev/better-auth/plugins";
+    import { betterAuth } from "better-auth";
+    import { components, internal } from "./_generated/api";
+    import { query, type GenericCtx } from "./_generated/server";
+    import type { Id, DataModel } from "./_generated/dataModel";
+
+    // Typesafe way to pass Convex functions defined in this file
+    const authFunctions: AuthFunctions = internal.auth;
+
+    // Initialize the component
+    export const betterAuthComponent = new BetterAuth(
+      components.betterAuth,
+      {
+        authFunctions,
+      }
+    );
+
+    export const createAuth = (ctx: GenericCtx) =>
+      // Configure your Better Auth instance here
+      betterAuth({
+        // All auth requests will be proxied through your TanStack Start server
+        baseURL: "http://localhost:3000",
+        database: convexAdapter(ctx, betterAuthComponent),
+        // Simple non-verified email/password to get started
+        emailAndPassword: {
+          enabled: true,
+          requireEmailVerification: false,
+        },
+        plugins: [
+          // The Convex plugin is required
+          convex(),
+        ],
+      });
+
+    // These are required named exports
+    export const {
+      createUser,
+      updateUser,
+      deleteUser,
+      createSession,
+    } =
+      betterAuthComponent.createAuthFunctions<DataModel>({
+        // Must create a user and return the user id
+        onCreateUser: async (ctx, user) => {
+          return ctx.db.insert("users", {});
+        },
+
+        // Delete the user when they are deleted from Better Auth
+        onDeleteUser: async (ctx, userId) => {
+          await ctx.db.delete(userId as Id<"users">);
+        },
+      });
+    ```
+  </TabItem>
+</Tabs>
+
+
+
+### Mount Handlers
+
+Register Better Auth route handlers on your Convex deployment.
+
+```ts title="convex/http.ts"
+import { httpRouter } from "convex/server";
+import { betterAuthComponent, createAuth } from "./auth";
+
+const http = httpRouter();
+
+betterAuthComponent.registerRoutes(http, createAuth);
+
+export default http
+```
+
+for full-stack framworks, you also need to proxy auth requests from your backend to Convex:
+
+<Tabs syncKey="frameworks">
+  <TabItem label="React">
+  No changes needed for React!
+  </TabItem>
+  <TabItem label="Next.js">
+  Make sure to mount the handler in your `app/api/auth/[...all]/route.ts` file:
+  ```ts title="app/api/auth/[...all]/route.ts"
+import { nextJsHandler } from "@convex-dev/better-auth/nextjs";
+
+export const { GET, POST } = nextJsHandler();
+```
+  </TabItem>
+  <TabItem label="Tanstack Start">
+  Make sure to mount the handler in your `src/routes/api/auth/$.ts` file:
+  ```ts title="src/routes/api/auth/$.ts"
+  import { reactStartHandler } from '@convex-dev/better-auth/react-start'
+
+export const ServerRoute = createServerFileRoute().methods({
+    GET: ({ request }) => reactStartHandler(request),
+    POST: ({ request }) => reactStartHandler(request),
+});
+```
+  </TabItem>
+</Tabs>
+
+
+### Create a Better Auth client instance
+<Tabs syncKey="frameworks">
+  <TabItem label="React">
+    ```ts title="src/lib/auth-client.ts"
+    import { createAuthClient } from "better-auth/react";
+    import {
+      convexClient,
+      crossDomainClient,
+    } from "@convex-dev/better-auth/client/plugins";
+
+    export const authClient = createAuthClient({
+      baseURL: import.meta.env.VITE_CONVEX_SITE_URL,
+      plugins: [
+        convexClient(),
+        crossDomainClient(),
+      ],
+    });
+    ```
+  </TabItem>
+  <TabItem label="Next.js">
+    ```ts title="src/lib/auth-client.ts"
+    import { createAuthClient } from "better-auth/react";
+    import { convexClient } from "@convex-dev/better-auth/client/plugins";
+
+    export const authClient = createAuthClient({
+      plugins: [
+        convexClient(),
+      ],
+    });
+    ```
+  </TabItem>
+  <TabItem label="Tanstack Start">
+    ```ts title="src/lib/auth-client.ts"
+    import { createAuthClient } from "better-auth/react";
+    import { convexClient } from "@convex-dev/better-auth/client/plugins";
+
+    export const authClient = createAuthClient({
+      plugins: [
+        convexClient(),
+      ],
+    });
+    ```
+  </TabItem>
+</Tabs>
+
+
+### Setup Convex Client provider
+
+Wrap your app in the `ConvexBetterAuthProvider`:
+<Tabs syncKey="frameworks">
+  <TabItem label="React">
+    ```tsx title="src/main.tsx" {6-7, 13, 15}
+    import React from "react";
+    import ReactDOM from "react-dom/client";
+    import App from "./App";
+    import "./index.css";
+    import { ConvexReactClient } from "convex/react";
+    import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
+    import { authClient } from "@/lib/auth-client";
+
+    const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+
+    ReactDOM.createRoot(document.getElementById("root")!).render(
+      <React.StrictMode>
+        <ConvexBetterAuthProvider client={convex} authClient={authClient}>
+          <App />
+        </ConvexBetterAuthProvider>
+      </React.StrictMode>
+    );
+    ```
+  </TabItem>
+  <TabItem label="Next.js">
+    ```tsx title="app/ConvexClientProvider.tsx" {6, 5, 12, 14}
+    "use client";
+
+    import { ReactNode } from "react";
+    import { ConvexReactClient } from "convex/react";
+    import { authClient } from "@/lib/auth-client";
+    import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
+
+    const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+
+    export function ConvexClientProvider({ children }: { children: ReactNode }) {
+      return (
+        <ConvexBetterAuthProvider client={convex} authClient={authClient}>
+          {children}
+        </ConvexBetterAuthProvider>
+      );
+    }
+    ```
+  </TabItem>
+  <TabItem label="Tanstack Start">
+    ```tsx title="src/routes/__root.tsx" {4, 9, 14-23, 25-35, 39-40, 57-70, 75-79, 84} collapse={42-56, 87-100}
+    import {
+      Outlet,
+      createRootRouteWithContext,
+      useRouteContext,
+    } from '@tanstack/react-router'
+    import {
+      Meta,
+      Scripts,
+      createServerFn,
+    } from '@tanstack/react-start'
+    import { QueryClient } from '@tanstack/react-query'
+    import * as React from 'react'
+    import appCss from '~/styles/app.css?url'
+    import { ConvexQueryClient } from '@convex-dev/react-query'
+    import { ConvexReactClient } from 'convex/react'
+    import { getCookie, getWebRequest } from '@tanstack/react-start/server'
+    import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
+    import {
+      fetchSession,
+      getCookieName,
+    } from '@convex-dev/better-auth/react-start'
+    import { authClient } from '~/lib/auth-client'
+    import { createAuth } from '../../convex/auth'
+
+    // Server side session request
+    const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
+      const sessionCookieName = await getCookieName(createAuth)
+      const token = getCookie(sessionCookieName)
+      const request = getWebRequest()
+      const { session } = await fetchSession(createAuth, request)
+      return {
+        userId: session?.user.id,
+        token,
+      }
+    })
+
+    export const Route = createRootRouteWithContext<{
+      queryClient: QueryClient
+      convexClient: ConvexReactClient
+      convexQueryClient: ConvexQueryClient
+    }>()({
+      head: () => ({
+        meta: [
+          {
+            charSet: 'utf-8',
+          },
+          {
+            name: 'viewport',
+            content: 'width=device-width, initial-scale=1',
+          },
+        ],
+        links: [
+          { rel: 'stylesheet', href: appCss },
+          { rel: 'icon', href: '/favicon.ico' },
+        ],
+      }),
+      beforeLoad: async (ctx) => {
+        // all queries, mutations and action made with TanStack Query will be
+        // authenticated by an identity token.
+        const auth = await fetchAuth()
+        const { userId, token } = auth
+
+        // During SSR only (the only time serverHttpClient exists),
+        // set the auth token for Convex to make HTTP queries with.
+        if (token) {
+          ctx.context.convexQueryClient.serverHttpClient?.setAuth(token)
+        }
+
+        return { userId, token }
+      },
+      component: RootComponent,
+    })
+
+    function RootComponent() {
+      const context = useRouteContext({ from: Route.id })
+      return (
+        <ConvexBetterAuthProvider
+          client={context.convexClient}
+          authClient={authClient}
+        >
+          <RootDocument>
+            <Outlet />
+          </RootDocument>
+        </ConvexBetterAuthProvider>
+      )
+    }
+
+    function RootDocument({ children }: { children: React.ReactNode }) {
+      return (
+        <html lang="en" className="dark">
+          <head>
+            <Meta />
+          </head>
+          <body className="bg-neutral-950 text-neutral-50">
+            {children}
+            <Scripts />
+          </body>
+        </html>
+      )
+    }
+    ```
+  </TabItem>
+</Tabs>
+
+
+and lastly for Tanstack Start, you also need to provide context from Convex to your routes:
+
+<Tabs syncKey="frameworks">
+  <TabItem label="React">
+  ...although for React, you can just skip this part :\)
+  </TabItem>
+  <TabItem label="Next.js">
+  ...although for Next.js, you can just skip this part :\)
+  </TabItem>
+  <TabItem label="Tanstack Start">
+  ```tsx title="src/router.tsx" {13-16, 33} collapse={1-6, 39-51}
+  import { createRouter as createTanStackRouter } from '@tanstack/react-router'
+  import { routeTree } from './routeTree.gen'
+  import { routerWithQueryClient } from '@tanstack/react-router-with-query'
+  import { ConvexProvider, ConvexReactClient } from 'convex/react'
+  import { ConvexQueryClient } from '@convex-dev/react-query'
+  import { QueryClient } from '@tanstack/react-query'
+
+  export function createRouter() {
+    const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!
+    if (!CONVEX_URL) {
+      throw new Error('missing VITE_CONVEX_URL envar')
+    }
+    const convex = new ConvexReactClient(CONVEX_URL, {
+      unsavedChangesWarning: false,
+    })
+    const convexQueryClient = new ConvexQueryClient(convex)
+
+    const queryClient: QueryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          queryKeyHashFn: convexQueryClient.hashFn(),
+          queryFn: convexQueryClient.queryFn(),
+        },
+      },
+    })
+    convexQueryClient.connect(queryClient)
+
+    const router = routerWithQueryClient(
+      createTanStackRouter({
+        routeTree,
+        defaultPreload: 'intent',
+        scrollRestoration: true,
+        context: { queryClient, convexClient: convex, convexQueryClient },
+        Wrap: ({ children }) => (
+          <ConvexProvider client={convexQueryClient.convexClient}>
+            {children}
+          </ConvexProvider>
+        ),
+      }),
+      queryClient,
+    )
+
+    return router
+  }
+
+  declare module '@tanstack/react-router' {
+    interface Register {
+      router: ReturnType<typeof createRouter>
+    }
+  }
+  ```
+  </TabItem>
+</Tabs>
+
