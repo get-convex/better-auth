@@ -22,6 +22,7 @@ import { betterAuth } from "better-auth";
 import { omit } from "convex-helpers";
 import { createCookieGetter } from "better-auth/cookies";
 import { fetchQuery } from "convex/nextjs";
+import { JWT_COOKIE_NAME } from "../plugins/convex";
 export { convexAdapter };
 
 const createUserFields = omit(schema.tables.user.validator.fields, ["userId"]);
@@ -147,7 +148,7 @@ export class BetterAuth<UserId extends string = string> {
   ) {
     const auth = createAuth({} as any);
     const createCookie = createCookieGetter(auth.options);
-    const cookie = createCookie("convex_jwt");
+    const cookie = createCookie(JWT_COOKIE_NAME);
     return cookie.name;
   }
 
@@ -255,12 +256,16 @@ export class BetterAuth<UserId extends string = string> {
       [...trustedOriginsOption, options.baseURL].filter(Boolean) as string[]
     );
     // Reuse trustedOrigins as default for allowedOrigins
-    const allowedOrigins =
-      opts?.allowedOrigins ??
-      trustedOrigins?.map((origin) =>
-        // Strip trailing wildcards, unsupported for allowedOrigins
-        origin.endsWith("*") && origin.length > 1 ? origin.slice(0, -1) : origin
-      );
+    const allowedOrigins = [
+      ...(opts?.allowedOrigins ??
+        trustedOrigins?.map((origin) =>
+          // Strip trailing wildcards, unsupported for allowedOrigins
+          origin.endsWith("*") && origin.length > 1
+            ? origin.slice(0, -1)
+            : origin
+        ) ??
+        []),
+    ];
     const requireEnv = (name: string) => {
       const value = process.env[name];
       if (value === undefined) {

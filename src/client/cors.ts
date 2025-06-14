@@ -333,6 +333,8 @@ const handleCors = ({
         if (isAllowedOrigin(requestOrigin)) {
           allowOrigins = requestOrigin;
         }
+      } else if (requestOrigin === null) {
+        allowOrigins = "null";
       }
 
       if (!allowOrigins) {

@@ -107,6 +107,38 @@ export const convex = (
         },
         {
           matcher: (ctx) => {
+            return (
+              ctx.path?.startsWith("/sign-in") ||
+              ctx.path?.startsWith("/callback")
+            );
+          },
+          handler: createAuthMiddleware(async (ctx) => {
+            // Set jwt cookie at login for ssa
+            const cookie = ctx.context.responseHeaders?.get("set-cookie") ?? "";
+            if (!cookie) {
+              return;
+            }
+            try {
+              const { token } = await jwt.endpoints.getToken({
+                ...ctx,
+                method: "GET",
+                headers: {
+                  cookie,
+                },
+                returnHeaders: false,
+              });
+              const jwtCookie = ctx.context.createAuthCookie(JWT_COOKIE_NAME, {
+                maxAge: jwtExpirationSeconds,
+              });
+              ctx.setCookie(jwtCookie.name, token, jwtCookie.attributes);
+            } catch (err) {
+              // no-op, some sign-in calls (eg., when redirecting to 2fa)
+              // 401 here
+            }
+          }),
+        },
+        {
+          matcher: (ctx) => {
             return ctx.path?.startsWith("/sign-out");
           },
           handler: createAuthMiddleware(async (ctx) => {
