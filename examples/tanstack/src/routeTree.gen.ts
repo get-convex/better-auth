@@ -64,7 +64,6 @@ const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '': typeof AuthedRouteWithChildren
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/client-only': typeof AuthedClientOnlyRouteWithChildren
@@ -73,7 +72,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '': typeof AuthedRouteWithChildren
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/server': typeof AuthedServerRoute
@@ -93,14 +91,13 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | ''
     | '/sign-in'
     | '/sign-up'
     | '/client-only'
     | '/server'
     | '/client-only/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '' | '/sign-in' | '/sign-up' | '/server' | '/client-only'
+  to: '/' | '/sign-in' | '/sign-up' | '/server' | '/client-only'
   id:
     | '__root__'
     | '/'

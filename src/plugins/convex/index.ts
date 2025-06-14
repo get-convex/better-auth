@@ -1,8 +1,4 @@
-import {
-  createAuthMiddleware,
-  getSession,
-  sessionMiddleware,
-} from "better-auth/api";
+import { createAuthMiddleware, sessionMiddleware } from "better-auth/api";
 import {
   BetterAuthPlugin,
   createAuthEndpoint,
@@ -14,10 +10,18 @@ import {
 import { omit } from "convex-helpers";
 import { z } from "zod";
 
-const JWT_COOKIE_NAME = "convex_jwt";
+export const JWT_COOKIE_NAME = "convex_jwt";
 
-export const convex = (opts: { jwtExpirationSeconds?: number } = {}) => {
-  const { jwtExpirationSeconds = 60 * 15 } = opts;
+export const convex = (
+  opts: {
+    jwtExpirationSeconds?: number;
+    deleteExpiredSessionsOnLogin?: boolean;
+  } = {}
+) => {
+  const {
+    jwtExpirationSeconds = 60 * 15,
+    deleteExpiredSessionsOnLogin = false,
+  } = opts;
   const customSession = customSessionPlugin(async ({ user, session }) => {
     const { userId, ...userData } = omit(user, ["id"]) as typeof user & {
       userId: string;
@@ -54,8 +58,8 @@ export const convex = (opts: { jwtExpirationSeconds?: number } = {}) => {
     },
   });
   // Bearer plugin converts the session token to a cookie
-  // for cross domain social login after code verification, and is required for
-  // the headers() helper to work.
+  // for cross domain social login after code verification,
+  // and is required for the headers() helper to work.
   const bearer = bearerPlugin();
   const schema = {
     user: {
@@ -69,6 +73,38 @@ export const convex = (opts: { jwtExpirationSeconds?: number } = {}) => {
       before: [...bearer.hooks.before],
       after: [
         ...oidcProvider.hooks.after,
+        {
+          matcher: (ctx) => {
+            return (
+              deleteExpiredSessionsOnLogin &&
+              (ctx.path?.startsWith("/sign-in") ||
+                ctx.path?.startsWith("/callback"))
+            );
+          },
+          handler: createAuthMiddleware(async (ctx) => {
+            // Delete expired sessions at login
+            const userId = ctx.context.newSession?.user.id;
+            if (!userId) {
+              return;
+            }
+            await ctx.context.adapter.deleteMany({
+              model: "session",
+              where: [
+                {
+                  field: "userId",
+                  operator: "eq",
+                  value: userId,
+                  connector: "AND",
+                },
+                {
+                  operator: "lte",
+                  field: "expiresAt",
+                  value: new Date().getTime(),
+                },
+              ],
+            });
+          }),
+        },
         {
           matcher: (ctx) => {
             return ctx.path?.startsWith("/sign-out");
@@ -137,7 +173,7 @@ export const convex = (opts: { jwtExpirationSeconds?: number } = {}) => {
           });
           return response;
         }
-      ) as unknown as ReturnType<typeof getSession>,
+      ),
       getOpenIdConfig: createAuthEndpoint(
         "/convex/.well-known/openid-configuration",
         {

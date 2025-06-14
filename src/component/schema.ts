@@ -25,7 +25,9 @@ const schema = defineSchema({
     userId: v.string(),
   })
     .index("token", ["token"])
-    .index("userId", ["userId"]),
+    .index("userId", ["userId"])
+    .index("expiresAt", ["expiresAt"])
+    .index("userId_expiresAt", ["userId", "expiresAt"]),
 
   account: defineTable({
     accountId: v.string(),

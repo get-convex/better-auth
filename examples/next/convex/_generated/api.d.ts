@@ -164,6 +164,12 @@ export declare const components: {
         },
         any
       >;
+      deleteExpiredSessions: FunctionReference<
+        "mutation",
+        "internal",
+        { expiresAt: number; userId: string },
+        any
+      >;
       deleteOldVerifications: FunctionReference<
         "action",
         "internal",

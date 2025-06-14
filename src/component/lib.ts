@@ -276,6 +276,25 @@ export const deleteOldVerifications = action({
   },
 });
 
+export const deleteExpiredSessions = mutation({
+  args: {
+    userId: v.string(),
+    expiresAt: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const docs = await ctx.db
+      .query("session")
+      .withIndex("userId_expiresAt", (q) =>
+        q.eq("userId", args.userId).lt("expiresAt", args.expiresAt)
+      )
+      .collect();
+    await asyncMap(docs, async (doc) => {
+      await ctx.db.delete(doc._id);
+    });
+    return docs.length;
+  },
+});
+
 export const deleteAllForUserPage = mutation({
   args: {
     table: v.string(),

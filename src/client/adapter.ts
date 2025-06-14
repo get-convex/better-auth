@@ -80,7 +80,7 @@ export const convexAdapter = <
           limit,
         }): Promise<any[]> => {
           if (offset) {
-            throw new Error("where clause not supported");
+            throw new Error("offset not supported");
           }
           if (
             model === "jwks" &&
@@ -90,11 +90,11 @@ export const convexAdapter = <
           ) {
             return ctx.runQuery(component.component.lib.getJwks, { limit });
           }
-          if (where?.length !== 1 || where[0].operator !== "eq") {
+          if (
+            where?.length !== 1 ||
+            (where[0].operator && where[0].operator !== "eq")
+          ) {
             throw new Error("where clause not supported");
-          }
-          if (offset) {
-            throw new Error("offset not supported");
           }
           if (model === "account" && where[0].field === "userId") {
             return ctx.runQuery(component.component.lib.getAccountsByUserId, {
@@ -184,6 +184,24 @@ export const convexAdapter = <
               userId: where[0].value as any,
             });
           }
+          if (
+            model === "session" &&
+            where?.length === 2 &&
+            where[0].operator === "eq" &&
+            where[0].connector === "AND" &&
+            where[0].field === "userId" &&
+            where[1].operator === "lte" &&
+            where[1].field === "expiresAt" &&
+            typeof where[1].value === "number"
+          ) {
+            return ctx.runMutation(
+              component.component.lib.deleteExpiredSessions,
+              {
+                userId: where[0].value as string,
+                expiresAt: where[1].value as number,
+              }
+            );
+          }
           throw new Error("where clause not supported");
           // return count;
         },
@@ -208,6 +226,7 @@ export const convexAdapter = <
             where[0].operator === "eq" &&
             where[0].connector === "AND" &&
             where[0].field === "userId" &&
+            where[1].operator === "eq" &&
             where[1].field === "providerId"
           ) {
             return ctx.runMutation(

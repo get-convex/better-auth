@@ -130,6 +130,12 @@ export type Mounts = {
       },
       any
     >;
+    deleteExpiredSessions: FunctionReference<
+      "mutation",
+      "public",
+      { expiresAt: number; userId: string },
+      any
+    >;
     deleteOldVerifications: FunctionReference<
       "action",
       "public",
