@@ -1,0 +1,104 @@
+---
+title: Integrations
+sidebar_position: 4
+description: A few integrations that make your life easier.
+---
+
+import { Aside, Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Hono
+
+[Hono](https://hono.dev/) can be used in place of the component `registerRoutes()` method. Check out the Convex w/ Hono [Stack article](https://stack.convex.dev/hono-with-convex#using-hono-with-convex) and the [Better Auth Hono docs](https://www.better-auth.com/docs/integrations/hono) for more details.
+
+<Aside type="note">
+  You'll need to install the
+  [`convex-helpers`](https://github.com/get-convex/convex-helpers?tab=readme-ov-file#convex-helpers)
+  package for this if you haven't already.
+</Aside>
+
+<Tabs syncKey="frameworks">
+  <TabItem label="React">
+    ```ts title="convex/http.ts"
+    import { Hono } from "hono";
+    import { HonoWithConvex, HttpRouterWithHono } from "convex-helpers/server/hono";
+    import { ActionCtx } from "./_generated/server";
+    import { createAuth } from "./auth";
+
+    const app: HonoWithConvex<ActionCtx> = new Hono();
+
+    app.use(
+      "/api/auth/*",
+      cors({
+        origin: "http://localhost:5173",
+        allowHeaders: ["Content-Type", "Authorization", "Better-Auth-Cookie"],
+        allowMethods: ["GET", "POST", "OPTIONS"],
+        exposeHeaders: ["Content-Length", "Set-Better-Auth-Cookie"],
+        maxAge: 600,
+        credentials: true,
+      })
+    );
+
+    // Redirect root well-known to api well-known
+    app.get("/.well-known/openid-configuration", async (c) => {
+      return c.redirect('/api/auth/convex/.well-known/openid-configuration');
+    });
+
+    app.on(["POST", "GET"], "/api/auth/*", async (c) => {
+      const auth = createAuth(c.env);
+      return auth.handler(c.req.raw);
+    });
+
+    const http = new HttpRouterWithHono(app);
+
+    export default http;
+    ```
+  </TabItem>
+  <TabItem label="Next.js">
+    ```ts title="convex/http.ts"
+    import { Hono } from "hono";
+    import { HonoWithConvex, HttpRouterWithHono } from "convex-helpers/server/hono";
+    import { ActionCtx } from "./_generated/server";
+    import { createAuth } from "./auth";
+
+    const app: HonoWithConvex<ActionCtx> = new Hono();
+
+    // Redirect root well-known to api well-known
+    app.get("/.well-known/openid-configuration", async (c) => {
+      return c.redirect('/api/auth/convex/.well-known/openid-configuration');
+    });
+
+    app.on(["POST", "GET"], "/api/auth/*", async (c) => {
+      const auth = createAuth(c.env);
+      return auth.handler(c.req.raw);
+    });
+
+    const http = new HttpRouterWithHono(app);
+
+    export default http;
+    ```
+  </TabItem>
+  <TabItem label="TanStack Start">
+    ```ts title="convex/http.ts"
+    import { Hono } from "hono";
+    import { HonoWithConvex, HttpRouterWithHono } from "convex-helpers/server/hono";
+    import { ActionCtx } from "./_generated/server";
+    import { createAuth } from "./auth";
+
+    const app: HonoWithConvex<ActionCtx> = new Hono();
+
+    // Redirect root well-known to api well-known
+    app.get("/.well-known/openid-configuration", async (c) => {
+      return c.redirect('/api/auth/convex/.well-known/openid-configuration');
+    });
+
+    app.on(["POST", "GET"], "/api/auth/*", async (c) => {
+      const auth = createAuth(c.env);
+      return auth.handler(c.req.raw);
+    });
+
+    const http = new HttpRouterWithHono(app);
+
+    export default http;
+    ```
+  </TabItem>
+</Tabs>

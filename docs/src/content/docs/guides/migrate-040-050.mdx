@@ -1,0 +1,75 @@
+---
+title: Migrating from 0.4.0 to 0.5.0
+sidebar_position: 2
+description: Migrating from 0.4.0 to 0.5.0
+---
+
+- Plugins and client plugins exported by the Convex Better Auth component are now exported under / plugins and / client / plugins respectively.
+- A new crossDomain plugin is available.It's functionality was previously baked into the convex plugin.
+- Projects that were running v0.4.x will need to add the crossDomain plugin to their Better Auth client and server instances.
+  convex / auth.ts
+
+```ts title="convex/auth.ts"
+import { convex, crossDomain } from "@erquhart/convex-better-auth/plugins";
+import { betterAuth } from "better-auth";
+import { GenericCtx } from "./_generated/server";
+
+export const createAuth = (ctx: GenericCtx) =>
+  betterAuth({
+    // ...
+    plugins: [crossDomain(), convex()],
+  });
+```
+
+```ts title="lib/auth-client.ts"
+import { createAuthClient } from "better-auth/react";
+import {
+  convexClient,
+  crossDomainClient,
+} from "@erquhart/convex-better-auth/client/plugins";
+
+export const authClient = createAuthClient({
+  // ...
+  plugins: [crossDomainClient(), convexClient()],
+});
+```
+
+The `betterAuthComponent.authApi` method is now `betterAuthComponent.createAuthFunctions`.
+All four named exports returned from `betterAuthComponent.createAuthFunctions` are now required, even if you're only providing an `onCreateUser` hook.
+If you pass your `DataModel` to `betterAuthComponent.createAuthFunctions`, everything is now typed except for Ids, which still need to be asserted.Any other type assertions from before can be removed.
+
+```ts title="convex/users.ts"
+import { betterAuthComponent } from "./auth";
+import type { DataModel } from "./_generated/dataModel";
+
+export const { createUser, deleteUser, updateUser, createSession } =
+  betterAuthComponent.createAuthFunctions<DataModel>({
+    onCreateUser: async (ctx, user) => {
+      return await ctx.db.insert("users", {});
+    },
+  });
+```
+
+- The `authFunctions` object (formerly `authApi`) is now passed to the `BetterAuth` constructor, and is no longer passed to `convexAdapter`.
+- `authFunctions` is now typed using the `AuthFunctions` type.
+- `convexAdapter` now takes the `betterAuthComponent` instance instead of the `components.betterAuth` object.
+
+```ts title="convex/auth.ts"
+import { BetterAuth, type AuthFunctions } from "@erquhart/convex-better-auth";
+import { convex, crossDomain } from "@erquhart/convex-better-auth/plugins";
+import { components, internal } from "./_generated/api";
+
+const authFunctions: AuthFunctions = internal.users;
+
+export const betterAuthComponent = new BetterAuth(
+  components.betterAuth,
+  authFunctions
+);
+
+export const createAuth = (ctx: GenericCtx) =>
+  betterAuth({
+    database: convexAdapter(ctx, betterAuthComponent),
+    trustedOrigins: ["http://localhost:3000"],
+    plugins: [convex(), crossDomain()],
+  });
+```

@@ -286,6 +286,7 @@ export class BetterAuth<UserId extends string = string> {
       exposedHeaders: ["Set-Better-Auth-Cookie"],
     });
 
+    // Redirect root well-known to api well-known
     http.route({
       path: "/.well-known/openid-configuration",
       method: "GET",
@@ -295,40 +296,23 @@ export class BetterAuth<UserId extends string = string> {
       }),
     });
 
-    http.route({
-      path: `${path}/convex/.well-known/openid-configuration`,
-      method: "GET",
-      handler: authRequestHandler,
-    });
+    // Non-cors paths
+    [
+      // Any origin can hit these
+      "/convex/.well-known/openid-configuration",
+      "/convex/jwks",
 
-    http.route({
-      path: `${path}/convex/jwks`,
-      method: "GET",
-      handler: authRequestHandler,
-    });
-
-    http.route({
-      pathPrefix: `${path}/callback/`,
-      method: "GET",
-      handler: authRequestHandler,
-    });
-
-    http.route({
-      path: `${path}/magic-link/verify`,
-      method: "GET",
-      handler: authRequestHandler,
-    });
-
-    http.route({
-      path: `${path}/verify-email`,
-      method: "GET",
-      handler: authRequestHandler,
-    });
-
-    http.route({
-      pathPrefix: `${path}/reset-password/`,
-      method: "GET",
-      handler: authRequestHandler,
+      // These will be called with tokens, not vulnerable to CSRF
+      "/callback",
+      "/magic-link/verify",
+      "/verify-email",
+      "/reset-password",
+    ].forEach((subPath) => {
+      http.route({
+        path: `${path}${subPath}`,
+        method: "GET",
+        handler: authRequestHandler,
+      });
     });
 
     cors.route({

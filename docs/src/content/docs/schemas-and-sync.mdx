@@ -1,0 +1,79 @@
+---
+title: Schemas & Data Syncing
+sidebar_position: 2
+description: How to manage your application and component tables with this plugin.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+Like all Convex [components](https://www.convex.dev/components), the Better Auth component has it's own tables in it's own space in your Convex project. This means the Better Auth user table is separate from your application tables.
+
+Because of this, the Better Auth component requires that you create your own users table for your application. This table can have whatever fields you like, while the component user table keeps basic info such as email, verification status, two factor, etc.
+
+## User creation
+
+When Better Auth creates a user, it will first run an `onCreateUser` hook where you will create your user and return the id. Better Auth then creates it's own user record and sets a relation to the provided id.
+
+**The id you return will be the canonical user id.** It will be referenced in the session and in the jwt claims provided to Convex.
+
+`onCreateUser` is required for keeping your users table transactionally synced with the Better Auth user table. There are also optional `onUpdateUser` and `onDeleteUser` hooks. These hooks can also do whatever else you want for each event.
+
+```ts title="convex/auth.ts"
+import { betterAuthComponent } from "./auth";
+import { Id } from "./_generated/dataModel";
+
+export const { createUser, deleteUser, updateUser, createSession } =
+  betterAuthComponent.createAuthFunctions({
+    onCreateUser: async (ctx, user) => {
+      const userId = await ctx.db.insert("users", {
+        someField: "foo",
+      });
+      // The user id MUST be returned
+      return userId;
+    },
+    onUpdateUser: async (ctx, user) => {
+      await ctx.db.patch(user.userId as Id<"users">, {
+        someField: "foo",
+      });
+    },
+    onDeleteUser: async (ctx, userId) => {
+      await ctx.db.delete(userId as Id<"users">);
+      // Optionally delete any related data
+    },
+  });
+```
+<br/><br/>
+
+<Aside type="note">
+  You can also omit the `onDeleteUser` hook and use Better Auth's
+  `auth.api.deleteUser()` function to trigger user deletion
+  from within your own user deletion logic.
+</Aside>
+
+## Indexing on metadata
+
+You may have a need for accessing user metadata in your own user table, such as indexing by email or some other metadata. You can copy user metadata to your own user table on creation, and use the optional `onUpdateUser` hook to update your user table when a user's metadata changes. Note that changes you make to the synced field will **not** be reflected in the Better Auth user table.
+
+The user hooks are run in the same transaction as Better Auth's user create/update/delete operations, so if your hook throws an error or fails to write, the entire operation is guaranteed to fail, ensuring the user tables stay synced.
+
+
+```ts title="convex/auth.ts"
+// ...
+export const { createUser, deleteUser, updateUser } =
+  betterAuthComponent.createAuthFunctions({
+    onCreateUser: async (ctx, user) => {
+      // Copy the user's email to the application users table.
+      return await ctx.db.insert("users", {
+        email: user.email,
+      });
+    },
+
+    onUpdateUser: async (ctx, user) => {
+      // Keep the user's email synced
+      await ctx.db.patch(user.userId as Id<"users">, {
+        email: user.email,
+      });
+    },
+  //..
+  });
+```
