@@ -1,7 +1,7 @@
 ---
 /** THANK YOU TO @swithinbank IN THE ASTRO DISCORD FOR THIS SOLUTION */
 import { Code } from '@astrojs/starlight/components';
-const secret = "EXAMPLE";
+const secret = "$(openssl rand -base64 32)";
 ---
 
 <secret-updater class="mb-6 my-12">
