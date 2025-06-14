@@ -6,6 +6,8 @@ description: Comprehensive, secure authentication for Convex apps using Better A
 
 import { Aside, Code, Tabs, TabItem } from "@astrojs/starlight/components";
 import QuickStart from "../../components/quickStart.astro";
+import GenerateRandom from "../../components/generateRandom.astro";
+
 
 
 
@@ -125,12 +127,9 @@ export default {
 ### Configure Better Auth
 
 Generate a secret for encryption and generating hashes. Use the command below if you have openssl installed, or generate a random value [here](https://www.better-auth.com/docs/installation#set-environment-variables), or whatever other method you prefer.
-
-{/* Tried for hours, couldn't get the random generation to work */}
-
-```sh
-npx convex env set BETTER_AUTH_SECRET=$(openssl rand -base64 32)
-```
+<br/>
+<GenerateRandom />
+<br/>
 
 
 <br/>

@@ -1,0 +1,46 @@
+---
+/** THANK YOU TO @swithinbank IN THE ASTRO DISCORD FOR THIS SOLUTION */
+import { Code } from '@astrojs/starlight/components';
+const secret = "EXAMPLE";
+---
+
+<secret-updater class="mb-6 my-12">
+  <Code
+    code={`npx convex env set BETTER_AUTH_SECRET=${secret ?? "$(openssl rand -base64 32)"}`}
+    class="mb-4"
+    lang="txt"
+	frame='terminal'
+  />
+
+  <button type="button" data-generate-secret>Generate Secret</button>
+</secret-updater>
+
+<script is:inline>
+class SecretUpdater extends HTMLElement {
+  connectedCallback() {
+    // Find elements in the HTML
+    const codeBlock = this.querySelector('.expressive-code');
+    const copyCodeButton = codeBlock.querySelector('button[data-code]');
+    const codeContent = codeBlock.querySelector('.ec-line .code span');
+    const codeContentParent = codeContent.parentElement;
+    const button = this.querySelector('button[data-generate-secret]');
+    
+    // Attach the click handler
+    button.addEventListener('click', () => {
+      // Dummy code for the sake of the demo:
+      const secret = Math.round(Math.random() * 10e16).toString(36);
+      const newCode = `npx convex env set BETTER_AUTH_SECRET=${secret ?? "$(openssl rand -base64 32)"}`;
+      // do the stuff you need to do then:
+      // Update the <Code> component’s copy button to copy the new code rather than the initial cod
+      copyCodeButton.dataset.code = newCode;
+      // Empty the code block (assumes a single-line code block)
+      codeContentParent.innerText = '';
+      // Update the first <span> we found in the code block with our new code
+      codeContent.innerText = newCode;
+      // Reappend the <span> to its parent
+      codeContentParent.append(codeContent);
+    });
+  }
+}
+customElements.define('secret-updater', SecretUpdater);
+</script>
