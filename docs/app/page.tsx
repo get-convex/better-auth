@@ -663,7 +663,7 @@ export default function Home() {
                     convexAdapter,
                     type AuthFunctions,
                   } from "@convex-dev/better-auth";
-                  import { convex } from "@convex-dev/better-auth/plugins";
+                  import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
                   import { betterAuth } from "better-auth";
                   import { api, components, internal } from "./_generated/api";
                   import { query, type GenericCtx } from "./_generated/server";
