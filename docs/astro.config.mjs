@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import tailwindcss from '@tailwindcss/vite';
+import starlightThemeRapide from 'starlight-theme-rapide'
 
 import react from '@astrojs/react';
 
@@ -36,6 +37,7 @@ export default defineConfig({
                 ]},
             ],
             customCss: ['./src/styles/global.css'],
+            plugins: [starlightThemeRapide()]
         }),
         react(),
     ],

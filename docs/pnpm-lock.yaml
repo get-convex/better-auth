@@ -41,6 +41,9 @@ importers:
       sharp:
         specifier: ^0.32.5
         version: 0.32.6
+      starlight-theme-rapide:
+        specifier: ^0.5.1
+        version: 0.5.1(@astrojs/starlight@0.34.3(astro@5.9.3(@types/node@24.0.1)(jiti@2.4.2)(lightningcss@1.30.1)(rollup@4.43.0)(typescript@5.8.3)))
       tailwindcss:
         specifier: ^4.1.10
         version: 4.1.10
@@ -2116,6 +2119,12 @@ packages:
   stack-trace@1.0.0-pre2:
     resolution: {integrity: sha512-2ztBJRek8IVofG9DBJqdy2N5kulaacX30Nz7xmkYF6ale9WBVmIy6mFBchvGX7Vx/MyjBhx+Rcxqrj+dbOnQ6A==}
     engines: {node: '>=16'}
+
+  starlight-theme-rapide@0.5.1:
+    resolution: {integrity: sha512-QRF6mzcYHLEX5UpUvOPXVVwISS298siIJLcKextoMLhXcnF12nX+IYJ0LNxFk9XaPbX9uDXIieSBJf5Pztkteg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@astrojs/starlight': '>=0.34.0'
 
   stream-replace-string@2.0.0:
     resolution: {integrity: sha512-TlnjJ1C0QrmxRNrON00JvaFFlNh5TTG00APw23j74ET7gkQpTASi6/L2fuiav8pzK715HXtUeClpBTw2NPSn6w==}
@@ -5148,6 +5157,10 @@ snapshots:
   space-separated-tokens@2.0.2: {}
 
   stack-trace@1.0.0-pre2: {}
+
+  starlight-theme-rapide@0.5.1(@astrojs/starlight@0.34.3(astro@5.9.3(@types/node@24.0.1)(jiti@2.4.2)(lightningcss@1.30.1)(rollup@4.43.0)(typescript@5.8.3))):
+    dependencies:
+      '@astrojs/starlight': 0.34.3(astro@5.9.3(@types/node@24.0.1)(jiti@2.4.2)(lightningcss@1.30.1)(rollup@4.43.0)(typescript@5.8.3))
 
   stream-replace-string@2.0.0: {}
 
