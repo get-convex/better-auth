@@ -7,4 +7,5 @@ export default {
     // Change the default style of collapsible sections
     collapseStyle: 'collapsible-start',
   },
+  themes: ['github-dark-default', 'github-light-default']
 }

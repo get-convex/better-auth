@@ -4,8 +4,6 @@ import starlight from '@astrojs/starlight';
 import tailwindcss from '@tailwindcss/vite';
 import starlightThemeRapide from 'starlight-theme-rapide'
 
-import react from '@astrojs/react';
-
 // https://astro.build/config
 export default defineConfig({
     vite: {
@@ -39,6 +37,5 @@ export default defineConfig({
             customCss: ['./src/styles/global.css'],
             plugins: [starlightThemeRapide()]
         }),
-        react(),
     ],
 });
