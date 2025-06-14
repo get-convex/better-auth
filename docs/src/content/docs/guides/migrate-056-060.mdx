@@ -4,30 +4,22 @@ sidebar_position: 2
 description: Migrating from 0.5.6 to 0.6.0
 ---
 
+## Imports
+
 - All imports from `@erquhart/convex-better-auth` have been updated to `@convex-dev/better-auth`. Search and replace this across your repo.
-- For full stack framworks, if you're using the [api proxies](/#mount-handlers), you can remove the cross domain plugin, but you will need to add the `baseUrl` to your better-auth server instance. For example, in Next.js:
-```ts title="convex/auth.ts"
-export const createAuth = (ctx: GenericCtx) =>
-  betterAuth({
-    baseUrl: "http://localhost:3000",
-    database: convexAdapter(ctx, betterAuthComponent),
-    plugins: [
-      //...
-    ],
-  });
-//...
-```
-```ts title="app/api/auth/[...all]/route.ts"
-import { nextJsHandler } from "@convex-dev/better-auth/nextjs";
 
-export const { GET, POST } = nextJsHandler();
-```
 
- - For frameworks such as React, you will not need the baseUrl, but you will need the cross domain plugin.
+## Component Setup
 
-- AuthFunctions are now passed to the BetterAuth component constructor via the config object instead of directly (see [here](/#intialize-better-auth)).
+- AuthFunctions are now passed to the BetterAuth component constructor via the config object as shown below instead of directly (more framework specific instructions [here](/#intialize-better-auth)).
+
+## Cross Domain Plugin
+
+### Frontend Frameworks
+
 - The crossDomain plugin now requires a `siteUrl` option.
-- The `siteUrl` value will be added to `trustedOrigins` automatically. `trustedOrigins` can be removed if using the cross domain plugin and your site url was the only value.
+- The `siteUrl` value will be added to `trustedOrigins` automatically. `trustedOrigins` can be removed if using the cross domain plugin and your `siteUrl` was the only value.
+- For frontend frameworks such as React/Expo, you will not need the `baseUrl` in your better-auth server instance, but you will need the cross domain plugin.
 
 ```diff lang="ts" title="convex/auth.ts" "@convex-dev/better-auth"
 - import { BetterAuth, type AuthFunctions, convexAdapter } from "@erquhart/convex-better-auth";
@@ -55,4 +47,26 @@ export const createAuth = (ctx: GenericCtx) =>
 +       }),
     ],
   });
+```
+
+### Full Stack Frameworks
+
+- For full stack framworks, if you're using the [api proxies](/#mount-handlers), you can remove the cross domain plugin, but you will need to add the `baseUrl` to your better-auth server instance. For example, in Next.js:
+
+```ts title="convex/auth.ts"
+export const createAuth = (ctx: GenericCtx) =>
+  betterAuth({
+    baseUrl: "http://localhost:3000",
+    database: convexAdapter(ctx, betterAuthComponent),
+    plugins: [
+      //...
+    ],
+  });
+//...
+```
+
+```ts title="app/api/auth/[...all]/route.ts"
+import { nextJsHandler } from "@convex-dev/better-auth/nextjs";
+
+export const { GET, POST } = nextJsHandler();
 ```
