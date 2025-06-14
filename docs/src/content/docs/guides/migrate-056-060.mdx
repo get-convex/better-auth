@@ -5,12 +5,31 @@ description: Migrating from 0.5.6 to 0.6.0
 ---
 
 - All imports from `@erquhart/convex-better-auth` have been updated to `@convex-dev/better-auth`. Search and replace this across your repo.
-- Your framework may work full stack without cross domain - go checkout the installation section for more details.
-- AuthFunctions are now passed to the BetterAuth component constructor via the config object.
+- For full stack framworks, if you're using the [api proxies](/#mount-handlers), you can remove the cross domain plugin, but you will need to add the `baseUrl` to your better-auth server instance. For example, in Next.js:
+```ts title="convex/auth.ts"
+export const createAuth = (ctx: GenericCtx) =>
+  betterAuth({
+    baseUrl: "http://localhost:3000",
+    database: convexAdapter(ctx, betterAuthComponent),
+    plugins: [
+      //...
+    ],
+  });
+//...
+```
+```ts title="app/api/auth/[...all]/route.ts"
+import { nextJsHandler } from "@convex-dev/better-auth/nextjs";
+
+export const { GET, POST } = nextJsHandler();
+```
+
+ - For frameworks such as React, you will not need the baseUrl, but you will need the cross domain plugin.
+
+- AuthFunctions are now passed to the BetterAuth component constructor via the config object instead of directly (see [here](/#intialize-better-auth)).
 - The crossDomain plugin now requires a `siteUrl` option.
 - The `siteUrl` value will be added to `trustedOrigins` automatically. `trustedOrigins` can be removed if using the cross domain plugin and your site url was the only value.
 
-```diff lang="ts" title="convex/auth.ts"
+```diff lang="ts" title="convex/auth.ts" "@convex-dev/better-auth"
 - import { BetterAuth, type AuthFunctions, convexAdapter } from "@erquhart/convex-better-auth";
 - import { convex, crossDomain } from "@erquhart/convex-better-auth/plugins";
 + import { BetterAuth, type AuthFunctions, convexAdapter } from "@convex-dev/better-auth";
@@ -21,7 +40,7 @@ export const betterAuthComponent = new BetterAuth(
 -   authFunctions,
 +   {
 +    authFunctions: authFunctions,
-+  }
++   }
   }
 )
 export const createAuth = (ctx: GenericCtx) =>
