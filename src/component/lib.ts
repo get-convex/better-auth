@@ -181,6 +181,19 @@ export const getAccountsByUserId = query({
   },
 });
 
+export const getSessionsByUserId = query({
+  args: { userId: v.string(), limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const query = ctx.db
+      .query("session")
+      .withIndex("userId", (q) => q.eq("userId", args.userId));
+    const docs = args.limit
+      ? await query.take(args.limit)
+      : await query.collect();
+    return docs.map((doc) => transformOutput(doc, "session"));
+  },
+});
+
 export const getJwks = query({
   args: {
     limit: v.optional(v.number()),

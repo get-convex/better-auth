@@ -96,12 +96,6 @@ export const convexAdapter = <
           ) {
             throw new Error("where clause not supported");
           }
-          if (model === "account" && where[0].field === "userId") {
-            return ctx.runQuery(component.component.lib.getAccountsByUserId, {
-              userId: where[0].value as any,
-              limit,
-            });
-          }
           if (model === "verification" && where[0].field === "identifier") {
             return ctx.runQuery(
               component.component.lib.listVerificationsByIdentifier,
@@ -111,6 +105,18 @@ export const convexAdapter = <
                 limit,
               }
             );
+          }
+          if (model === "account" && where[0].field === "userId" && !sortBy) {
+            return ctx.runQuery(component.component.lib.getAccountsByUserId, {
+              userId: where[0].value as any,
+              limit,
+            });
+          }
+          if (model === "session" && where[0].field === "userId" && !sortBy) {
+            return ctx.runQuery(component.component.lib.getSessionsByUserId, {
+              userId: where[0].value as any,
+              limit,
+            });
           }
           throw new Error("where clause not supported");
         },
