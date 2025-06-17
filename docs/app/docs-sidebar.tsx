@@ -360,6 +360,13 @@ export default function DocsSidebar({ children }: React.PropsWithChildren) {
                         <a href="#integrations-hono">Hono</a>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <a href="#integrations-supported-plugins">
+                          Supported Plugins
+                        </a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
                   </SidebarMenuSub>
                 </SidebarMenuItem>
               </SidebarMenu>
