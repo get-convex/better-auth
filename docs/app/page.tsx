@@ -2191,6 +2191,39 @@ export default function Home() {
             ]}
           />
         </Subsection>
+
+        <Subsection id="integrations-supported-plugins" title="Supported Plugins/Features">
+          <P>
+            The Better Auth Convex component currently supports the following plugins/features:
+          </P>
+          <Ul>
+            <Li>
+              <a href="https://www.better-auth.com/docs/plugins/magic-link" className="underline">
+                Magic Link
+              </a>
+            </Li>
+            <Li>
+              <a href="https://www.better-auth.com/docs/plugins/email-otp" className="underline">
+                Email OTP
+              </a>
+            </Li>
+            <Li>
+              <a href="https://www.better-auth.com/docs/plugins/2fa" className="underline">
+                Two Factor
+              </a>
+            </Li>
+            <Li>
+              <a href="https://www.better-auth.com/docs/authentication/google" className="underline">
+                Social Providers
+              </a>
+            </Li>
+            <Li>
+            <a href="https://www.better-auth.com/docs/authentication/email-password" className="underline">
+                Email/Password Authentication
+              </a>
+            </Li>
+          </Ul>
+        </Subsection>
       </Section>
 
       <Section id="guides" title="Guides">
