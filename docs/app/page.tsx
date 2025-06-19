@@ -2192,33 +2192,52 @@ export default function Home() {
           />
         </Subsection>
 
-        <Subsection id="integrations-supported-plugins" title="Supported Plugins/Features">
+        <Subsection
+          id="integrations-supported-plugins"
+          title="Supported Plugins/Features"
+        >
           <P>
-            The Better Auth Convex component currently supports the following plugins/features:
+            The Better Auth Convex component currently supports the following
+            plugins/features:
           </P>
           <Ul>
             <Li>
-              <a href="https://www.better-auth.com/docs/plugins/magic-link" className="underline">
+              <a
+                href="https://www.better-auth.com/docs/plugins/magic-link"
+                className="underline"
+              >
                 Magic Link
               </a>
             </Li>
             <Li>
-              <a href="https://www.better-auth.com/docs/plugins/email-otp" className="underline">
+              <a
+                href="https://www.better-auth.com/docs/plugins/email-otp"
+                className="underline"
+              >
                 Email OTP
               </a>
             </Li>
             <Li>
-              <a href="https://www.better-auth.com/docs/plugins/2fa" className="underline">
+              <a
+                href="https://www.better-auth.com/docs/plugins/2fa"
+                className="underline"
+              >
                 Two Factor
               </a>
             </Li>
             <Li>
-              <a href="https://www.better-auth.com/docs/authentication/google" className="underline">
+              <a
+                href="https://www.better-auth.com/docs/authentication/google"
+                className="underline"
+              >
                 Social Providers
               </a>
             </Li>
             <Li>
-            <a href="https://www.better-auth.com/docs/authentication/email-password" className="underline">
+              <a
+                href="https://www.better-auth.com/docs/authentication/email-password"
+                className="underline"
+              >
                 Email/Password Authentication
               </a>
             </Li>
@@ -2286,6 +2305,56 @@ export default function Home() {
                     // ...
                   })
               `}
+          />
+        </Subsection>
+        <Subsection id="migrate-0-6-to-0-7" title="Migrate 0.6 &rarr; 0.7">
+          <ContentHeading
+            id="migrate-0-6-to-0-7-register-routes"
+            title="registerRoutes()"
+          />
+          <Ul>
+            <Li>
+              The <Code>betterAuthComponent.registerRoutes()</Code> method no
+              longer includes CORS route handling by default. This is the
+              correct behavior for full stack apps using the Next.js or TanStack
+              instructions, as well as Expo native apps.
+            </Li>
+            <Li>
+              For React or any app that is only using client side auth (if your
+              app uses the crossDomain plugin, this applies), you will need to
+              pass the <Code>cors: true</Code> option.
+            </Li>
+            <Li>
+              The <Code>path</Code> and <Code>allowedOrigins</Code> options have
+              been removed, and now defer entirely to Better Auth&apos;s{" "}
+              <Code>basePath</Code> and <Code>trustedOrigins</Code> options,
+              respectively. The crossDomain plugin <Code>siteUrl</Code> option
+              continues to be automatically added to <Code>trustedOrigins</Code>
+              .
+            </Li>
+          </Ul>
+          <CodeBlock
+            language="typescript"
+            filename="convex/http.ts"
+            removedLines={[7, 8, 9]}
+            addedLines={[11, 12]}
+            code={stripIndent`
+              import { httpRouter } from 'convex/server'
+              import { betterAuthComponent, createAuth } from './auth'
+
+              const http = httpRouter()
+
+              betterAuthComponent.registerRoutes(http, createAuth, {
+                // Remove these if you were using them
+                path: "/api/auth",
+                allowedOrigins: ["http://localhost:3000"],
+
+                // Only add this for client-only apps
+                cors: true,
+              })
+
+              export default http
+            `}
           />
         </Subsection>
         <Subsection id="migrate-0-5-to-0-6" title="Migrate 0.5 &rarr; 0.6">

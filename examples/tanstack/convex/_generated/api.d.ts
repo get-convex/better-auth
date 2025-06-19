@@ -238,6 +238,12 @@ export declare const components: {
       >;
       getCurrentSession: FunctionReference<"query", "internal", {}, any>;
       getJwks: FunctionReference<"query", "internal", { limit?: number }, any>;
+      getSessionsByUserId: FunctionReference<
+        "query",
+        "internal",
+        { limit?: number; userId: string },
+        any
+      >;
       listVerificationsByIdentifier: FunctionReference<
         "query",
         "internal",

@@ -1,4 +1,3 @@
-import './polyfills'
 import { httpRouter } from 'convex/server'
 import { betterAuthComponent, createAuth } from './auth'
 

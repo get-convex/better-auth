@@ -31,7 +31,6 @@ export const fetchSession = async <
       baseURL,
       headers: {
         cookie: request.headers.get("cookie") ?? "",
-        origin: baseURL,
       },
     }
   );

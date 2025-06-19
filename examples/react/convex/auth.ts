@@ -16,6 +16,7 @@ const siteUrl = requireEnv("SITE_URL");
 
 export const betterAuthComponent = new BetterAuth(components.betterAuth, {
   authFunctions,
+  verbose: true,
 });
 
 export const createAuth = (ctx: GenericCtx) =>

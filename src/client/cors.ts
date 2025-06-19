@@ -13,14 +13,16 @@
  * maintaining proper CORS configuration.
  */
 import {
-  GenericActionCtx,
+  type GenericActionCtx,
   httpActionGeneric,
   httpRouter,
   HttpRouter,
-  PublicHttpAction,
-  RouteSpec,
-  RouteSpecWithPath,
-  RouteSpecWithPathPrefix,
+  ROUTABLE_HTTP_METHODS,
+  type RoutableMethod,
+  type PublicHttpAction,
+  type RouteSpec,
+  type RouteSpecWithPath,
+  type RouteSpecWithPathPrefix,
 } from "convex/server";
 
 export const DEFAULT_EXPOSED_HEADERS = [
@@ -68,10 +70,15 @@ export type CorsConfig = {
    */
   browserCacheMaxAge?: number;
   /**
-   * Whether to log verbose information about CORS requests.
+   * Whether to block requests from origins that are not in the allowedOrigins list.
+   * @default true
+   */
+  enforceAllowOrigins?: boolean;
+  /**
+   * Whether to log debugging information about CORS requests.
    * @default false
    */
-  verbose?: boolean;
+  debug?: boolean;
 };
 
 type RouteSpecWithCors = RouteSpec & CorsConfig;
@@ -219,8 +226,6 @@ export default corsRouter;
  * to web applications hosted on different domains.
  */
 
-import { ROUTABLE_HTTP_METHODS, RoutableMethod } from "convex/server";
-
 const SECONDS_IN_A_DAY = 60 * 60 * 24;
 
 /**
@@ -240,7 +245,8 @@ const handleCors = ({
   exposedHeaders = DEFAULT_EXPOSED_HEADERS,
   allowCredentials = false,
   browserCacheMaxAge = SECONDS_IN_A_DAY,
-  verbose = false,
+  enforceAllowOrigins = true,
+  debug = false,
 }: {
   originalHandler?: PublicHttpAction;
   allowedMethods?: string[];
@@ -307,21 +313,16 @@ const handleCors = ({
    */
   return httpActionGeneric(
     async (ctx: GenericActionCtx<any>, request: Request) => {
-      if (verbose) {
-        console.log("path", request.url);
-        console.log("origin", request.headers.get("origin"));
-        console.log("headers", request.headers);
+      if (debug) {
+        console.log("CORS request", {
+          path: request.url,
+          origin: request.headers.get("origin"),
+          headers: request.headers,
+          method: request.method,
+          body: request.body,
+        });
       }
-      const requestOriginRaw =
-        request.headers.get("Origin") ??
-        request.headers.get("Referer") ??
-        request.headers.get("Expo-Origin");
-
-      const requestOrigin =
-        typeof requestOriginRaw === "string" &&
-        requestOriginRaw.startsWith("http")
-          ? new URL(requestOriginRaw).origin
-          : requestOriginRaw;
+      const requestOrigin = request.headers.get("origin");
 
       // Handle origin matching
       let allowOrigins: string | null = null;
@@ -333,14 +334,12 @@ const handleCors = ({
         if (isAllowedOrigin(requestOrigin)) {
           allowOrigins = requestOrigin;
         }
-      } else if (requestOrigin === null) {
-        allowOrigins = "null";
       }
 
-      if (!allowOrigins) {
+      if (enforceAllowOrigins && !allowOrigins) {
         // Origin not allowed
         console.error(
-          `Request from origin ${requestOrigin} blocked, missing from allowed origins (${allowedOrigins.join()})`
+          `Request from origin ${requestOrigin} blocked, missing from allowed origins: ${allowedOrigins.join()}`
         );
         return new Response(null, { status: 403 });
       }
@@ -348,15 +347,19 @@ const handleCors = ({
        * OPTIONS has no handler and just returns headers
        */
       if (request.method === "OPTIONS") {
+        const responseHeaders = new Headers({
+          ...commonHeaders,
+          "Access-Control-Allow-Origin": allowOrigins ?? "",
+          "Access-Control-Allow-Methods": allowMethods,
+          "Access-Control-Allow-Headers": allowedHeaders.join(", "),
+          "Access-Control-Max-Age": browserCacheMaxAge.toString(),
+        });
+        if (debug) {
+          console.log("CORS OPTIONS response headers", responseHeaders);
+        }
         return new Response(null, {
           status: 204,
-          headers: new Headers({
-            ...commonHeaders,
-            "Access-Control-Allow-Origin": allowOrigins,
-            "Access-Control-Allow-Methods": allowMethods,
-            "Access-Control-Allow-Headers": allowedHeaders.join(", "),
-            "Access-Control-Max-Age": browserCacheMaxAge.toString(),
-          }),
+          headers: responseHeaders,
         });
       }
 
@@ -382,7 +385,7 @@ const handleCors = ({
        * Second, get a copy of the original response's headers
        */
       const newHeaders = new Headers(originalResponse.headers);
-      newHeaders.set("Access-Control-Allow-Origin", allowOrigins);
+      newHeaders.set("Access-Control-Allow-Origin", allowOrigins ?? "");
 
       /**
        * Third, add or update our CORS headers
@@ -390,6 +393,10 @@ const handleCors = ({
       Object.entries(commonHeaders).forEach(([key, value]) => {
         newHeaders.set(key, value);
       });
+
+      if (debug) {
+        console.log("CORS response headers", newHeaders);
+      }
 
       /**
        * Fourth, return the modified Response.

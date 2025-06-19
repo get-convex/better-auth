@@ -23,6 +23,7 @@ import { omit } from "convex-helpers";
 import { createCookieGetter } from "better-auth/cookies";
 import { fetchQuery } from "convex/nextjs";
 import { JWT_COOKIE_NAME } from "../plugins/convex";
+import { requireEnv } from "../util";
 export { convexAdapter };
 
 const createUserFields = omit(schema.tables.user.validator.fields, ["userId"]);
@@ -235,45 +236,10 @@ export class BetterAuth<UserId extends string = string> {
   registerRoutes(
     http: HttpRouter,
     createAuth: (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>,
-    opts?: {
-      path?: string;
-      allowedOrigins?: string[];
-    }
+    opts = { cors: false }
   ) {
-    const path = opts?.path ?? "/api/auth";
-    const options = createAuth({} as any).options;
-    const trustedOriginsOption: string[] = Array.isArray(options.trustedOrigins)
-      ? options.trustedOrigins
-      : [];
-
-    const trustedOrigins = createAuth({} as any).options.plugins?.reduce(
-      (acc, plugin) => {
-        if (plugin.options?.trustedOrigins) {
-          acc.push(...plugin.options.trustedOrigins);
-        }
-        return acc;
-      },
-      [...trustedOriginsOption, options.baseURL].filter(Boolean) as string[]
-    );
-    // Reuse trustedOrigins as default for allowedOrigins
-    const allowedOrigins = [
-      ...(opts?.allowedOrigins ??
-        trustedOrigins?.map((origin) =>
-          // Strip trailing wildcards, unsupported for allowedOrigins
-          origin.endsWith("*") && origin.length > 1
-            ? origin.slice(0, -1)
-            : origin
-        ) ??
-        []),
-    ];
-    const requireEnv = (name: string) => {
-      const value = process.env[name];
-      if (value === undefined) {
-        throw new Error(`Missing environment variable \`${name}\``);
-      }
-      return value;
-    };
-
+    const betterAuthOptions = createAuth({} as any).options;
+    const path = betterAuthOptions.basePath ?? "/api/auth";
     const authRequestHandler = httpActionGeneric(async (ctx, request) => {
       const auth = createAuth(ctx);
       const response = await auth.handler(request);
@@ -281,14 +247,6 @@ export class BetterAuth<UserId extends string = string> {
         console.log("response headers", response.headers);
       }
       return response;
-    });
-
-    const cors = corsRouter(http, {
-      allowedOrigins,
-      allowCredentials: true,
-      allowedHeaders: ["Authorization", "Content-Type", "Better-Auth-Cookie"],
-      verbose: this.config?.verbose,
-      exposedHeaders: ["Set-Better-Auth-Cookie"],
     });
 
     // Redirect root well-known to api well-known
@@ -301,23 +259,50 @@ export class BetterAuth<UserId extends string = string> {
       }),
     });
 
-    // Non-cors paths
-    [
-      // Any origin can hit these
-      "/convex/.well-known/openid-configuration",
-      "/convex/jwks",
-
-      // These will be called with tokens, not vulnerable to CSRF
-      "/callback",
-      "/magic-link/verify",
-      "/verify-email",
-      "/reset-password",
-    ].forEach((subPath) => {
+    if (!opts.cors) {
       http.route({
-        path: `${path}${subPath}`,
+        pathPrefix: `${path}/`,
         method: "GET",
         handler: authRequestHandler,
       });
+
+      http.route({
+        pathPrefix: `${path}/`,
+        method: "POST",
+        handler: authRequestHandler,
+      });
+    }
+
+    const trustedOrigins = [
+      ...(Array.isArray(betterAuthOptions.trustedOrigins)
+        ? betterAuthOptions.trustedOrigins
+        : []),
+      betterAuthOptions.baseURL!,
+    ];
+    // The crossDomain plugin adds siteUrl to trustedOrigins
+    const trustedOriginsFromPlugins =
+      betterAuthOptions.plugins?.reduce((acc, plugin) => {
+        if (plugin.options?.trustedOrigins) {
+          acc.push(...plugin.options.trustedOrigins);
+        }
+        return acc;
+      }, [] as string[]) ?? [];
+
+    // Reuse trustedOrigins as default for allowedOrigins
+    const allowedOrigins = [...trustedOrigins, ...trustedOriginsFromPlugins]
+      .filter(Boolean)
+      .map((origin) =>
+        // Strip trailing wildcards, unsupported for allowedOrigins
+        origin.endsWith("*") && origin.length > 1 ? origin.slice(0, -1) : origin
+      );
+
+    const cors = corsRouter(http, {
+      allowedOrigins,
+      allowCredentials: true,
+      allowedHeaders: ["Content-Type", "Better-Auth-Cookie"],
+      exposedHeaders: ["Set-Better-Auth-Cookie"],
+      debug: this.config?.verbose,
+      enforceAllowOrigins: false,
     });
 
     cors.route({
