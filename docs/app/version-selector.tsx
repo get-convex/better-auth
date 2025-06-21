@@ -38,9 +38,11 @@ export function VersionSelector() {
   const branch =
     typeof window === "object" && window.location?.hostname.split("--")[0];
   const current =
+    (branch === "main" && versions.find((v) => v.label === "next")) ??
     versions.find((v) => {
       return v.label === branch || v.version.replaceAll(".", "-") === branch;
-    }) ?? versions.find((v) => v.label === "latest");
+    }) ??
+    versions.find((v) => v.label === "latest");
 
   useEffect(() => {
     const fetchVersions = async () => {
@@ -137,8 +139,8 @@ export function VersionSelector() {
               href={
                 v.label === "latest"
                   ? `https://${DOCS_DOMAIN}`
-                  : v.label
-                    ? `https://${v.label}--${DOCS_DOMAIN}`
+                  : v.label === "next"
+                    ? `https://main--${DOCS_DOMAIN}`
                     : `https://${v.version.replaceAll(".", "-")}--${DOCS_DOMAIN}`
               }
               className={cn(
