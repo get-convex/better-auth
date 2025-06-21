@@ -1,5 +1,4 @@
 import { BetterAuth } from "./index";
-import { transformInput } from "../component/lib";
 import { createAdapter } from "better-auth/adapters";
 import {
   GenericActionCtx,
@@ -22,6 +21,23 @@ export const convexAdapter = <
       adapterName: "Convex Adapter",
       debugLogs: component.config.verbose ?? false,
       disableIdGeneration: true,
+      supportsNumericIds: false,
+      usePlural: false,
+      mapKeysTransformOutput: {
+        _id: "id",
+      },
+      customTransformInput: ({ data, fieldAttributes }) => {
+        if (fieldAttributes.type === "date") {
+          return data.getTime();
+        }
+        return data;
+      },
+      customTransformOutput: ({ data, fieldAttributes }) => {
+        if (fieldAttributes.type === "date") {
+          return new Date(data);
+        }
+        return data;
+      },
     },
     adapter: ({ schema }) => {
       return {
@@ -40,7 +56,7 @@ export const convexAdapter = <
                 ? component.config.authFunctions.createSession
                 : component.component.lib.create;
           return ctx.runMutation(createFn, {
-            input: { table: model, ...transformInput(model, data) },
+            input: { table: model, ...data },
           });
         },
         findOne: async ({ model, where }): Promise<any> => {
@@ -141,7 +157,7 @@ export const convexAdapter = <
                   field,
                   value: value instanceof Date ? value.getTime() : value,
                 },
-                value: transformInput(model, update as any),
+                value: update as any,
               },
             });
           }
@@ -223,7 +239,7 @@ export const convexAdapter = <
           ) {
             return ctx.runMutation(component.component.lib.updateTwoFactor, {
               userId: where[0].value as string,
-              update: transformInput(model, update as any),
+              update: update as any,
             });
           }
           if (
@@ -240,7 +256,7 @@ export const convexAdapter = <
               {
                 userId: where[0].value as string,
                 providerId: where[1].value as string,
-                update: transformInput(model, update as any),
+                update: update as any,
               }
             );
           }

@@ -13,28 +13,6 @@ import { paginationOptsValidator, PaginationResult } from "convex/server";
 import { paginator } from "convex-helpers/server/pagination";
 import { partial } from "convex-helpers/validators";
 
-export const transformInput = (model: string, data: Record<string, any>) => {
-  return {
-    ...Object.fromEntries(
-      Object.entries(data).map(([key, value]) => {
-        if (value instanceof Date) {
-          return [key, value.getTime()];
-        }
-        return [key, value];
-      })
-    ),
-  };
-};
-
-export const transformOutput = (
-  { _id, _creationTime, ...data }: Doc<TableNames>,
-  _model: string
-) => {
-  // Provide the expected id field, but it can be overwritten if
-  // the model has an id field
-  return { id: _id, ...data };
-};
-
 // Get the session via sessionId in jwt claims
 export const getCurrentSession = query({
   args: {},
@@ -87,7 +65,7 @@ export const getByQuery = query({
     if (!doc) {
       return;
     }
-    return transformOutput(doc, args.table);
+    return doc;
   },
 });
 export { getByQuery as getBy };
@@ -112,7 +90,7 @@ export const create = mutation({
     if (!doc) {
       throw new Error(`Failed to create ${table}`);
     }
-    return transformOutput(doc, table);
+    return doc;
   },
 });
 
@@ -149,7 +127,7 @@ export const update = mutation({
     if (!updatedDoc) {
       throw new Error(`Failed to update ${table}`);
     }
-    return transformOutput(updatedDoc, table);
+    return updatedDoc;
   },
 });
 
@@ -177,7 +155,7 @@ export const getAccountsByUserId = query({
     const docs = args.limit
       ? await query.take(args.limit)
       : await query.collect();
-    return docs.map((doc) => transformOutput(doc, "account"));
+    return docs;
   },
 });
 
@@ -190,7 +168,7 @@ export const getSessionsByUserId = query({
     const docs = args.limit
       ? await query.take(args.limit)
       : await query.collect();
-    return docs.map((doc) => transformOutput(doc, "session"));
+    return docs;
   },
 });
 
@@ -203,7 +181,7 @@ export const getJwks = query({
     const docs = args.limit
       ? await query.take(args.limit)
       : await query.collect();
-    return docs.map((doc) => transformOutput(doc, "jwks"));
+    return docs;
   },
 });
 
@@ -233,7 +211,7 @@ export const listVerificationsByIdentifier = query({
     const docs = args.limit
       ? await query.take(args.limit)
       : await query.collect();
-    return docs.map((doc) => transformOutput(doc, "verification"));
+    return docs;
   },
 });
 
@@ -375,7 +353,7 @@ export const getAccountByAccountIdAndProviderId = query({
     if (!doc) {
       return;
     }
-    return transformOutput(doc, "account");
+    return doc;
   },
 });
 

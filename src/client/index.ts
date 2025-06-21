@@ -210,7 +210,7 @@ export class BetterAuth<UserId extends string = string> {
             throw new Error("invalid user");
           }
           if (opts.onUpdateUser) {
-            await opts.onUpdateUser(ctx, omit(updatedUser, ["id"]));
+            await opts.onUpdateUser(ctx, omit(updatedUser, ["_id"]));
           }
           return updatedUser;
         },

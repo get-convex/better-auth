@@ -139,15 +139,6 @@ export const getCurrentUser = query({
     // Get user data from your application's database (skip this if you have no
     // fields in your users table schema)
     const user = await ctx.db.get(userMetadata.userId as Id<"users">);
-    const auth = createAuth(ctx);
-    try {
-      const sessions = await auth.api.listSessions({
-        headers: await betterAuthComponent.getHeaders(ctx),
-      });
-      console.log("listSessions", sessions);
-    } catch (err) {
-      console.error("Error listing sessions", err);
-    }
     return {
       ...user,
       ...userMetadata,
