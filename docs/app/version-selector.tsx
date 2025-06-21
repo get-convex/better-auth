@@ -137,9 +137,7 @@ export function VersionSelector() {
               href={
                 v.label === "latest"
                   ? `https://${DOCS_DOMAIN}`
-                  : v.label
-                    ? `https://${v.label}--${DOCS_DOMAIN}`
-                    : `https://${v.version.replaceAll(".", "-")}--${DOCS_DOMAIN}`
+                  : `https://${v.version.replaceAll(".", "-")}--${DOCS_DOMAIN}`
               }
               className={cn(
                 "w-full text-left px-3 py-1.5 text-xs font-mono rounded hover:bg-accent focus:bg-accent focus:outline-none",
