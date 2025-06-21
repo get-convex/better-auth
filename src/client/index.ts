@@ -271,6 +271,8 @@ export class BetterAuth<UserId extends string = string> {
         method: "POST",
         handler: authRequestHandler,
       });
+
+      return;
     }
 
     const trustedOrigins = [
