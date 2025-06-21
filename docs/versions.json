@@ -1,5 +1,9 @@
 [
   {
+    "version": "v0.7.0-alpha.0",
+    "label": "next"
+  },
+  {
     "version": "v0.6.1",
     "label": "latest"
   },

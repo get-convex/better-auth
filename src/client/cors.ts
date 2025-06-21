@@ -48,7 +48,7 @@ export type CorsConfig = {
    * - https://example.com
    * @default ["*"]
    */
-  allowedOrigins?: string[];
+  allowedOrigins?: string[] | ((req: Request) => Promise<string[]>);
   /**
    * An array of allowed headers: what headers are allowed to be sent in
    * the request.
@@ -285,9 +285,17 @@ const handleCors = ({
     commonHeaders["Access-Control-Expose-Headers"] = exposedHeaders.join(", ");
   }
 
+  async function parseAllowedOrigins(request: Request): Promise<string[]> {
+    return Array.isArray(allowedOrigins)
+      ? allowedOrigins
+      : await allowedOrigins(request);
+  }
+
   // Helper function to check if origin is allowed (including wildcard subdomain matching)
-  function isAllowedOrigin(requestOrigin: string): boolean {
-    return allowedOrigins.some((allowed) => {
+  async function isAllowedOrigin(request: Request): Promise<boolean> {
+    const requestOrigin = request.headers.get("origin");
+    if (!requestOrigin) return false;
+    return (await parseAllowedOrigins(request)).some((allowed) => {
       if (allowed === "*") return true;
       if (allowed === requestOrigin) return true;
       if (allowed.startsWith("*.")) {
@@ -323,15 +331,20 @@ const handleCors = ({
         });
       }
       const requestOrigin = request.headers.get("origin");
+      const parsedAllowedOrigins = await parseAllowedOrigins(request);
+
+      if (debug) {
+        console.log("allowed origins", parsedAllowedOrigins);
+      }
 
       // Handle origin matching
       let allowOrigins: string | null = null;
-      if (allowedOrigins.includes("*") && !allowCredentials) {
+      if (parsedAllowedOrigins.includes("*") && !allowCredentials) {
         allowOrigins = "*";
       } else if (requestOrigin) {
         // Check if the request origin matches any of the allowed origins
         // (including wildcard subdomain matching if configured)
-        if (isAllowedOrigin(requestOrigin)) {
+        if (await isAllowedOrigin(request)) {
           allowOrigins = requestOrigin;
         }
       }
@@ -339,7 +352,7 @@ const handleCors = ({
       if (enforceAllowOrigins && !allowOrigins) {
         // Origin not allowed
         console.error(
-          `Request from origin ${requestOrigin} blocked, missing from allowed origins: ${allowedOrigins.join()}`
+          `Request from origin ${requestOrigin} blocked, missing from allowed origins: ${parsedAllowedOrigins.join()}`
         );
         return new Response(null, { status: 403 });
       }

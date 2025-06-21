@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Support `trustedOrigins` as a function.
+
 - Simplify CORS handling and make it optional.
 
   Adds a new `cors` option to the `registerRoutes` method, currently accepts a

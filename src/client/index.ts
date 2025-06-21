@@ -276,7 +276,7 @@ export class BetterAuth<UserId extends string = string> {
     const trustedOrigins = [
       ...(Array.isArray(betterAuthOptions.trustedOrigins)
         ? betterAuthOptions.trustedOrigins
-        : []),
+        : [betterAuthOptions.trustedOrigins]),
       betterAuthOptions.baseURL!,
     ];
     // The crossDomain plugin adds siteUrl to trustedOrigins
@@ -289,12 +289,30 @@ export class BetterAuth<UserId extends string = string> {
       }, [] as string[]) ?? [];
 
     // Reuse trustedOrigins as default for allowedOrigins
-    const allowedOrigins = [...trustedOrigins, ...trustedOriginsFromPlugins]
-      .filter(Boolean)
-      .map((origin) =>
-        // Strip trailing wildcards, unsupported for allowedOrigins
-        origin.endsWith("*") && origin.length > 1 ? origin.slice(0, -1) : origin
-      );
+    const allowedOrigins = async (request: Request) => {
+      return (
+        await Promise.all(
+          [...trustedOrigins, ...trustedOriginsFromPlugins].map(
+            async (origin) => {
+              if (!origin) {
+                return [];
+              }
+              if (typeof origin === "function") {
+                return origin(request);
+              }
+              return [origin];
+            }
+          )
+        )
+      )
+        .flat()
+        .map((origin) =>
+          // Strip trailing wildcards, unsupported for allowedOrigins
+          origin.endsWith("*") && origin.length > 1
+            ? origin.slice(0, -1)
+            : origin
+        );
+    };
 
     const cors = corsRouter(http, {
       allowedOrigins,
