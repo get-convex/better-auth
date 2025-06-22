@@ -8,6 +8,7 @@ const schema = defineSchema({
     emailVerified: v.boolean(),
     image: v.optional(v.string()),
     twoFactorEnabled: v.optional(v.boolean()),
+    isAnonymous: v.optional(v.boolean()),
     userId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
