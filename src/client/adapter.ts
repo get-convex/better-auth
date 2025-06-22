@@ -251,22 +251,10 @@ export const convexAdapter = <
             );
           }
           throw new Error("where clause not supported");
-          // return count;
         },
         updateMany: async ({ model, where, update }) => {
           if (!("runMutation" in ctx)) {
             throw new Error("ctx is not an action ctx");
-          }
-          if (
-            model === "twoFactor" &&
-            where?.length === 1 &&
-            where[0].operator === "eq" &&
-            where[0].field === "userId"
-          ) {
-            return ctx.runMutation(component.component.lib.updateTwoFactor, {
-              userId: where[0].value as string,
-              update: update as any,
-            });
           }
           if (
             model === "account" &&
@@ -286,17 +274,16 @@ export const convexAdapter = <
               }
             );
           }
+          if (where?.length === 1) {
+            return ctx.runMutation(component.component.lib.updateMany, {
+              input: {
+                table: model as any,
+                field: where[0].field as any,
+                update: update as any,
+              },
+            });
+          }
           throw new Error("updateMany not implemented");
-          //return 0;
-          /*
-          const { model, where, update } = data;
-          const table = db[model];
-          const res = convertWhereClause(where, table, model);
-          res.forEach((record) => {
-            Object.assign(record, update);
-          });
-          return res[0] || null;
-          */
         },
       };
     },

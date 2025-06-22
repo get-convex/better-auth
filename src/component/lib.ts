@@ -159,6 +159,12 @@ export const listBy = query({
         field: v.literal("userId"),
         value: v.string(),
         limit: v.optional(v.number()),
+      }),
+      v.object({
+        table: v.literal("rateLimit"),
+        field: v.literal("key"),
+        value: v.string(),
+        limit: v.optional(v.number()),
       })
     ),
   },
@@ -433,21 +439,34 @@ export const updateUserProviderAccounts = mutation({
   },
 });
 
-export const updateTwoFactor = mutation({
+export const updateMany = mutation({
   args: {
-    userId: v.string(),
-    update: v.object(partial(schema.tables.twoFactor.validator.fields)),
+    input: v.union(
+      v.object({
+        table: v.literal("rateLimit"),
+        field: v.literal("key"),
+        update: v.object(partial(schema.tables.rateLimit.validator.fields)),
+      }),
+      v.object({
+        table: v.literal("twoFactor"),
+        field: v.literal("userId"),
+        update: v.object(partial(schema.tables.twoFactor.validator.fields)),
+      })
+    ),
   },
   handler: async (ctx, args) => {
+    const { table, field, update } = args.input;
     const docs = await ctx.db
-      .query("twoFactor")
-      .withIndex("userId", (q) => q.eq("userId", args.userId))
+      .query(table)
+      .withIndex(field as any, (q) =>
+        q.eq(field, update[field as keyof typeof update])
+      )
       .collect();
     if (docs.length === 0) {
       return 0;
     }
     await asyncMap(docs, async (doc) => {
-      await ctx.db.patch(doc._id, args.update);
+      await ctx.db.patch(doc._id, update);
     });
     return docs.length;
   },

@@ -71,6 +71,12 @@ const schema = defineSchema({
     // no longer used
     id: v.optional(v.string()),
   }),
+
+  rateLimit: defineTable({
+    key: v.string(),
+    count: v.number(),
+    lastRequest: v.number(),
+  }).index("key", ["key"]),
 });
 
 export default schema;
