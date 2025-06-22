@@ -145,33 +145,33 @@ export const deleteBy = mutation({
   },
 });
 
+export const listBy = query({
+  args: {
+    input: v.union(
+      v.object({
+        table: v.literal("account"),
+        field: v.union(v.literal("accountId"), v.literal("userId")),
+        value: v.string(),
+        limit: v.optional(v.number()),
+      }),
+      v.object({
+        table: v.literal("session"),
+        field: v.literal("userId"),
+        value: v.string(),
+        limit: v.optional(v.number()),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    const { table, field, value, limit } = args.input;
+    const query = ctx.db
+      .query(table)
+      .withIndex(field as any, (q) => q.eq(field, value));
+    return limit ? await query.take(limit) : await query.collect();
+  },
+});
+
 // Single purpose functions
-export const getAccountsByUserId = query({
-  args: { userId: v.string(), limit: v.optional(v.number()) },
-  handler: async (ctx, args) => {
-    const query = ctx.db
-      .query("account")
-      .withIndex("userId", (q) => q.eq("userId", args.userId));
-    const docs = args.limit
-      ? await query.take(args.limit)
-      : await query.collect();
-    return docs;
-  },
-});
-
-export const getSessionsByUserId = query({
-  args: { userId: v.string(), limit: v.optional(v.number()) },
-  handler: async (ctx, args) => {
-    const query = ctx.db
-      .query("session")
-      .withIndex("userId", (q) => q.eq("userId", args.userId));
-    const docs = args.limit
-      ? await query.take(args.limit)
-      : await query.collect();
-    return docs;
-  },
-});
-
 export const getJwks = query({
   args: {
     limit: v.optional(v.number()),
@@ -212,6 +212,59 @@ export const listVerificationsByIdentifier = query({
       ? await query.take(args.limit)
       : await query.collect();
     return docs;
+  },
+});
+
+export const getIn = query({
+  args: {
+    input: v.union(
+      v.object({
+        table: v.literal("session"),
+        field: v.literal("token"),
+        values: v.array(v.string()),
+      }),
+      v.object({
+        table: v.literal("user"),
+        field: v.literal("userId"),
+        values: v.array(v.string()),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    const { table, field, values } = args.input;
+    return asyncMap(values, async (value) =>
+      ctx.db
+        .query(table)
+        .withIndex(field as any, (q) => q.eq(field, value))
+        .unique()
+    );
+  },
+});
+
+export const deleteIn = mutation({
+  args: {
+    input: v.union(
+      v.object({
+        table: v.literal("session"),
+        field: v.literal("token"),
+        values: v.array(v.string()),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    const { table, field, values } = args.input;
+    const docs = await asyncMap(values, async (value) => {
+      const doc = await ctx.db
+        .query(table)
+        .withIndex(field as any, (q) => q.eq(field, value))
+        .unique();
+      if (!doc) {
+        return;
+      }
+      await ctx.db.delete(doc._id);
+      return doc;
+    });
+    return docs.filter(Boolean).length;
   },
 });
 

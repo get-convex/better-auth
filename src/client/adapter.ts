@@ -67,7 +67,7 @@ export const convexAdapter = <
               field,
               unique:
                 field === "id" ? true : schema[model].fields[field].unique,
-              value: value instanceof Date ? value.getTime() : value,
+              value: value as Exclude<typeof value, Date>,
             });
             return result;
           }
@@ -98,6 +98,15 @@ export const convexAdapter = <
           if (offset) {
             throw new Error("offset not supported");
           }
+          if (where?.length === 1 && where[0].operator === "in") {
+            return ctx.runQuery(component.component.lib.getIn, {
+              input: {
+                table: model as any,
+                field: where[0].field as any,
+                values: where[0].value as string[],
+              },
+            });
+          }
           if (
             model === "jwks" &&
             !where &&
@@ -122,16 +131,19 @@ export const convexAdapter = <
               }
             );
           }
-          if (model === "account" && where[0].field === "userId" && !sortBy) {
-            return ctx.runQuery(component.component.lib.getAccountsByUserId, {
-              userId: where[0].value as any,
-              limit,
-            });
-          }
-          if (model === "session" && where[0].field === "userId" && !sortBy) {
-            return ctx.runQuery(component.component.lib.getSessionsByUserId, {
-              userId: where[0].value as any,
-              limit,
+          if (
+            (model === "session" && where[0].field === "userId") ||
+            (model === "account" &&
+              (where[0].field === "accountId" || where[0].field === "userId") &&
+              !sortBy)
+          ) {
+            return ctx.runQuery(component.component.lib.listBy, {
+              input: {
+                table: model as any,
+                field: where[0].field,
+                value: where[0].value as any,
+                limit,
+              },
             });
           }
           throw new Error("where clause not supported");
@@ -155,7 +167,7 @@ export const convexAdapter = <
                 table: model as any,
                 where: {
                   field,
-                  value: value instanceof Date ? value.getTime() : value,
+                  value: value as Exclude<typeof value, Date>,
                 },
                 value: update as any,
               },
@@ -176,7 +188,7 @@ export const convexAdapter = <
             await ctx.runMutation(deleteFn, {
               table: model,
               field,
-              value: value instanceof Date ? value.getTime() : value,
+              value: value as Exclude<typeof value, Date>,
             });
             return;
           }
@@ -206,6 +218,20 @@ export const convexAdapter = <
               userId: where[0].value as any,
             });
           }
+          if (
+            model === "session" &&
+            where?.length === 1 &&
+            where[0].operator === "in"
+          ) {
+            return ctx.runMutation(component.component.lib.deleteIn, {
+              input: {
+                table: model,
+                field: where[0].field as any,
+                values: where[0].value as string[],
+              },
+            });
+          }
+          // Used in the convex plugin
           if (
             model === "session" &&
             where?.length === 2 &&

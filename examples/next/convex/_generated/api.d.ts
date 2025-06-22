@@ -170,6 +170,18 @@ export declare const components: {
         { expiresAt: number; userId: string },
         any
       >;
+      deleteIn: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          input: {
+            field: "token" | "userId";
+            table: "session";
+            values: Array<string>;
+          };
+        },
+        any
+      >;
       deleteOldVerifications: FunctionReference<
         "action",
         "internal",
@@ -239,6 +251,16 @@ export declare const components: {
         any
       >;
       getCurrentSession: FunctionReference<"query", "internal", {}, any>;
+      getIn: FunctionReference<
+        "query",
+        "internal",
+        {
+          input:
+            | { field: "token"; table: "session"; values: Array<string> }
+            | { field: "userId"; table: "user"; values: Array<string> };
+        },
+        any
+      >;
       getJwks: FunctionReference<"query", "internal", { limit?: number }, any>;
       getSessionsByUserId: FunctionReference<
         "query",

@@ -136,6 +136,18 @@ export type Mounts = {
       { expiresAt: number; userId: string },
       any
     >;
+    deleteIn: FunctionReference<
+      "mutation",
+      "public",
+      {
+        input: {
+          field: "token" | "userId";
+          table: "session";
+          values: Array<string>;
+        };
+      },
+      any
+    >;
     deleteOldVerifications: FunctionReference<
       "action",
       "public",
@@ -193,6 +205,16 @@ export type Mounts = {
       any
     >;
     getCurrentSession: FunctionReference<"query", "public", {}, any>;
+    getIn: FunctionReference<
+      "query",
+      "public",
+      {
+        input:
+          | { field: "token"; table: "session"; values: Array<string> }
+          | { field: "userId"; table: "user"; values: Array<string> };
+      },
+      any
+    >;
     getJwks: FunctionReference<"query", "public", { limit?: number }, any>;
     getSessionsByUserId: FunctionReference<
       "query",
