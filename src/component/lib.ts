@@ -8,7 +8,7 @@ import { asyncMap } from "convex-helpers";
 import { v } from "convex/values";
 import { api } from "../component/_generated/api";
 import { Doc, Id, TableNames } from "../component/_generated/dataModel";
-import schema from "../component/schema";
+import schema, { specialFields } from "../component/schema";
 import { paginationOptsValidator, PaginationResult } from "convex/server";
 import { paginator } from "convex-helpers/server/pagination";
 import { partial } from "convex-helpers/validators";
@@ -70,6 +70,32 @@ export const getByQuery = query({
 });
 export { getByQuery as getBy };
 
+const checkUniqueFields = async (
+  ctx: QueryCtx,
+  table: TableNames,
+  input: Record<string, any>,
+  doc?: Doc<any>
+) => {
+  const uniqueFields = Object.entries(
+    specialFields[table as keyof typeof specialFields]
+  )
+    .filter(
+      ([key, value]) =>
+        value.unique && Object.keys(input).includes(key as keyof typeof input)
+    )
+    .map(([key]) => key);
+  for (const field of uniqueFields) {
+    const existingDoc = await getByHelper(ctx, {
+      table,
+      field,
+      value: input[field as keyof typeof input],
+    });
+    if (existingDoc && existingDoc._id !== doc?._id) {
+      throw new Error(`${table} ${field} already exists`);
+    }
+  }
+};
+
 export const create = mutation({
   args: v.object({
     input: v.union(
@@ -83,6 +109,9 @@ export const create = mutation({
   }),
   handler: async (ctx, args) => {
     const { table, ...input } = args.input;
+
+    await checkUniqueFields(ctx, table as TableNames, input);
+
     const id = await ctx.db.insert(table as any, {
       ...input,
     });
@@ -122,6 +151,7 @@ export const update = mutation({
     if (!doc) {
       throw new Error(`Failed to update ${table}`);
     }
+    await checkUniqueFields(ctx, table as TableNames, value, doc);
     await ctx.db.patch(doc._id, value as any);
     const updatedDoc = await ctx.db.get(doc._id);
     if (!updatedDoc) {

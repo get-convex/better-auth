@@ -1,5 +1,11 @@
 import { betterAuth } from "better-auth";
-import { emailOTP, magicLink, twoFactor } from "better-auth/plugins";
+import {
+  anonymous,
+  emailOTP,
+  magicLink,
+  twoFactor,
+  username,
+} from "better-auth/plugins";
 import { convex } from "@convex-dev/better-auth/plugins";
 
 // This is the config used to generate the schema
@@ -11,6 +17,8 @@ const config = betterAuth({
     twoFactor(),
     magicLink({ sendMagicLink: async () => {} }),
     emailOTP({ sendVerificationOTP: async () => {} }),
+    anonymous(),
+    username(),
     convex(),
   ],
 });
@@ -18,7 +26,7 @@ export { config as auth };
 
 // Set fields to index on for schema generation
 export const indexFields = {
-  user: ["email", "userId"],
+  user: ["email", "userId", "username"],
   session: ["token", "userId", "expiresAt", ["expiresAt", "userId"]],
   account: [
     "userId",

@@ -14,10 +14,14 @@ const schema = defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
     twoFactorEnabled: v.optional(v.boolean()),
+    isAnonymous: v.optional(v.boolean()),
+    username: v.optional(v.string()),
+    displayUsername: v.optional(v.string()),
     userId: v.optional(v.string()),
   })
     .index("email", ["email"])
-    .index("userId", ["userId"]),
+    .index("userId", ["userId"])
+    .index("username", ["username"]),
 
   session: defineTable({
     expiresAt: v.number(),
@@ -31,7 +35,7 @@ const schema = defineSchema({
     .index("token", ["token"])
     .index("userId", ["userId"])
     .index("expiresAt", ["expiresAt"])
-    .index("expiresAt_userId", ["expiresAt","userId"]),
+    .index("expiresAt_userId", ["expiresAt", "userId"]),
 
   account: defineTable({
     accountId: v.string(),
@@ -49,8 +53,8 @@ const schema = defineSchema({
   })
     .index("userId", ["userId"])
     .index("accountId", ["accountId"])
-    .index("accountId_providerId", ["accountId","providerId"])
-    .index("providerId_userId", ["providerId","userId"]),
+    .index("accountId_providerId", ["accountId", "providerId"])
+    .index("providerId_userId", ["providerId", "userId"]),
 
   verification: defineTable({
     identifier: v.string(),
@@ -66,8 +70,7 @@ const schema = defineSchema({
     secret: v.string(),
     backupCodes: v.string(),
     userId: v.string(),
-  })
-    .index("userId", ["userId"]),
+  }).index("userId", ["userId"]),
 
   jwks: defineTable({
     publicKey: v.string(),
@@ -79,9 +82,7 @@ const schema = defineSchema({
     key: v.optional(v.string()),
     count: v.optional(v.number()),
     lastRequest: v.optional(v.number()),
-  })
-    .index("key", ["key"]),
-
+  }).index("key", ["key"]),
 });
 
 export default schema;
@@ -89,40 +90,44 @@ export default schema;
 export const specialFields = {
   user: {
     name: {
-      sortable: true
+      sortable: true,
     },
     email: {
       sortable: true,
-      unique: true
-    }
+      unique: true,
+    },
+    username: {
+      sortable: true,
+      unique: true,
+    },
   },
   session: {
     token: {
-      unique: true
+      unique: true,
     },
     userId: {
       references: {
         model: "user",
         field: "id",
-        onDelete: "cascade"
-      }
-    }
+        onDelete: "cascade",
+      },
+    },
   },
   account: {
     userId: {
       references: {
         model: "user",
         field: "id",
-        onDelete: "cascade"
-      }
-    }
+        onDelete: "cascade",
+      },
+    },
   },
   twoFactor: {
     userId: {
       references: {
         model: "user",
-        field: "id"
-      }
-    }
-  }
+        field: "id",
+      },
+    },
+  },
 };
