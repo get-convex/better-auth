@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as adapterTest from "../adapterTest.js";
 import type * as lib from "../lib.js";
 import type * as util from "../util.js";
 
@@ -26,10 +27,22 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  adapterTest: typeof adapterTest;
   lib: typeof lib;
   util: typeof util;
 }>;
 export type Mounts = {
+  adapterTest: {
+    count: FunctionReference<"query", "public", any, any>;
+    create: FunctionReference<"mutation", "public", any, any>;
+    delete: FunctionReference<"mutation", "public", any, any>;
+    deleteMany: FunctionReference<"mutation", "public", any, any>;
+    findMany: FunctionReference<"query", "public", any, any>;
+    findOne: FunctionReference<"query", "public", any, any>;
+    isAuthenticated: FunctionReference<"query", "public", {}, any>;
+    update: FunctionReference<"mutation", "public", any, any>;
+    updateMany: FunctionReference<"mutation", "public", any, any>;
+  };
   lib: {
     create: FunctionReference<
       "mutation",
@@ -104,29 +117,6 @@ export type Mounts = {
       },
       any
     >;
-    deleteAllForUser: FunctionReference<
-      "action",
-      "public",
-      { table: string; userId: string },
-      any
-    >;
-    deleteAllForUserPage: FunctionReference<
-      "mutation",
-      "public",
-      {
-        paginationOpts?: {
-          cursor: string | null;
-          endCursor?: string | null;
-          id?: number;
-          maximumBytesRead?: number;
-          maximumRowsRead?: number;
-          numItems: number;
-        };
-        table: string;
-        userId: string;
-      },
-      any
-    >;
     deleteBy: FunctionReference<
       "mutation",
       "public",
@@ -138,16 +128,36 @@ export type Mounts = {
       },
       any
     >;
-    deleteExpiredSessions: FunctionReference<
-      "mutation",
-      "public",
-      { expiresAt: number; userId: string },
-      any
-    >;
     deleteIn: FunctionReference<
       "mutation",
       "public",
       { input: { field: "token"; table: "session"; values: Array<string> } },
+      any
+    >;
+    deleteMany: FunctionReference<
+      "mutation",
+      "public",
+      {
+        limit?: number;
+        model: string;
+        paginationOpts: {
+          cursor: string | null;
+          endCursor?: string | null;
+          id?: number;
+          maximumBytesRead?: number;
+          maximumRowsRead?: number;
+          numItems: number;
+        };
+        select?: Array<string>;
+        sortBy?: { direction: "asc" | "desc"; field: string };
+        unique?: boolean;
+        where?: Array<{
+          connector?: "AND" | "OR";
+          field: string;
+          operator: string;
+          value: any;
+        }>;
+      },
       any
     >;
     deleteOldVerifications: FunctionReference<
@@ -172,10 +182,48 @@ export type Mounts = {
       },
       any
     >;
-    getAccountByAccountIdAndProviderId: FunctionReference<
+    findMany: FunctionReference<
       "query",
       "public",
-      { accountId: string; providerId: string },
+      {
+        limit?: number;
+        model: string;
+        paginationOpts: {
+          cursor: string | null;
+          endCursor?: string | null;
+          id?: number;
+          maximumBytesRead?: number;
+          maximumRowsRead?: number;
+          numItems: number;
+        };
+        select?: Array<string>;
+        sortBy?: { direction: "asc" | "desc"; field: string };
+        unique?: boolean;
+        where?: Array<{
+          connector?: "AND" | "OR";
+          field: string;
+          operator: string;
+          value: any;
+        }>;
+      },
+      any
+    >;
+    findOne: FunctionReference<
+      "query",
+      "public",
+      {
+        limit?: number;
+        model: string;
+        select?: Array<string>;
+        sortBy?: { direction: "asc" | "desc"; field: string };
+        unique?: boolean;
+        where?: Array<{
+          connector?: "AND" | "OR";
+          field: string;
+          operator: string;
+          value: any;
+        }>;
+      },
       any
     >;
     getBy: FunctionReference<
@@ -205,36 +253,29 @@ export type Mounts = {
       "query",
       "public",
       {
-        input:
-          | { field: "token"; table: "session"; values: Array<string> }
-          | { field: "userId"; table: "user"; values: Array<string> };
+        limit?: number;
+        model: string;
+        where?: Array<{
+          connector?: "AND" | "OR";
+          field: string;
+          operator: string;
+          value: any;
+        }>;
       },
       any
     >;
-    getJwks: FunctionReference<"query", "public", { limit?: number }, any>;
     listBy: FunctionReference<
       "query",
       "public",
       {
-        input:
-          | {
-              field: "accountId" | "userId";
-              limit?: number;
-              table: "account";
-              value: string;
-            }
-          | { field: "userId"; limit?: number; table: "session"; value: string }
-          | { field: "key"; limit?: number; table: "rateLimit"; value: string };
-      },
-      any
-    >;
-    listVerificationsByIdentifier: FunctionReference<
-      "query",
-      "public",
-      {
-        identifier: string;
-        limit?: number;
-        sortBy?: { direction: "asc" | "desc"; field: string };
+        input: {
+          field: string;
+          limit?: number;
+          sortDirection?: "asc" | "desc";
+          sortField?: string;
+          table: string;
+          value: any;
+        };
       },
       any
     >;
@@ -306,44 +347,38 @@ export type Mounts = {
       "mutation",
       "public",
       {
-        input:
-          | {
-              field: "key";
-              table: "rateLimit";
-              update: { count?: number; key?: string; lastRequest?: number };
-            }
-          | {
-              field: "userId";
-              table: "twoFactor";
-              update: {
-                backupCodes?: string;
-                secret?: string;
-                userId?: string;
-              };
-            };
-      },
-      any
-    >;
-    updateUserProviderAccounts: FunctionReference<
-      "mutation",
-      "public",
-      {
-        providerId: string;
-        update: {
-          accessToken?: string;
-          accessTokenExpiresAt?: number;
-          accountId?: string;
+        limit?: number;
+        model: string;
+        paginationOpts: {
+          cursor: string | null;
+          endCursor?: string | null;
+          id?: number;
+          maximumBytesRead?: number;
+          maximumRowsRead?: number;
+          numItems: number;
+        };
+        select?: Array<string>;
+        sortBy?: { direction: "asc" | "desc"; field: string };
+        unique?: boolean;
+        update?: {
           createdAt?: number;
-          idToken?: string;
-          password?: string;
-          providerId?: string;
-          refreshToken?: string;
-          refreshTokenExpiresAt?: number;
-          scope?: string;
+          displayUsername?: string;
+          email?: string;
+          emailVerified?: boolean;
+          image?: string;
+          isAnonymous?: boolean;
+          name?: string;
+          twoFactorEnabled?: boolean;
           updatedAt?: number;
           userId?: string;
+          username?: string;
         };
-        userId: string;
+        where?: Array<{
+          connector?: "AND" | "OR";
+          field: string;
+          operator: string;
+          value: any;
+        }>;
       },
       any
     >;

@@ -51,7 +51,7 @@ export const convex = (
         return session.user.userId;
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      definePayload: ({ user: { id, userId, ...user }, session }) => ({
+      definePayload: ({ user: { id, userId, image, ...user }, session }) => ({
         ...user,
         sessionId: session.id,
       }),

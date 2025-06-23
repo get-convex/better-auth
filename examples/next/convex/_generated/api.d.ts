@@ -58,6 +58,17 @@ export declare const internal: FilterApi<
 
 export declare const components: {
   betterAuth: {
+    adapterTest: {
+      count: FunctionReference<"query", "internal", any, any>;
+      create: FunctionReference<"mutation", "internal", any, any>;
+      delete: FunctionReference<"mutation", "internal", any, any>;
+      deleteMany: FunctionReference<"mutation", "internal", any, any>;
+      findMany: FunctionReference<"query", "internal", any, any>;
+      findOne: FunctionReference<"query", "internal", any, any>;
+      isAuthenticated: FunctionReference<"query", "internal", {}, any>;
+      update: FunctionReference<"mutation", "internal", any, any>;
+      updateMany: FunctionReference<"mutation", "internal", any, any>;
+    };
     lib: {
       create: FunctionReference<
         "mutation",
@@ -66,14 +77,17 @@ export declare const components: {
           input:
             | {
                 createdAt: number;
+                displayUsername?: string;
                 email: string;
                 emailVerified: boolean;
                 image?: string;
+                isAnonymous?: boolean;
                 name: string;
                 table: string;
                 twoFactorEnabled?: boolean;
                 updatedAt: number;
                 userId?: string;
+                username?: string;
               }
             | {
                 createdAt: number;
@@ -129,29 +143,6 @@ export declare const components: {
         },
         any
       >;
-      deleteAllForUser: FunctionReference<
-        "action",
-        "internal",
-        { table: string; userId: string },
-        any
-      >;
-      deleteAllForUserPage: FunctionReference<
-        "mutation",
-        "internal",
-        {
-          paginationOpts?: {
-            cursor: string | null;
-            endCursor?: string | null;
-            id?: number;
-            maximumBytesRead?: number;
-            maximumRowsRead?: number;
-            numItems: number;
-          };
-          table: string;
-          userId: string;
-        },
-        any
-      >;
       deleteBy: FunctionReference<
         "mutation",
         "internal",
@@ -169,16 +160,36 @@ export declare const components: {
         },
         any
       >;
-      deleteExpiredSessions: FunctionReference<
-        "mutation",
-        "internal",
-        { expiresAt: number; userId: string },
-        any
-      >;
       deleteIn: FunctionReference<
         "mutation",
         "internal",
         { input: { field: "token"; table: "session"; values: Array<string> } },
+        any
+      >;
+      deleteMany: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          limit?: number;
+          model: string;
+          paginationOpts: {
+            cursor: string | null;
+            endCursor?: string | null;
+            id?: number;
+            maximumBytesRead?: number;
+            maximumRowsRead?: number;
+            numItems: number;
+          };
+          select?: Array<string>;
+          sortBy?: { direction: "asc" | "desc"; field: string };
+          unique?: boolean;
+          where?: Array<{
+            connector?: "AND" | "OR";
+            field: string;
+            operator: string;
+            value: any;
+          }>;
+        },
         any
       >;
       deleteOldVerifications: FunctionReference<
@@ -203,10 +214,48 @@ export declare const components: {
         },
         any
       >;
-      getAccountByAccountIdAndProviderId: FunctionReference<
+      findMany: FunctionReference<
         "query",
         "internal",
-        { accountId: string; providerId: string },
+        {
+          limit?: number;
+          model: string;
+          paginationOpts: {
+            cursor: string | null;
+            endCursor?: string | null;
+            id?: number;
+            maximumBytesRead?: number;
+            maximumRowsRead?: number;
+            numItems: number;
+          };
+          select?: Array<string>;
+          sortBy?: { direction: "asc" | "desc"; field: string };
+          unique?: boolean;
+          where?: Array<{
+            connector?: "AND" | "OR";
+            field: string;
+            operator: string;
+            value: any;
+          }>;
+        },
+        any
+      >;
+      findOne: FunctionReference<
+        "query",
+        "internal",
+        {
+          limit?: number;
+          model: string;
+          select?: Array<string>;
+          sortBy?: { direction: "asc" | "desc"; field: string };
+          unique?: boolean;
+          where?: Array<{
+            connector?: "AND" | "OR";
+            field: string;
+            operator: string;
+            value: any;
+          }>;
+        },
         any
       >;
       getBy: FunctionReference<
@@ -248,46 +297,29 @@ export declare const components: {
         "query",
         "internal",
         {
-          input:
-            | { field: "token"; table: "session"; values: Array<string> }
-            | { field: "userId"; table: "user"; values: Array<string> };
+          limit?: number;
+          model: string;
+          where?: Array<{
+            connector?: "AND" | "OR";
+            field: string;
+            operator: string;
+            value: any;
+          }>;
         },
         any
       >;
-      getJwks: FunctionReference<"query", "internal", { limit?: number }, any>;
       listBy: FunctionReference<
         "query",
         "internal",
         {
-          input:
-            | {
-                field: "accountId" | "userId";
-                limit?: number;
-                table: "account";
-                value: string;
-              }
-            | {
-                field: "userId";
-                limit?: number;
-                table: "session";
-                value: string;
-              }
-            | {
-                field: "key";
-                limit?: number;
-                table: "rateLimit";
-                value: string;
-              };
-        },
-        any
-      >;
-      listVerificationsByIdentifier: FunctionReference<
-        "query",
-        "internal",
-        {
-          identifier: string;
-          limit?: number;
-          sortBy?: { direction: "asc" | "desc"; field: string };
+          input: {
+            field: string;
+            limit?: number;
+            sortDirection?: "asc" | "desc";
+            sortField?: string;
+            table: string;
+            value: any;
+          };
         },
         any
       >;
@@ -359,44 +391,38 @@ export declare const components: {
         "mutation",
         "internal",
         {
-          input:
-            | {
-                field: "key";
-                table: "rateLimit";
-                update: { count?: number; key?: string; lastRequest?: number };
-              }
-            | {
-                field: "userId";
-                table: "twoFactor";
-                update: {
-                  backupCodes?: string;
-                  secret?: string;
-                  userId?: string;
-                };
-              };
-        },
-        any
-      >;
-      updateUserProviderAccounts: FunctionReference<
-        "mutation",
-        "internal",
-        {
-          providerId: string;
-          update: {
-            accessToken?: string;
-            accessTokenExpiresAt?: number;
-            accountId?: string;
+          limit?: number;
+          model: string;
+          paginationOpts: {
+            cursor: string | null;
+            endCursor?: string | null;
+            id?: number;
+            maximumBytesRead?: number;
+            maximumRowsRead?: number;
+            numItems: number;
+          };
+          select?: Array<string>;
+          sortBy?: { direction: "asc" | "desc"; field: string };
+          unique?: boolean;
+          update?: {
             createdAt?: number;
-            idToken?: string;
-            password?: string;
-            providerId?: string;
-            refreshToken?: string;
-            refreshTokenExpiresAt?: number;
-            scope?: string;
+            displayUsername?: string;
+            email?: string;
+            emailVerified?: boolean;
+            image?: string;
+            isAnonymous?: boolean;
+            name?: string;
+            twoFactorEnabled?: boolean;
             updatedAt?: number;
             userId?: string;
+            username?: string;
           };
-          userId: string;
+          where?: Array<{
+            connector?: "AND" | "OR";
+            field: string;
+            operator: string;
+            value: any;
+          }>;
         },
         any
       >;

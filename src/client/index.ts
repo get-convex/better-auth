@@ -193,9 +193,10 @@ export class BetterAuth<UserId extends string = string> {
         args: deleteUserArgsValidator,
         handler: async (ctx, args) => {
           const doc = await ctx.runMutation(this.component.lib.deleteBy, args);
-          if (opts.onDeleteUser) {
+          if (doc && opts.onDeleteUser) {
             await opts.onDeleteUser(ctx, doc.userId as UserId);
           }
+          return doc;
         },
       }),
       updateUser: internalMutationGeneric({
@@ -222,10 +223,6 @@ export class BetterAuth<UserId extends string = string> {
             this.component.lib.create,
             args
           );
-          // Type narrowing
-          if (!("ipAddress" in session)) {
-            throw new Error("invalid session");
-          }
           await opts.onCreateSession?.(ctx, session);
           return session;
         },

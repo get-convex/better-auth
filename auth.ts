@@ -24,17 +24,12 @@ const config = betterAuth({
 });
 export { config as auth };
 
-// Set fields to index on for schema generation
+// Manually add fields to index on for schema generation,
+// all fields in the schema specialFields are automatically indexed
 export const indexFields = {
-  user: ["email", "userId", "username"],
-  session: ["token", "userId", "expiresAt", ["expiresAt", "userId"]],
-  account: [
-    "userId",
-    "accountId",
-    ["accountId", "providerId"],
-    ["providerId", "userId"],
-  ],
-  twoFactor: ["userId"],
+  user: ["userId", "name", ["email", "name"]],
+  session: ["expiresAt", ["expiresAt", "userId"]],
+  account: ["accountId", ["accountId", "providerId"], ["providerId", "userId"]],
   verification: ["expiresAt", "identifier"],
   rateLimit: ["key"],
 };
