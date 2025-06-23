@@ -23,5 +23,5 @@
     "resolveFullPaths": true,
     "verbose": true
   },
-  "include": ["./src/**/*", "./auth.ts"]
+  "include": ["./src/**/*", "./auth.ts", "./generate-schema.ts"]
 }

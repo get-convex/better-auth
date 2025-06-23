@@ -334,8 +334,8 @@ export const deleteExpiredSessions = mutation({
   handler: async (ctx, args) => {
     const docs = await ctx.db
       .query("session")
-      .withIndex("userId_expiresAt", (q) =>
-        q.eq("userId", args.userId).lt("expiresAt", args.expiresAt)
+      .withIndex("expiresAt_userId", (q) =>
+        q.eq("expiresAt", args.expiresAt).eq("userId", args.userId)
       )
       .collect();
     await asyncMap(docs, async (doc) => {
@@ -405,8 +405,8 @@ export const getAccountByAccountIdAndProviderId = query({
   handler: async (ctx, args) => {
     const doc = await ctx.db
       .query("account")
-      .withIndex("providerId_accountId", (q) =>
-        q.eq("providerId", args.providerId).eq("accountId", args.accountId)
+      .withIndex("accountId_providerId", (q) =>
+        q.eq("accountId", args.accountId).eq("providerId", args.providerId)
       )
       .unique();
     if (!doc) {
@@ -425,8 +425,8 @@ export const updateUserProviderAccounts = mutation({
   handler: async (ctx, args) => {
     const docs = await ctx.db
       .query("account")
-      .withIndex("userId_providerId", (q) =>
-        q.eq("userId", args.userId).eq("providerId", args.providerId)
+      .withIndex("providerId_userId", (q) =>
+        q.eq("providerId", args.providerId).eq("userId", args.userId)
       )
       .collect();
     if (docs.length === 0) {

@@ -73,7 +73,7 @@ export declare const components: {
                 table: string;
                 twoFactorEnabled?: boolean;
                 updatedAt: number;
-                userId: string;
+                userId?: string;
               }
             | {
                 createdAt: number;
@@ -101,12 +101,6 @@ export declare const components: {
                 userId: string;
               }
             | {
-                backupCodes: string;
-                secret: string;
-                table: string;
-                userId: string;
-              }
-            | {
                 createdAt?: number;
                 expiresAt: number;
                 identifier: string;
@@ -115,10 +109,21 @@ export declare const components: {
                 value: string;
               }
             | {
+                backupCodes: string;
+                secret: string;
+                table: string;
+                userId: string;
+              }
+            | {
                 createdAt: number;
-                id?: string;
                 privateKey: string;
                 publicKey: string;
+                table: string;
+              }
+            | {
+                count?: number;
+                key?: string;
+                lastRequest?: number;
                 table: string;
               };
         },
@@ -173,13 +178,7 @@ export declare const components: {
       deleteIn: FunctionReference<
         "mutation",
         "internal",
-        {
-          input: {
-            field: "token" | "userId";
-            table: "session";
-            values: Array<string>;
-          };
-        },
+        { input: { field: "token"; table: "session"; values: Array<string> } },
         any
       >;
       deleteOldVerifications: FunctionReference<
@@ -208,12 +207,6 @@ export declare const components: {
         "query",
         "internal",
         { accountId: string; providerId: string },
-        any
-      >;
-      getAccountsByUserId: FunctionReference<
-        "query",
-        "internal",
-        { limit?: number; userId: string },
         any
       >;
       getBy: FunctionReference<
@@ -262,10 +255,30 @@ export declare const components: {
         any
       >;
       getJwks: FunctionReference<"query", "internal", { limit?: number }, any>;
-      getSessionsByUserId: FunctionReference<
+      listBy: FunctionReference<
         "query",
         "internal",
-        { limit?: number; userId: string },
+        {
+          input:
+            | {
+                field: "accountId" | "userId";
+                limit?: number;
+                table: "account";
+                value: string;
+              }
+            | {
+                field: "userId";
+                limit?: number;
+                table: "session";
+                value: string;
+              }
+            | {
+                field: "key";
+                limit?: number;
+                table: "rateLimit";
+                value: string;
+              };
+        },
         any
       >;
       listVerificationsByIdentifier: FunctionReference<
@@ -342,12 +355,25 @@ export declare const components: {
         },
         any
       >;
-      updateTwoFactor: FunctionReference<
+      updateMany: FunctionReference<
         "mutation",
         "internal",
         {
-          update: { backupCodes?: string; secret?: string; userId?: string };
-          userId: string;
+          input:
+            | {
+                field: "key";
+                table: "rateLimit";
+                update: { count?: number; key?: string; lastRequest?: number };
+              }
+            | {
+                field: "userId";
+                table: "twoFactor";
+                update: {
+                  backupCodes?: string;
+                  secret?: string;
+                  userId?: string;
+                };
+              };
         },
         any
       >;

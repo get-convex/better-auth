@@ -1,16 +1,32 @@
-// This file re-exports the auth config for schema generation
-import { Adapter, betterAuth } from "better-auth";
+import { betterAuth } from "better-auth";
 import { emailOTP, magicLink, twoFactor } from "better-auth/plugins";
+import { convex } from "@convex-dev/better-auth/plugins";
 
-// Generate schema for drizzle, closest syntax to Convex schema.
-// AI can translate schema changes to Convex schema, just requires
-// review for accuracy.
+// This is the config used to generate the schema
 const config = betterAuth({
-  database: () => ({ id: "drizzle" }) as Adapter,
+  rateLimit: {
+    storage: "database",
+  },
   plugins: [
     twoFactor(),
     magicLink({ sendMagicLink: async () => {} }),
     emailOTP({ sendVerificationOTP: async () => {} }),
+    convex(),
   ],
 });
 export { config as auth };
+
+// Set fields to index on for schema generation
+export const indexFields = {
+  user: ["email", "userId"],
+  session: ["token", "userId", "expiresAt", ["expiresAt", "userId"]],
+  account: [
+    "userId",
+    "accountId",
+    ["accountId", "providerId"],
+    ["providerId", "userId"],
+  ],
+  twoFactor: ["userId"],
+  verification: ["expiresAt", "identifier"],
+  rateLimit: ["key"],
+};

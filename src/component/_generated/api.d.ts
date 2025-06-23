@@ -45,7 +45,7 @@ export type Mounts = {
               table: string;
               twoFactorEnabled?: boolean;
               updatedAt: number;
-              userId: string;
+              userId?: string;
             }
           | {
               createdAt: number;
@@ -73,12 +73,6 @@ export type Mounts = {
               userId: string;
             }
           | {
-              backupCodes: string;
-              secret: string;
-              table: string;
-              userId: string;
-            }
-          | {
               createdAt?: number;
               expiresAt: number;
               identifier: string;
@@ -87,10 +81,21 @@ export type Mounts = {
               value: string;
             }
           | {
+              backupCodes: string;
+              secret: string;
+              table: string;
+              userId: string;
+            }
+          | {
               createdAt: number;
-              id?: string;
               privateKey: string;
               publicKey: string;
+              table: string;
+            }
+          | {
+              count?: number;
+              key?: string;
+              lastRequest?: number;
               table: string;
             };
       },
@@ -139,13 +144,7 @@ export type Mounts = {
     deleteIn: FunctionReference<
       "mutation",
       "public",
-      {
-        input: {
-          field: "token" | "userId";
-          table: "session";
-          values: Array<string>;
-        };
-      },
+      { input: { field: "token"; table: "session"; values: Array<string> } },
       any
     >;
     deleteOldVerifications: FunctionReference<
@@ -174,12 +173,6 @@ export type Mounts = {
       "query",
       "public",
       { accountId: string; providerId: string },
-      any
-    >;
-    getAccountsByUserId: FunctionReference<
-      "query",
-      "public",
-      { limit?: number; userId: string },
       any
     >;
     getBy: FunctionReference<
@@ -216,10 +209,20 @@ export type Mounts = {
       any
     >;
     getJwks: FunctionReference<"query", "public", { limit?: number }, any>;
-    getSessionsByUserId: FunctionReference<
+    listBy: FunctionReference<
       "query",
       "public",
-      { limit?: number; userId: string },
+      {
+        input:
+          | {
+              field: "accountId" | "userId";
+              limit?: number;
+              table: "account";
+              value: string;
+            }
+          | { field: "userId"; limit?: number; table: "session"; value: string }
+          | { field: "key"; limit?: number; table: "rateLimit"; value: string };
+      },
       any
     >;
     listVerificationsByIdentifier: FunctionReference<
@@ -296,12 +299,25 @@ export type Mounts = {
       },
       any
     >;
-    updateTwoFactor: FunctionReference<
+    updateMany: FunctionReference<
       "mutation",
       "public",
       {
-        update: { backupCodes?: string; secret?: string; userId?: string };
-        userId: string;
+        input:
+          | {
+              field: "key";
+              table: "rateLimit";
+              update: { count?: number; key?: string; lastRequest?: number };
+            }
+          | {
+              field: "userId";
+              table: "twoFactor";
+              update: {
+                backupCodes?: string;
+                secret?: string;
+                userId?: string;
+              };
+            };
       },
       any
     >;
