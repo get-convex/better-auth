@@ -664,10 +664,14 @@ export default function Home() {
                     type AuthFunctions,
                   } from "@convex-dev/better-auth";
                   import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
+                  import { requireEnv } from "@convex-dev/better-auth/utils";
                   import { betterAuth } from "better-auth";
                   import { api, components, internal } from "./_generated/api";
                   import { query, type GenericCtx } from "./_generated/server";
                   import type { Id, DataModel } from "./_generated/dataModel";
+
+                  // You'll want to replace this with an environment variable
+                  const siteUrl = "http://localhost:5173";
 
                   // Typesafe way to pass Convex functions defined in this file
                   const authFunctions: AuthFunctions = internal.auth;
@@ -683,6 +687,7 @@ export default function Home() {
                   export const createAuth = (ctx: GenericCtx) =>
                     // Configure your Better Auth instance here
                     betterAuth({
+                      trustedOrigins: [siteUrl],
                       database: convexAdapter(ctx, betterAuthComponent),
 
                       // Simple non-verified email/password to get started
@@ -696,7 +701,7 @@ export default function Home() {
 
                         // The cross domain plugin is required for client side frameworks
                         crossDomain({
-                          siteUrl: "http://localhost:5173",
+                          siteUrl,
                         }),
                       ],
                     });

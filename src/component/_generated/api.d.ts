@@ -38,14 +38,17 @@ export type Mounts = {
         input:
           | {
               createdAt: number;
+              displayUsername?: string;
               email: string;
               emailVerified: boolean;
               image?: string;
+              isAnonymous?: boolean;
               name: string;
               table: string;
               twoFactorEnabled?: boolean;
               updatedAt: number;
               userId?: string;
+              username?: string;
             }
           | {
               createdAt: number;

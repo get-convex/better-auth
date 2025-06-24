@@ -27,7 +27,9 @@ function SignInForm() {
       <div className="w-full max-w-md">
         {showSignIn ? <SignIn /> : <SignUp />}
         <p className="text-center mt-4 text-sm text-neutral-600 dark:text-neutral-400">
-          {showSignIn ? "Don't have an account? " : "Already have an account? "}
+          {showSignIn
+            ? "Don&apos;t have an account? "
+            : "Already have an account? "}
           <button
             onClick={() => setShowSignIn(!showSignIn)}
             className="text-orange-400 hover:text-orange-500 dark:text-orange-300 dark:hover:text-orange-200 underline"

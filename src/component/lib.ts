@@ -77,7 +77,7 @@ const checkUniqueFields = async (
   doc?: Doc<any>
 ) => {
   const uniqueFields = Object.entries(
-    specialFields[table as keyof typeof specialFields]
+    specialFields[table as keyof typeof specialFields] ?? {}
   )
     .filter(
       ([key, value]) =>

@@ -9,6 +9,12 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as email from "../email.js";
+import type * as emails_components_BaseEmail from "../emails/components/BaseEmail.js";
+import type * as emails_magicLink from "../emails/magicLink.js";
+import type * as emails_resetPassword from "../emails/resetPassword.js";
+import type * as emails_verifyEmail from "../emails/verifyEmail.js";
+import type * as emails_verifyOTP from "../emails/verifyOTP.js";
 import type * as http from "../http.js";
 import type * as todos from "../todos.js";
 import type * as util from "../util.js";
@@ -29,6 +35,12 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  email: typeof email;
+  "emails/components/BaseEmail": typeof emails_components_BaseEmail;
+  "emails/magicLink": typeof emails_magicLink;
+  "emails/resetPassword": typeof emails_resetPassword;
+  "emails/verifyEmail": typeof emails_verifyEmail;
+  "emails/verifyOTP": typeof emails_verifyOTP;
   http: typeof http;
   todos: typeof todos;
   util: typeof util;
@@ -54,14 +66,17 @@ export declare const components: {
           input:
             | {
                 createdAt: number;
+                displayUsername?: string;
                 email: string;
                 emailVerified: boolean;
                 image?: string;
+                isAnonymous?: boolean;
                 name: string;
                 table: string;
                 twoFactorEnabled?: boolean;
                 updatedAt: number;
-                userId: string;
+                userId?: string;
+                username?: string;
               }
             | {
                 createdAt: number;
@@ -89,12 +104,6 @@ export declare const components: {
                 userId: string;
               }
             | {
-                backupCodes: string;
-                secret: string;
-                table: string;
-                userId: string;
-              }
-            | {
                 createdAt?: number;
                 expiresAt: number;
                 identifier: string;
@@ -103,10 +112,21 @@ export declare const components: {
                 value: string;
               }
             | {
+                backupCodes: string;
+                secret: string;
+                table: string;
+                userId: string;
+              }
+            | {
                 createdAt: number;
-                id?: string;
                 privateKey: string;
                 publicKey: string;
+                table: string;
+              }
+            | {
+                count?: number;
+                key?: string;
+                lastRequest?: number;
                 table: string;
               };
         },
@@ -158,6 +178,12 @@ export declare const components: {
         { expiresAt: number; userId: string },
         any
       >;
+      deleteIn: FunctionReference<
+        "mutation",
+        "internal",
+        { input: { field: "token"; table: "session"; values: Array<string> } },
+        any
+      >;
       deleteOldVerifications: FunctionReference<
         "action",
         "internal",
@@ -184,12 +210,6 @@ export declare const components: {
         "query",
         "internal",
         { accountId: string; providerId: string },
-        any
-      >;
-      getAccountsByUserId: FunctionReference<
-        "query",
-        "internal",
-        { limit?: number; userId: string },
         any
       >;
       getBy: FunctionReference<
@@ -227,11 +247,41 @@ export declare const components: {
         any
       >;
       getCurrentSession: FunctionReference<"query", "internal", {}, any>;
-      getJwks: FunctionReference<"query", "internal", { limit?: number }, any>;
-      getSessionsByUserId: FunctionReference<
+      getIn: FunctionReference<
         "query",
         "internal",
-        { limit?: number; userId: string },
+        {
+          input:
+            | { field: "token"; table: "session"; values: Array<string> }
+            | { field: "userId"; table: "user"; values: Array<string> };
+        },
+        any
+      >;
+      getJwks: FunctionReference<"query", "internal", { limit?: number }, any>;
+      listBy: FunctionReference<
+        "query",
+        "internal",
+        {
+          input:
+            | {
+                field: "accountId" | "userId";
+                limit?: number;
+                table: "account";
+                value: string;
+              }
+            | {
+                field: "userId";
+                limit?: number;
+                table: "session";
+                value: string;
+              }
+            | {
+                field: "key";
+                limit?: number;
+                table: "rateLimit";
+                value: string;
+              };
+        },
         any
       >;
       listVerificationsByIdentifier: FunctionReference<
@@ -308,12 +358,25 @@ export declare const components: {
         },
         any
       >;
-      updateTwoFactor: FunctionReference<
+      updateMany: FunctionReference<
         "mutation",
         "internal",
         {
-          update: { backupCodes?: string; secret?: string; userId?: string };
-          userId: string;
+          input:
+            | {
+                field: "key";
+                table: "rateLimit";
+                update: { count?: number; key?: string; lastRequest?: number };
+              }
+            | {
+                field: "userId";
+                table: "twoFactor";
+                update: {
+                  backupCodes?: string;
+                  secret?: string;
+                  userId?: string;
+                };
+              };
         },
         any
       >;

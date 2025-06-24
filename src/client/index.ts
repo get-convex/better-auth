@@ -23,7 +23,7 @@ import { omit } from "convex-helpers";
 import { createCookieGetter } from "better-auth/cookies";
 import { fetchQuery } from "convex/nextjs";
 import { JWT_COOKIE_NAME } from "../plugins/convex";
-import { requireEnv } from "../util";
+import { requireEnv } from "../utils";
 export { convexAdapter };
 
 const createUserFields = omit(schema.tables.user.validator.fields, ["userId"]);
@@ -281,30 +281,20 @@ export class BetterAuth<UserId extends string = string> {
         : [betterAuthOptions.trustedOrigins]),
       betterAuthOptions.baseURL!,
     ];
-    // The crossDomain plugin adds siteUrl to trustedOrigins
-    const trustedOriginsFromPlugins =
-      betterAuthOptions.plugins?.reduce((acc, plugin) => {
-        if (plugin.options?.trustedOrigins) {
-          acc.push(...plugin.options.trustedOrigins);
-        }
-        return acc;
-      }, [] as string[]) ?? [];
 
     // Reuse trustedOrigins as default for allowedOrigins
     const allowedOrigins = async (request: Request) => {
       return (
         await Promise.all(
-          [...trustedOrigins, ...trustedOriginsFromPlugins].map(
-            async (origin) => {
-              if (!origin) {
-                return [];
-              }
-              if (typeof origin === "function") {
-                return origin(request);
-              }
-              return [origin];
+          trustedOrigins.map(async (origin) => {
+            if (!origin) {
+              return [];
             }
-          )
+            if (typeof origin === "function") {
+              return origin(request);
+            }
+            return [origin];
+          })
         )
       )
         .flat()

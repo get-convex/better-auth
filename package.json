@@ -109,6 +109,18 @@
         "default": "./dist/commonjs/react-start/index.js"
       }
     },
+    "./utils": {
+      "import": {
+        "@convex-dev/component-source": "./src/utils/index.ts",
+        "types": "./dist/esm/utils/index.d.ts",
+        "default": "./dist/esm/utils/index.js"
+      },
+      "require": {
+        "@convex-dev/component-source": "./src/utils/index.ts",
+        "types": "./dist/commonjs/utils/index.d.ts",
+        "default": "./dist/commonjs/utils/index.js"
+      }
+    },
     "./convex.config": {
       "import": {
         "@convex-dev/component-source": "./src/component/convex.config.ts",

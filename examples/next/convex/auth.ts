@@ -8,8 +8,12 @@ import { convex } from "@convex-dev/better-auth/plugins";
 import { api, components, internal } from "./_generated/api";
 import { twoFactor } from "better-auth/plugins";
 import { emailOTP } from "better-auth/plugins";
-import { sendMagicLink, sendOTPVerification } from "./email";
-import { sendEmailVerification, sendResetPassword } from "./email";
+import {
+  sendMagicLink,
+  sendOTPVerification,
+  sendEmailVerification,
+  sendResetPassword,
+} from "./email";
 import { magicLink } from "better-auth/plugins";
 import { betterAuth } from "better-auth";
 import { GenericCtx, query } from "./_generated/server";

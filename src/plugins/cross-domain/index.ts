@@ -21,6 +21,18 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
 
   return {
     id: "cross-domain",
+    init(ctx) {
+      const trustedOrigins = ctx.options.trustedOrigins;
+      if (
+        !trustedOrigins ||
+        (Array.isArray(trustedOrigins) &&
+          trustedOrigins.filter(Boolean).length === 0)
+      ) {
+        throw new Error(
+          `trustedOrigins is required with the crossDomain plugin. You probably want to add ${siteUrl} to it.`
+        );
+      }
+    },
     hooks: {
       before: [
         {
@@ -148,9 +160,6 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
           return response;
         }
       ),
-    },
-    options: {
-      trustedOrigins: [siteUrl],
     },
   } satisfies BetterAuthPlugin;
 };
