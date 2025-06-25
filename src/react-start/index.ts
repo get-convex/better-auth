@@ -43,7 +43,10 @@ export const reactStartHandler = (
   request: Request,
   opts?: { convexSiteUrl?: string }
 ) => {
-  const convexSiteUrl = opts?.convexSiteUrl ?? process.env.VITE_CONVEX_SITE_URL;
+  const convexSiteUrl =
+    opts?.convexSiteUrl ??
+    process?.env?.VITE_CONVEX_SITE_URL ??
+    import.meta?.env?.VITE_CONVEX_SITE_URL;
   const requestUrl = new URL(request.url);
   const nextUrl = `${convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
   request.headers.set("accept-encoding", "application/json");
