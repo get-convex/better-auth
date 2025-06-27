@@ -41,7 +41,7 @@ export const createAuth = (ctx: GenericCtx) =>
     },
     emailAndPassword: {
       enabled: true,
-      requireEmailVerification: false,
+      requireEmailVerification: true,
       sendResetPassword: async ({ user, url }) => {
         await sendResetPassword({
           to: user.email,

@@ -43,6 +43,8 @@ export default function SignIn() {
           setOtpLoading(false);
           if (ctx.data.twoFactorRedirect) {
             router.push("/verify-2fa");
+          } else {
+            router.push("/");
           }
         },
         onError: (ctx) => {

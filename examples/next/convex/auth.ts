@@ -26,7 +26,7 @@ const publicAuthFunctions: PublicAuthFunctions = api.auth;
 export const betterAuthComponent = new BetterAuth(components.betterAuth, {
   authFunctions,
   publicAuthFunctions,
-  verbose: false,
+  verbose: true,
 });
 
 export const createAuth = (ctx: GenericCtx) =>
@@ -48,7 +48,7 @@ export const createAuth = (ctx: GenericCtx) =>
     },
     emailAndPassword: {
       enabled: true,
-      requireEmailVerification: false,
+      requireEmailVerification: true,
       sendResetPassword: async ({ user, url }) => {
         await sendResetPassword({
           to: user.email,
