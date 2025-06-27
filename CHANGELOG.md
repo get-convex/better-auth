@@ -25,3 +25,7 @@
 - Delete expired sessions at login. This will help with sessions piling up
   in the database, but doesn't completely solve it, especially for apps with very long
   lived sessions and lots of users.
+
+## 0.6.2
+
+- Fix email verification callback URL rewriting in the crossDomain plugin.

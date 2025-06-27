@@ -66,10 +66,20 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         },
         {
           matcher: (ctx) => {
+            return ctx.method === "GET" && ctx.path.startsWith("/verify-email");
+          },
+          handler: createAuthMiddleware(async (ctx) => {
+            if (ctx.query?.callbackURL) {
+              ctx.query.callbackURL = rewriteCallbackURL(ctx.query.callbackURL);
+            }
+            return { context: ctx };
+          }),
+        },
+        {
+          matcher: (ctx) => {
             return (
-              ctx.path.startsWith("/link-social") ||
+              (ctx.method === "POST" && ctx.path.startsWith("/link-social")) ||
               ctx.path.startsWith("/send-verification-email") ||
-              ctx.path.startsWith("/verify-email") ||
               ctx.path.startsWith("/sign-in/email") ||
               ctx.path.startsWith("/sign-in/social") ||
               ctx.path.startsWith("/sign-in/magic-link") ||
