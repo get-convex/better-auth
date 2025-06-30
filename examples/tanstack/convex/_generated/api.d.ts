@@ -466,11 +466,30 @@ export declare const components: {
         {
           limit?: number;
           model: string;
+          select?: Array<string>;
+          sortBy?: { direction: "asc" | "desc"; field: string };
+          unique?: boolean;
           where?: Array<{
             connector?: "AND" | "OR";
             field: string;
-            operator: string;
-            value: any;
+            operator?:
+              | "lt"
+              | "lte"
+              | "gt"
+              | "gte"
+              | "eq"
+              | "in"
+              | "ne"
+              | "contains"
+              | "starts_with"
+              | "ends_with";
+            value:
+              | string
+              | number
+              | boolean
+              | Array<string>
+              | Array<number>
+              | null;
           }>;
         },
         any

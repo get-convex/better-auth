@@ -25,6 +25,7 @@
     "prepare": "npm run build",
     "prepack": "node node10stubs.mjs",
     "postpack": "node node10stubs.mjs --cleanup",
+    "generate": "concurrently \"cd examples/next && npm run generate\" \"cd examples/react && npm run generate\" \"cd examples/tanstack && npm run generate\"",
     "test": "vitest run",
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "test:coverage": "vitest run --coverage --coverage.reporter=text"
@@ -148,6 +149,7 @@
     "@types/node": "^18.17.0",
     "@types/react": "19.1.6",
     "@types/react-dom": "19.1.6",
+    "concurrently": "^9.2.0",
     "convex-test": "^0.0.33",
     "eslint": "^9.9.1",
     "globals": "^15.9.0",

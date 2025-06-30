@@ -7,6 +7,7 @@
     "dev": "npm-run-all --parallel dev:frontend dev:backend",
     "dev:backend": "convex dev --live-component-sources --typecheck-components",
     "dev:frontend": "next dev",
+    "generate": "convex dev --live-component-sources --typecheck-components --once",
     "lint": "next lint && tsc -p convex && eslint convex"
   },
   "dependencies": {
