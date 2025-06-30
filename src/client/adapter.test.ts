@@ -27,7 +27,9 @@ describe("convex adapter", async () => {
           return result;
         },
         findMany: async (data) => {
-          return t.query(api.adapterTest.findMany, data);
+          const result = await t.query(api.adapterTest.findMany, data);
+          console.log("findMany result adapter", result);
+          return result;
         },
         count: async () => {
           throw new Error("count not implemented");

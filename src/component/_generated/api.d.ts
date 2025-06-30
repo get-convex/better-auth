@@ -50,81 +50,230 @@ export type Mounts = {
       {
         input:
           | {
-              createdAt: number;
-              displayUsername?: string;
-              email: string;
-              emailVerified: boolean;
-              image?: string;
-              isAnonymous?: boolean;
-              name: string;
-              table: string;
-              twoFactorEnabled?: boolean;
-              updatedAt: number;
-              userId?: string;
-              username?: string;
+              data: {
+                createdAt: number;
+                displayUsername?: string;
+                email: string;
+                emailVerified: boolean;
+                image?: string;
+                isAnonymous?: boolean;
+                name: string;
+                twoFactorEnabled?: boolean;
+                updatedAt: number;
+                userId?: string;
+                username?: string;
+              };
+              model: "user";
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
             }
           | {
-              createdAt: number;
-              expiresAt: number;
-              ipAddress?: string;
-              table: string;
-              token: string;
-              updatedAt: number;
-              userAgent?: string;
-              userId: string;
+              data: {
+                createdAt: number;
+                expiresAt: number;
+                ipAddress?: string;
+                token: string;
+                updatedAt: number;
+                userAgent?: string;
+                userId: string;
+              };
+              model: "session";
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
             }
           | {
-              accessToken?: string;
-              accessTokenExpiresAt?: number;
-              accountId: string;
-              createdAt: number;
-              idToken?: string;
-              password?: string;
-              providerId: string;
-              refreshToken?: string;
-              refreshTokenExpiresAt?: number;
-              scope?: string;
-              table: string;
-              updatedAt: number;
-              userId: string;
+              data: {
+                accessToken?: string;
+                accessTokenExpiresAt?: number;
+                accountId: string;
+                createdAt: number;
+                idToken?: string;
+                password?: string;
+                providerId: string;
+                refreshToken?: string;
+                refreshTokenExpiresAt?: number;
+                scope?: string;
+                updatedAt: number;
+                userId: string;
+              };
+              model: "account";
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
             }
           | {
-              createdAt?: number;
-              expiresAt: number;
-              identifier: string;
-              table: string;
-              updatedAt?: number;
-              value: string;
+              data: {
+                createdAt?: number;
+                expiresAt: number;
+                identifier: string;
+                updatedAt?: number;
+                value: string;
+              };
+              model: "verification";
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
             }
           | {
-              backupCodes: string;
-              secret: string;
-              table: string;
-              userId: string;
+              data: { backupCodes: string; secret: string; userId: string };
+              model: "twoFactor";
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
             }
           | {
-              createdAt: number;
-              privateKey: string;
-              publicKey: string;
-              table: string;
+              data: {
+                createdAt: number;
+                privateKey: string;
+                publicKey: string;
+              };
+              model: "jwks";
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
             }
           | {
-              count?: number;
-              key?: string;
-              lastRequest?: number;
-              table: string;
+              data: { count?: number; key?: string; lastRequest?: number };
+              model: "rateLimit";
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
             };
-      },
-      any
-    >;
-    deleteBy: FunctionReference<
-      "mutation",
-      "public",
-      {
-        field: string;
-        table: string;
-        unique?: boolean;
-        value: string | number | boolean | Array<string> | Array<number> | null;
       },
       any
     >;
@@ -154,31 +303,59 @@ export type Mounts = {
         where?: Array<{
           connector?: "AND" | "OR";
           field: string;
-          operator: string;
-          value: any;
+          operator?:
+            | "lt"
+            | "lte"
+            | "gt"
+            | "gte"
+            | "eq"
+            | "in"
+            | "ne"
+            | "contains"
+            | "starts_with"
+            | "ends_with";
+          value:
+            | string
+            | number
+            | boolean
+            | Array<string>
+            | Array<number>
+            | null;
         }>;
       },
       any
     >;
-    deleteOldVerifications: FunctionReference<
-      "action",
-      "public",
-      { currentTimestamp: number },
-      any
-    >;
-    deleteOldVerificationsPage: FunctionReference<
+    deleteOne: FunctionReference<
       "mutation",
       "public",
       {
-        currentTimestamp: number;
-        paginationOpts?: {
-          cursor: string | null;
-          endCursor?: string | null;
-          id?: number;
-          maximumBytesRead?: number;
-          maximumRowsRead?: number;
-          numItems: number;
-        };
+        limit?: number;
+        model: string;
+        select?: Array<string>;
+        sortBy?: { direction: "asc" | "desc"; field: string };
+        unique?: boolean;
+        where?: Array<{
+          connector?: "AND" | "OR";
+          field: string;
+          operator?:
+            | "lt"
+            | "lte"
+            | "gt"
+            | "gte"
+            | "eq"
+            | "in"
+            | "ne"
+            | "contains"
+            | "starts_with"
+            | "ends_with";
+          value:
+            | string
+            | number
+            | boolean
+            | Array<string>
+            | Array<number>
+            | null;
+        }>;
       },
       any
     >;
@@ -202,8 +379,24 @@ export type Mounts = {
         where?: Array<{
           connector?: "AND" | "OR";
           field: string;
-          operator: string;
-          value: any;
+          operator?:
+            | "lt"
+            | "lte"
+            | "gt"
+            | "gte"
+            | "eq"
+            | "in"
+            | "ne"
+            | "contains"
+            | "starts_with"
+            | "ends_with";
+          value:
+            | string
+            | number
+            | boolean
+            | Array<string>
+            | Array<number>
+            | null;
         }>;
       },
       any
@@ -220,31 +413,25 @@ export type Mounts = {
         where?: Array<{
           connector?: "AND" | "OR";
           field: string;
-          operator: string;
-          value: any;
+          operator?:
+            | "lt"
+            | "lte"
+            | "gt"
+            | "gte"
+            | "eq"
+            | "in"
+            | "ne"
+            | "contains"
+            | "starts_with"
+            | "ends_with";
+          value:
+            | string
+            | number
+            | boolean
+            | Array<string>
+            | Array<number>
+            | null;
         }>;
-      },
-      any
-    >;
-    getBy: FunctionReference<
-      "query",
-      "public",
-      {
-        field: string;
-        table: string;
-        unique?: boolean;
-        value: string | number | boolean | Array<string> | Array<number> | null;
-      },
-      any
-    >;
-    getByQuery: FunctionReference<
-      "query",
-      "public",
-      {
-        field: string;
-        table: string;
-        unique?: boolean;
-        value: string | number | boolean | Array<string> | Array<number> | null;
       },
       any
     >;
@@ -255,91 +442,31 @@ export type Mounts = {
       {
         limit?: number;
         model: string;
+        select?: Array<string>;
+        sortBy?: { direction: "asc" | "desc"; field: string };
+        unique?: boolean;
         where?: Array<{
           connector?: "AND" | "OR";
           field: string;
-          operator: string;
-          value: any;
+          operator?:
+            | "lt"
+            | "lte"
+            | "gt"
+            | "gte"
+            | "eq"
+            | "in"
+            | "ne"
+            | "contains"
+            | "starts_with"
+            | "ends_with";
+          value:
+            | string
+            | number
+            | boolean
+            | Array<string>
+            | Array<number>
+            | null;
         }>;
-      },
-      any
-    >;
-    listBy: FunctionReference<
-      "query",
-      "public",
-      {
-        input: {
-          field: string;
-          limit?: number;
-          sortDirection?: "asc" | "desc";
-          sortField?: string;
-          table: string;
-          value: any;
-        };
-      },
-      any
-    >;
-    update: FunctionReference<
-      "mutation",
-      "public",
-      {
-        input:
-          | {
-              table: "account";
-              value: Record<string, any>;
-              where: {
-                field: string;
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              };
-            }
-          | {
-              table: "session";
-              value: Record<string, any>;
-              where: {
-                field: string;
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              };
-            }
-          | {
-              table: "verification";
-              value: Record<string, any>;
-              where: {
-                field: string;
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              };
-            }
-          | {
-              table: "user";
-              value: Record<string, any>;
-              where: {
-                field: string;
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              };
-            };
       },
       any
     >;
@@ -376,9 +503,262 @@ export type Mounts = {
         where?: Array<{
           connector?: "AND" | "OR";
           field: string;
-          operator: string;
-          value: any;
+          operator?:
+            | "lt"
+            | "lte"
+            | "gt"
+            | "gte"
+            | "eq"
+            | "in"
+            | "ne"
+            | "contains"
+            | "starts_with"
+            | "ends_with";
+          value:
+            | string
+            | number
+            | boolean
+            | Array<string>
+            | Array<number>
+            | null;
         }>;
+      },
+      any
+    >;
+    updateOne: FunctionReference<
+      "mutation",
+      "public",
+      {
+        input:
+          | {
+              model: "user";
+              update: {
+                createdAt?: number;
+                displayUsername?: string;
+                email?: string;
+                emailVerified?: boolean;
+                image?: string;
+                isAnonymous?: boolean;
+                name?: string;
+                twoFactorEnabled?: boolean;
+                updatedAt?: number;
+                userId?: string;
+                username?: string;
+              };
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
+            }
+          | {
+              model: "session";
+              update: {
+                createdAt?: number;
+                expiresAt?: number;
+                ipAddress?: string;
+                token?: string;
+                updatedAt?: number;
+                userAgent?: string;
+                userId?: string;
+              };
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
+            }
+          | {
+              model: "account";
+              update: {
+                accessToken?: string;
+                accessTokenExpiresAt?: number;
+                accountId?: string;
+                createdAt?: number;
+                idToken?: string;
+                password?: string;
+                providerId?: string;
+                refreshToken?: string;
+                refreshTokenExpiresAt?: number;
+                scope?: string;
+                updatedAt?: number;
+                userId?: string;
+              };
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
+            }
+          | {
+              model: "verification";
+              update: {
+                createdAt?: number;
+                expiresAt?: number;
+                identifier?: string;
+                updatedAt?: number;
+                value?: string;
+              };
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
+            }
+          | {
+              model: "twoFactor";
+              update: {
+                backupCodes?: string;
+                secret?: string;
+                userId?: string;
+              };
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
+            }
+          | {
+              model: "jwks";
+              update: {
+                createdAt?: number;
+                privateKey?: string;
+                publicKey?: string;
+              };
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
+            }
+          | {
+              model: "rateLimit";
+              update: { count?: number; key?: string; lastRequest?: number };
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
+            };
       },
       any
     >;

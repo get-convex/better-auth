@@ -23,23 +23,29 @@ import { createCookieGetter } from "better-auth/cookies";
 import { fetchQuery } from "convex/nextjs";
 import { JWT_COOKIE_NAME } from "../plugins/convex";
 import { requireEnv } from "../utils";
+import { partial } from "convex-helpers/validators";
+import { adapterArgsValidator, adapterWhereValidator } from "../component/lib";
 export { convexAdapter };
 
 const createUserFields = omit(schema.tables.user.validator.fields, ["userId"]);
 const createUserValidator = v.object(createUserFields);
 const createUserArgsValidator = v.object({
-  model: v.literal("user"),
-  data: v.object(createUserFields),
+  input: v.object({
+    model: v.literal("user"),
+    data: v.object(createUserFields),
+  }),
 });
 const updateUserArgsValidator = v.object({
-  input: updateArgsInputValidator("user"),
+  input: v.object({
+    model: v.literal("user"),
+    where: v.optional(v.array(adapterWhereValidator)),
+    update: v.object(partial(createUserFields)),
+  }),
 });
-const deleteUserArgsValidator = v.object(getByArgsValidator);
-
 const createSessionArgsValidator = v.object({
   input: v.object({
-    table: v.literal("session"),
-    ...schema.tables.session.validator.fields,
+    model: v.literal("session"),
+    data: v.object(schema.tables.session.validator.fields),
   }),
 });
 
@@ -58,7 +64,7 @@ export type AuthFunctions = {
   deleteUser: FunctionReference<
     "mutation",
     "internal",
-    Infer<typeof deleteUserArgsValidator>
+    Infer<typeof adapterArgsValidator>
   >;
   updateUser: FunctionReference<
     "mutation",
@@ -125,10 +131,14 @@ export class BetterAuth<UserId extends string = string> {
     if (!identity) {
       return null;
     }
-    const doc = await ctx.runQuery(this.component.lib.getBy, {
-      table: "user",
-      field: "userId",
-      value: identity.subject,
+    const doc = await ctx.runQuery(this.component.lib.findOne, {
+      model: "user",
+      where: [
+        {
+          field: "userId",
+          value: identity.subject,
+        },
+      ],
     });
     if (!doc) {
       return null;
@@ -179,15 +189,17 @@ export class BetterAuth<UserId extends string = string> {
       createUser: internalMutationGeneric({
         args: createUserArgsValidator,
         handler: async (ctx, args) => {
-          const userId = await opts.onCreateUser(ctx, args.input);
-          const input = { ...args.input, table: "user", userId };
+          const userId = await opts.onCreateUser(ctx, args.input.data);
           return ctx.runMutation(this.component.lib.create, {
-            input,
+            input: {
+              ...args.input,
+              data: { ...args.input.data, userId },
+            },
           });
         },
       }),
       deleteUser: internalMutationGeneric({
-        args: deleteUserArgsValidator,
+        args: adapterArgsValidator,
         handler: async (ctx, args) => {
           const doc = await ctx.runMutation(this.component.lib.deleteOne, args);
           if (doc && opts.onDeleteUser) {
@@ -200,8 +212,13 @@ export class BetterAuth<UserId extends string = string> {
         args: updateUserArgsValidator,
         handler: async (ctx, args) => {
           const updatedUser = await ctx.runMutation(
-            this.component.lib.update,
-            args
+            this.component.lib.updateOne,
+            {
+              input: {
+                model: "user",
+                update: args.input.update,
+              },
+            }
           );
           // Type narrowing
           if (!("emailVerified" in updatedUser)) {
@@ -216,10 +233,12 @@ export class BetterAuth<UserId extends string = string> {
       createSession: internalMutationGeneric({
         args: createSessionArgsValidator,
         handler: async (ctx, args) => {
-          const session = await ctx.runMutation(
-            this.component.lib.create,
-            args
-          );
+          const session = await ctx.runMutation(this.component.lib.create, {
+            input: {
+              model: "session",
+              data: args.input.data,
+            },
+          });
           await opts.onCreateSession?.(ctx, session);
           return session;
         },

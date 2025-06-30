@@ -67,29 +67,20 @@ const paginate = async (
   return state;
 };
 
-const parseData = (data: {
-  model: string;
-  where?: CleanedWhere[];
-  offset?: number;
-  limit?: number;
-  sortBy?: {
-    field: string;
-    direction: "asc" | "desc";
-  };
-  update?: any;
-}) => {
-  return {
-    ...data,
-    where: data.where?.map((where) => {
-      if (where.value instanceof Date) {
-        return {
-          ...where,
-          value: where.value.getTime(),
-        };
-      }
-      return where;
-    }),
-  };
+type ConvexCleanedWhere = CleanedWhere & {
+  value: string | number | boolean | string[] | number[] | null;
+};
+
+const parseWhere = (where?: CleanedWhere[]): ConvexCleanedWhere[] => {
+  return where?.map((where) => {
+    if (where.value instanceof Date) {
+      return {
+        ...where,
+        value: where.value.getTime(),
+      };
+    }
+    return where;
+  }) as ConvexCleanedWhere[];
 };
 
 type GenericCtx =
@@ -149,25 +140,31 @@ export const convexAdapter = (
               : model === "session"
                 ? component.config.authFunctions.createSession
                 : component.component.lib.create;
-          return await ctx.runMutation(createFn, { model, data });
+          return await ctx.runMutation(createFn, {
+            input: { model, data },
+          });
         },
         findOne: async (data): Promise<any> => {
-          return await ctx.runQuery(
-            component.component.lib.findOne,
-            parseData(data)
-          );
+          return await ctx.runQuery(component.component.lib.findOne, {
+            ...data,
+            where: parseWhere(data.where),
+          });
         },
         findMany: async (data): Promise<any[]> => {
           if (data.offset) {
             throw new Error("offset not supported");
           }
           if (data.where?.length === 1 && data.where[0].operator === "in") {
-            return ctx.runQuery(component.component.lib.getIn, parseData(data));
+            return ctx.runQuery(component.component.lib.getIn, {
+              ...data,
+              where: parseWhere(data.where),
+            });
           }
           const result = await paginate(
             async ({ paginationOpts }) => {
               return await ctx.runQuery(component.component.lib.findMany, {
-                ...parseData(data),
+                ...data,
+                where: parseWhere(data.where),
                 paginationOpts,
               });
             },
@@ -182,21 +179,16 @@ export const convexAdapter = (
           if (!("runMutation" in ctx)) {
             throw new Error("ctx is not a mutation ctx");
           }
-          const { model, where, update } = parseData(data);
-          if (where?.length === 1 && where[0].operator === "eq") {
-            const { value, field } = where[0];
+          if (data.where?.length === 1 && data.where[0].operator === "eq") {
             const updateFn =
-              model === "user"
+              data.model === "user"
                 ? component.config.authFunctions.updateUser
-                : component.component.lib.update;
+                : component.component.lib.updateOne;
             return ctx.runMutation(updateFn, {
               input: {
-                table: model as any,
-                where: {
-                  field,
-                  value: value as Exclude<typeof value, Date>,
-                },
-                value: update as any,
+                model: data.model,
+                where: parseWhere(data.where),
+                update: data.update as any,
               },
             });
           }
@@ -206,43 +198,37 @@ export const convexAdapter = (
           if (!("runMutation" in ctx)) {
             throw new Error("ctx is not a mutation ctx");
           }
-          const { model, where } = parseData(data);
-          if (where?.length === 1 && where[0].operator === "eq") {
-            const { field, value } = where[0];
-            const deleteFn =
-              model === "user"
-                ? component.config.authFunctions.deleteUser
-                : component.component.lib.deleteBy;
-            await ctx.runMutation(deleteFn, {
-              table: model,
-              field,
-              value: value as Exclude<typeof value, Date>,
-            });
-            return;
-          }
-          throw new Error("where clause not supported");
+          const deleteFn =
+            data.model === "user"
+              ? component.config.authFunctions.deleteUser
+              : component.component.lib.deleteOne;
+          await ctx.runMutation(deleteFn, {
+            model: data.model,
+            where: parseWhere(data.where),
+          });
+          return;
         },
         deleteMany: async (data) => {
           if (!("runMutation" in ctx)) {
             throw new Error("ctx is not a mutation ctx");
           }
-          const parsedData = parseData(data);
           if (
-            parsedData.model === "session" &&
-            parsedData.where?.length === 1 &&
-            parsedData.where[0].operator === "in"
+            data.model === "session" &&
+            data.where?.length === 1 &&
+            data.where[0].operator === "in"
           ) {
             return ctx.runMutation(component.component.lib.deleteIn, {
               input: {
-                table: parsedData.model,
-                field: parsedData.where[0].field as any,
-                values: parsedData.where[0].value as string[],
+                table: data.model,
+                field: data.where[0].field as any,
+                values: data.where[0].value as string[],
               },
             });
           }
           const result = await paginate(async ({ paginationOpts }) => {
             return await ctx.runMutation(component.component.lib.deleteMany, {
-              ...parsedData,
+              ...data,
+              where: parseWhere(data.where),
               paginationOpts,
             });
           });
@@ -254,7 +240,8 @@ export const convexAdapter = (
           }
           const result = await paginate(async ({ paginationOpts }) => {
             return await ctx.runMutation(component.component.lib.updateMany, {
-              ...parseData(data),
+              ...data,
+              where: parseWhere(data.where),
               paginationOpts,
             });
           });

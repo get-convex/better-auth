@@ -11,16 +11,45 @@ import {
 import { paginator } from "convex-helpers/server/pagination";
 import { partial } from "convex-helpers/validators";
 
-// Get the session via sessionId in jwt claims
-export const getCurrentSession = query({
-  args: {},
-  handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return null;
-    }
-    return ctx.db.get(identity.sessionId as Id<"session">);
-  },
+export const adapterWhereValidator = v.object({
+  field: v.string(),
+  operator: v.optional(
+    v.union(
+      v.literal("lt"),
+      v.literal("lte"),
+      v.literal("gt"),
+      v.literal("gte"),
+      v.literal("eq"),
+      v.literal("in"),
+      v.literal("ne"),
+      v.literal("contains"),
+      v.literal("starts_with"),
+      v.literal("ends_with")
+    )
+  ),
+  value: v.union(
+    v.string(),
+    v.number(),
+    v.boolean(),
+    v.array(v.string()),
+    v.array(v.number()),
+    v.null()
+  ),
+  connector: v.optional(v.union(v.literal("AND"), v.literal("OR"))),
+});
+
+export const adapterArgsValidator = v.object({
+  model: v.string(),
+  where: v.optional(v.array(adapterWhereValidator)),
+  sortBy: v.optional(
+    v.object({
+      field: v.string(),
+      direction: v.union(v.literal("asc"), v.literal("desc")),
+    })
+  ),
+  select: v.optional(v.array(v.string())),
+  limit: v.optional(v.number()),
+  unique: v.optional(v.boolean()),
 });
 
 const getUniqueFields = (table: TableNames, input: Record<string, any>) => {
@@ -59,132 +88,11 @@ const checkUniqueFields = async (
   }
 };
 
-export const create = mutation({
-  args: v.union(
-    ...Object.entries(schema.tables).map(([model, table]) =>
-      v.object({
-        model: v.literal(model),
-        data: v.object(table.validator.fields),
-      })
-    )
-  ),
-  handler: async (ctx, args) => {
-    await checkUniqueFields(ctx, args.model as TableNames, args.data);
-
-    const id = await ctx.db.insert(args.model as any, args.data);
-    const doc = await ctx.db.get(id);
-    console.log("doc", doc);
-    if (!doc) {
-      throw new Error(`Failed to create ${args.model}`);
-    }
-    return doc;
-  },
-});
-
-export const updateArgsInputValidator = <T extends TableNames>(table: T) => {
-  return v.object({
-    table: v.literal(table),
-    where: v.object({
-      field: v.string(),
-      value: v.union(
-        v.string(),
-        v.number(),
-        v.boolean(),
-        v.array(v.string()),
-        v.array(v.number()),
-        v.null()
-      ),
-    }),
-    value: v.record(v.string(), v.any()),
-  });
-};
-
-const updateArgsValidator = {
-  input: v.union(
-    updateArgsInputValidator("account"),
-    updateArgsInputValidator("session"),
-    updateArgsInputValidator("verification"),
-    updateArgsInputValidator("user")
-  ),
-};
-
-export const update = mutation({
-  args: updateArgsValidator,
-  handler: async (ctx, args) => {
-    const { table, where, value } = args.input;
-    const doc =
-      where.field === "id"
-        ? await ctx.db.get(where.value as Id<any>)
-        : await ctx.db
-            .query(table as any)
-            .withIndex(where.field as any, (q) =>
-              q.eq(where.field, where.value)
-            )
-            .unique();
-    if (!doc) {
-      throw new Error(`Failed to update ${table}`);
-    }
-    await checkUniqueFields(ctx, table as TableNames, value, doc);
-    await ctx.db.patch(doc._id, value as any);
-    const updatedDoc = await ctx.db.get(doc._id);
-    if (!updatedDoc) {
-      throw new Error(`Failed to update ${table}`);
-    }
-    return updatedDoc;
-  },
-});
-
-export const getIn = query({
-  args: {
-    model: v.string(),
-    where: v.optional(
-      v.array(
-        v.object({
-          field: v.string(),
-          operator: v.string(),
-          value: v.any(),
-          connector: v.optional(v.union(v.literal("AND"), v.literal("OR"))),
-        })
-      )
-    ),
-    limit: v.optional(v.number()),
-  },
-  handler: async (ctx, args) => {
-    if (
-      !args.where ||
-      args.where.length !== 1 ||
-      args.where[0].operator !== "in"
-    ) {
-      throw new Error("where must be a single in clause");
-    }
-    if (args.where[0].connector && args.where[0].connector !== "AND") {
-      throw new Error("OR connector not supported");
-    }
-    const where = args.where[0];
-    return (
-      await asyncMap(where.value, async (value) => {
-        if (where.field === "id") {
-          return [await ctx.db.get(value as Id<TableNames>)];
-        }
-        const query = ctx.db
-          .query(args.model as any)
-          .withIndex(where.field as any, (q) => q.eq(where.field, value));
-        if (args.limit) {
-          return await query.take(args.limit);
-        }
-        return await query.collect();
-      })
-    )
-      .flat()
-      .filter(Boolean);
-  },
-});
-
 const findIndex = async (args: {
   model: string;
   where?: {
     field: string;
-    operator: string;
+    operator?: string;
     value: any;
     connector?: "AND" | "OR";
   }[];
@@ -262,6 +170,8 @@ const findIndex = async (args: {
   const indexes =
     schema.tables[args.model as keyof typeof schema.tables][" indexes"]();
   const sortField = args.sortBy?.field;
+
+  // We internally use _creationTime in place of Better Auth's createdAt
   const indexName = indexFields
     .map(([field]) => field)
     .join("_")
@@ -275,17 +185,29 @@ const findIndex = async (args: {
         ? `${indexFields.length || boundField ? "_" : ""}${sortField}`
         : ""
     );
-  if (!indexName) {
+  if (!indexName && !boundField && !sortField) {
     return;
   }
-  const index = indexes.find(({ indexDescriptor }) =>
-    indexDescriptor.startsWith(indexName)
-  );
+  // Use the built in creationTime index if bounding or sorting by createdAt
+  // with no other fields
+  const index = !indexName
+    ? {
+        indexDescriptor: "by_creation_time",
+        fields: [],
+      }
+    : indexes.find(({ indexDescriptor }) => {
+        return boundField === "createdAt" || sortField === "createdAt"
+          ? indexDescriptor === indexName
+          : indexDescriptor.startsWith(indexName);
+      });
   if (!index) {
     throw new Error(`Index ${indexName} not found for table ${args.model}`);
   }
   return {
-    index,
+    index: {
+      indexDescriptor: index.indexDescriptor,
+      fields: [...index.fields, "_creationTime"],
+    },
     boundField,
     sortField,
     values: {
@@ -314,30 +236,10 @@ const selectFields = <T extends TableNames, D extends Doc<T>>(
   }, {} as D);
 };
 
-const adapterArgsValidator = v.object({
-  model: v.string(),
-  where: v.optional(
-    v.array(
-      v.object({
-        field: v.string(),
-        operator: v.string(),
-        value: v.any(),
-        connector: v.optional(v.union(v.literal("AND"), v.literal("OR"))),
-      })
-    )
-  ),
-  sortBy: v.optional(
-    v.object({
-      field: v.string(),
-      direction: v.union(v.literal("asc"), v.literal("desc")),
-    })
-  ),
-  select: v.optional(v.array(v.string())),
-  limit: v.optional(v.number()),
-  unique: v.optional(v.boolean()),
-});
-
-const list = async (
+// This is the core function for reading from the database, it parses and
+// validates where conditions, selects indexes, and allows the caller to
+// optionally paginate as needed.
+const paginate = async (
   ctx: QueryCtx,
   args: Infer<typeof adapterArgsValidator> & {
     paginationOpts: PaginationOptions;
@@ -355,26 +257,38 @@ const list = async (
   }
   const { index, values, boundField } = (await findIndex(args)) ?? {};
   const query = paginator(ctx.db, schema).query(args.model as any);
-  const indexedQuery = index
-    ? query.withIndex(index.indexDescriptor, (q: any) => {
-        for (const [idx, value] of (values?.eq ?? []).entries()) {
-          q = q.eq(index.fields[idx], value);
-        }
-        if (values?.lt) {
-          q = q.lt(boundField, values.lt);
-        }
-        if (values?.lte) {
-          q = q.lte(boundField, values.lte);
-        }
-        if (values?.gt) {
-          q = q.gt(boundField, values.gt);
-        }
-        if (values?.gte) {
-          q = q.gte(boundField, values.gte);
-        }
-        return q;
-      })
-    : query;
+  const hasValues =
+    values?.eq?.length ||
+    values?.lt ||
+    values?.lte ||
+    values?.gt ||
+    values?.gte;
+  const indexedQuery =
+    index && index.indexDescriptor !== "by_creation_time"
+      ? query.withIndex(
+          index.indexDescriptor,
+          hasValues
+            ? (q: any) => {
+                for (const [idx, value] of (values?.eq ?? []).entries()) {
+                  q = q.eq(index.fields[idx], value);
+                }
+                if (values?.lt) {
+                  q = q.lt(boundField, values.lt);
+                }
+                if (values?.lte) {
+                  q = q.lte(boundField, values.lte);
+                }
+                if (values?.gt) {
+                  q = q.gt(boundField, values.gt);
+                }
+                if (values?.gte) {
+                  q = q.gte(boundField, values.gte);
+                }
+                return q;
+              }
+            : undefined
+        )
+      : query;
 
   const orderedQuery = args.sortBy
     ? indexedQuery.order(args.sortBy.direction === "asc" ? "asc" : "desc")
@@ -391,7 +305,7 @@ const listOne = async (
   args: Infer<typeof adapterArgsValidator>
 ): Promise<Doc<any> | null> => {
   return (
-    await list(ctx, {
+    await paginate(ctx, {
       ...args,
       paginationOpts: {
         numItems: 1,
@@ -401,13 +315,31 @@ const listOne = async (
   ).page[0];
 };
 
-export const findMany = query({
+export const create = mutation({
   args: {
-    ...adapterArgsValidator.fields,
-    paginationOpts: paginationOptsValidator,
+    input: v.union(
+      ...Object.entries(schema.tables).map(([model, table]) =>
+        v.object({
+          model: v.literal(model),
+          where: v.optional(v.array(adapterWhereValidator)),
+          data: v.object(table.validator.fields),
+        })
+      )
+    ),
   },
   handler: async (ctx, args) => {
-    return await list(ctx, args);
+    await checkUniqueFields(
+      ctx,
+      args.input.model as TableNames,
+      args.input.data
+    );
+
+    const id = await ctx.db.insert(args.input.model as any, args.input.data);
+    const doc = await ctx.db.get(id);
+    if (!doc) {
+      throw new Error(`Failed to create ${args.input.model}`);
+    }
+    return doc;
   },
 });
 
@@ -418,15 +350,52 @@ export const findOne = query({
   },
 });
 
-export const deleteOne = mutation({
-  args: adapterArgsValidator,
+export const findMany = query({
+  args: {
+    ...adapterArgsValidator.fields,
+    paginationOpts: paginationOptsValidator,
+  },
   handler: async (ctx, args) => {
-    const doc = await listOne(ctx, args);
+    return await paginate(ctx, args);
+  },
+});
+
+export const updateOne = mutation({
+  args: {
+    input: v.union(
+      ...Object.entries(schema.tables).map(([model, table]) =>
+        v.object({
+          model: v.literal(model),
+          where: v.optional(v.array(adapterWhereValidator)),
+          update: v.object(
+            Object.fromEntries(
+              Object.entries(table.validator.fields).map(([key, value]) => [
+                key,
+                value.isOptional === "required" ? v.optional(value) : value,
+              ])
+            )
+          ),
+        })
+      )
+    ),
+  },
+  handler: async (ctx, args) => {
+    const doc = await listOne(ctx, args.input);
     if (!doc) {
-      return;
+      throw new Error(`Failed to update ${args.input.model}`);
     }
-    await ctx.db.delete(doc._id);
-    return doc;
+    await checkUniqueFields(
+      ctx,
+      args.input.model as TableNames,
+      args.input.update,
+      doc
+    );
+    await ctx.db.patch(doc._id, args.input.update as any);
+    const updatedDoc = await ctx.db.get(doc._id);
+    if (!updatedDoc) {
+      throw new Error(`Failed to update ${args.input.model}`);
+    }
+    return updatedDoc;
   },
 });
 
@@ -437,7 +406,7 @@ export const updateMany = mutation({
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
-    const { page, ...result } = await list(ctx, args);
+    const { page, ...result } = await paginate(ctx, args);
     if (args.update) {
       const uniqueFields = getUniqueFields(
         args.model as TableNames,
@@ -465,6 +434,76 @@ export const updateMany = mutation({
   },
 });
 
+export const deleteOne = mutation({
+  args: adapterArgsValidator,
+  handler: async (ctx, args) => {
+    const doc = await listOne(ctx, args);
+    if (!doc) {
+      return;
+    }
+    await ctx.db.delete(doc._id);
+    return doc;
+  },
+});
+
+export const deleteMany = mutation({
+  args: {
+    ...adapterArgsValidator.fields,
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    const { page, ...result } = await paginate(ctx, args);
+    await asyncMap(page, async (doc) => {
+      await ctx.db.delete(doc._id);
+    });
+    return {
+      ...result,
+      count: page.length,
+    };
+  },
+});
+
+// Get the session via sessionId in jwt claims
+// TODO: this needs a refresh, subquery only necessary for actions
+export const getCurrentSession = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
+    return ctx.db.get(identity.sessionId as Id<"session">);
+  },
+});
+
+// TODO: rewrite functions below here to be dynamic
+
+export const getIn = query({
+  args: adapterArgsValidator,
+  handler: async (ctx, args) => {
+    const where = args.where?.[0];
+    if (!where || where.operator !== "in" || args.where?.length !== 1) {
+      throw new Error("where must be a single in clause");
+    }
+    return (
+      await asyncMap(where.value as any[], async (value) => {
+        if (where.field === "id") {
+          return [await ctx.db.get(value as Id<TableNames>)];
+        }
+        const query = ctx.db
+          .query(args.model as any)
+          .withIndex(where.field as any, (q) => q.eq(where.field, value));
+        if (args.limit) {
+          return await query.take(args.limit);
+        }
+        return await query.collect();
+      })
+    )
+      .flat()
+      .filter(Boolean);
+  },
+});
+
 export const deleteIn = mutation({
   args: {
     input: v.union(
@@ -489,22 +528,5 @@ export const deleteIn = mutation({
       return doc;
     });
     return docs.filter(Boolean).length;
-  },
-});
-
-export const deleteMany = mutation({
-  args: {
-    ...adapterArgsValidator.fields,
-    paginationOpts: paginationOptsValidator,
-  },
-  handler: async (ctx, args) => {
-    const { page, ...result } = await list(ctx, args);
-    await asyncMap(page, async (doc) => {
-      await ctx.db.delete(doc._id);
-    });
-    return {
-      ...result,
-      count: page.length,
-    };
   },
 });
