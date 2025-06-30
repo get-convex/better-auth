@@ -14,10 +14,12 @@ import { authClient } from "@/lib/auth-client";
 import EnableTwoFactor from "@/app/(auth)/settings/EnableTwoFactor";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {
   const [showEnable2FA, setShowEnable2FA] = useState(false);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleDisable2FA = async () => {
     try {
@@ -41,6 +43,7 @@ export default function SettingsPage() {
     ) {
       try {
         await authClient.deleteUser();
+        router.push("/");
       } catch {
         alert("Failed to delete account. Please try again.");
       }

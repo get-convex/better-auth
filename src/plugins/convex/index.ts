@@ -144,7 +144,10 @@ export const convex = (
         },
         {
           matcher: (ctx) => {
-            return ctx.path?.startsWith("/sign-out");
+            return (
+              ctx.path?.startsWith("/sign-out") ||
+              ctx.path?.startsWith("/delete-user")
+            );
           },
           handler: createAuthMiddleware(async (ctx) => {
             const jwtCookie = ctx.context.createAuthCookie(JWT_COOKIE_NAME, {

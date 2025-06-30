@@ -27,9 +27,9 @@ export { config as auth };
 // Manually add fields to index on for schema generation,
 // all fields in the schema specialFields are automatically indexed
 export const indexFields = {
-  user: ["userId", "name", ["email", "name"]],
-  session: ["expiresAt", ["expiresAt", "userId"]],
   account: ["accountId", ["accountId", "providerId"], ["providerId", "userId"]],
-  verification: ["expiresAt", "identifier"],
   rateLimit: ["key"],
+  session: ["expiresAt", ["expiresAt", "userId"]],
+  verification: ["expiresAt", "identifier"],
+  user: [["email", "name"], "name", "userId"],
 };

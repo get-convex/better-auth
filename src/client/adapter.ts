@@ -111,15 +111,19 @@ export const convexAdapter = (
       mapKeysTransformOutput: {
         _id: "id",
       },
-      customTransformInput: ({ data, fieldAttributes }) => {
-        if (fieldAttributes.type === "date") {
-          return data.getTime();
+      customTransformInput: ({ data, fieldAttributes, field }) => {
+        if (data && fieldAttributes.type === "date") {
+          const result = data.getTime();
+          console.log("transformed input", field, result);
+          return result;
         }
         return data;
       },
-      customTransformOutput: ({ data, fieldAttributes }) => {
-        if (fieldAttributes.type === "date") {
-          return new Date(data);
+      customTransformOutput: ({ data, fieldAttributes, field }) => {
+        if (data && fieldAttributes.type === "date") {
+          const result = new Date(data);
+          console.log("transformed output", field, result);
+          return result;
         }
         return data;
       },

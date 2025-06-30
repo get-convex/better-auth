@@ -164,7 +164,7 @@ const findIndex = async (args: {
         return a.field.localeCompare(b.field);
       })
       .map((w) => [w.field, w.value]) ?? [];
-  if (!indexFields?.length && !args.sortBy) {
+  if (!indexFields?.length && !boundField && !args.sortBy) {
     return;
   }
   const indexes =

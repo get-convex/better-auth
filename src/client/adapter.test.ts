@@ -9,52 +9,54 @@ import { serialize } from "../component/adapterTest";
 import { Adapter } from "better-auth";
 
 describe("convex adapter", async () => {
-  const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
-  const getAdapter = async (betterAuthOptions = {}): Promise<Adapter> => {
-    return {
-      id: "convex",
-      create: async (data) => {
-        const result = await t.mutation(api.adapterTest.create, {
-          ...data,
-          data: serialize(data.data),
-        });
-        return result;
-      },
-      findOne: async (data) => {
-        const result = await t.query(api.adapterTest.findOne, data);
-        console.log("findOne result adapter", result);
-        return result;
-      },
-      findMany: async (data) => {
-        const result = await t.query(api.adapterTest.findMany, data);
-        console.log("findMany result adapter", result);
-        return result;
-      },
-      count: async () => {
-        throw new Error("count not implemented");
-      },
-      update: async (data) => {
-        const result = await t.mutation(api.adapterTest.update, {
-          ...data,
-          update: serialize(data.update),
-        });
-        return result;
-      },
-      updateMany: async (data) => {
-        const result = await t.mutation(api.adapterTest.updateMany, data);
-        return result;
-      },
-      delete: async (data) => {
-        await t.mutation(api.adapterTest.delete, data);
-      },
-      deleteMany: async (data) => {
-        const result = await t.mutation(api.adapterTest.deleteMany, data);
-        return result;
-      },
+  const _t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
+  const getAdapter =
+    (t: typeof _t) =>
+    async (betterAuthOptions = {}): Promise<Adapter> => {
+      return {
+        id: "convex",
+        create: async (data) => {
+          const result = await t.mutation(api.adapterTest.create, {
+            ...data,
+            data: serialize(data.data),
+          });
+          return result;
+        },
+        findOne: async (data) => {
+          const result = await t.query(api.adapterTest.findOne, data);
+          console.log("findOne result adapter", result);
+          return result;
+        },
+        findMany: async (data) => {
+          const result = await t.query(api.adapterTest.findMany, data);
+          console.log("findMany result adapter", result);
+          return result;
+        },
+        count: async () => {
+          throw new Error("count not implemented");
+        },
+        update: async (data) => {
+          const result = await t.mutation(api.adapterTest.update, {
+            ...data,
+            update: serialize(data.update),
+          });
+          return result;
+        },
+        updateMany: async (data) => {
+          const result = await t.mutation(api.adapterTest.updateMany, data);
+          return result;
+        },
+        delete: async (data) => {
+          await t.mutation(api.adapterTest.delete, data);
+        },
+        deleteMany: async (data) => {
+          const result = await t.mutation(api.adapterTest.deleteMany, data);
+          return result;
+        },
+      };
     };
-  };
   await runAdapterTest({
-    getAdapter,
+    getAdapter: getAdapter(_t),
     disableTests: {
       CREATE_MODEL: false,
       CREATE_MODEL_SHOULD_ALWAYS_RETURN_AN_ID: false,
@@ -84,24 +86,59 @@ describe("convex adapter", async () => {
     },
   });
 
-  // We'll need more of these
-  test("sample inline test", async () => {
-    const user = {
-      name: "test",
-      email: "test@test.com",
-    };
-    const res = await (
-      await getAdapter()
-    ).create({
+  test("should handle lone range operators", async () => {
+    const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
+    const adapter = await getAdapter(t)();
+    const user = await adapter.create({
       model: "user",
-      data: user,
+      data: {
+        name: "ab",
+        email: "a@a.com",
+      },
     });
-    expect({
-      name: res.name,
-      email: res.email,
-    }).toEqual({
-      name: user.name,
-      email: user.email,
+    const res = await adapter.findMany({
+      model: "user",
+      where: [
+        {
+          field: "name",
+          operator: "lt",
+          value: "a",
+        },
+      ],
     });
+    expect(res).toEqual([]);
+    const res2 = await adapter.findMany({
+      model: "user",
+      where: [
+        {
+          field: "name",
+          operator: "lte",
+          value: "a",
+        },
+      ],
+    });
+    expect(res2).toEqual([]);
+    const res3 = await adapter.findMany({
+      model: "user",
+      where: [
+        {
+          field: "name",
+          operator: "gt",
+          value: "a",
+        },
+      ],
+    });
+    expect(res3).toEqual([user]);
+    const res4 = await adapter.findMany({
+      model: "user",
+      where: [
+        {
+          field: "name",
+          operator: "gte",
+          value: "ab",
+        },
+      ],
+    });
+    expect(res4).toEqual([user]);
   });
 });

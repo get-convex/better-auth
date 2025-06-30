@@ -213,12 +213,7 @@ export class BetterAuth<UserId extends string = string> {
         handler: async (ctx, args) => {
           const updatedUser = await ctx.runMutation(
             this.component.lib.updateOne,
-            {
-              input: {
-                model: "user",
-                update: args.input.update,
-              },
-            }
+            { input: args.input }
           );
           // Type narrowing
           if (!("emailVerified" in updatedUser)) {
@@ -234,10 +229,7 @@ export class BetterAuth<UserId extends string = string> {
         args: createSessionArgsValidator,
         handler: async (ctx, args) => {
           const session = await ctx.runMutation(this.component.lib.create, {
-            input: {
-              model: "session",
-              data: args.input.data,
-            },
+            input: args.input,
           });
           await opts.onCreateSession?.(ctx, session);
           return session;

@@ -19,9 +19,9 @@ const schema = defineSchema({
     displayUsername: v.optional(v.string()),
     userId: v.optional(v.string()),
   })
-    .index("userId", ["userId"])
-    .index("name", ["name"])
     .index("email_name", ["email","name"])
+    .index("name", ["name"])
+    .index("userId", ["userId"])
     .index("email", ["email"])
     .index("username", ["username"]),
 
@@ -72,7 +72,8 @@ const schema = defineSchema({
     secret: v.string(),
     backupCodes: v.string(),
     userId: v.string(),
-  }),
+  })
+    .index("userId", ["userId"]),
 
   jwks: defineTable({
     publicKey: v.string(),
