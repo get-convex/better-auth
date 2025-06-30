@@ -17,7 +17,6 @@ import type { api } from "../component/_generated/api";
 import schema from "../component/schema";
 import { convexAdapter } from "./adapter";
 import corsRouter from "./cors";
-import { getByArgsValidator, updateArgsInputValidator } from "../component/lib";
 import { betterAuth } from "better-auth";
 import { omit } from "convex-helpers";
 import { createCookieGetter } from "better-auth/cookies";
@@ -29,10 +28,8 @@ export { convexAdapter };
 const createUserFields = omit(schema.tables.user.validator.fields, ["userId"]);
 const createUserValidator = v.object(createUserFields);
 const createUserArgsValidator = v.object({
-  input: v.object({
-    ...createUserFields,
-    table: v.literal("user"),
-  }),
+  model: v.literal("user"),
+  data: v.object(createUserFields),
 });
 const updateUserArgsValidator = v.object({
   input: updateArgsInputValidator("user"),
@@ -192,7 +189,7 @@ export class BetterAuth<UserId extends string = string> {
       deleteUser: internalMutationGeneric({
         args: deleteUserArgsValidator,
         handler: async (ctx, args) => {
-          const doc = await ctx.runMutation(this.component.lib.deleteBy, args);
+          const doc = await ctx.runMutation(this.component.lib.deleteOne, args);
           if (doc && opts.onDeleteUser) {
             await opts.onDeleteUser(ctx, doc.userId as UserId);
           }

@@ -1,12 +1,6 @@
-import {
-  action,
-  mutation,
-  query,
-  QueryCtx,
-} from "../component/_generated/server";
+import { mutation, query, QueryCtx } from "../component/_generated/server";
 import { asyncMap } from "convex-helpers";
 import { Infer, v } from "convex/values";
-import { api } from "../component/_generated/api";
 import { Doc, Id, TableNames } from "../component/_generated/dataModel";
 import schema, { specialFields } from "../component/schema";
 import {
@@ -28,51 +22,6 @@ export const getCurrentSession = query({
     return ctx.db.get(identity.sessionId as Id<"session">);
   },
 });
-
-export const getByHelper = async (
-  ctx: QueryCtx,
-  args: {
-    table: string;
-    field: string;
-    value: any;
-    unique?: boolean;
-  }
-) => {
-  if (args.field === "id") {
-    return ctx.db.get(args.value);
-  }
-  const query = ctx.db
-    .query(args.table as any)
-    .withIndex(args.field as any, (q) => q.eq(args.field, args.value));
-  return args.unique ? await query.unique() : await query.first();
-};
-
-export const getByArgsValidator = {
-  table: v.string(),
-  field: v.string(),
-  unique: v.optional(v.boolean()),
-  value: v.union(
-    v.string(),
-    v.number(),
-    v.boolean(),
-    v.array(v.string()),
-    v.array(v.number()),
-    v.null()
-  ),
-};
-
-// Generic functions
-export const getByQuery = query({
-  args: getByArgsValidator,
-  handler: async (ctx, args) => {
-    const doc = await getByHelper(ctx, args);
-    if (!doc) {
-      return;
-    }
-    return doc;
-  },
-});
-export { getByQuery as getBy };
 
 const getUniqueFields = (table: TableNames, input: Record<string, any>) => {
   const fields = specialFields[table as keyof typeof specialFields];
@@ -98,11 +47,12 @@ const checkUniqueFields = async (
     return;
   }
   for (const field of uniqueFields) {
-    const existingDoc = await getByHelper(ctx, {
-      table,
-      field,
-      value: input[field as keyof typeof input],
-    });
+    const existingDoc = await ctx.db
+      .query(table as any)
+      .withIndex(field as any, (q) =>
+        q.eq(field, input[field as keyof typeof input])
+      )
+      .unique();
     if (existingDoc && existingDoc._id !== doc?._id) {
       throw new Error(`${table} ${field} already exists`);
     }
@@ -110,27 +60,22 @@ const checkUniqueFields = async (
 };
 
 export const create = mutation({
-  args: v.object({
-    input: v.union(
-      ...Object.values(schema.tables).map((table) =>
-        v.object({
-          table: v.string(),
-          ...table.validator.fields,
-        })
-      )
-    ),
-  }),
+  args: v.union(
+    ...Object.entries(schema.tables).map(([model, table]) =>
+      v.object({
+        model: v.literal(model),
+        data: v.object(table.validator.fields),
+      })
+    )
+  ),
   handler: async (ctx, args) => {
-    const { table, ...input } = args.input;
+    await checkUniqueFields(ctx, args.model as TableNames, args.data);
 
-    await checkUniqueFields(ctx, table as TableNames, input);
-
-    const id = await ctx.db.insert(table as any, {
-      ...input,
-    });
+    const id = await ctx.db.insert(args.model as any, args.data);
     const doc = await ctx.db.get(id);
+    console.log("doc", doc);
     if (!doc) {
-      throw new Error(`Failed to create ${table}`);
+      throw new Error(`Failed to create ${args.model}`);
     }
     return doc;
   },
@@ -139,7 +84,17 @@ export const create = mutation({
 export const updateArgsInputValidator = <T extends TableNames>(table: T) => {
   return v.object({
     table: v.literal(table),
-    where: v.object({ field: v.string(), value: getByArgsValidator.value }),
+    where: v.object({
+      field: v.string(),
+      value: v.union(
+        v.string(),
+        v.number(),
+        v.boolean(),
+        v.array(v.string()),
+        v.array(v.number()),
+        v.null()
+      ),
+    }),
     value: v.record(v.string(), v.any()),
   });
 };
@@ -160,7 +115,12 @@ export const update = mutation({
     const doc =
       where.field === "id"
         ? await ctx.db.get(where.value as Id<any>)
-        : await getByHelper(ctx, { table, ...where });
+        : await ctx.db
+            .query(table as any)
+            .withIndex(where.field as any, (q) =>
+              q.eq(where.field, where.value)
+            )
+            .unique();
     if (!doc) {
       throw new Error(`Failed to update ${table}`);
     }
@@ -171,71 +131,6 @@ export const update = mutation({
       throw new Error(`Failed to update ${table}`);
     }
     return updatedDoc;
-  },
-});
-
-export const deleteBy = mutation({
-  args: getByArgsValidator,
-  handler: async (ctx, args) => {
-    const doc = await getByHelper(ctx, args);
-    if (!doc) {
-      return;
-    }
-    await ctx.db.delete(doc._id);
-    const cascadeDeleteReferences = Object.entries(
-      specialFields[args.table as keyof typeof specialFields] || {}
-    )
-      .filter(
-        ([_, value]) =>
-          value.references?.model === args.table &&
-          value.references?.onDelete === "cascade"
-      )
-      .flatMap(([key, value]) => ({
-        table: key,
-        field: value.references.field,
-      }));
-    await asyncMap(cascadeDeleteReferences, async ({ table, field }) => {
-      const docs = await ctx.db
-        .query(table as TableNames)
-        .withIndex(field as any, (q) =>
-          q.eq(field, doc[field as keyof typeof doc])
-        )
-        .collect();
-      await asyncMap(docs, async (doc) => {
-        await ctx.db.delete(doc._id);
-      });
-    });
-    // onDeleteUser requires userId from the doc,
-    // so just return the whole thing
-    return doc;
-  },
-});
-
-export const listBy = query({
-  args: {
-    input: v.object({
-      table: v.string(),
-      field: v.string(),
-      value: v.any(),
-      limit: v.optional(v.number()),
-      sortField: v.optional(v.string()),
-      sortDirection: v.optional(v.union(v.literal("asc"), v.literal("desc"))),
-    }),
-  },
-  handler: async (ctx, args) => {
-    const { table, field, value, limit } = args.input;
-    if (field === "id") {
-      const doc = await ctx.db.get(value as Id<TableNames>);
-      if (!doc) {
-        return [];
-      }
-      return [doc];
-    }
-    const query = ctx.db
-      .query(table as any)
-      .withIndex(field as any, (q) => q.eq(field, value))
-      .order(args.input.sortDirection === "asc" ? "asc" : "desc");
-    return limit ? await query.take(limit) : await query.collect();
   },
 });
 
@@ -459,7 +354,6 @@ const list = async (
     };
   }
   const { index, values, boundField } = (await findIndex(args)) ?? {};
-  console.log("index", index);
   const query = paginator(ctx.db, schema).query(args.model as any);
   const indexedQuery = index
     ? query.withIndex(index.indexDescriptor, (q: any) => {
@@ -492,6 +386,21 @@ const list = async (
   };
 };
 
+const listOne = async (
+  ctx: QueryCtx,
+  args: Infer<typeof adapterArgsValidator>
+): Promise<Doc<any> | null> => {
+  return (
+    await list(ctx, {
+      ...args,
+      paginationOpts: {
+        numItems: 1,
+        cursor: null,
+      },
+    })
+  ).page[0];
+};
+
 export const findMany = query({
   args: {
     ...adapterArgsValidator.fields,
@@ -505,15 +414,19 @@ export const findMany = query({
 export const findOne = query({
   args: adapterArgsValidator,
   handler: async (ctx, args) => {
-    return (
-      await list(ctx, {
-        ...args,
-        paginationOpts: {
-          numItems: 1,
-          cursor: null,
-        },
-      })
-    ).page[0];
+    return await listOne(ctx, args);
+  },
+});
+
+export const deleteOne = mutation({
+  args: adapterArgsValidator,
+  handler: async (ctx, args) => {
+    const doc = await listOne(ctx, args);
+    if (!doc) {
+      return;
+    }
+    await ctx.db.delete(doc._id);
+    return doc;
   },
 });
 
@@ -532,7 +445,7 @@ export const updateMany = mutation({
       );
       if (uniqueFields.length && page.length > 1) {
         throw new Error(
-          `Attempted to unique fields in multiple documents in ${args.model} with the same value. Fields: ${uniqueFields.join(", ")}`
+          `Attempted to set unique fields in multiple documents in ${args.model} with the same value. Fields: ${uniqueFields.join(", ")}`
         );
       }
       await asyncMap(page, async (doc) => {
@@ -576,58 +489,6 @@ export const deleteIn = mutation({
       return doc;
     });
     return docs.filter(Boolean).length;
-  },
-});
-
-export const deleteOldVerificationsPage = mutation({
-  args: {
-    currentTimestamp: v.number(),
-    paginationOpts: v.optional(paginationOptsValidator),
-  },
-  handler: async (ctx, args) => {
-    const paginationOpts = args.paginationOpts ?? {
-      numItems: 500,
-      cursor: null,
-    };
-    const { page, ...result } = await paginator(ctx.db, schema)
-      .query("verification")
-      .withIndex("expiresAt", (q) => q.lt("expiresAt", args.currentTimestamp))
-      .paginate(paginationOpts);
-    await asyncMap(page, async (doc) => {
-      await ctx.db.delete(doc._id);
-    });
-    return { ...result, count: page.length };
-  },
-});
-
-export const deleteOldVerifications = action({
-  args: {
-    currentTimestamp: v.number(),
-  },
-  handler: async (ctx, args) => {
-    let count = 0;
-    let cursor = null;
-    let isDone = false;
-    do {
-      const result: Omit<PaginationResult<Doc<"verification">>, "page"> & {
-        count: number;
-      } = await ctx.runMutation(api.lib.deleteOldVerificationsPage, {
-        currentTimestamp: args.currentTimestamp,
-        paginationOpts: {
-          numItems: 500,
-          cursor,
-        },
-      });
-      count += result.count;
-      cursor =
-        result.pageStatus &&
-        result.splitCursor &&
-        ["SplitRecommended", "SplitRequired"].includes(result.pageStatus)
-          ? result.splitCursor
-          : result.continueCursor;
-      isDone = result.isDone;
-    } while (!isDone);
-    return count;
   },
 });
 

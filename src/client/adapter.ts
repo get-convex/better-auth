@@ -149,9 +149,7 @@ export const convexAdapter = (
               : model === "session"
                 ? component.config.authFunctions.createSession
                 : component.component.lib.create;
-          return await ctx.runMutation(createFn, {
-            input: { table: model, ...data },
-          });
+          return await ctx.runMutation(createFn, { model, data });
         },
         findOne: async (data): Promise<any> => {
           return await ctx.runQuery(
