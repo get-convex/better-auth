@@ -85,7 +85,10 @@ const schema = defineSchema({
     periodEnd: v.optional(v.number()),
     cancelAtPeriodEnd: v.optional(v.boolean()),
     seats: v.optional(v.number()),
-  }),
+  })
+    .index("stripeCustomerId", ["stripeCustomerId"])
+    .index("stripeSubscriptionId", ["stripeSubscriptionId"])
+    .index("referenceId", ["referenceId"]),
 
   jwks: defineTable({
     publicKey: v.string(),
