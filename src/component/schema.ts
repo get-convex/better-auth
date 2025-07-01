@@ -17,6 +17,7 @@ const schema = defineSchema({
     isAnonymous: v.optional(v.boolean()),
     username: v.optional(v.string()),
     displayUsername: v.optional(v.string()),
+    stripeCustomerId: v.optional(v.string()),
     userId: v.optional(v.string()),
   })
     .index("userId", ["userId"])
@@ -72,6 +73,18 @@ const schema = defineSchema({
     secret: v.string(),
     backupCodes: v.string(),
     userId: v.string(),
+  }),
+
+  subscription: defineTable({
+    plan: v.string(),
+    referenceId: v.string(),
+    stripeCustomerId: v.optional(v.string()),
+    stripeSubscriptionId: v.optional(v.string()),
+    status: v.optional(v.string()),
+    periodStart: v.optional(v.number()),
+    periodEnd: v.optional(v.number()),
+    cancelAtPeriodEnd: v.optional(v.boolean()),
+    seats: v.optional(v.number()),
   }),
 
   jwks: defineTable({

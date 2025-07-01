@@ -213,12 +213,7 @@ export class BetterAuth<UserId extends string = string> {
         handler: async (ctx, args) => {
           const updatedUser = await ctx.runMutation(
             this.component.lib.updateOne,
-            {
-              input: {
-                model: "user",
-                update: args.input.update,
-              },
-            }
+            args
           );
           // Type narrowing
           if (!("emailVerified" in updatedUser)) {

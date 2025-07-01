@@ -7,6 +7,7 @@ import {
   username,
 } from "better-auth/plugins";
 import { convex } from "@convex-dev/better-auth/plugins";
+import { stripe } from "@better-auth/stripe";
 
 // This is the config used to generate the schema
 const config = betterAuth({
@@ -19,6 +20,14 @@ const config = betterAuth({
     emailOTP({ sendVerificationOTP: async () => {} }),
     anonymous(),
     username(),
+    stripe({
+      stripeClient: {} as any,
+      stripeWebhookSecret: '',
+      subscription: {
+        enabled: true,
+        plans: []
+      }
+    }),
     convex(),
   ],
 });
@@ -28,6 +37,7 @@ export { config as auth };
 // all fields in the schema specialFields are automatically indexed
 export const indexFields = {
   user: ["userId", "name", ["email", "name"]],
+  subscription: ["stripeCustomerId", "stripeSubscriptionId", "referenceId"],
   session: ["expiresAt", ["expiresAt", "userId"]],
   account: ["accountId", ["accountId", "providerId"], ["providerId", "userId"]],
   verification: ["expiresAt", "identifier"],

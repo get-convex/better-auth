@@ -1,17 +1,19 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": ".",
     "allowJs": true,
     "checkJs": true,
     "strict": true,
     "jsx": "react-jsx",
-
+    
     "target": "ESNext",
     "lib": ["ES2021", "dom", "DOM.Iterable"],
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
-
+    
     "isolatedModules": true,
     "declaration": true,
     "declarationMap": true,

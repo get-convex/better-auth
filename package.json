@@ -19,8 +19,8 @@
   "type": "module",
   "scripts": {
     "build": "npm run build:esm && npm run build:cjs",
-    "build:esm": "tsc --project ./esm.json && tsc-alias -p ./esm.json && echo '{\\n  \"type\": \"module\"\\n}' > dist/esm/package.json",
-    "build:cjs": "tsc --project ./commonjs.json && echo '{\\n  \"type\": \"commonjs\"\\n}' > dist/commonjs/package.json",
+    "build:esm": "tsc --project ./esm.json && tsc-alias -p ./esm.json && echo {\"type\": \"module\"} > dist/esm/package.json",
+    "build:cjs": "tsc --project ./commonjs.json && echo {\"type\": \"commonjs\"} > dist/commonjs/package.json",
     "typecheck": "tsc --noEmit",
     "prepare": "npm run build",
     "prepack": "node node10stubs.mjs",
@@ -146,7 +146,7 @@
     "@edge-runtime/vm": "^5.0.0",
     "@eslint/js": "^9.9.1",
     "@tanstack/react-start": "^1.120.19",
-    "@types/node": "^18.17.0",
+    "@types/node": "^20.19.2",
     "@types/react": "19.1.6",
     "@types/react-dom": "19.1.6",
     "concurrently": "^9.2.0",
@@ -164,6 +164,7 @@
   "types": "./dist/commonjs/client/index.d.ts",
   "module": "./dist/esm/client/index.js",
   "dependencies": {
+    "@better-auth/stripe": "^1.2.12",
     "@better-auth/utils": "^0.2.5",
     "better-auth": "^1.2.12",
     "better-call": "^1.0.9",
