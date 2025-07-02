@@ -687,7 +687,6 @@ export default function Home() {
                   export const createAuth = (ctx: GenericCtx) =>
                     // Configure your Better Auth instance here
                     betterAuth({
-                      trustedOrigins: [siteUrl],
                       database: convexAdapter(ctx, betterAuthComponent),
 
                       // Simple non-verified email/password to get started
