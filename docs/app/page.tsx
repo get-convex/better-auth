@@ -979,10 +979,10 @@ export default function Home() {
                     label: "React",
                     language: "shell",
                     code: stripIndent`
-                  // The cross domain plugin is used to redirect auth requests
-                  // for client apps. This is also an option for any framework if
-                  // server side auth is not needed.
-                `,
+                      // The cross domain plugin is used to redirect auth requests
+                      // for client apps. This is also an option for any framework if
+                      // server side auth is not needed.
+                    `,
                   },
                   {
                     id: "nextjs",
@@ -990,10 +990,10 @@ export default function Home() {
                     language: "typescript",
                     filename: "app/api/auth/[...all]/route.ts",
                     code: stripIndent`
-                  import { nextJsHandler } from "@convex-dev/better-auth/nextjs";
+                      import { nextJsHandler } from "@convex-dev/better-auth/nextjs";
 
-                  export const { GET, POST } = nextJsHandler();
-                `,
+                      export const { GET, POST } = nextJsHandler();
+                    `,
                   },
                   {
                     id: "tanstack",
@@ -1001,17 +1001,21 @@ export default function Home() {
                     language: "typescript",
                     filename: "src/routes/api/auth/$.ts",
                     code: stripIndent`
-                  import { reactStartHandler } from '@convex-dev/better-auth/react-start'
+                      import { reactStartHandler } from '@convex-dev/better-auth/react-start'
 
-                  export const ServerRoute = createServerFileRoute().methods({
-                    GET: ({ request }) => {
-                      return reactStartHandler(request)
-                    },
-                    POST: ({ request }) => {
-                      return reactStartHandler(request)
-                    },
-                  })
-                `,
+                      export const ServerRoute = createServerFileRoute().methods({
+                        GET: ({ request }) => {
+                          return reactStartHandler(request, {
+                            convexSiteUrl: import.meta.env.VITE_CONVEX_SITE_URL,
+                          })
+                        },
+                        POST: ({ request }) => {
+                          return reactStartHandler(request, {
+                            convexSiteUrl: import.meta.env.VITE_CONVEX_SITE_URL,
+                          })
+                        },
+                      })
+                    `,
                   },
                 ]}
               />
