@@ -4,9 +4,24 @@ import { betterFetch } from "@better-fetch/fetch";
 import { GenericActionCtx } from "convex/server";
 import { JWT_COOKIE_NAME } from "../plugins/convex";
 
+const requireBaseURL = (
+  createAuth: (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>
+) => {
+  const baseUrl = createAuth({} as any).options.baseURL;
+  if (!baseUrl) {
+    throw new Error(
+      "No baseURL found in Better Auth config. baseUrl should be set to your Convex Site URL."
+    );
+  }
+  return baseUrl;
+};
+
 export const getCookieName = async (
   createAuth: (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>
 ) => {
+  // Require baseURL here because it's protocol determines cookie secure mode,
+  // and must be set to ensure cookies work between TanStack and Convex.
+  requireBaseURL(createAuth);
   const auth = createAuth({} as any);
   const createCookie = createCookieGetter(auth.options);
   const cookie = createCookie(JWT_COOKIE_NAME);
@@ -24,11 +39,10 @@ export const fetchSession = async <
   if (!request) {
     throw new Error("No request found");
   }
-  const baseURL = new URL(request.url).origin;
   const { data: session } = await betterFetch<Session>(
     "/api/auth/get-session",
     {
-      baseURL,
+      baseURL: requireBaseURL(createAuth),
       headers: {
         cookie: request.headers.get("cookie") ?? "",
       },
@@ -41,11 +55,10 @@ export const fetchSession = async <
 
 export const reactStartHandler = (
   request: Request,
-  opts?: { convexSiteUrl?: string }
+  opts: { convexSiteUrl: string }
 ) => {
-  const convexSiteUrl = opts?.convexSiteUrl ?? process.env.VITE_CONVEX_SITE_URL;
   const requestUrl = new URL(request.url);
-  const nextUrl = `${convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
+  const nextUrl = `${opts.convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
   request.headers.set("accept-encoding", "application/json");
   return fetch(nextUrl, new Request(request, { redirect: "manual" }));
 };

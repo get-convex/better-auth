@@ -22,7 +22,7 @@ const publicAuthFunctions: PublicAuthFunctions = api.auth
 export const betterAuthComponent = new BetterAuth(components.betterAuth, {
   authFunctions,
   publicAuthFunctions,
-  verbose: false,
+  verbose: true,
 })
 
 export const createAuth = (ctx: GenericCtx) =>
