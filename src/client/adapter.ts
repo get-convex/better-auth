@@ -124,7 +124,7 @@ export const convexAdapter = (
         return data;
       },
     },
-    adapter: ({ schema }) => {
+    adapter: () => {
       return {
         id: "convex",
         create: async ({ model, data, select }): Promise<any> => {
@@ -179,6 +179,10 @@ export const convexAdapter = (
           if (!("runMutation" in ctx)) {
             throw new Error("ctx is not a mutation ctx");
           }
+          if (data.where?.[0] && !data.where?.[0]?.operator) {
+            data.where![0].operator = "eq";
+          }
+          
           if (data.where?.length === 1 && data.where[0].operator === "eq") {
             const updateFn =
               data.model === "user"

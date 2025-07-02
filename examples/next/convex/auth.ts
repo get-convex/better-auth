@@ -8,6 +8,7 @@ import { convex } from "@convex-dev/better-auth/plugins";
 import { api, components, internal } from "./_generated/api";
 import { twoFactor } from "better-auth/plugins";
 import { emailOTP } from "better-auth/plugins";
+import { stripe } from "@better-auth/stripe";
 import {
   sendMagicLink,
   sendOTPVerification,
@@ -19,6 +20,11 @@ import { betterAuth } from "better-auth";
 import { GenericCtx, query } from "./_generated/server";
 import { DataModel, Id } from "./_generated/dataModel";
 import { asyncMap } from "convex-helpers";
+import Stripe from "stripe";
+
+const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+  apiVersion: "2025-05-28.basil",
+});
 
 const authFunctions: AuthFunctions = internal.auth;
 const publicAuthFunctions: PublicAuthFunctions = api.auth;
@@ -89,6 +95,15 @@ export const createAuth = (ctx: GenericCtx) =>
         },
       }),
       twoFactor(),
+      stripe({
+        stripeClient,
+        stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET as string,
+        createCustomerOnSignUp: true,
+        subscription: {
+          enabled: true,
+          plans: []
+        }
+      }),
       convex(),
     ],
   });

@@ -58,6 +58,7 @@ export type Mounts = {
                 image?: string;
                 isAnonymous?: boolean;
                 name: string;
+                stripeCustomerId?: string;
                 twoFactorEnabled?: boolean;
                 updatedAt: number;
                 userId?: string;
@@ -195,6 +196,42 @@ export type Mounts = {
           | {
               data: { backupCodes: string; secret: string; userId: string };
               model: "twoFactor";
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
+            }
+          | {
+              data: {
+                cancelAtPeriodEnd?: boolean;
+                periodEnd?: number;
+                periodStart?: number;
+                plan: string;
+                referenceId: string;
+                seats?: number;
+                status?: string;
+                stripeCustomerId?: string;
+                stripeSubscriptionId?: string;
+              };
+              model: "subscription";
               where?: Array<{
                 connector?: "AND" | "OR";
                 field: string;
@@ -495,6 +532,7 @@ export type Mounts = {
           image?: string;
           isAnonymous?: boolean;
           name?: string;
+          stripeCustomerId?: string;
           twoFactorEnabled?: boolean;
           updatedAt?: number;
           userId?: string;
@@ -540,6 +578,7 @@ export type Mounts = {
                 image?: string;
                 isAnonymous?: boolean;
                 name?: string;
+                stripeCustomerId?: string;
                 twoFactorEnabled?: boolean;
                 updatedAt?: number;
                 userId?: string;
@@ -679,6 +718,42 @@ export type Mounts = {
                 backupCodes?: string;
                 secret?: string;
                 userId?: string;
+              };
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
+            }
+          | {
+              model: "subscription";
+              update: {
+                cancelAtPeriodEnd?: boolean;
+                periodEnd?: number;
+                periodStart?: number;
+                plan?: string;
+                referenceId?: string;
+                seats?: number;
+                status?: string;
+                stripeCustomerId?: string;
+                stripeSubscriptionId?: string;
               };
               where?: Array<{
                 connector?: "AND" | "OR";
