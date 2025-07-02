@@ -8,6 +8,8 @@ yarn.lock
 .vercel
 .output
 .vinxi
+.nitro
+.tanstack
 
 /build/
 /api/

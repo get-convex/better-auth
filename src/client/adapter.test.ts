@@ -1,59 +1,60 @@
 /// <reference types="vite/client" />
 
-import { describe } from "vitest";
+import { describe, expect, test } from "vitest";
 import { runAdapterTest } from "better-auth/adapters/test";
 import { convexTest } from "convex-test";
 import { api } from "../component/_generated/api";
 import schema from "../component/schema";
 import { serialize } from "../component/adapterTest";
+import { Adapter } from "better-auth";
 
 describe("convex adapter", async () => {
   const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
-
+  const getAdapter = async (betterAuthOptions = {}): Promise<Adapter> => {
+    return {
+      id: "convex",
+      create: async (data) => {
+        const result = await t.mutation(api.adapterTest.create, {
+          ...data,
+          data: serialize(data.data),
+        });
+        return result;
+      },
+      findOne: async (data) => {
+        const result = await t.query(api.adapterTest.findOne, data);
+        console.log("findOne result adapter", result);
+        return result;
+      },
+      findMany: async (data) => {
+        const result = await t.query(api.adapterTest.findMany, data);
+        console.log("findMany result adapter", result);
+        return result;
+      },
+      count: async () => {
+        throw new Error("count not implemented");
+      },
+      update: async (data) => {
+        const result = await t.mutation(api.adapterTest.update, {
+          ...data,
+          update: serialize(data.update),
+        });
+        return result;
+      },
+      updateMany: async (data) => {
+        const result = await t.mutation(api.adapterTest.updateMany, data);
+        return result;
+      },
+      delete: async (data) => {
+        await t.mutation(api.adapterTest.delete, data);
+      },
+      deleteMany: async (data) => {
+        const result = await t.mutation(api.adapterTest.deleteMany, data);
+        return result;
+      },
+    };
+  };
   await runAdapterTest({
-    getAdapter: async (betterAuthOptions = {}) => {
-      return {
-        id: "convex",
-        create: async (data) => {
-          const result = await t.mutation(api.adapterTest.create, {
-            ...data,
-            data: serialize(data.data),
-          });
-          return result;
-        },
-        findOne: async (data) => {
-          const result = await t.query(api.adapterTest.findOne, data);
-          console.log("findOne result adapter", result);
-          return result;
-        },
-        findMany: async (data) => {
-          const result = await t.query(api.adapterTest.findMany, data);
-          console.log("findMany result adapter", result);
-          return result;
-        },
-        count: async () => {
-          throw new Error("count not implemented");
-        },
-        update: async (data) => {
-          const result = await t.mutation(api.adapterTest.update, {
-            ...data,
-            update: serialize(data.update),
-          });
-          return result;
-        },
-        updateMany: async (data) => {
-          const result = await t.mutation(api.adapterTest.updateMany, data);
-          return result;
-        },
-        delete: async (data) => {
-          await t.mutation(api.adapterTest.delete, data);
-        },
-        deleteMany: async (data) => {
-          const result = await t.mutation(api.adapterTest.deleteMany, data);
-          return result;
-        },
-      };
-    },
+    getAdapter,
     disableTests: {
       CREATE_MODEL: false,
       CREATE_MODEL_SHOULD_ALWAYS_RETURN_AN_ID: false,
@@ -81,5 +82,26 @@ describe("convex adapter", async () => {
       SHOULD_SEARCH_USERS_WITH_ENDS_WITH: true,
       SHOULD_PREFER_GENERATE_ID_IF_PROVIDED: true,
     },
+  });
+
+  // We'll need more of these
+  test("sample inline test", async () => {
+    const user = {
+      name: "test",
+      email: "test@test.com",
+    };
+    const res = await (
+      await getAdapter()
+    ).create({
+      model: "user",
+      data: user,
+    });
+    expect({
+      name: res.name,
+      email: res.email,
+    }).toEqual({
+      name: user.name,
+      email: user.email,
+    });
   });
 });

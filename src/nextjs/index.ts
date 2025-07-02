@@ -3,9 +3,23 @@ import { createCookieGetter } from "better-auth/cookies";
 import { GenericActionCtx } from "convex/server";
 import { JWT_COOKIE_NAME } from "../plugins/convex";
 
+const requireBaseURL = (
+  createAuth: (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>
+) => {
+  if (!createAuth({} as any).options.baseURL) {
+    throw new Error(
+      "No baseURL found in Better Auth config. baseUrl should be set to your Convex Site URL."
+    );
+  }
+  return createAuth({} as any).options.baseURL;
+};
+
 export const getToken = async (
   createAuth: (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>
 ) => {
+  // Require baseURL here because it's protocol determines cookie secure mode,
+  // and must be set to ensure cookies work between Next.js and Convex.
+  requireBaseURL(createAuth);
   const { cookies } = await import("next/headers");
   const cookieStore = await cookies();
   const auth = createAuth({} as any);
