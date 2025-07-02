@@ -2108,6 +2108,7 @@ export default function Home() {
                 code: stripIndent`
                   import { Hono } from "hono";
                   import { HonoWithConvex, HttpRouterWithHono } from "convex-helpers/server/hono";
+                  import { cors } from "hono/cors";
                   import { ActionCtx } from "./_generated/server";
                   import { createAuth } from "./auth";
 
