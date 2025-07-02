@@ -148,7 +148,7 @@ export class BetterAuth<UserId extends string = string> {
       throw new Error("invalid user");
     }
     const { id: _id, ...user } = doc;
-    return user;
+    return user as Infer<typeof schema.tables.user.validator>;
   }
 
   async getIdTokenCookieName(
