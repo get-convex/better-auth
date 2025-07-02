@@ -9,7 +9,7 @@ import localVersions from "../versions.json";
 const DOCS_DOMAIN = "convex-better-auth.netlify.app";
 
 type Version = {
-  label?: string;
+  label: string;
   version: string;
 };
 
@@ -137,7 +137,7 @@ export function VersionSelector() {
               href={
                 v.label === "latest"
                   ? `https://${DOCS_DOMAIN}`
-                  : `https://${v.version.replaceAll(".", "-")}--${DOCS_DOMAIN}`
+                  : `https://${v.label}--${DOCS_DOMAIN}`
               }
               className={cn(
                 "w-full text-left px-3 py-1.5 text-xs font-mono rounded hover:bg-accent focus:bg-accent focus:outline-none",
