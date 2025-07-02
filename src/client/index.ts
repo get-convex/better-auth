@@ -16,7 +16,6 @@ import { type GenericId, Infer, v } from "convex/values";
 import type { api } from "../component/_generated/api";
 import schema from "../component/schema";
 import { convexAdapter } from "./adapter";
-import corsRouter from "./cors";
 import { betterAuth } from "better-auth";
 import { omit } from "convex-helpers";
 import { createCookieGetter } from "better-auth/cookies";
@@ -25,6 +24,7 @@ import { JWT_COOKIE_NAME } from "../plugins/convex";
 import { requireEnv } from "../utils";
 import { partial } from "convex-helpers/validators";
 import { adapterArgsValidator, adapterWhereValidator } from "../component/lib";
+import { corsRouter } from "convex-helpers/server/cors";
 export { convexAdapter };
 
 const createUserFields = omit(schema.tables.user.validator.fields, ["userId"]);
@@ -290,40 +290,20 @@ export class BetterAuth<UserId extends string = string> {
 
       return;
     }
-
-    const trustedOrigins = [
-      ...(Array.isArray(betterAuthOptions.trustedOrigins)
-        ? betterAuthOptions.trustedOrigins
-        : [betterAuthOptions.trustedOrigins]),
-      betterAuthOptions.baseURL!,
-    ];
-
-    // Reuse trustedOrigins as default for allowedOrigins
-    const allowedOrigins = async (request: Request) => {
-      return (
-        await Promise.all(
-          trustedOrigins.map(async (origin) => {
-            if (!origin) {
-              return [];
-            }
-            if (typeof origin === "function") {
-              return origin(request);
-            }
-            return [origin];
-          })
-        )
-      )
-        .flat()
-        .map((origin) =>
+    const cors = corsRouter(http, {
+      allowedOrigins: async (request) => {
+        const trustedOriginsOption =
+          (await createAuth({} as any).$context).options.trustedOrigins ?? [];
+        const trustedOrigins = Array.isArray(trustedOriginsOption)
+          ? trustedOriginsOption
+          : await trustedOriginsOption(request);
+        return trustedOrigins.map((origin) =>
           // Strip trailing wildcards, unsupported for allowedOrigins
           origin.endsWith("*") && origin.length > 1
             ? origin.slice(0, -1)
             : origin
         );
-    };
-
-    const cors = corsRouter(http, {
-      allowedOrigins,
+      },
       allowCredentials: true,
       allowedHeaders: ["Content-Type", "Better-Auth-Cookie"],
       exposedHeaders: ["Set-Better-Auth-Cookie"],

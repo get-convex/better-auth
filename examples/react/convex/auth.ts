@@ -29,7 +29,6 @@ export const betterAuthComponent = new BetterAuth(components.betterAuth, {
 
 export const createAuth = (ctx: GenericCtx) =>
   betterAuth({
-    trustedOrigins: [siteUrl],
     database: convexAdapter(ctx, betterAuthComponent),
     emailVerification: {
       sendVerificationEmail: async ({ user, url }) => {

@@ -167,7 +167,7 @@
     "@better-auth/utils": "^0.2.5",
     "better-auth": "^1.2.12",
     "better-call": "^1.0.9",
-    "convex-helpers": "^0.1.87",
+    "convex-helpers": "^0.1.95",
     "is-network-error": "^1.1.0",
     "remeda": "^2.21.6",
     "type-fest": "^4.39.1",
