@@ -18,7 +18,7 @@ const getVersions = async () => {
     // Always pull the list of versions from the main branch
     const versions = await (
       await fetch(
-        "https://raw.githubusercontent.com/get-convex/better-auth/refs/heads/main/docs/versions.json"
+        "https://raw.githubusercontent.com/get-convex/better-auth/refs/heads/docs/docs/versions.json"
       )
     ).json();
     const isArray = Array.isArray(versions);
