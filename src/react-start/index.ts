@@ -13,6 +13,16 @@ export const getCookieName = async (
   return cookie.name;
 };
 
+const requireConvexSiteUrl = (
+  opts: { convexSiteUrl: string },
+  calledFrom: string
+) => {
+  if (!opts.convexSiteUrl) {
+    throw new Error(`${calledFrom}: opts.convexSiteUrl is required`);
+  }
+  return opts.convexSiteUrl;
+};
+
 export const fetchSession = async <
   T extends (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>,
 >(
@@ -27,10 +37,11 @@ export const fetchSession = async <
   if (!request) {
     throw new Error("No request found");
   }
+  const convexSiteUrl = requireConvexSiteUrl(opts, "fetchSession");
   const { data: session } = await betterFetch<Session>(
     "/api/auth/get-session",
     {
-      baseURL: opts.convexSiteUrl,
+      baseURL: convexSiteUrl,
       headers: {
         cookie: request.headers.get("cookie") ?? "",
       },
@@ -46,7 +57,8 @@ export const reactStartHandler = (
   opts: { convexSiteUrl: string; verbose?: boolean }
 ) => {
   const requestUrl = new URL(request.url);
-  const nextUrl = `${opts.convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
+  const convexSiteUrl = requireConvexSiteUrl(opts, "reactStartHandler");
+  const nextUrl = `${convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
   request.headers.set("accept-encoding", "application/json");
   return fetch(nextUrl, new Request(request, { redirect: "manual" }));
 };
