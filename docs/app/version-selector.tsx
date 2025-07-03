@@ -99,7 +99,6 @@ export function VersionSelector() {
         )}
       >
         {current.version}
-        {current.label && <span className="ml-1">({current.label})</span>}
         <svg
           width="14"
           height="14"
