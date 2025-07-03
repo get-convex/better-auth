@@ -1,5 +1,5 @@
 import { createServerFileRoute } from '@tanstack/react-start/server'
-import { reactStartHandler } from '@convex-dev/better-auth/react-start'
+import { reactStartHandler } from '@/lib/auth-client'
 
 export const ServerRoute = createServerFileRoute('/api/auth/$').methods({
   GET: ({ request }) => {

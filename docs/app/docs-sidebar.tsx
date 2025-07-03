@@ -239,11 +239,6 @@ export default function DocsSidebar({ children }: React.PropsWithChildren) {
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
-                        <a href="#mount-handlers">Mount handlers</a>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton asChild>
                         <a href="#create-better-auth-client">
                           Better Auth client
                         </a>
@@ -251,26 +246,14 @@ export default function DocsSidebar({ children }: React.PropsWithChildren) {
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
+                        <a href="#mount-handlers">Mount handlers</a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
                         <a href="#setup-convex-client">
                           Convex client provider
                         </a>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  </SidebarMenuSub>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href="#users-table">Users table</a>
-                  </SidebarMenuButton>
-                  <SidebarMenuSub>
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton asChild>
-                        <a href="#user-creation">User creation</a>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton asChild>
-                        <a href="#indexing-on-metadata">Indexing on metadata</a>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   </SidebarMenuSub>
@@ -298,6 +281,25 @@ export default function DocsSidebar({ children }: React.PropsWithChildren) {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
+                    <a href="#basic-usage-authorization">Authorization</a>
+                  </SidebarMenuButton>
+                  <SidebarMenuSub>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <a href="#basic-usage-authorization-react">React</a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <a href="#basic-usage-authorization-convex-functions">
+                          Convex Functions
+                        </a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  </SidebarMenuSub>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
                     <a href="#basic-usage-server-side">Server side</a>
                   </SidebarMenuButton>
                   <SidebarMenuSub>
@@ -315,25 +317,6 @@ export default function DocsSidebar({ children }: React.PropsWithChildren) {
                       <SidebarMenuSubButton asChild>
                         <a href="#basic-usage-server-side-auth">
                           Server-side auth
-                        </a>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  </SidebarMenuSub>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href="#authorization">Authorization</a>
-                  </SidebarMenuButton>
-                  <SidebarMenuSub>
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton asChild>
-                        <a href="#authorization-react">React</a>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton asChild>
-                        <a href="#authorization-convex-functions">
-                          Convex Functions
                         </a>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
@@ -382,6 +365,25 @@ export default function DocsSidebar({ children }: React.PropsWithChildren) {
                       <span className="text-base font-semibold">Guides</span>
                     </a>
                   </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <a href="#guides-users-table">Users table</a>
+                  </SidebarMenuButton>
+                  <SidebarMenuSub>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <a href="#guides-user-creation">User creation</a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <a href="#guides-indexing-on-metadata">
+                          Indexing on metadata
+                        </a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  </SidebarMenuSub>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>

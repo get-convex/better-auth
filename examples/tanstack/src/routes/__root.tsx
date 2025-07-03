@@ -9,19 +9,14 @@ import { QueryClient } from '@tanstack/react-query'
 import * as React from 'react'
 import appCss from '@/styles/app.css?url'
 import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
-import {
-  fetchSession,
-  getCookieName,
-} from '@convex-dev/better-auth/react-start'
-import { createAuth } from '@convex/auth'
-import { authClient } from '@/lib/auth-client'
+import { authClient, fetchSession, getCookieName } from '@/lib/auth-client'
 import { ConvexReactClient } from 'convex/react'
 import { ConvexQueryClient } from '@convex-dev/react-query'
 import { getCookie, getWebRequest } from '@tanstack/react-start/server'
 
 // Server side session request
 const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
-  const sessionCookieName = await getCookieName(createAuth)
+  const sessionCookieName = await getCookieName()
   const token = getCookie(sessionCookieName)
   const request = getWebRequest()
   const { session } = await fetchSession(request)

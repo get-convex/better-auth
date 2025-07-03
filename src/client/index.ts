@@ -255,6 +255,7 @@ export class BetterAuth<UserId extends string = string> {
     const path = betterAuthOptions.basePath ?? "/api/auth";
     const authRequestHandler = httpActionGeneric(async (ctx, request) => {
       if (this.config.verbose) {
+        console.log("options.baseURL", betterAuthOptions.baseURL);
         console.log("request headers", request.headers);
       }
       const auth = createAuth(ctx);
