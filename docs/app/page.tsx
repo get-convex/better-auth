@@ -963,7 +963,7 @@ export default function Home() {
                   import { createAuthClient } from "better-auth/react";
                   import { convexClient } from "@convex-dev/better-auth/client/plugins";
                   import { reactStartHelpers } from "@convex-dev/better-auth/react-start";
-                  import { createAuth } from "@convex/auth";
+                  import { createAuth } from "convex/auth";
 
                   export const authClient = createAuthClient({
                     plugins: [
@@ -1077,7 +1077,7 @@ export default function Home() {
                     language: "typescript",
                     filename: "src/routes/api/auth/$.ts",
                     code: stripIndent`
-                      import { reactStartHandler } from '~/lib/auth-client'
+                      import { reactStartHandler } from '@/lib/auth-client'
 
                       export const ServerRoute = createServerFileRoute().methods({
                         GET: ({ request }) => {
@@ -1151,7 +1151,7 @@ export default function Home() {
                       } from '@tanstack/react-start'
                       import { QueryClient } from '@tanstack/react-query'
                       import * as React from 'react'
-                      import appCss from '~/styles/app.css?url'
+                      import appCss from '@/styles/app.css?url'
                       import { ConvexQueryClient } from '@convex-dev/react-query'
                       import { ConvexReactClient } from 'convex/react'
                       import { getCookie, getWebRequest } from '@tanstack/react-start/server'
@@ -1160,7 +1160,7 @@ export default function Home() {
                         authClient,
                         fetchSession,
                         getCookieName,
-                      } from '~/lib/auth-client'
+                      } from '@/lib/auth-client'
 
                       // Server side session request
                       const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
@@ -1607,8 +1607,8 @@ export default function Home() {
                     AuthLoading,
                     useQuery,
                   } from "convex/react";
-                  import { authClient } from "~/lib/auth-client";
-                  import { api } from "../convex/_generated/api";
+                  import { authClient } from "@/lib/auth-client";
+                  import { api } from "convex/_generated/api";
 
                   export default function App() {
                     return (
@@ -2391,7 +2391,7 @@ export default function Home() {
             addedLines={[1, 2, 6, 7, 8, 9]}
             code={stripIndent`
               import { reactStartHelpers } from '@convex-dev/better-auth/react-start'
-              import { createAuth } from '@convex/auth'
+              import { createAuth } from 'convex/auth'
 
               // ...existing auth-client.ts code...
 
@@ -2408,11 +2408,12 @@ export default function Home() {
           <CodeBlock
             language="typescript"
             filename="src/routes/__root.tsx"
-            removedLines={[1, 2, 9]}
-            addedLines={[3, 10]}
+            removedLines={[1, 2, 3, 10]}
+            addedLines={[4, 11]}
             code={stripIndent`
               import { authClient } from '@/lib/auth-client'
               import { fetchSession, getCookieName } from '@convex-dev/better-auth/react-start'
+              import { createAuth } from 'convex/auth'
               import { authClient, fetchSession, getCookieName } from '@/lib/auth-client'
 
               // ...
