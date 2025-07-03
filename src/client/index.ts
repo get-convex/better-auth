@@ -266,15 +266,20 @@ export class BetterAuth<UserId extends string = string> {
       return response;
     });
 
-    // Redirect root well-known to api well-known
-    http.route({
-      path: "/.well-known/openid-configuration",
-      method: "GET",
-      handler: httpActionGeneric(async () => {
-        const url = `${requireEnv("CONVEX_SITE_URL")}/api/auth/convex/.well-known/openid-configuration`;
-        return Response.redirect(url);
-      }),
-    });
+    const wellKnown = http.lookup("/.well-known/openid-configuration", "GET");
+
+    // If registerRoutes is used multiple times, this may already be defined
+    if (!wellKnown) {
+      // Redirect root well-known to api well-known
+      http.route({
+        path: "/.well-known/openid-configuration",
+        method: "GET",
+        handler: httpActionGeneric(async () => {
+          const url = `${requireEnv("CONVEX_SITE_URL")}/api/auth/convex/.well-known/openid-configuration`;
+          return Response.redirect(url);
+        }),
+      });
+    }
 
     if (!opts.cors) {
       http.route({
