@@ -14,7 +14,8 @@ export const getCookieName = async (
 };
 
 const requireConvexSiteUrl = (opts?: {
-  convexSiteUrl: string;
+  calledFrom: string;
+  convexSiteUrl?: string;
   verbose?: boolean;
 }) => {
   const baseURL = opts?.convexSiteUrl ?? import.meta.env.VITE_CONVEX_SITE_URL;
@@ -22,7 +23,7 @@ const requireConvexSiteUrl = (opts?: {
     throw new Error("VITE_CONVEX_SITE_URL is not set");
   }
   if (opts?.verbose) {
-    console.log("convexSiteUrl", baseURL);
+    console.log(`${opts.calledFrom} convexSiteUrl`, baseURL);
   }
   return baseURL;
 };
@@ -44,7 +45,7 @@ export const fetchSession = async <
   const { data: session } = await betterFetch<Session>(
     "/api/auth/get-session",
     {
-      baseURL: requireConvexSiteUrl(opts),
+      baseURL: requireConvexSiteUrl({ ...opts, calledFrom: "fetchSession" }),
       headers: {
         cookie: request.headers.get("cookie") ?? "",
       },
@@ -60,7 +61,11 @@ export const reactStartHandler = (
   opts?: { convexSiteUrl: string; verbose?: boolean }
 ) => {
   const requestUrl = new URL(request.url);
-  const nextUrl = `${requireConvexSiteUrl(opts)}${requestUrl.pathname}${requestUrl.search}`;
+  const convexSiteUrl = requireConvexSiteUrl({
+    ...opts,
+    calledFrom: "reactStartHandler",
+  });
+  const nextUrl = `${convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
   request.headers.set("accept-encoding", "application/json");
   return fetch(nextUrl, new Request(request, { redirect: "manual" }));
 };
