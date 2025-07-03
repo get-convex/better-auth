@@ -2360,9 +2360,13 @@ export default function Home() {
               export default http
             `}
           />
+          <ContentHeading
+            id="migrate-0-6-to-0-7-tanstack-fetch-session"
+            title="TanStack fetchSession()"
+          />
           <P>
-            TanStack apps will need to update <Code>fetchSession()</Code> in
-            their root layout.
+            TanStack apps will need to update <Code>fetchSession()</Code> in the
+            root layout.
           </P>
           <CodeBlock
             language="typescript"
