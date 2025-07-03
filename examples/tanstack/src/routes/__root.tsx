@@ -24,7 +24,7 @@ const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
   const sessionCookieName = await getCookieName(createAuth)
   const token = getCookie(sessionCookieName)
   const request = getWebRequest()
-  const { session } = await fetchSession(createAuth, request)
+  const { session } = await fetchSession(request)
   return {
     userId: session?.user.id,
     token,

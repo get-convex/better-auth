@@ -2360,6 +2360,30 @@ export default function Home() {
               export default http
             `}
           />
+          <P>
+            TanStack apps will need to update <Code>fetchSession()</Code> in
+            their root layout.
+          </P>
+          <CodeBlock
+            language="typescript"
+            filename="src/routes/__root.tsx"
+            removedLines={[6]}
+            addedLines={[7]}
+            code={stripIndent`
+              // Server side session request
+              const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
+                const sessionCookieName = await getCookieName(createAuth)
+                const token = getCookie(sessionCookieName)
+                const request = getWebRequest()
+                const { session } = await fetchSession(createAuth, request)
+                const { session } = await fetchSession(request)
+                return {
+                  userId: session?.user.id,
+                  token,
+                }
+              })
+            `}
+          />
         </Subsection>
         <Subsection id="migrate-0-5-to-0-6" title="Migrate 0.5 &rarr; 0.6">
           <Ul>
