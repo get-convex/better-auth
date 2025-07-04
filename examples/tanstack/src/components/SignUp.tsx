@@ -14,7 +14,7 @@ import { Loader2, X } from 'lucide-react'
 import { authClient } from '@/lib/auth-client'
 import { toast } from 'sonner'
 import { Container } from '@/components/Container'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 
 export default function SignUp() {
   const [firstName, setFirstName] = useState('')
@@ -25,6 +25,7 @@ export default function SignUp() {
   const [image, setImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -50,8 +51,9 @@ export default function SignUp() {
         onRequest: () => {
           setLoading(true)
         },
-        onSuccess: () => {
+        onSuccess: async () => {
           setLoading(false)
+          await navigate({ to: '/client-only' })
         },
         onError: async (ctx) => {
           setLoading(false)
