@@ -14,11 +14,14 @@ export const getCookieName = async (
 };
 
 const requireConvexSiteUrl = (
-  opts: { convexSiteUrl: string },
+  opts: { convexSiteUrl: string; verbose?: boolean },
   calledFrom: string
 ) => {
   if (!opts.convexSiteUrl) {
     throw new Error(`${calledFrom}: opts.convexSiteUrl is required`);
+  }
+  if (opts.verbose) {
+    console.log(`${calledFrom}: opts.convexSiteUrl: ${opts.convexSiteUrl}`);
   }
   return opts.convexSiteUrl;
 };
