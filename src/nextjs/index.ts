@@ -33,6 +33,9 @@ const handler = (request: Request, opts?: { convexSiteUrl?: string }) => {
   const requestUrl = new URL(request.url);
   const convexSiteUrl =
     opts?.convexSiteUrl ?? process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
+  if (!convexSiteUrl) {
+    throw new Error("NEXT_PUBLIC_CONVEX_SITE_URL is not set");
+  }
   const nextUrl = `${convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
   const newRequest = new Request(nextUrl, request);
   newRequest.headers.set("accept-encoding", "application/json");

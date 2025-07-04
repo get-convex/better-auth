@@ -13,7 +13,7 @@ import {
 import { authClient } from '@/lib/auth-client'
 import { SignOutButton } from '@/components/client'
 import { convexQuery } from '@convex-dev/react-query'
-import { useQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { useTransition } from 'react'
 
 export const Route = createFileRoute('/_authed/client-only')({
@@ -43,7 +43,7 @@ function ClientOnlyComponent() {
 }
 
 function Header() {
-  const user = useQuery(convexQuery(api.auth.getCurrentUser, {}))
+  const user = useSuspenseQuery(convexQuery(api.auth.getCurrentUser, {}))
   const navigate = useNavigate()
 
   const handleSignOut = async () => {

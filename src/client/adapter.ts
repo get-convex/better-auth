@@ -1,34 +1,139 @@
 import { BetterAuth } from "./index";
-import { transformInput } from "../component/lib";
-import { createAdapter } from "better-auth/adapters";
+import {
+  AdapterDebugLogs,
+  CleanedWhere,
+  createAdapter,
+} from "better-auth/adapters";
 import {
   GenericActionCtx,
   GenericMutationCtx,
   GenericQueryCtx,
+  PaginationOptions,
+  PaginationResult,
 } from "convex/server";
+import { SetOptional } from "type-fest";
 
-export const convexAdapter = <
-  Ctx extends
-    | GenericQueryCtx<any>
-    | GenericMutationCtx<any>
-    | GenericActionCtx<any>,
->(
-  ctx: Ctx,
-  component: BetterAuth
-) =>
-  createAdapter({
+const paginate = async (
+  next: ({
+    paginationOpts,
+  }: {
+    paginationOpts: PaginationOptions;
+  }) => Promise<
+    SetOptional<PaginationResult<any>, "page"> & { count?: number }
+  >,
+  { limit, numItems }: { limit?: number; numItems?: number } = {}
+) => {
+  const state: {
+    isDone: boolean;
+    cursor: string | null;
+    docs: any[];
+    count: number;
+  } = {
+    isDone: false,
+    cursor: null,
+    docs: [],
+    count: 0,
+  };
+  const onResult = (
+    result: SetOptional<PaginationResult<any>, "page"> & { count?: number }
+  ) => {
+    state.cursor =
+      result.pageStatus === "SplitRecommended" ||
+      result.pageStatus === "SplitRequired"
+        ? result.splitCursor ?? result.continueCursor
+        : result.continueCursor;
+    if (result.page) {
+      state.docs.push(...result.page);
+      state.isDone = (limit && state.docs.length >= limit) || result.isDone;
+      return;
+    }
+    if (result.count) {
+      state.count += result.count;
+      state.isDone = (limit && state.count >= limit) || result.isDone;
+      return;
+    }
+    state.isDone = result.isDone;
+  };
+
+  do {
+    const result = await next({
+      paginationOpts: {
+        numItems: Math.min(numItems ?? 200, limit ?? 200, 200),
+        cursor: state.cursor,
+      },
+    });
+    onResult(result);
+  } while (!state.isDone);
+  return state;
+};
+
+type ConvexCleanedWhere = CleanedWhere & {
+  value: string | number | boolean | string[] | number[] | null;
+};
+
+const parseWhere = (where?: CleanedWhere[]): ConvexCleanedWhere[] => {
+  return where?.map((where) => {
+    if (where.value instanceof Date) {
+      return {
+        ...where,
+        value: where.value.getTime(),
+      };
+    }
+    return where;
+  }) as ConvexCleanedWhere[];
+};
+
+type GenericCtx =
+  | GenericQueryCtx<any>
+  | GenericMutationCtx<any>
+  | GenericActionCtx<any>;
+
+interface ConvexAdapterConfig {
+  /**
+   * Helps you debug issues with the adapter.
+   */
+  debugLogs?: AdapterDebugLogs;
+}
+export const convexAdapter = (
+  ctx: GenericCtx,
+  component: BetterAuth,
+  config: ConvexAdapterConfig = {}
+) => {
+  const { debugLogs } = config;
+  return createAdapter({
     config: {
       adapterId: "convex",
       adapterName: "Convex Adapter",
-      debugLogs: component.config.verbose ?? false,
+      debugLogs: component.config.verbose ?? debugLogs ?? false,
       disableIdGeneration: true,
+      supportsNumericIds: false,
+      usePlural: false,
+      mapKeysTransformOutput: {
+        _id: "id",
+      },
+      customTransformInput: ({ data, fieldAttributes, field }) => {
+        if (data && fieldAttributes.type === "date") {
+          const result = data.getTime();
+          console.log("transformed input", field, result);
+          return result;
+        }
+        return data;
+      },
+      customTransformOutput: ({ data, fieldAttributes, field }) => {
+        if (data && fieldAttributes.type === "date") {
+          const result = new Date(data);
+          console.log("transformed output", field, result);
+          return result;
+        }
+        return data;
+      },
     },
     adapter: ({ schema }) => {
       return {
         id: "convex",
         create: async ({ model, data, select }): Promise<any> => {
           if (!("runMutation" in ctx)) {
-            throw new Error("ctx is not an action ctx");
+            throw new Error("ctx is not a mutation ctx");
           }
           if (select) {
             throw new Error("select is not supported");
@@ -39,223 +144,114 @@ export const convexAdapter = <
               : model === "session"
                 ? component.config.authFunctions.createSession
                 : component.component.lib.create;
-          return ctx.runMutation(createFn, {
-            input: { table: model, ...transformInput(model, data) },
+          return await ctx.runMutation(createFn, {
+            input: { model, data },
           });
         },
-        findOne: async ({ model, where }): Promise<any> => {
-          if (where.length === 1 && where[0].operator === "eq") {
-            const { value, field } = where[0];
-            const result = await ctx.runQuery(component.component.lib.getBy, {
-              table: model,
-              field,
-              unique:
-                field === "id" ? true : schema[model].fields[field].unique,
-              value: value instanceof Date ? value.getTime() : value,
-            });
-            return result;
-          }
-          if (
-            model === "account" &&
-            where.length === 2 &&
-            where[0].field === "accountId" &&
-            where[1].field === "providerId" &&
-            where[0].connector === "AND"
-          ) {
-            return ctx.runQuery(
-              component.component.lib.getAccountByAccountIdAndProviderId,
-              {
-                accountId: where[0].value as string,
-                providerId: where[1].value as string,
-              }
-            );
-          }
-          throw new Error("where clause not supported");
+        findOne: async (data): Promise<any> => {
+          return await ctx.runQuery(component.component.lib.findOne, {
+            ...data,
+            where: parseWhere(data.where),
+          });
         },
-        findMany: async ({
-          model,
-          where,
-          sortBy,
-          offset,
-          limit,
-        }): Promise<any[]> => {
-          if (offset) {
+        findMany: async (data): Promise<any[]> => {
+          if (data.offset) {
             throw new Error("offset not supported");
           }
-          if (
-            model === "jwks" &&
-            !where &&
-            (!sortBy ||
-              (sortBy?.field === "createdAt" && sortBy?.direction === "desc"))
-          ) {
-            return ctx.runQuery(component.component.lib.getJwks, { limit });
-          }
-          if (
-            where?.length !== 1 ||
-            (where[0].operator && where[0].operator !== "eq")
-          ) {
-            throw new Error("where clause not supported");
-          }
-          if (model === "verification" && where[0].field === "identifier") {
-            return ctx.runQuery(
-              component.component.lib.listVerificationsByIdentifier,
-              {
-                identifier: where[0].value as string,
-                sortBy,
-                limit,
-              }
-            );
-          }
-          if (model === "account" && where[0].field === "userId" && !sortBy) {
-            return ctx.runQuery(component.component.lib.getAccountsByUserId, {
-              userId: where[0].value as any,
-              limit,
+          if (data.where?.length === 1 && data.where[0].operator === "in") {
+            return ctx.runQuery(component.component.lib.getIn, {
+              ...data,
+              where: parseWhere(data.where),
             });
           }
-          if (model === "session" && where[0].field === "userId" && !sortBy) {
-            return ctx.runQuery(component.component.lib.getSessionsByUserId, {
-              userId: where[0].value as any,
-              limit,
-            });
-          }
-          throw new Error("where clause not supported");
+          const result = await paginate(
+            async ({ paginationOpts }) => {
+              return await ctx.runQuery(component.component.lib.findMany, {
+                ...data,
+                where: parseWhere(data.where),
+                paginationOpts,
+              });
+            },
+            { limit: data.limit }
+          );
+          return result.docs;
         },
-        count: async ({ where }) => {
+        count: async () => {
           throw new Error("count not implemented");
-          // return 0;
         },
-        update: async ({ model, where, update }): Promise<any> => {
+        update: async (data): Promise<any> => {
           if (!("runMutation" in ctx)) {
-            throw new Error("ctx is not an action ctx");
+            throw new Error("ctx is not a mutation ctx");
           }
-          if (where?.length === 1 && where[0].operator === "eq") {
-            const { value, field } = where[0];
+          if (data.where?.length === 1 && data.where[0].operator === "eq") {
             const updateFn =
-              model === "user"
+              data.model === "user"
                 ? component.config.authFunctions.updateUser
-                : component.component.lib.update;
+                : component.component.lib.updateOne;
             return ctx.runMutation(updateFn, {
               input: {
-                table: model as any,
-                where: {
-                  field,
-                  value: value instanceof Date ? value.getTime() : value,
-                },
-                value: transformInput(model, update as any),
+                model: data.model,
+                where: parseWhere(data.where),
+                update: data.update as any,
               },
             });
           }
           throw new Error("where clause not supported");
         },
-        delete: async ({ model, where }) => {
+        delete: async (data) => {
           if (!("runMutation" in ctx)) {
-            throw new Error("ctx is not an action ctx");
+            throw new Error("ctx is not a mutation ctx");
           }
-          if (where?.length === 1 && where[0].operator === "eq") {
-            const { field, value } = where[0];
-            const deleteFn =
-              model === "user"
-                ? component.config.authFunctions.deleteUser
-                : component.component.lib.deleteBy;
-            await ctx.runMutation(deleteFn, {
-              table: model,
-              field,
-              value: value instanceof Date ? value.getTime() : value,
-            });
-            return;
-          }
-          throw new Error("where clause not supported");
-          // return null
-        },
-        deleteMany: async ({ model, where }) => {
-          if (!("runAction" in ctx)) {
-            throw new Error("ctx is not an action ctx");
-          }
-          if (
-            model === "verification" &&
-            where?.length === 1 &&
-            where[0].operator === "lt" &&
-            where[0].field === "expiresAt"
-          ) {
-            return ctx.runAction(
-              component.component.lib.deleteOldVerifications,
-              {
-                currentTimestamp: Date.now(),
-              }
-            );
-          }
-          if (where?.length === 1 && where[0].field === "userId") {
-            return ctx.runAction(component.component.lib.deleteAllForUser, {
-              table: model,
-              userId: where[0].value as any,
-            });
-          }
-          if (
-            model === "session" &&
-            where?.length === 2 &&
-            where[0].operator === "eq" &&
-            where[0].connector === "AND" &&
-            where[0].field === "userId" &&
-            where[1].operator === "lte" &&
-            where[1].field === "expiresAt" &&
-            typeof where[1].value === "number"
-          ) {
-            return ctx.runMutation(
-              component.component.lib.deleteExpiredSessions,
-              {
-                userId: where[0].value as string,
-                expiresAt: where[1].value as number,
-              }
-            );
-          }
-          throw new Error("where clause not supported");
-          // return count;
-        },
-        updateMany: async ({ model, where, update }) => {
-          if (!("runMutation" in ctx)) {
-            throw new Error("ctx is not an action ctx");
-          }
-          if (
-            model === "twoFactor" &&
-            where?.length === 1 &&
-            where[0].operator === "eq" &&
-            where[0].field === "userId"
-          ) {
-            return ctx.runMutation(component.component.lib.updateTwoFactor, {
-              userId: where[0].value as string,
-              update: transformInput(model, update as any),
-            });
-          }
-          if (
-            model === "account" &&
-            where?.length === 2 &&
-            where[0].operator === "eq" &&
-            where[0].connector === "AND" &&
-            where[0].field === "userId" &&
-            where[1].operator === "eq" &&
-            where[1].field === "providerId"
-          ) {
-            return ctx.runMutation(
-              component.component.lib.updateUserProviderAccounts,
-              {
-                userId: where[0].value as string,
-                providerId: where[1].value as string,
-                update: transformInput(model, update as any),
-              }
-            );
-          }
-          throw new Error("updateMany not implemented");
-          //return 0;
-          /*
-          const { model, where, update } = data;
-          const table = db[model];
-          const res = convertWhereClause(where, table, model);
-          res.forEach((record) => {
-            Object.assign(record, update);
+          const deleteFn =
+            data.model === "user"
+              ? component.config.authFunctions.deleteUser
+              : component.component.lib.deleteOne;
+          await ctx.runMutation(deleteFn, {
+            model: data.model,
+            where: parseWhere(data.where),
           });
-          return res[0] || null;
-          */
+          return;
+        },
+        deleteMany: async (data) => {
+          if (!("runMutation" in ctx)) {
+            throw new Error("ctx is not a mutation ctx");
+          }
+          if (
+            data.model === "session" &&
+            data.where?.length === 1 &&
+            data.where[0].operator === "in"
+          ) {
+            return ctx.runMutation(component.component.lib.deleteIn, {
+              input: {
+                table: data.model,
+                field: data.where[0].field as any,
+                values: data.where[0].value as string[],
+              },
+            });
+          }
+          const result = await paginate(async ({ paginationOpts }) => {
+            return await ctx.runMutation(component.component.lib.deleteMany, {
+              ...data,
+              where: parseWhere(data.where),
+              paginationOpts,
+            });
+          });
+          return result.count;
+        },
+        updateMany: async (data) => {
+          if (!("runMutation" in ctx)) {
+            throw new Error("ctx is not an action ctx");
+          }
+          const result = await paginate(async ({ paginationOpts }) => {
+            return await ctx.runMutation(component.component.lib.updateMany, {
+              ...data,
+              where: parseWhere(data.where),
+              paginationOpts,
+            });
+          });
+          return result.count;
         },
       };
     },
   });
+};

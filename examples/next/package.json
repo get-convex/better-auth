@@ -7,6 +7,7 @@
     "dev": "npm-run-all --parallel dev:frontend dev:backend",
     "dev:backend": "convex dev --live-component-sources --typecheck-components",
     "dev:frontend": "next dev",
+    "generate": "convex dev --live-component-sources --typecheck-components --once",
     "lint": "next lint && tsc -p convex && eslint convex"
   },
   "dependencies": {
@@ -16,7 +17,7 @@
     "@radix-ui/react-label": "^2.1.2",
     "@radix-ui/react-slot": "^1.1.2",
     "@react-email/components": "0.0.35",
-    "better-auth": "1.2.7",
+    "better-auth": "file:../../node_modules/better-auth",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "convex": "file:../../node_modules/convex",

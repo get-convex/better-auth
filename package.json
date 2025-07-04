@@ -25,6 +25,7 @@
     "prepare": "npm run build",
     "prepack": "node node10stubs.mjs",
     "postpack": "node node10stubs.mjs --cleanup",
+    "generate": "concurrently \"cd examples/next && npm run generate\" \"cd examples/react && npm run generate\" \"cd examples/tanstack && npm run generate\"",
     "test": "vitest run",
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "test:coverage": "vitest run --coverage --coverage.reporter=text"
@@ -109,6 +110,18 @@
         "default": "./dist/commonjs/react-start/index.js"
       }
     },
+    "./utils": {
+      "import": {
+        "@convex-dev/component-source": "./src/utils/index.ts",
+        "types": "./dist/esm/utils/index.d.ts",
+        "default": "./dist/esm/utils/index.js"
+      },
+      "require": {
+        "@convex-dev/component-source": "./src/utils/index.ts",
+        "types": "./dist/commonjs/utils/index.d.ts",
+        "default": "./dist/commonjs/utils/index.js"
+      }
+    },
     "./convex.config": {
       "import": {
         "@convex-dev/component-source": "./src/component/convex.config.ts",
@@ -125,17 +138,19 @@
     }
   },
   "peerDependencies": {
-    "better-auth": "^1.2.7",
     "convex": "~1.16.5 || >=1.17.0 <1.35.0",
     "react": "^18.3.1 || ^19.0.0",
-    "react-dom": "^18.3.1 || ^19.0.0"
+    "react-dom": "^18.3.1 || ^19.0.0",
+    "better-auth": "^1.2.12"
   },
   "devDependencies": {
+    "@edge-runtime/vm": "^5.0.0",
     "@eslint/js": "^9.9.1",
     "@tanstack/react-start": "^1.120.19",
-    "@types/node": "^18.17.0",
+    "@types/node": "^20",
     "@types/react": "19.1.6",
     "@types/react-dom": "19.1.6",
+    "concurrently": "^9.2.0",
     "convex-test": "^0.0.33",
     "eslint": "^9.9.1",
     "globals": "^15.9.0",
@@ -152,7 +167,7 @@
   "dependencies": {
     "@better-auth/utils": "^0.2.5",
     "better-call": "^1.0.9",
-    "convex-helpers": "^0.1.87",
+    "convex-helpers": "^0.1.95",
     "is-network-error": "^1.1.0",
     "remeda": "^2.21.6",
     "type-fest": "^4.39.1",

@@ -51,7 +51,7 @@ export const convex = (
         return session.user.userId;
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      definePayload: ({ user: { id, userId, ...user }, session }) => ({
+      definePayload: ({ user: { id, userId, image, ...user }, session }) => ({
         ...user,
         sessionId: session.id,
       }),
@@ -144,7 +144,10 @@ export const convex = (
         },
         {
           matcher: (ctx) => {
-            return ctx.path?.startsWith("/sign-out");
+            return (
+              ctx.path?.startsWith("/sign-out") ||
+              ctx.path?.startsWith("/delete-user")
+            );
           },
           handler: createAuthMiddleware(async (ctx) => {
             const jwtCookie = ctx.context.createAuthCookie(JWT_COOKIE_NAME, {

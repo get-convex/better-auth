@@ -8,8 +8,12 @@ import { convex } from "@convex-dev/better-auth/plugins";
 import { api, components, internal } from "./_generated/api";
 import { twoFactor } from "better-auth/plugins";
 import { emailOTP } from "better-auth/plugins";
-import { sendMagicLink, sendOTPVerification } from "./email";
-import { sendEmailVerification, sendResetPassword } from "./email";
+import {
+  sendMagicLink,
+  sendOTPVerification,
+  sendEmailVerification,
+  sendResetPassword,
+} from "./email";
 import { magicLink } from "better-auth/plugins";
 import { betterAuth } from "better-auth";
 import { GenericCtx, query } from "./_generated/server";
@@ -22,7 +26,7 @@ const publicAuthFunctions: PublicAuthFunctions = api.auth;
 export const betterAuthComponent = new BetterAuth(components.betterAuth, {
   authFunctions,
   publicAuthFunctions,
-  verbose: false,
+  verbose: true,
 });
 
 export const createAuth = (ctx: GenericCtx) =>
@@ -44,7 +48,7 @@ export const createAuth = (ctx: GenericCtx) =>
     },
     emailAndPassword: {
       enabled: true,
-      requireEmailVerification: false,
+      requireEmailVerification: true,
       sendResetPassword: async ({ user, url }) => {
         await sendResetPassword({
           to: user.email,
@@ -139,15 +143,6 @@ export const getCurrentUser = query({
     // Get user data from your application's database (skip this if you have no
     // fields in your users table schema)
     const user = await ctx.db.get(userMetadata.userId as Id<"users">);
-    const auth = createAuth(ctx);
-    try {
-      const sessions = await auth.api.listSessions({
-        headers: await betterAuthComponent.getHeaders(ctx),
-      });
-      console.log("listSessions", sessions);
-    } catch (err) {
-      console.error("Error listing sessions", err);
-    }
     return {
       ...user,
       ...userMetadata,

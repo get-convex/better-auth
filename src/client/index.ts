@@ -16,33 +16,36 @@ import { type GenericId, Infer, v } from "convex/values";
 import type { api } from "../component/_generated/api";
 import schema from "../component/schema";
 import { convexAdapter } from "./adapter";
-import corsRouter from "./cors";
-import { getByArgsValidator, updateArgsInputValidator } from "../component/lib";
 import { betterAuth } from "better-auth";
 import { omit } from "convex-helpers";
 import { createCookieGetter } from "better-auth/cookies";
 import { fetchQuery } from "convex/nextjs";
 import { JWT_COOKIE_NAME } from "../plugins/convex";
-import { requireEnv } from "../util";
+import { requireEnv } from "../utils";
+import { partial } from "convex-helpers/validators";
+import { adapterArgsValidator, adapterWhereValidator } from "../component/lib";
+import { corsRouter } from "convex-helpers/server/cors";
 export { convexAdapter };
 
 const createUserFields = omit(schema.tables.user.validator.fields, ["userId"]);
 const createUserValidator = v.object(createUserFields);
 const createUserArgsValidator = v.object({
   input: v.object({
-    ...createUserFields,
-    table: v.literal("user"),
+    model: v.literal("user"),
+    data: v.object(createUserFields),
   }),
 });
 const updateUserArgsValidator = v.object({
-  input: updateArgsInputValidator("user"),
+  input: v.object({
+    model: v.literal("user"),
+    where: v.optional(v.array(adapterWhereValidator)),
+    update: v.object(partial(createUserFields)),
+  }),
 });
-const deleteUserArgsValidator = v.object(getByArgsValidator);
-
 const createSessionArgsValidator = v.object({
   input: v.object({
-    table: v.literal("session"),
-    ...schema.tables.session.validator.fields,
+    model: v.literal("session"),
+    data: v.object(schema.tables.session.validator.fields),
   }),
 });
 
@@ -61,7 +64,7 @@ export type AuthFunctions = {
   deleteUser: FunctionReference<
     "mutation",
     "internal",
-    Infer<typeof deleteUserArgsValidator>
+    Infer<typeof adapterArgsValidator>
   >;
   updateUser: FunctionReference<
     "mutation",
@@ -128,10 +131,14 @@ export class BetterAuth<UserId extends string = string> {
     if (!identity) {
       return null;
     }
-    const doc = await ctx.runQuery(this.component.lib.getBy, {
-      table: "user",
-      field: "userId",
-      value: identity.subject,
+    const doc = await ctx.runQuery(this.component.lib.findOne, {
+      model: "user",
+      where: [
+        {
+          field: "userId",
+          value: identity.subject,
+        },
+      ],
     });
     if (!doc) {
       return null;
@@ -182,35 +189,38 @@ export class BetterAuth<UserId extends string = string> {
       createUser: internalMutationGeneric({
         args: createUserArgsValidator,
         handler: async (ctx, args) => {
-          const userId = await opts.onCreateUser(ctx, args.input);
-          const input = { ...args.input, table: "user", userId };
+          const userId = await opts.onCreateUser(ctx, args.input.data);
           return ctx.runMutation(this.component.lib.create, {
-            input,
+            input: {
+              ...args.input,
+              data: { ...args.input.data, userId },
+            },
           });
         },
       }),
       deleteUser: internalMutationGeneric({
-        args: deleteUserArgsValidator,
+        args: adapterArgsValidator,
         handler: async (ctx, args) => {
-          const doc = await ctx.runMutation(this.component.lib.deleteBy, args);
-          if (opts.onDeleteUser) {
+          const doc = await ctx.runMutation(this.component.lib.deleteOne, args);
+          if (doc && opts.onDeleteUser) {
             await opts.onDeleteUser(ctx, doc.userId as UserId);
           }
+          return doc;
         },
       }),
       updateUser: internalMutationGeneric({
         args: updateUserArgsValidator,
         handler: async (ctx, args) => {
           const updatedUser = await ctx.runMutation(
-            this.component.lib.update,
-            args
+            this.component.lib.updateOne,
+            { input: args.input }
           );
           // Type narrowing
           if (!("emailVerified" in updatedUser)) {
             throw new Error("invalid user");
           }
           if (opts.onUpdateUser) {
-            await opts.onUpdateUser(ctx, omit(updatedUser, ["id"]));
+            await opts.onUpdateUser(ctx, omit(updatedUser, ["_id"]));
           }
           return updatedUser;
         },
@@ -218,14 +228,9 @@ export class BetterAuth<UserId extends string = string> {
       createSession: internalMutationGeneric({
         args: createSessionArgsValidator,
         handler: async (ctx, args) => {
-          const session = await ctx.runMutation(
-            this.component.lib.create,
-            args
-          );
-          // Type narrowing
-          if (!("ipAddress" in session)) {
-            throw new Error("invalid session");
-          }
+          const session = await ctx.runMutation(this.component.lib.create, {
+            input: args.input,
+          });
           await opts.onCreateSession?.(ctx, session);
           return session;
         },
@@ -283,50 +288,20 @@ export class BetterAuth<UserId extends string = string> {
 
       return;
     }
-
-    const trustedOrigins = [
-      ...(Array.isArray(betterAuthOptions.trustedOrigins)
-        ? betterAuthOptions.trustedOrigins
-        : [betterAuthOptions.trustedOrigins]),
-      betterAuthOptions.baseURL!,
-    ];
-    // The crossDomain plugin adds siteUrl to trustedOrigins
-    const trustedOriginsFromPlugins =
-      betterAuthOptions.plugins?.reduce((acc, plugin) => {
-        if (plugin.options?.trustedOrigins) {
-          acc.push(...plugin.options.trustedOrigins);
-        }
-        return acc;
-      }, [] as string[]) ?? [];
-
-    // Reuse trustedOrigins as default for allowedOrigins
-    const allowedOrigins = async (request: Request) => {
-      return (
-        await Promise.all(
-          [...trustedOrigins, ...trustedOriginsFromPlugins].map(
-            async (origin) => {
-              if (!origin) {
-                return [];
-              }
-              if (typeof origin === "function") {
-                return origin(request);
-              }
-              return [origin];
-            }
-          )
-        )
-      )
-        .flat()
-        .map((origin) =>
+    const cors = corsRouter(http, {
+      allowedOrigins: async (request) => {
+        const trustedOriginsOption =
+          (await createAuth({} as any).$context).options.trustedOrigins ?? [];
+        const trustedOrigins = Array.isArray(trustedOriginsOption)
+          ? trustedOriginsOption
+          : await trustedOriginsOption(request);
+        return trustedOrigins.map((origin) =>
           // Strip trailing wildcards, unsupported for allowedOrigins
           origin.endsWith("*") && origin.length > 1
             ? origin.slice(0, -1)
             : origin
         );
-    };
-
-    const cors = corsRouter(http, {
-      allowedOrigins,
+      },
       allowCredentials: true,
       allowedHeaders: ["Content-Type", "Better-Auth-Cookie"],
       exposedHeaders: ["Set-Better-Auth-Cookie"],
