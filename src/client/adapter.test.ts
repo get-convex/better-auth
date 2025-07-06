@@ -97,49 +97,191 @@ describe("convex adapter", async () => {
         email: "a@a.com",
       },
     });
-    const res = await adapter.findMany({
+    expect(
+      await adapter.findMany({
+        model: "user",
+        where: [
+          {
+            field: "name",
+            operator: "lt",
+            value: "a",
+          },
+        ],
+      })
+    ).toEqual([]);
+    expect(
+      await adapter.findMany({
+        model: "user",
+        where: [
+          {
+            field: "name",
+            operator: "lte",
+            value: "a",
+          },
+        ],
+      })
+    ).toEqual([]);
+    expect(
+      await adapter.findMany({
+        model: "user",
+        where: [
+          {
+            field: "name",
+            operator: "gt",
+            value: "a",
+          },
+        ],
+      })
+    ).toEqual([user]);
+    expect(
+      await adapter.findMany({
+        model: "user",
+        where: [
+          {
+            field: "name",
+            operator: "gte",
+            value: "ab",
+          },
+        ],
+      })
+    ).toEqual([user]);
+  });
+
+  test("should handle compound indexes that include id field", async () => {
+    const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
+    const adapter = await getAdapter(t)();
+    const user = await adapter.create({
       model: "user",
-      where: [
-        {
-          field: "name",
-          operator: "lt",
-          value: "a",
-        },
-      ],
+      data: {
+        name: "foo",
+        email: "foo@bar.com",
+      },
     });
-    expect(res).toEqual([]);
-    const res2 = await adapter.findMany({
-      model: "user",
-      where: [
-        {
-          field: "name",
-          operator: "lte",
-          value: "a",
-        },
-      ],
-    });
-    expect(res2).toEqual([]);
-    const res3 = await adapter.findMany({
-      model: "user",
-      where: [
-        {
-          field: "name",
-          operator: "gt",
-          value: "a",
-        },
-      ],
-    });
-    expect(res3).toEqual([user]);
-    const res4 = await adapter.findMany({
-      model: "user",
-      where: [
-        {
-          field: "name",
-          operator: "gte",
-          value: "ab",
-        },
-      ],
-    });
-    expect(res4).toEqual([user]);
+    expect(
+      await adapter.findOne({
+        model: "user",
+        where: [
+          {
+            field: "id",
+            value: user.id,
+          },
+          {
+            field: "name",
+            value: "wrong name",
+          },
+        ],
+      })
+    ).toEqual(null);
+    expect(
+      await adapter.findOne({
+        model: "user",
+        where: [
+          {
+            field: "id",
+            value: user.id,
+          },
+          {
+            field: "name",
+            value: "foo",
+          },
+        ],
+      })
+    ).toEqual(user);
+    expect(
+      await adapter.findOne({
+        model: "user",
+        where: [
+          {
+            field: "id",
+            value: user.id,
+          },
+          {
+            field: "name",
+            value: "foo",
+            operator: "lt",
+          },
+        ],
+      })
+    ).toEqual(null);
+    expect(
+      await adapter.findOne({
+        model: "user",
+        where: [
+          {
+            field: "id",
+            value: user.id,
+          },
+          {
+            field: "name",
+            value: "foo",
+            operator: "lte",
+          },
+        ],
+      })
+    ).toEqual(user);
+    expect(
+      await adapter.findOne({
+        model: "user",
+        where: [
+          {
+            field: "id",
+            value: user.id,
+          },
+          {
+            field: "name",
+            value: "foo",
+            operator: "gt",
+          },
+        ],
+      })
+    ).toEqual(null);
+    expect(
+      await adapter.findOne({
+        model: "user",
+        where: [
+          {
+            field: "id",
+            value: user.id,
+          },
+          {
+            field: "name",
+            value: "foo",
+            operator: "gte",
+          },
+        ],
+      })
+    ).toEqual(user);
+    expect(
+      await adapter.findOne({
+        model: "user",
+        where: [
+          {
+            field: "id",
+            value: user.id,
+          },
+          {
+            field: "name",
+            operator: "in",
+            value: ["wrong", "name"],
+          },
+        ],
+      })
+    ).toEqual(null);
+    expect(
+      await adapter.findOne({
+        model: "user",
+        where: [
+          {
+            field: "id",
+            value: user.id,
+          },
+          {
+            field: "name",
+            operator: "in",
+            value: ["foo"],
+          },
+        ],
+      })
+    ).toEqual(user);
   });
 });

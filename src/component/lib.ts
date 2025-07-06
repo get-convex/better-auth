@@ -247,8 +247,66 @@ const paginate = async (
 ): Promise<PaginationResult<Doc<any>>> => {
   // If any index is id, we can only return a single document
   const idWhere = args.where?.find((w) => w.field === "id");
+  if (idWhere && idWhere.operator && idWhere.operator !== "eq") {
+    throw new Error("id can only be used with eq operator");
+  }
   if (idWhere) {
     const doc = await ctx.db.get(idWhere.value as Id<TableNames>);
+    const emptyResult = {
+      page: [],
+      isDone: true,
+      continueCursor: "",
+    };
+    if (!doc) {
+      return emptyResult;
+    }
+    for (const w of args.where ?? []) {
+      if (w.field === "id") {
+        continue;
+      }
+      switch (w.operator) {
+        case undefined:
+        case "eq": {
+          if (w.value !== doc[w.field as keyof typeof doc]) {
+            return emptyResult;
+          }
+          break;
+        }
+        case "in": {
+          if (!Array.isArray(w.value)) {
+            return emptyResult;
+          }
+          if (!(w.value as any[]).includes(doc[w.field as keyof typeof doc])) {
+            return emptyResult;
+          }
+          break;
+        }
+        case "lt": {
+          if (doc[w.field as keyof typeof doc] >= (w.value as any)) {
+            return emptyResult;
+          }
+          break;
+        }
+        case "lte": {
+          if (doc[w.field as keyof typeof doc] > (w.value as any)) {
+            return emptyResult;
+          }
+          break;
+        }
+        case "gt": {
+          if (doc[w.field as keyof typeof doc] <= (w.value as any)) {
+            return emptyResult;
+          }
+          break;
+        }
+        case "gte": {
+          if (doc[w.field as keyof typeof doc] < (w.value as any)) {
+            return emptyResult;
+          }
+          break;
+        }
+      }
+    }
     return {
       page: [selectFields(doc, args.select)].filter(Boolean),
       isDone: true,

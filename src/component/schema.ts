@@ -17,13 +17,17 @@ const schema = defineSchema({
     isAnonymous: v.optional(v.boolean()),
     username: v.optional(v.string()),
     displayUsername: v.optional(v.string()),
+    phoneNumber: v.optional(v.string()),
+    phoneNumberVerified: v.optional(v.boolean()),
+    stripeCustomerId: v.optional(v.string()),
     userId: v.optional(v.string()),
   })
     .index("email_name", ["email","name"])
     .index("name", ["name"])
     .index("userId", ["userId"])
     .index("email", ["email"])
-    .index("username", ["username"]),
+    .index("username", ["username"])
+    .index("phoneNumber", ["phoneNumber"]),
 
   session: defineTable({
     expiresAt: v.number(),
@@ -33,6 +37,7 @@ const schema = defineSchema({
     ipAddress: v.optional(v.string()),
     userAgent: v.optional(v.string()),
     userId: v.string(),
+    activeOrganizationId: v.optional(v.string()),
   })
     .index("expiresAt", ["expiresAt"])
     .index("expiresAt_userId", ["expiresAt","userId"])
@@ -75,11 +80,168 @@ const schema = defineSchema({
   })
     .index("userId", ["userId"]),
 
+  passkey: defineTable({
+    name: v.optional(v.string()),
+    publicKey: v.string(),
+    userId: v.string(),
+    credentialID: v.string(),
+    counter: v.number(),
+    deviceType: v.string(),
+    backedUp: v.boolean(),
+    transports: v.optional(v.string()),
+    createdAt: v.optional(v.number()),
+    aaguid: v.optional(v.string()),
+  })
+    .index("credentialID", ["credentialID"])
+    .index("userId", ["userId"]),
+
+  apikey: defineTable({
+    name: v.optional(v.string()),
+    start: v.optional(v.string()),
+    prefix: v.optional(v.string()),
+    key: v.string(),
+    userId: v.string(),
+    refillInterval: v.optional(v.number()),
+    refillAmount: v.optional(v.number()),
+    lastRefillAt: v.optional(v.number()),
+    enabled: v.optional(v.boolean()),
+    rateLimitEnabled: v.optional(v.boolean()),
+    rateLimitTimeWindow: v.optional(v.number()),
+    rateLimitMax: v.optional(v.number()),
+    requestCount: v.optional(v.number()),
+    remaining: v.optional(v.number()),
+    lastRequest: v.optional(v.number()),
+    expiresAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    permissions: v.optional(v.string()),
+    metadata: v.optional(v.string()),
+  })
+    .index("key", ["key"])
+    .index("userId", ["userId"]),
+
+  oauthApplication: defineTable({
+    name: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    metadata: v.optional(v.string()),
+    clientId: v.optional(v.string()),
+    clientSecret: v.optional(v.string()),
+    redirectURLs: v.optional(v.string()),
+    type: v.optional(v.string()),
+    disabled: v.optional(v.boolean()),
+    userId: v.optional(v.string()),
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
+  })
+    .index("clientId", ["clientId"]),
+
+  oauthAccessToken: defineTable({
+    accessToken: v.optional(v.string()),
+    refreshToken: v.optional(v.string()),
+    accessTokenExpiresAt: v.optional(v.number()),
+    refreshTokenExpiresAt: v.optional(v.number()),
+    clientId: v.optional(v.string()),
+    userId: v.optional(v.string()),
+    scopes: v.optional(v.string()),
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
+  })
+    .index("accessToken", ["accessToken"])
+    .index("refreshToken", ["refreshToken"]),
+
+  oauthConsent: defineTable({
+    clientId: v.optional(v.string()),
+    userId: v.optional(v.string()),
+    scopes: v.optional(v.string()),
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
+    consentGiven: v.optional(v.boolean()),
+  })
+    .index("clientId_userId", ["clientId","userId"]),
+
+  organization: defineTable({
+    name: v.string(),
+    slug: v.optional(v.string()),
+    logo: v.optional(v.string()),
+    createdAt: v.number(),
+    metadata: v.optional(v.string()),
+  })
+    .index("name", ["name"])
+    .index("slug", ["slug"]),
+
+  member: defineTable({
+    organizationId: v.string(),
+    userId: v.string(),
+    role: v.string(),
+    teamId: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("organizationId_userId", ["organizationId","userId"])
+    .index("organizationId", ["organizationId"])
+    .index("userId", ["userId"])
+    .index("role", ["role"])
+    .index("teamId", ["teamId"]),
+
+  invitation: defineTable({
+    organizationId: v.string(),
+    email: v.string(),
+    role: v.optional(v.string()),
+    teamId: v.optional(v.string()),
+    status: v.string(),
+    expiresAt: v.number(),
+    inviterId: v.string(),
+  })
+    .index("email_organizationId_status", ["email","organizationId","status"])
+    .index("organizationId_status", ["organizationId","status"])
+    .index("organizationId", ["organizationId"])
+    .index("email", ["email"])
+    .index("role", ["role"])
+    .index("teamId", ["teamId"])
+    .index("status", ["status"])
+    .index("inviterId", ["inviterId"]),
+
+  team: defineTable({
+    name: v.string(),
+    organizationId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+  })
+    .index("organizationId", ["organizationId"]),
+
+  ssoProvider: defineTable({
+    issuer: v.string(),
+    oidcConfig: v.optional(v.string()),
+    samlConfig: v.optional(v.string()),
+    userId: v.optional(v.string()),
+    providerId: v.string(),
+    organizationId: v.optional(v.string()),
+    domain: v.string(),
+  })
+    .index("organizationId", ["organizationId"])
+    .index("domain", ["domain"])
+    .index("userId", ["userId"])
+    .index("providerId", ["providerId"]),
+
   jwks: defineTable({
     publicKey: v.string(),
     privateKey: v.string(),
     createdAt: v.number(),
   }),
+
+  subscription: defineTable({
+    plan: v.string(),
+    referenceId: v.string(),
+    stripeCustomerId: v.optional(v.string()),
+    stripeSubscriptionId: v.optional(v.string()),
+    status: v.optional(v.string()),
+    periodStart: v.optional(v.number()),
+    periodEnd: v.optional(v.number()),
+    cancelAtPeriodEnd: v.optional(v.boolean()),
+    seats: v.optional(v.number()),
+  })
+    .index("stripeSubscriptionId", ["stripeSubscriptionId"])
+    .index("stripeCustomerId", ["stripeCustomerId"])
+    .index("referenceId", ["referenceId"]),
 
   rateLimit: defineTable({
     key: v.optional(v.string()),
@@ -102,6 +264,10 @@ export const specialFields = {
       unique: true
     },
     username: {
+      sortable: true,
+      unique: true
+    },
+    phoneNumber: {
       sortable: true,
       unique: true
     }
@@ -133,6 +299,109 @@ export const specialFields = {
         model: "user",
         field: "id"
       }
+    }
+  },
+  passkey: {
+    userId: {
+      references: {
+        model: "user",
+        field: "id"
+      }
+    }
+  },
+  apikey: {
+    userId: {
+      references: {
+        model: "user",
+        field: "id"
+      }
+    }
+  },
+  oauthApplication: {
+    clientId: {
+      unique: true
+    }
+  },
+  oauthAccessToken: {
+    accessToken: {
+      unique: true
+    },
+    refreshToken: {
+      unique: true
+    }
+  },
+  organization: {
+    name: {
+      sortable: true
+    },
+    slug: {
+      sortable: true,
+      unique: true
+    }
+  },
+  member: {
+    organizationId: {
+      references: {
+        model: "organization",
+        field: "id"
+      }
+    },
+    userId: {
+      references: {
+        model: "user",
+        field: "id"
+      }
+    },
+    role: {
+      sortable: true
+    },
+    teamId: {
+      sortable: true
+    }
+  },
+  invitation: {
+    organizationId: {
+      references: {
+        model: "organization",
+        field: "id"
+      }
+    },
+    email: {
+      sortable: true
+    },
+    role: {
+      sortable: true
+    },
+    teamId: {
+      sortable: true
+    },
+    status: {
+      sortable: true
+    },
+    inviterId: {
+      references: {
+        model: "user",
+        field: "id"
+      }
+    }
+  },
+  team: {
+    organizationId: {
+      references: {
+        model: "organization",
+        field: "id"
+      }
+    }
+  },
+  ssoProvider: {
+    userId: {
+      references: {
+        model: "user",
+        field: "id"
+      }
+    },
+    providerId: {
+      unique: true
     }
   }
 };

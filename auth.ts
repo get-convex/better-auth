@@ -1,27 +1,86 @@
-import { betterAuth } from "better-auth";
+import { betterAuth, BetterAuthOptions } from "better-auth";
 import {
   anonymous,
+  apiKey,
+  bearer,
+  captcha,
   emailOTP,
+  genericOAuth,
+  haveIBeenPwned,
+  jwt,
   magicLink,
+  mcp,
+  multiSession,
+  oAuthProxy,
+  oidcProvider,
+  oneTap,
+  oneTimeToken,
+  openAPI,
+  organization,
+  phoneNumber,
   twoFactor,
   username,
 } from "better-auth/plugins";
 import { convex } from "@convex-dev/better-auth/plugins";
+import { passkey } from "better-auth/plugins/passkey";
+import { stripe } from "@better-auth/stripe";
+import { sso } from "better-auth/plugins/sso";
+import { polar } from "@polar-sh/better-auth";
 
 // This is the config used to generate the schema
-const config = betterAuth({
+const options = {
   rateLimit: {
     storage: "database",
   },
   plugins: [
     twoFactor(),
-    magicLink({ sendMagicLink: async () => {} }),
-    emailOTP({ sendVerificationOTP: async () => {} }),
     anonymous(),
     username(),
+    phoneNumber(),
+    magicLink({ sendMagicLink: async () => {} }),
+    emailOTP({ sendVerificationOTP: async () => {} }),
+    passkey(),
+    genericOAuth({
+      config: [
+        {
+          clientId: "",
+          clientSecret: "",
+          providerId: "",
+        },
+      ],
+    }),
+    oneTap(),
+    apiKey(),
+    mcp({ loginPage: "/login" }),
+    organization({ teams: { enabled: true } }),
+    oidcProvider({
+      loginPage: "/login",
+    }),
+    sso(),
+    bearer(),
+    captcha({
+      provider: "google-recaptcha",
+      secretKey: "",
+    }),
+    haveIBeenPwned(),
+    multiSession(),
+    oAuthProxy(),
+    oneTimeToken(),
+    openAPI(),
+    jwt(),
+    stripe({
+      stripeClient: {} as any,
+      stripeWebhookSecret: "",
+      subscription: {
+        enabled: true,
+        plans: [],
+      },
+    }),
+    polar({ client: {} as any, use: [] as any }),
     convex(),
   ],
-});
+} as BetterAuthOptions; // assert type to avoid overloading ts compiler
+const config = betterAuth(options);
 export { config as auth };
 
 // Manually add fields to index on for schema generation,
@@ -32,4 +91,14 @@ export const indexFields = {
   session: ["expiresAt", ["expiresAt", "userId"]],
   verification: ["expiresAt", "identifier"],
   user: [["email", "name"], "name", "userId"],
+  passkey: ["credentialID"],
+  apikey: ["key"],
+  member: [["organizationId", "userId"]],
+  invitation: [
+    ["email", "organizationId", "status"],
+    ["organizationId", "status"],
+  ],
+  oauthConsent: [["clientId", "userId"]],
+  ssoProvider: ["organizationId", "domain"],
+  subscription: ["stripeSubscriptionId", "stripeCustomerId", "referenceId"],
 };
