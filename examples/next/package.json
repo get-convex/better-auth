@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "npm-run-all --parallel dev:frontend dev:backend",
     "dev:backend": "convex dev --live-component-sources --typecheck-components",
-    "dev:frontend": "next dev",
+    "dev:frontend": "next dev --experimental-https",
     "generate": "convex dev --live-component-sources --typecheck-components --once",
     "lint": "next lint && tsc -p convex && eslint convex"
   },

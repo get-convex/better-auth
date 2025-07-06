@@ -6,7 +6,7 @@ import {
 } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
 import { api, components, internal } from "./_generated/api";
-import { twoFactor } from "better-auth/plugins";
+import { genericOAuth, twoFactor } from "better-auth/plugins";
 import { emailOTP } from "better-auth/plugins";
 import {
   sendMagicLink,
@@ -31,11 +31,12 @@ export const betterAuthComponent = new BetterAuth(components.betterAuth, {
 
 export const createAuth = (ctx: GenericCtx) =>
   betterAuth({
-    baseURL: "http://localhost:3000",
+    baseURL: "https://localhost:3000",
     database: convexAdapter(ctx, betterAuthComponent),
     account: {
       accountLinking: {
         enabled: true,
+        allowDifferentEmails: true,
       },
     },
     emailVerification: {
@@ -89,6 +90,17 @@ export const createAuth = (ctx: GenericCtx) =>
         },
       }),
       twoFactor(),
+      genericOAuth({
+        config: [
+          {
+            providerId: "slack",
+            clientId: process.env.SLACK_CLIENT_ID as string,
+            clientSecret: process.env.SLACK_CLIENT_SECRET as string,
+            discoveryUrl: "https://slack.com/.well-known/openid-configuration",
+            scopes: ["openid", "email", "profile"],
+          },
+        ],
+      }),
       convex(),
     ],
   });

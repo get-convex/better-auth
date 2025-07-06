@@ -130,6 +130,26 @@ export default function SignIn() {
     );
   };
 
+  const handleSlackSignIn = async () => {
+    await authClient.signIn.oauth2(
+      {
+        providerId: "slack",
+      },
+      {
+        onRequest: () => {
+          setOtpLoading(true);
+        },
+        onSuccess: () => {
+          setOtpLoading(false);
+        },
+        onError: (ctx) => {
+          setOtpLoading(false);
+          alert(ctx.error.message);
+        },
+      },
+    );
+  };
+
   const handleOtpSignIn = async () => {
     if (!otpSent) {
       await authClient.emailOtp.sendVerificationOtp(
@@ -382,6 +402,15 @@ export default function SignIn() {
               />
             </svg>
             Sign in with Google
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full gap-2"
+            disabled={otpLoading}
+            onClick={handleSlackSignIn}
+          >
+            Sign in with Slack
           </Button>
         </form>
       </CardContent>

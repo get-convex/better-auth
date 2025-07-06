@@ -8,53 +8,54 @@ import schema from "../component/schema";
 import { serialize } from "../component/adapterTest";
 import { Adapter } from "better-auth";
 
+export const getAdapter =
+  (t: ReturnType<typeof convexTest>) =>
+  async (betterAuthOptions = {}) => {
+    return {
+      id: "convex",
+      create: async (data) => {
+        const result = await t.mutation(api.adapterTest.create, {
+          ...data,
+          data: serialize(data.data),
+        });
+        return result;
+      },
+      findOne: async (data) => {
+        const result = await t.query(api.adapterTest.findOne, data);
+        console.log("findOne result adapter", result);
+        return result;
+      },
+      findMany: async (data) => {
+        const result = await t.query(api.adapterTest.findMany, data);
+        console.log("findMany result adapter", result);
+        return result;
+      },
+      count: async () => {
+        throw new Error("count not implemented");
+      },
+      update: async (data) => {
+        const result = await t.mutation(api.adapterTest.update, {
+          ...data,
+          update: serialize(data.update),
+        });
+        return result;
+      },
+      updateMany: async (data) => {
+        const result = await t.mutation(api.adapterTest.updateMany, data);
+        return result;
+      },
+      delete: async (data) => {
+        await t.mutation(api.adapterTest.delete, data);
+      },
+      deleteMany: async (data) => {
+        const result = await t.mutation(api.adapterTest.deleteMany, data);
+        return result;
+      },
+    } satisfies Adapter;
+  };
+
 describe("convex adapter", async () => {
   const _t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
-  const getAdapter =
-    (t: typeof _t) =>
-    async (betterAuthOptions = {}): Promise<Adapter> => {
-      return {
-        id: "convex",
-        create: async (data) => {
-          const result = await t.mutation(api.adapterTest.create, {
-            ...data,
-            data: serialize(data.data),
-          });
-          return result;
-        },
-        findOne: async (data) => {
-          const result = await t.query(api.adapterTest.findOne, data);
-          console.log("findOne result adapter", result);
-          return result;
-        },
-        findMany: async (data) => {
-          const result = await t.query(api.adapterTest.findMany, data);
-          console.log("findMany result adapter", result);
-          return result;
-        },
-        count: async () => {
-          throw new Error("count not implemented");
-        },
-        update: async (data) => {
-          const result = await t.mutation(api.adapterTest.update, {
-            ...data,
-            update: serialize(data.update),
-          });
-          return result;
-        },
-        updateMany: async (data) => {
-          const result = await t.mutation(api.adapterTest.updateMany, data);
-          return result;
-        },
-        delete: async (data) => {
-          await t.mutation(api.adapterTest.delete, data);
-        },
-        deleteMany: async (data) => {
-          const result = await t.mutation(api.adapterTest.deleteMany, data);
-          return result;
-        },
-      };
-    };
   await runAdapterTest({
     getAdapter: getAdapter(_t),
     disableTests: {
