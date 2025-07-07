@@ -8,8 +8,9 @@ import {
   paginationOptsValidator,
   PaginationResult,
 } from "convex/server";
-import { paginator } from "convex-helpers/server/pagination";
 import { partial } from "convex-helpers/validators";
+import { stream } from "convex-helpers/server/stream";
+import { mergedStream } from "convex-helpers/server/stream";
 
 export const adapterWhereValidator = v.object({
   field: v.string(),
@@ -52,17 +53,23 @@ export const adapterArgsValidator = v.object({
   unique: v.optional(v.boolean()),
 });
 
-const getUniqueFields = (table: TableNames, input: Record<string, any>) => {
-  const fields = specialFields[table as keyof typeof specialFields];
+const isUniqueField = (model: TableNames, field: string) => {
+  const fields = specialFields[model as keyof typeof specialFields];
   if (!fields) {
-    return [];
+    return false;
   }
   return Object.entries(fields)
-    .filter(
-      ([key, value]) =>
-        value.unique && Object.keys(input).includes(key as keyof typeof input)
-    )
-    .map(([key]) => key);
+    .filter(([, value]) => value.unique)
+    .map(([key]) => key)
+    .includes(field);
+};
+const hasUniqueFields = (model: TableNames, input: Record<string, any>) => {
+  for (const field of Object.keys(input)) {
+    if (isUniqueField(model, field)) {
+      return true;
+    }
+  }
+  return false;
 };
 
 const checkUniqueFields = async (
@@ -71,11 +78,13 @@ const checkUniqueFields = async (
   input: Record<string, any>,
   doc?: Doc<any>
 ) => {
-  const uniqueFields = getUniqueFields(table, input);
-  if (!uniqueFields.length) {
+  if (!hasUniqueFields(table, input)) {
     return;
   }
-  for (const field of uniqueFields) {
+  for (const field of Object.keys(input)) {
+    if (!isUniqueField(table, field)) {
+      continue;
+    }
     const existingDoc = await ctx.db
       .query(table as any)
       .withIndex(field as any, (q) =>
@@ -88,12 +97,22 @@ const checkUniqueFields = async (
   }
 };
 
-const findIndex = async (args: {
+const findIndex = (args: {
   model: string;
   where?: {
     field: string;
-    operator?: string;
-    value: any;
+    operator?:
+      | "lt"
+      | "lte"
+      | "gt"
+      | "gte"
+      | "eq"
+      | "in"
+      | "ne"
+      | "contains"
+      | "starts_with"
+      | "ends_with";
+    value: string | number | boolean | null | string[] | number[];
     connector?: "AND" | "OR";
   }[];
   sortBy?: {
@@ -101,70 +120,59 @@ const findIndex = async (args: {
     direction: "asc" | "desc";
   };
 }) => {
-  if (!args.where && !args.sortBy) {
+  if (args.where?.some((w) => w.connector === "OR")) {
     return;
   }
-  if (args.where?.some((w) => w.field === "id")) {
-    throw new Error("id is not a valid index field");
-  }
-  if (args.where?.some((w) => w.connector && w.connector !== "AND")) {
-    throw new Error(
-      `OR connector not supported: ${JSON.stringify(args.where)}`
+  const where = args.where?.filter((w) => {
+    return (
+      (!w.operator ||
+        ["lt", "lte", "gt", "gte", "eq", "in"].includes(w.operator)) &&
+      w.field !== "id"
     );
-  }
-  if (
-    args.where?.some(
-      (w) =>
-        w.operator &&
-        !["lt", "lte", "gt", "gte", "eq", "in"].includes(w.operator)
-    )
-  ) {
-    throw new Error(
-      `where clause not supported: ${JSON.stringify(args.where)}`
-    );
+  });
+  if (!where?.length && !args.sortBy) {
+    return;
   }
   const lowerBounds =
-    args.where?.filter((w) => w.operator === "lt" || w.operator === "lte") ??
-    [];
+    where?.filter((w) => w.operator === "lt" || w.operator === "lte") ?? [];
   if (lowerBounds.length > 1) {
     throw new Error(
-      `cannot have more than one lower bound where clause: ${JSON.stringify(args.where)}`
+      `cannot have more than one lower bound where clause: ${JSON.stringify(where)}`
     );
   }
   const upperBounds =
-    args.where?.filter((w) => w.operator === "gt" || w.operator === "gte") ??
-    [];
+    where?.filter((w) => w.operator === "gt" || w.operator === "gte") ?? [];
   if (upperBounds.length > 1) {
     throw new Error(
-      `cannot have more than one upper bound where clause: ${JSON.stringify(args.where)}`
+      `cannot have more than one upper bound where clause: ${JSON.stringify(where)}`
     );
   }
   const lowerBound = lowerBounds[0];
   const upperBound = upperBounds[0];
   if (lowerBound && upperBound && lowerBound.field !== upperBound.field) {
     throw new Error(
-      `lower bound and upper bound must have the same field: ${JSON.stringify(args.where)}`
+      `lower bound and upper bound must have the same field: ${JSON.stringify(where)}`
     );
   }
   const boundField = lowerBound?.field || upperBound?.field;
   if (
     boundField &&
-    args.where?.some(
+    where?.some(
       (w) => w.field === boundField && w !== lowerBound && w !== upperBound
     )
   ) {
     throw new Error(
-      `too many where clauses on the bound field: ${JSON.stringify(args.where)}`
+      `too many where clauses on the bound field: ${JSON.stringify(where)}`
     );
   }
-  const indexFields =
-    args.where
+  const indexEqFields =
+    where
       ?.filter((w) => !w.operator || w.operator === "eq")
       .sort((a, b) => {
         return a.field.localeCompare(b.field);
       })
       .map((w) => [w.field, w.value]) ?? [];
-  if (!indexFields?.length && !boundField && !args.sortBy) {
+  if (!indexEqFields?.length && !boundField && !args.sortBy) {
     return;
   }
   const indexes =
@@ -172,36 +180,45 @@ const findIndex = async (args: {
   const sortField = args.sortBy?.field;
 
   // We internally use _creationTime in place of Better Auth's createdAt
-  const indexName = indexFields
+  const indexFields = indexEqFields
     .map(([field]) => field)
-    .join("_")
     .concat(
       boundField && boundField !== "createdAt"
-        ? `${indexFields.length ? "_" : ""}${boundField}`
+        ? `${indexEqFields.length ? "_" : ""}${boundField}`
         : ""
     )
     .concat(
       sortField && sortField !== "createdAt" && boundField !== sortField
-        ? `${indexFields.length || boundField ? "_" : ""}${sortField}`
+        ? `${indexEqFields.length || boundField ? "_" : ""}${sortField}`
         : ""
-    );
-  if (!indexName && !boundField && !sortField) {
+    )
+    .filter(Boolean);
+  if (!indexFields.length && !boundField && !sortField) {
     return;
   }
-  // Use the built in creationTime index if bounding or sorting by createdAt
+  // Use the built in _creationTime index if bounding or sorting by createdAt
   // with no other fields
-  const index = !indexName
+  const index = !indexFields.length
     ? {
         indexDescriptor: "by_creation_time",
         fields: [],
       }
-    : indexes.find(({ indexDescriptor }) => {
-        return boundField === "createdAt" || sortField === "createdAt"
-          ? indexDescriptor === indexName
-          : indexDescriptor.startsWith(indexName);
+    : indexes.find(({ fields }) => {
+        const fieldsMatch = indexFields.every(
+          (field, idx) => field === fields[idx]
+        );
+        // If sorting by createdAt, no intermediate fields can be on the index
+        // as they may override the createdAt sort order.
+        const boundFieldMatch =
+          boundField === "createdAt" || sortField === "createdAt"
+            ? indexFields.length === fields.length
+            : true;
+        return fieldsMatch && boundFieldMatch;
       });
   if (!index) {
-    throw new Error(`Index ${indexName} not found for table ${args.model}`);
+    throw new Error(
+      `Index on ${indexFields.join(", ")} not found for table ${args.model}`
+    );
   }
   return {
     index: {
@@ -211,7 +228,7 @@ const findIndex = async (args: {
     boundField,
     sortField,
     values: {
-      eq: indexFields.map(([, value]) => value),
+      eq: indexEqFields.map(([, value]) => value),
       lt: lowerBound?.operator === "lt" ? lowerBound.value : undefined,
       lte: lowerBound?.operator === "lte" ? lowerBound.value : undefined,
       gt: upperBound?.operator === "gt" ? upperBound.value : undefined,
@@ -236,85 +253,12 @@ const selectFields = <T extends TableNames, D extends Doc<T>>(
   }, {} as D);
 };
 
-// This is the core function for reading from the database, it parses and
-// validates where conditions, selects indexes, and allows the caller to
-// optionally paginate as needed.
-const paginate = async (
+const generateQuery = (
   ctx: QueryCtx,
-  args: Infer<typeof adapterArgsValidator> & {
-    paginationOpts: PaginationOptions;
-  }
-): Promise<PaginationResult<Doc<any>>> => {
-  // If any index is id, we can only return a single document
-  const idWhere = args.where?.find((w) => w.field === "id");
-  if (idWhere && idWhere.operator && idWhere.operator !== "eq") {
-    throw new Error("id can only be used with eq operator");
-  }
-  if (idWhere) {
-    const doc = await ctx.db.get(idWhere.value as Id<TableNames>);
-    const emptyResult = {
-      page: [],
-      isDone: true,
-      continueCursor: "",
-    };
-    if (!doc) {
-      return emptyResult;
-    }
-    for (const w of args.where ?? []) {
-      if (w.field === "id") {
-        continue;
-      }
-      switch (w.operator) {
-        case undefined:
-        case "eq": {
-          if (w.value !== doc[w.field as keyof typeof doc]) {
-            return emptyResult;
-          }
-          break;
-        }
-        case "in": {
-          if (!Array.isArray(w.value)) {
-            return emptyResult;
-          }
-          if (!(w.value as any[]).includes(doc[w.field as keyof typeof doc])) {
-            return emptyResult;
-          }
-          break;
-        }
-        case "lt": {
-          if (doc[w.field as keyof typeof doc] >= (w.value as any)) {
-            return emptyResult;
-          }
-          break;
-        }
-        case "lte": {
-          if (doc[w.field as keyof typeof doc] > (w.value as any)) {
-            return emptyResult;
-          }
-          break;
-        }
-        case "gt": {
-          if (doc[w.field as keyof typeof doc] <= (w.value as any)) {
-            return emptyResult;
-          }
-          break;
-        }
-        case "gte": {
-          if (doc[w.field as keyof typeof doc] < (w.value as any)) {
-            return emptyResult;
-          }
-          break;
-        }
-      }
-    }
-    return {
-      page: [selectFields(doc, args.select)].filter(Boolean),
-      isDone: true,
-      continueCursor: "",
-    };
-  }
-  const { index, values, boundField } = (await findIndex(args)) ?? {};
-  const query = paginator(ctx.db, schema).query(args.model as any);
+  args: Infer<typeof adapterArgsValidator>
+) => {
+  const { index, values, boundField } = findIndex(args) ?? {};
+  const query = stream(ctx.db, schema).query(args.model as any);
   const hasValues =
     values?.eq?.length ||
     values?.lt ||
@@ -347,11 +291,193 @@ const paginate = async (
             : undefined
         )
       : query;
-
   const orderedQuery = args.sortBy
     ? indexedQuery.order(args.sortBy.direction === "asc" ? "asc" : "desc")
     : indexedQuery;
-  const result = await orderedQuery.paginate(args.paginationOpts);
+  return orderedQuery;
+};
+
+const filterByWhere = (
+  doc: Doc<any>,
+  where?: Infer<typeof adapterWhereValidator>[],
+  skip?: (w: Infer<typeof adapterWhereValidator>) => boolean
+) => {
+  if (!doc) {
+    return false;
+  }
+  for (const w of where ?? []) {
+    if (skip?.(w)) {
+      continue;
+    }
+    switch (w.operator) {
+      case undefined:
+      case "eq": {
+        if (w.value !== doc[w.field as keyof typeof doc]) {
+          return false;
+        }
+        break;
+      }
+      case "in": {
+        if (!Array.isArray(w.value)) {
+          return false;
+        }
+        if (!(w.value as any[]).includes(doc[w.field as keyof typeof doc])) {
+          return false;
+        }
+        break;
+      }
+      case "lt": {
+        if (doc[w.field as keyof typeof doc] >= (w.value as any)) {
+          return false;
+        }
+        break;
+      }
+      case "lte": {
+        if (doc[w.field as keyof typeof doc] > (w.value as any)) {
+          return false;
+        }
+        break;
+      }
+      case "gt": {
+        if (doc[w.field as keyof typeof doc] <= (w.value as any)) {
+          return false;
+        }
+        break;
+      }
+      case "gte": {
+        if (doc[w.field as keyof typeof doc] < (w.value as any)) {
+          return false;
+        }
+        break;
+      }
+    }
+  }
+  return true;
+};
+
+// This is the core function for reading from the database, it parses and
+// validates where conditions, selects indexes, and allows the caller to
+// optionally paginate as needed.
+const paginate = async (
+  ctx: QueryCtx,
+  args: Infer<typeof adapterArgsValidator> & {
+    paginationOpts: PaginationOptions;
+  }
+): Promise<PaginationResult<Doc<any>>> => {
+  if (
+    args.where?.some(
+      (w) =>
+        w.field === "id" && w.operator && !["eq", "in"].includes(w.operator)
+    )
+  ) {
+    throw new Error(
+      `id can only be used with eq or in operator: ${JSON.stringify(args.where)}`
+    );
+  }
+  // If any where clause is "eq" (or missing operator) on a unique field,
+  // we can only return a single document, so we get it and use the other,
+  // any other where clauses as static filters.
+  const uniqueWhere = args.where?.find(
+    (w) =>
+      (!w.operator || w.operator === "eq") &&
+      (isUniqueField(args.model as TableNames, w.field) || w.field === "id")
+  );
+  if (uniqueWhere) {
+    const doc =
+      uniqueWhere.field === "id"
+        ? await ctx.db.get(uniqueWhere.value as Id<TableNames>)
+        : await ctx.db
+            .query(args.model as any)
+            .withIndex(uniqueWhere.field as any, (q) =>
+              q.eq(uniqueWhere.field, uniqueWhere.value)
+            )
+            .unique();
+
+    if (filterByWhere(doc, args.where, (w) => w === uniqueWhere)) {
+      return {
+        page: [selectFields(doc, args.select)].filter(Boolean),
+        isDone: true,
+        continueCursor: "",
+      };
+    }
+    return {
+      page: [],
+      isDone: true,
+      continueCursor: "",
+    };
+  }
+
+  // Large queries using "in" clause will crash, but these are only currently
+  // possible with the organization plugin listing all members with a high
+  // limit. For cases like this we need to create proper convex queries in
+  // the component as an alternative to using Better Auth api's.
+  const inWhere = args.where?.find((w) => w.operator === "in");
+  if (inWhere) {
+    if (!Array.isArray(inWhere.value)) {
+      throw new Error("in clause value must be an array");
+    }
+    // For ids, just use asyncMap + .get()
+    if (inWhere.field === "id") {
+      const docs = await asyncMap(inWhere.value as any[], async (value) => {
+        return ctx.db.get(value as Id<TableNames>);
+      });
+      const filteredDocs = docs
+        .flatMap((doc) => doc || [])
+        .filter((doc) => filterByWhere(doc, args.where, (w) => w === inWhere));
+
+      return {
+        page: filteredDocs.sort((a, b) => {
+          if (args.sortBy?.field === "createdAt") {
+            return args.sortBy.direction === "asc"
+              ? a._creationTime - b._creationTime
+              : b._creationTime - a._creationTime;
+          }
+          if (args.sortBy) {
+            const aValue = a[args.sortBy.field as keyof typeof a];
+            const bValue = b[args.sortBy.field as keyof typeof b];
+            if (aValue === bValue) {
+              return 0;
+            }
+            return args.sortBy.direction === "asc"
+              ? aValue > bValue
+                ? 1
+                : -1
+              : aValue > bValue
+                ? -1
+                : 1;
+          }
+          return 0;
+        }),
+        isDone: true,
+        continueCursor: "",
+      };
+    }
+    const streams = inWhere.value.map((value) => {
+      return generateQuery(ctx, {
+        ...args,
+        where: args.where?.map((w) => {
+          if (w === inWhere) {
+            return { ...w, operator: "eq", value };
+          }
+          return w;
+        }),
+      });
+    });
+    const result = await mergedStream(
+      streams,
+      [
+        args.sortBy?.field !== "createdAt" && args.sortBy?.field,
+        "_creationTime",
+      ].flatMap((f) => (f ? [f] : []))
+    ).paginate(args.paginationOpts);
+    return {
+      ...result,
+      page: result.page.map((doc) => selectFields(doc, args.select)),
+    };
+  }
+
+  const query = generateQuery(ctx, args);
+  const result = await query.paginate(args.paginationOpts);
   return {
     ...result,
     page: result.page.map((doc) => selectFields(doc, args.select)),
@@ -467,13 +593,15 @@ export const updateMany = mutation({
   handler: async (ctx, args) => {
     const { page, ...result } = await paginate(ctx, args.input);
     if (args.input.update) {
-      const uniqueFields = getUniqueFields(
-        args.input.model as TableNames,
-        args.input.update ?? {}
-      );
-      if (uniqueFields.length && page.length > 1) {
+      if (
+        hasUniqueFields(
+          args.input.model as TableNames,
+          args.input.update ?? {}
+        ) &&
+        page.length > 1
+      ) {
         throw new Error(
-          `Attempted to set unique fields in multiple documents in ${args.input.model} with the same value. Fields: ${uniqueFields.join(", ")}`
+          `Attempted to set unique fields in multiple documents in ${args.input.model} with the same value. Fields: ${Object.keys(args.input.update ?? {}).join(", ")}`
         );
       }
       await asyncMap(page, async (doc) => {
@@ -532,60 +660,5 @@ export const getCurrentSession = query({
       return null;
     }
     return ctx.db.get(identity.sessionId as Id<"session">);
-  },
-});
-
-// TODO: rewrite functions below here to be dynamic
-
-export const getIn = query({
-  args: adapterArgsValidator,
-  handler: async (ctx, args) => {
-    const where = args.where?.[0];
-    if (!where || where.operator !== "in" || args.where?.length !== 1) {
-      throw new Error("where must be a single in clause");
-    }
-    return (
-      await asyncMap(where.value as any[], async (value) => {
-        if (where.field === "id") {
-          return [await ctx.db.get(value as Id<TableNames>)];
-        }
-        const query = ctx.db
-          .query(args.model as any)
-          .withIndex(where.field as any, (q) => q.eq(where.field, value));
-        if (args.limit) {
-          return await query.take(args.limit);
-        }
-        return await query.collect();
-      })
-    )
-      .flat()
-      .filter(Boolean);
-  },
-});
-
-export const deleteIn = mutation({
-  args: {
-    input: v.union(
-      v.object({
-        table: v.literal("session"),
-        field: v.literal("token"),
-        values: v.array(v.string()),
-      })
-    ),
-  },
-  handler: async (ctx, args) => {
-    const { table, field, values } = args.input;
-    const docs = await asyncMap(values, async (value) => {
-      const doc = await ctx.db
-        .query(table)
-        .withIndex(field as any, (q) => q.eq(field, value))
-        .unique();
-      if (!doc) {
-        return;
-      }
-      await ctx.db.delete(doc._id);
-      return doc;
-    });
-    return docs.filter(Boolean).length;
   },
 });

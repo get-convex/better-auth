@@ -13,7 +13,7 @@ import {
 } from "convex/server";
 import { SetOptional } from "type-fest";
 
-const paginate = async (
+const handlePagination = async (
   next: ({
     paginationOpts,
   }: {
@@ -47,6 +47,7 @@ const paginate = async (
       state.isDone = (limit && state.docs.length >= limit) || result.isDone;
       return;
     }
+    // Update and delete only return a count
     if (result.count) {
       state.count += result.count;
       state.isDone = (limit && state.count >= limit) || result.isDone;
@@ -58,7 +59,11 @@ const paginate = async (
   do {
     const result = await next({
       paginationOpts: {
-        numItems: Math.min(numItems ?? 200, limit ?? 200, 200),
+        numItems: Math.min(
+          numItems ?? 200,
+          (limit ?? 200) - state.docs.length,
+          200
+        ),
         cursor: state.cursor,
       },
     });
@@ -111,24 +116,20 @@ export const convexAdapter = (
       mapKeysTransformOutput: {
         _id: "id",
       },
-      customTransformInput: ({ data, fieldAttributes, field }) => {
+      customTransformInput: ({ data, fieldAttributes }) => {
         if (data && fieldAttributes.type === "date") {
-          const result = data.getTime();
-          console.log("transformed input", field, result);
-          return result;
+          return data.getTime();
         }
         return data;
       },
-      customTransformOutput: ({ data, fieldAttributes, field }) => {
+      customTransformOutput: ({ data, fieldAttributes }) => {
         if (data && fieldAttributes.type === "date") {
-          const result = new Date(data);
-          console.log("transformed output", field, result);
-          return result;
+          return new Date(data);
         }
         return data;
       },
     },
-    adapter: ({ schema }) => {
+    adapter: () => {
       return {
         id: "convex",
         create: async ({ model, data, select }): Promise<any> => {
@@ -158,13 +159,7 @@ export const convexAdapter = (
           if (data.offset) {
             throw new Error("offset not supported");
           }
-          if (data.where?.length === 1 && data.where[0].operator === "in") {
-            return ctx.runQuery(component.component.lib.getIn, {
-              ...data,
-              where: parseWhere(data.where),
-            });
-          }
-          const result = await paginate(
+          const result = await handlePagination(
             async ({ paginationOpts }) => {
               return await ctx.runQuery(component.component.lib.findMany, {
                 ...data,
@@ -216,20 +211,7 @@ export const convexAdapter = (
           if (!("runMutation" in ctx)) {
             throw new Error("ctx is not a mutation ctx");
           }
-          if (
-            data.model === "session" &&
-            data.where?.length === 1 &&
-            data.where[0].operator === "in"
-          ) {
-            return ctx.runMutation(component.component.lib.deleteIn, {
-              input: {
-                table: data.model,
-                field: data.where[0].field as any,
-                values: data.where[0].value as string[],
-              },
-            });
-          }
-          const result = await paginate(async ({ paginationOpts }) => {
+          const result = await handlePagination(async ({ paginationOpts }) => {
             return await ctx.runMutation(component.component.lib.deleteMany, {
               ...data,
               where: parseWhere(data.where),
@@ -242,7 +224,7 @@ export const convexAdapter = (
           if (!("runMutation" in ctx)) {
             throw new Error("ctx is not an action ctx");
           }
-          const result = await paginate(async ({ paginationOpts }) => {
+          const result = await handlePagination(async ({ paginationOpts }) => {
             return await ctx.runMutation(component.component.lib.updateMany, {
               input: {
                 ...data,

@@ -695,12 +695,6 @@ export declare const components: {
         },
         any
       >;
-      deleteIn: FunctionReference<
-        "mutation",
-        "internal",
-        { input: { field: "token"; table: "session"; values: Array<string> } },
-        any
-      >;
       deleteMany: FunctionReference<
         "mutation",
         "internal",
@@ -854,40 +848,6 @@ export declare const components: {
         any
       >;
       getCurrentSession: FunctionReference<"query", "internal", {}, any>;
-      getIn: FunctionReference<
-        "query",
-        "internal",
-        {
-          limit?: number;
-          model: string;
-          select?: Array<string>;
-          sortBy?: { direction: "asc" | "desc"; field: string };
-          unique?: boolean;
-          where?: Array<{
-            connector?: "AND" | "OR";
-            field: string;
-            operator?:
-              | "lt"
-              | "lte"
-              | "gt"
-              | "gte"
-              | "eq"
-              | "in"
-              | "ne"
-              | "contains"
-              | "starts_with"
-              | "ends_with";
-            value:
-              | string
-              | number
-              | boolean
-              | Array<string>
-              | Array<number>
-              | null;
-          }>;
-        },
-        any
-      >;
       updateMany: FunctionReference<
         "mutation",
         "internal",

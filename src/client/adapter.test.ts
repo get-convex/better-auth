@@ -21,35 +21,28 @@ export const getAdapter =
         return result;
       },
       findOne: async (data) => {
-        const result = await t.query(api.adapterTest.findOne, data);
-        console.log("findOne result adapter", result);
-        return result;
+        return t.query(api.adapterTest.findOne, data);
       },
       findMany: async (data) => {
-        const result = await t.query(api.adapterTest.findMany, data);
-        console.log("findMany result adapter", result);
-        return result;
+        return t.query(api.adapterTest.findMany, data);
       },
       count: async () => {
         throw new Error("count not implemented");
       },
       update: async (data) => {
-        const result = await t.mutation(api.adapterTest.update, {
+        return t.mutation(api.adapterTest.update, {
           ...data,
           update: serialize(data.update),
         });
-        return result;
       },
       updateMany: async (data) => {
-        const result = await t.mutation(api.adapterTest.updateMany, data);
-        return result;
+        return t.mutation(api.adapterTest.updateMany, data);
       },
       delete: async (data) => {
         await t.mutation(api.adapterTest.delete, data);
       },
       deleteMany: async (data) => {
-        const result = await t.mutation(api.adapterTest.deleteMany, data);
-        return result;
+        return t.mutation(api.adapterTest.deleteMany, data);
       },
     } satisfies Adapter;
   };
@@ -283,5 +276,40 @@ describe("convex adapter", async () => {
         ],
       })
     ).toEqual(user);
+  });
+  test("should automatically paginate", async () => {
+    const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
+    const adapter = await getAdapter(t)();
+    for (let i = 0; i < 300; i++) {
+      await adapter.create({
+        model: "user",
+        data: {
+          name: `foo${i}`,
+          email: `foo${i}@bar.com`,
+        },
+      });
+    }
+    // Better Auth defaults to a limit of 100
+    expect(
+      await adapter.findMany({
+        model: "user",
+      })
+    ).toHaveLength(100);
+
+    // Pagination has a hardcoded numItems max of 200, this tests that it can handle
+    // specified limits beyond that
+    expect(
+      await adapter.findMany({
+        model: "user",
+        limit: 250,
+      })
+    ).toHaveLength(250);
+
+    expect(
+      await adapter.findMany({
+        model: "user",
+        limit: 350,
+      })
+    ).toHaveLength(300);
   });
 });

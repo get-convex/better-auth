@@ -671,12 +671,6 @@ export type Mounts = {
       },
       any
     >;
-    deleteIn: FunctionReference<
-      "mutation",
-      "public",
-      { input: { field: "token"; table: "session"; values: Array<string> } },
-      any
-    >;
     deleteMany: FunctionReference<
       "mutation",
       "public",
@@ -830,40 +824,6 @@ export type Mounts = {
       any
     >;
     getCurrentSession: FunctionReference<"query", "public", {}, any>;
-    getIn: FunctionReference<
-      "query",
-      "public",
-      {
-        limit?: number;
-        model: string;
-        select?: Array<string>;
-        sortBy?: { direction: "asc" | "desc"; field: string };
-        unique?: boolean;
-        where?: Array<{
-          connector?: "AND" | "OR";
-          field: string;
-          operator?:
-            | "lt"
-            | "lte"
-            | "gt"
-            | "gte"
-            | "eq"
-            | "in"
-            | "ne"
-            | "contains"
-            | "starts_with"
-            | "ends_with";
-          value:
-            | string
-            | number
-            | boolean
-            | Array<string>
-            | Array<number>
-            | null;
-        }>;
-      },
-      any
-    >;
     updateMany: FunctionReference<
       "mutation",
       "public",
