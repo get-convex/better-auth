@@ -892,57 +892,846 @@ export declare const components: {
         "mutation",
         "internal",
         {
-          limit?: number;
-          model: string;
-          paginationOpts: {
-            cursor: string | null;
-            endCursor?: string | null;
-            id?: number;
-            maximumBytesRead?: number;
-            maximumRowsRead?: number;
-            numItems: number;
-          };
-          select?: Array<string>;
-          sortBy?: { direction: "asc" | "desc"; field: string };
-          unique?: boolean;
-          update?: {
-            createdAt?: number;
-            displayUsername?: string;
-            email?: string;
-            emailVerified?: boolean;
-            image?: string;
-            isAnonymous?: boolean;
-            name?: string;
-            phoneNumber?: string;
-            phoneNumberVerified?: boolean;
-            stripeCustomerId?: string;
-            twoFactorEnabled?: boolean;
-            updatedAt?: number;
-            userId?: string;
-            username?: string;
-          };
-          where?: Array<{
-            connector?: "AND" | "OR";
-            field: string;
-            operator?:
-              | "lt"
-              | "lte"
-              | "gt"
-              | "gte"
-              | "eq"
-              | "in"
-              | "ne"
-              | "contains"
-              | "starts_with"
-              | "ends_with";
-            value:
-              | string
-              | number
-              | boolean
-              | Array<string>
-              | Array<number>
-              | null;
-          }>;
+          input:
+            | {
+                limit?: number;
+                model: "user";
+                paginationOpts: {
+                  cursor: string | null;
+                  endCursor?: string | null;
+                  id?: number;
+                  maximumBytesRead?: number;
+                  maximumRowsRead?: number;
+                  numItems: number;
+                };
+                select?: Array<string>;
+                sortBy?: { direction: "asc" | "desc"; field: string };
+                unique?: boolean;
+                update: {
+                  createdAt?: number;
+                  displayUsername?: string;
+                  email?: string;
+                  emailVerified?: boolean;
+                  image?: string;
+                  isAnonymous?: boolean;
+                  name?: string;
+                  phoneNumber?: string;
+                  phoneNumberVerified?: boolean;
+                  stripeCustomerId?: string;
+                  twoFactorEnabled?: boolean;
+                  updatedAt?: number;
+                  userId?: string;
+                  username?: string;
+                };
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field: string;
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                limit?: number;
+                model: "session";
+                paginationOpts: {
+                  cursor: string | null;
+                  endCursor?: string | null;
+                  id?: number;
+                  maximumBytesRead?: number;
+                  maximumRowsRead?: number;
+                  numItems: number;
+                };
+                select?: Array<string>;
+                sortBy?: { direction: "asc" | "desc"; field: string };
+                unique?: boolean;
+                update: {
+                  activeOrganizationId?: string;
+                  createdAt?: number;
+                  expiresAt?: number;
+                  ipAddress?: string;
+                  token?: string;
+                  updatedAt?: number;
+                  userAgent?: string;
+                  userId?: string;
+                };
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field: string;
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                limit?: number;
+                model: "account";
+                paginationOpts: {
+                  cursor: string | null;
+                  endCursor?: string | null;
+                  id?: number;
+                  maximumBytesRead?: number;
+                  maximumRowsRead?: number;
+                  numItems: number;
+                };
+                select?: Array<string>;
+                sortBy?: { direction: "asc" | "desc"; field: string };
+                unique?: boolean;
+                update: {
+                  accessToken?: string;
+                  accessTokenExpiresAt?: number;
+                  accountId?: string;
+                  createdAt?: number;
+                  idToken?: string;
+                  password?: string;
+                  providerId?: string;
+                  refreshToken?: string;
+                  refreshTokenExpiresAt?: number;
+                  scope?: string;
+                  updatedAt?: number;
+                  userId?: string;
+                };
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field: string;
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                limit?: number;
+                model: "verification";
+                paginationOpts: {
+                  cursor: string | null;
+                  endCursor?: string | null;
+                  id?: number;
+                  maximumBytesRead?: number;
+                  maximumRowsRead?: number;
+                  numItems: number;
+                };
+                select?: Array<string>;
+                sortBy?: { direction: "asc" | "desc"; field: string };
+                unique?: boolean;
+                update: {
+                  createdAt?: number;
+                  expiresAt?: number;
+                  identifier?: string;
+                  updatedAt?: number;
+                  value?: string;
+                };
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field: string;
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                limit?: number;
+                model: "twoFactor";
+                paginationOpts: {
+                  cursor: string | null;
+                  endCursor?: string | null;
+                  id?: number;
+                  maximumBytesRead?: number;
+                  maximumRowsRead?: number;
+                  numItems: number;
+                };
+                select?: Array<string>;
+                sortBy?: { direction: "asc" | "desc"; field: string };
+                unique?: boolean;
+                update: {
+                  backupCodes?: string;
+                  secret?: string;
+                  userId?: string;
+                };
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field: string;
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                limit?: number;
+                model: "passkey";
+                paginationOpts: {
+                  cursor: string | null;
+                  endCursor?: string | null;
+                  id?: number;
+                  maximumBytesRead?: number;
+                  maximumRowsRead?: number;
+                  numItems: number;
+                };
+                select?: Array<string>;
+                sortBy?: { direction: "asc" | "desc"; field: string };
+                unique?: boolean;
+                update: {
+                  aaguid?: string;
+                  backedUp?: boolean;
+                  counter?: number;
+                  createdAt?: number;
+                  credentialID?: string;
+                  deviceType?: string;
+                  name?: string;
+                  publicKey?: string;
+                  transports?: string;
+                  userId?: string;
+                };
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field: string;
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                limit?: number;
+                model: "apikey";
+                paginationOpts: {
+                  cursor: string | null;
+                  endCursor?: string | null;
+                  id?: number;
+                  maximumBytesRead?: number;
+                  maximumRowsRead?: number;
+                  numItems: number;
+                };
+                select?: Array<string>;
+                sortBy?: { direction: "asc" | "desc"; field: string };
+                unique?: boolean;
+                update: {
+                  createdAt?: number;
+                  enabled?: boolean;
+                  expiresAt?: number;
+                  key?: string;
+                  lastRefillAt?: number;
+                  lastRequest?: number;
+                  metadata?: string;
+                  name?: string;
+                  permissions?: string;
+                  prefix?: string;
+                  rateLimitEnabled?: boolean;
+                  rateLimitMax?: number;
+                  rateLimitTimeWindow?: number;
+                  refillAmount?: number;
+                  refillInterval?: number;
+                  remaining?: number;
+                  requestCount?: number;
+                  start?: string;
+                  updatedAt?: number;
+                  userId?: string;
+                };
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field: string;
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                limit?: number;
+                model: "oauthApplication";
+                paginationOpts: {
+                  cursor: string | null;
+                  endCursor?: string | null;
+                  id?: number;
+                  maximumBytesRead?: number;
+                  maximumRowsRead?: number;
+                  numItems: number;
+                };
+                select?: Array<string>;
+                sortBy?: { direction: "asc" | "desc"; field: string };
+                unique?: boolean;
+                update: {
+                  clientId?: string;
+                  clientSecret?: string;
+                  createdAt?: number;
+                  disabled?: boolean;
+                  icon?: string;
+                  metadata?: string;
+                  name?: string;
+                  redirectURLs?: string;
+                  type?: string;
+                  updatedAt?: number;
+                  userId?: string;
+                };
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field: string;
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                limit?: number;
+                model: "oauthAccessToken";
+                paginationOpts: {
+                  cursor: string | null;
+                  endCursor?: string | null;
+                  id?: number;
+                  maximumBytesRead?: number;
+                  maximumRowsRead?: number;
+                  numItems: number;
+                };
+                select?: Array<string>;
+                sortBy?: { direction: "asc" | "desc"; field: string };
+                unique?: boolean;
+                update: {
+                  accessToken?: string;
+                  accessTokenExpiresAt?: number;
+                  clientId?: string;
+                  createdAt?: number;
+                  refreshToken?: string;
+                  refreshTokenExpiresAt?: number;
+                  scopes?: string;
+                  updatedAt?: number;
+                  userId?: string;
+                };
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field: string;
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                limit?: number;
+                model: "oauthConsent";
+                paginationOpts: {
+                  cursor: string | null;
+                  endCursor?: string | null;
+                  id?: number;
+                  maximumBytesRead?: number;
+                  maximumRowsRead?: number;
+                  numItems: number;
+                };
+                select?: Array<string>;
+                sortBy?: { direction: "asc" | "desc"; field: string };
+                unique?: boolean;
+                update: {
+                  clientId?: string;
+                  consentGiven?: boolean;
+                  createdAt?: number;
+                  scopes?: string;
+                  updatedAt?: number;
+                  userId?: string;
+                };
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field: string;
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                limit?: number;
+                model: "organization";
+                paginationOpts: {
+                  cursor: string | null;
+                  endCursor?: string | null;
+                  id?: number;
+                  maximumBytesRead?: number;
+                  maximumRowsRead?: number;
+                  numItems: number;
+                };
+                select?: Array<string>;
+                sortBy?: { direction: "asc" | "desc"; field: string };
+                unique?: boolean;
+                update: {
+                  createdAt?: number;
+                  logo?: string;
+                  metadata?: string;
+                  name?: string;
+                  slug?: string;
+                };
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field: string;
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                limit?: number;
+                model: "member";
+                paginationOpts: {
+                  cursor: string | null;
+                  endCursor?: string | null;
+                  id?: number;
+                  maximumBytesRead?: number;
+                  maximumRowsRead?: number;
+                  numItems: number;
+                };
+                select?: Array<string>;
+                sortBy?: { direction: "asc" | "desc"; field: string };
+                unique?: boolean;
+                update: {
+                  createdAt?: number;
+                  organizationId?: string;
+                  role?: string;
+                  teamId?: string;
+                  userId?: string;
+                };
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field: string;
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                limit?: number;
+                model: "invitation";
+                paginationOpts: {
+                  cursor: string | null;
+                  endCursor?: string | null;
+                  id?: number;
+                  maximumBytesRead?: number;
+                  maximumRowsRead?: number;
+                  numItems: number;
+                };
+                select?: Array<string>;
+                sortBy?: { direction: "asc" | "desc"; field: string };
+                unique?: boolean;
+                update: {
+                  email?: string;
+                  expiresAt?: number;
+                  inviterId?: string;
+                  organizationId?: string;
+                  role?: string;
+                  status?: string;
+                  teamId?: string;
+                };
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field: string;
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                limit?: number;
+                model: "team";
+                paginationOpts: {
+                  cursor: string | null;
+                  endCursor?: string | null;
+                  id?: number;
+                  maximumBytesRead?: number;
+                  maximumRowsRead?: number;
+                  numItems: number;
+                };
+                select?: Array<string>;
+                sortBy?: { direction: "asc" | "desc"; field: string };
+                unique?: boolean;
+                update: {
+                  createdAt?: number;
+                  name?: string;
+                  organizationId?: string;
+                  updatedAt?: number;
+                };
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field: string;
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                limit?: number;
+                model: "ssoProvider";
+                paginationOpts: {
+                  cursor: string | null;
+                  endCursor?: string | null;
+                  id?: number;
+                  maximumBytesRead?: number;
+                  maximumRowsRead?: number;
+                  numItems: number;
+                };
+                select?: Array<string>;
+                sortBy?: { direction: "asc" | "desc"; field: string };
+                unique?: boolean;
+                update: {
+                  domain?: string;
+                  issuer?: string;
+                  oidcConfig?: string;
+                  organizationId?: string;
+                  providerId?: string;
+                  samlConfig?: string;
+                  userId?: string;
+                };
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field: string;
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                limit?: number;
+                model: "jwks";
+                paginationOpts: {
+                  cursor: string | null;
+                  endCursor?: string | null;
+                  id?: number;
+                  maximumBytesRead?: number;
+                  maximumRowsRead?: number;
+                  numItems: number;
+                };
+                select?: Array<string>;
+                sortBy?: { direction: "asc" | "desc"; field: string };
+                unique?: boolean;
+                update: {
+                  createdAt?: number;
+                  privateKey?: string;
+                  publicKey?: string;
+                };
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field: string;
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                limit?: number;
+                model: "subscription";
+                paginationOpts: {
+                  cursor: string | null;
+                  endCursor?: string | null;
+                  id?: number;
+                  maximumBytesRead?: number;
+                  maximumRowsRead?: number;
+                  numItems: number;
+                };
+                select?: Array<string>;
+                sortBy?: { direction: "asc" | "desc"; field: string };
+                unique?: boolean;
+                update: {
+                  cancelAtPeriodEnd?: boolean;
+                  periodEnd?: number;
+                  periodStart?: number;
+                  plan?: string;
+                  referenceId?: string;
+                  seats?: number;
+                  status?: string;
+                  stripeCustomerId?: string;
+                  stripeSubscriptionId?: string;
+                };
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field: string;
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                limit?: number;
+                model: "rateLimit";
+                paginationOpts: {
+                  cursor: string | null;
+                  endCursor?: string | null;
+                  id?: number;
+                  maximumBytesRead?: number;
+                  maximumRowsRead?: number;
+                  numItems: number;
+                };
+                select?: Array<string>;
+                sortBy?: { direction: "asc" | "desc"; field: string };
+                unique?: boolean;
+                update: { count?: number; key?: string; lastRequest?: number };
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field: string;
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              };
         },
         any
       >;

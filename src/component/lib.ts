@@ -425,14 +425,7 @@ export const updateOne = mutation({
         v.object({
           model: v.literal(model),
           where: v.optional(v.array(adapterWhereValidator)),
-          update: v.object(
-            Object.fromEntries(
-              Object.entries(table.validator.fields).map(([key, value]) => [
-                key,
-                value.isOptional === "required" ? v.optional(value) : value,
-              ])
-            )
-          ),
+          update: v.object(partial(table.validator.fields)),
         })
       )
     ),
@@ -459,30 +452,38 @@ export const updateOne = mutation({
 
 export const updateMany = mutation({
   args: {
-    ...adapterArgsValidator.fields,
-    update: v.optional(v.object(partial(schema.tables.user.validator.fields))),
-    paginationOpts: paginationOptsValidator,
+    input: v.union(
+      ...Object.entries(schema.tables).map(([model, table]) =>
+        v.object({
+          ...adapterArgsValidator.fields,
+          model: v.literal(model),
+          where: v.optional(v.array(adapterWhereValidator)),
+          update: v.object(partial(table.validator.fields)),
+          paginationOpts: paginationOptsValidator,
+        })
+      )
+    ),
   },
   handler: async (ctx, args) => {
-    const { page, ...result } = await paginate(ctx, args);
-    if (args.update) {
+    const { page, ...result } = await paginate(ctx, args.input);
+    if (args.input.update) {
       const uniqueFields = getUniqueFields(
-        args.model as TableNames,
-        args.update ?? {}
+        args.input.model as TableNames,
+        args.input.update ?? {}
       );
       if (uniqueFields.length && page.length > 1) {
         throw new Error(
-          `Attempted to set unique fields in multiple documents in ${args.model} with the same value. Fields: ${uniqueFields.join(", ")}`
+          `Attempted to set unique fields in multiple documents in ${args.input.model} with the same value. Fields: ${uniqueFields.join(", ")}`
         );
       }
       await asyncMap(page, async (doc) => {
         await checkUniqueFields(
           ctx,
-          args.model as TableNames,
-          args.update ?? {},
+          args.input.model as TableNames,
+          args.input.update ?? {},
           doc
         );
-        await ctx.db.patch(doc._id, args.update as any);
+        await ctx.db.patch(doc._id, args.input.update as any);
       });
     }
     return {
