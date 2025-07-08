@@ -61,7 +61,7 @@ export const SignIn = () => {
     try {
       await authClient.forgetPassword({
         email,
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
+        redirectTo: `${import.meta.env.VITE_SITE_URL}/reset-password`,
       })
       alert('Check your email for the reset password link!')
     } catch {

@@ -474,54 +474,320 @@ export type Mounts = {
       "mutation",
       "public",
       {
-        limit?: number;
-        model: string;
-        paginationOpts: {
-          cursor: string | null;
-          endCursor?: string | null;
-          id?: number;
-          maximumBytesRead?: number;
-          maximumRowsRead?: number;
-          numItems: number;
-        };
-        select?: Array<string>;
-        sortBy?: { direction: "asc" | "desc"; field: string };
-        unique?: boolean;
-        update?: {
-          createdAt?: number;
-          displayUsername?: string;
-          email?: string;
-          emailVerified?: boolean;
-          image?: string;
-          isAnonymous?: boolean;
-          name?: string;
-          twoFactorEnabled?: boolean;
-          updatedAt?: number;
-          userId?: string;
-          username?: string;
-        };
-        where?: Array<{
-          connector?: "AND" | "OR";
-          field: string;
-          operator?:
-            | "lt"
-            | "lte"
-            | "gt"
-            | "gte"
-            | "eq"
-            | "in"
-            | "ne"
-            | "contains"
-            | "starts_with"
-            | "ends_with";
-          value:
-            | string
-            | number
-            | boolean
-            | Array<string>
-            | Array<number>
-            | null;
-        }>;
+        input:
+          | {
+              limit?: number;
+              model: "user";
+              paginationOpts: {
+                cursor: string | null;
+                endCursor?: string | null;
+                id?: number;
+                maximumBytesRead?: number;
+                maximumRowsRead?: number;
+                numItems: number;
+              };
+              select?: Array<string>;
+              sortBy?: { direction: "asc" | "desc"; field: string };
+              unique?: boolean;
+              update: {
+                createdAt?: number;
+                displayUsername?: string;
+                email?: string;
+                emailVerified?: boolean;
+                image?: string;
+                isAnonymous?: boolean;
+                name?: string;
+                twoFactorEnabled?: boolean;
+                updatedAt?: number;
+                userId?: string;
+                username?: string;
+              };
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
+            }
+          | {
+              limit?: number;
+              model: "session";
+              paginationOpts: {
+                cursor: string | null;
+                endCursor?: string | null;
+                id?: number;
+                maximumBytesRead?: number;
+                maximumRowsRead?: number;
+                numItems: number;
+              };
+              select?: Array<string>;
+              sortBy?: { direction: "asc" | "desc"; field: string };
+              unique?: boolean;
+              update: {
+                createdAt?: number;
+                expiresAt?: number;
+                ipAddress?: string;
+                token?: string;
+                updatedAt?: number;
+                userAgent?: string;
+                userId?: string;
+              };
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
+            }
+          | {
+              limit?: number;
+              model: "account";
+              paginationOpts: {
+                cursor: string | null;
+                endCursor?: string | null;
+                id?: number;
+                maximumBytesRead?: number;
+                maximumRowsRead?: number;
+                numItems: number;
+              };
+              select?: Array<string>;
+              sortBy?: { direction: "asc" | "desc"; field: string };
+              unique?: boolean;
+              update: {
+                accessToken?: string;
+                accessTokenExpiresAt?: number;
+                accountId?: string;
+                createdAt?: number;
+                idToken?: string;
+                password?: string;
+                providerId?: string;
+                refreshToken?: string;
+                refreshTokenExpiresAt?: number;
+                scope?: string;
+                updatedAt?: number;
+                userId?: string;
+              };
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
+            }
+          | {
+              limit?: number;
+              model: "verification";
+              paginationOpts: {
+                cursor: string | null;
+                endCursor?: string | null;
+                id?: number;
+                maximumBytesRead?: number;
+                maximumRowsRead?: number;
+                numItems: number;
+              };
+              select?: Array<string>;
+              sortBy?: { direction: "asc" | "desc"; field: string };
+              unique?: boolean;
+              update: {
+                createdAt?: number;
+                expiresAt?: number;
+                identifier?: string;
+                updatedAt?: number;
+                value?: string;
+              };
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
+            }
+          | {
+              limit?: number;
+              model: "twoFactor";
+              paginationOpts: {
+                cursor: string | null;
+                endCursor?: string | null;
+                id?: number;
+                maximumBytesRead?: number;
+                maximumRowsRead?: number;
+                numItems: number;
+              };
+              select?: Array<string>;
+              sortBy?: { direction: "asc" | "desc"; field: string };
+              unique?: boolean;
+              update: {
+                backupCodes?: string;
+                secret?: string;
+                userId?: string;
+              };
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
+            }
+          | {
+              limit?: number;
+              model: "jwks";
+              paginationOpts: {
+                cursor: string | null;
+                endCursor?: string | null;
+                id?: number;
+                maximumBytesRead?: number;
+                maximumRowsRead?: number;
+                numItems: number;
+              };
+              select?: Array<string>;
+              sortBy?: { direction: "asc" | "desc"; field: string };
+              unique?: boolean;
+              update: {
+                createdAt?: number;
+                privateKey?: string;
+                publicKey?: string;
+              };
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
+            }
+          | {
+              limit?: number;
+              model: "rateLimit";
+              paginationOpts: {
+                cursor: string | null;
+                endCursor?: string | null;
+                id?: number;
+                maximumBytesRead?: number;
+                maximumRowsRead?: number;
+                numItems: number;
+              };
+              select?: Array<string>;
+              sortBy?: { direction: "asc" | "desc"; field: string };
+              unique?: boolean;
+              update: { count?: number; key?: string; lastRequest?: number };
+              where?: Array<{
+                connector?: "AND" | "OR";
+                field: string;
+                operator?:
+                  | "lt"
+                  | "lte"
+                  | "gt"
+                  | "gte"
+                  | "eq"
+                  | "in"
+                  | "ne"
+                  | "contains"
+                  | "starts_with"
+                  | "ends_with";
+                value:
+                  | string
+                  | number
+                  | boolean
+                  | Array<string>
+                  | Array<number>
+                  | null;
+              }>;
+            };
       },
       any
     >;

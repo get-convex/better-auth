@@ -244,9 +244,11 @@ export const convexAdapter = (
           }
           const result = await paginate(async ({ paginationOpts }) => {
             return await ctx.runMutation(component.component.lib.updateMany, {
-              ...data,
-              where: parseWhere(data.where),
-              paginationOpts,
+              input: {
+                ...data,
+                where: parseWhere(data.where),
+                paginationOpts,
+              },
             });
           });
           return result.count;
