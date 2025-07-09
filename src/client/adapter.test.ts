@@ -71,11 +71,9 @@ describe("convex adapter", async () => {
       SHOULD_DELETE_MANY: false,
       SHOULD_NOT_THROW_ON_DELETE_RECORD_NOT_FOUND: false,
       SHOULD_NOT_THROW_ON_RECORD_NOT_FOUND: false,
-
-      // Disabled for now
-      SHOULD_FIND_MANY_WITH_CONTAINS_OPERATOR: true,
-      SHOULD_SEARCH_USERS_WITH_STARTS_WITH: true,
-      SHOULD_SEARCH_USERS_WITH_ENDS_WITH: true,
+      SHOULD_FIND_MANY_WITH_CONTAINS_OPERATOR: false,
+      SHOULD_SEARCH_USERS_WITH_STARTS_WITH: false,
+      SHOULD_SEARCH_USERS_WITH_ENDS_WITH: false,
       SHOULD_PREFER_GENERATE_ID_IF_PROVIDED: true,
     },
   });
@@ -304,7 +302,6 @@ describe("convex adapter", async () => {
         limit: 250,
       })
     ).toHaveLength(250);
-
     expect(
       await adapter.findMany({
         model: "user",

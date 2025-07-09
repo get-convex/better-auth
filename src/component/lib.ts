@@ -297,58 +297,73 @@ const generateQuery = (
   return orderedQuery;
 };
 
+// Manually filter an individual document by where clauses. This is used to
+// simplify queries that can only return 0 or 1 documents, or "in" clauses that
+// query multiple single documents in parallel.
 const filterByWhere = (
   doc: Doc<any>,
   where?: Infer<typeof adapterWhereValidator>[],
-  skip?: (w: Infer<typeof adapterWhereValidator>) => boolean
+  filterWhere?: (w: Infer<typeof adapterWhereValidator>) => any
 ) => {
   if (!doc) {
     return false;
   }
   for (const w of where ?? []) {
-    if (skip?.(w)) {
+    if (!filterWhere?.(w)) {
       continue;
     }
+    const value = doc[w.field as keyof typeof doc] as Infer<
+      typeof adapterWhereValidator
+    >["value"];
+    const isLessThan = (val: typeof value, wVal: typeof w.value) => {
+      if (!wVal) {
+        return false;
+      }
+      if (!val) {
+        return true;
+      }
+      return val < wVal;
+    };
+    const isGreaterThan = (val: typeof value, wVal: typeof w.value) => {
+      if (!val) {
+        return false;
+      }
+      if (!wVal) {
+        return true;
+      }
+      return val > wVal;
+    };
     switch (w.operator) {
       case undefined:
       case "eq": {
-        if (w.value !== doc[w.field as keyof typeof doc]) {
-          return false;
-        }
-        break;
+        return value === w.value;
       }
       case "in": {
-        if (!Array.isArray(w.value)) {
-          return false;
-        }
-        if (!(w.value as any[]).includes(doc[w.field as keyof typeof doc])) {
-          return false;
-        }
-        break;
+        return Array.isArray(w.value) && (w.value as any[]).includes(value);
       }
       case "lt": {
-        if (doc[w.field as keyof typeof doc] >= (w.value as any)) {
-          return false;
-        }
-        break;
+        return isLessThan(value, w.value);
       }
       case "lte": {
-        if (doc[w.field as keyof typeof doc] > (w.value as any)) {
-          return false;
-        }
-        break;
+        return value === w.value || isLessThan(value, w.value);
       }
       case "gt": {
-        if (doc[w.field as keyof typeof doc] <= (w.value as any)) {
-          return false;
-        }
-        break;
+        return isGreaterThan(value, w.value);
       }
       case "gte": {
-        if (doc[w.field as keyof typeof doc] < (w.value as any)) {
-          return false;
-        }
-        break;
+        return value === w.value || isGreaterThan(value, w.value);
+      }
+      case "ne": {
+        return value !== w.value;
+      }
+      case "contains": {
+        return typeof value === "string" && value.includes(w.value as string);
+      }
+      case "starts_with": {
+        return typeof value === "string" && value.startsWith(w.value as string);
+      }
+      case "ends_with": {
+        return typeof value === "string" && value.endsWith(w.value as string);
       }
     }
   }
@@ -357,7 +372,7 @@ const filterByWhere = (
 
 // This is the core function for reading from the database, it parses and
 // validates where conditions, selects indexes, and allows the caller to
-// optionally paginate as needed.
+// optionally paginate as needed. Every response is a pagination result.
 const paginate = async (
   ctx: QueryCtx,
   args: Infer<typeof adapterArgsValidator> & {
@@ -375,8 +390,8 @@ const paginate = async (
     );
   }
   // If any where clause is "eq" (or missing operator) on a unique field,
-  // we can only return a single document, so we get it and use the other,
-  // any other where clauses as static filters.
+  // we can only return a single document, so we get it and use any other
+  // where clauses as static filters.
   const uniqueWhere = args.where?.find(
     (w) =>
       (!w.operator || w.operator === "eq") &&
@@ -393,7 +408,7 @@ const paginate = async (
             )
             .unique();
 
-    if (filterByWhere(doc, args.where, (w) => w === uniqueWhere)) {
+    if (filterByWhere(doc, args.where, (w) => w !== uniqueWhere)) {
       return {
         page: [selectFields(doc, args.select)].filter(Boolean),
         isDone: true,
@@ -406,6 +421,13 @@ const paginate = async (
       continueCursor: "",
     };
   }
+
+  const paginationOpts = {
+    ...args.paginationOpts,
+    // If maximumRowsRead is not at least 1 higher than numItems, bad cursors
+    // and incorrect paging will result (at least with convex-test).
+    maximumRowsRead: Math.max((args.paginationOpts.numItems ?? 0) + 1, 200),
+  };
 
   // Large queries using "in" clause will crash, but these are only currently
   // possible with the organization plugin listing all members with a high
@@ -423,7 +445,7 @@ const paginate = async (
       });
       const filteredDocs = docs
         .flatMap((doc) => doc || [])
-        .filter((doc) => filterByWhere(doc, args.where, (w) => w === inWhere));
+        .filter((doc) => filterByWhere(doc, args.where, (w) => w !== inWhere));
 
       return {
         page: filteredDocs.sort((a, b) => {
@@ -469,7 +491,17 @@ const paginate = async (
         args.sortBy?.field !== "createdAt" && args.sortBy?.field,
         "_creationTime",
       ].flatMap((f) => (f ? [f] : []))
-    ).paginate(args.paginationOpts);
+    )
+      .filterWith(async (doc) =>
+        filterByWhere(
+          doc,
+          args.where,
+          (w) =>
+            w.operator &&
+            ["contains", "starts_with", "ends_with", "ne"].includes(w.operator)
+        )
+      )
+      .paginate(paginationOpts);
     return {
       ...result,
       page: result.page.map((doc) => selectFields(doc, args.select)),
@@ -477,7 +509,17 @@ const paginate = async (
   }
 
   const query = generateQuery(ctx, args);
-  const result = await query.paginate(args.paginationOpts);
+  const result = await query
+    .filterWith(async (doc) =>
+      filterByWhere(
+        doc,
+        args.where,
+        (w) =>
+          w.operator &&
+          ["contains", "starts_with", "ends_with", "ne"].includes(w.operator)
+      )
+    )
+    .paginate(paginationOpts);
   return {
     ...result,
     page: result.page.map((doc) => selectFields(doc, args.select)),
