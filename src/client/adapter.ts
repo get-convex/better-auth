@@ -150,6 +150,20 @@ export const convexAdapter = (
           });
         },
         findOne: async (data): Promise<any> => {
+          if (data.where?.every((w) => w.connector === "OR")) {
+            for (const w of data.where) {
+              const result = await ctx.runQuery(
+                component.component.lib.findOne,
+                {
+                  ...data,
+                  where: parseWhere([w]),
+                }
+              );
+              if (result) {
+                return result;
+              }
+            }
+          }
           return await ctx.runQuery(component.component.lib.findOne, {
             ...data,
             where: parseWhere(data.where),
@@ -158,6 +172,9 @@ export const convexAdapter = (
         findMany: async (data): Promise<any[]> => {
           if (data.offset) {
             throw new Error("offset not supported");
+          }
+          if (data.where?.some((w) => w.connector === "OR")) {
+            throw new Error("OR connector not supported in findMany");
           }
           const result = await handlePagination(
             async ({ paginationOpts }) => {

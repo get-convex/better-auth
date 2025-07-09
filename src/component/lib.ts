@@ -379,6 +379,11 @@ const paginate = async (
     paginationOpts: PaginationOptions;
   }
 ): Promise<PaginationResult<Doc<any>>> => {
+  if (args.where?.some((w) => w.connector === "OR") && args.where?.length > 1) {
+    throw new Error(
+      `OR connector not supported with multiple where statements in paginate, split up the where statements before calling paginate: ${JSON.stringify(args.where)}`
+    );
+  }
   if (
     args.where?.some(
       (w) =>

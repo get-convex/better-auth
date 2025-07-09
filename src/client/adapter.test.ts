@@ -309,4 +309,24 @@ describe("convex adapter", async () => {
       })
     ).toHaveLength(300);
   });
+  test("should handle OR where clauses", async () => {
+    const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
+    const adapter = await getAdapter(t)();
+    const user = await adapter.create({
+      model: "user",
+      data: {
+        name: "foo",
+        email: "foo@bar.com",
+      },
+    });
+    expect(
+      await adapter.findOne({
+        model: "user",
+        where: [
+          { field: "name", value: "bar", connector: "OR" },
+          { field: "name", value: "foo", connector: "OR" },
+        ],
+      })
+    ).toEqual(user);
+  });
 });
