@@ -1502,7 +1502,7 @@ export default function Home() {
                 `,
               },
               {
-                id: "next",
+                id: "nextjs",
                 label: "Next.js",
                 language: "typescript",
                 filename: "app/page.tsx",
@@ -2288,13 +2288,45 @@ export default function Home() {
             Update the component to latest and the <Code>better-auth</Code>{" "}
             package to <Code>1.2.12</Code>.
           </P>
-          <CodeBlock
-            language="shell"
-            filename="package.json"
-            code={stripIndent`
-              npm install @convex-dev/better-auth@latest
-              npm install better-auth@1.2.12 --save-exact
-            `}
+          
+           <CodeBlock
+            variantGroup="package-manager"
+            variants={[
+              {
+                id: "npm",
+                label: "npm",
+                code: stripIndent`
+                    npm install @convex-dev/better-auth
+                    npm install better-auth@1.2.12 --save-exact
+                  `,
+                language: "shell",
+              },
+              {
+                id: "pnpm",
+                label: "pnpm",
+                code: stripIndent`
+                    pnpm add @convex-dev/better-auth
+                    pnpm add better-auth@1.2.12 --save-exact
+                  `,
+                language: "shell",
+              },
+              {
+                id: "yarn",
+                code: stripIndent`
+                    yarn add @convex-dev/better-auth
+                    yarn add better-auth@1.2.12 --exact
+                  `,
+                language: "shell",
+              },
+              {
+                id: "bun",
+                code: stripIndent`
+                    bun add @convex-dev/better-auth
+                    bun add better-auth@1.2.12 --exact
+                  `,
+                language: "shell",
+              },
+            ]}
           />
 
           <ContentHeading
