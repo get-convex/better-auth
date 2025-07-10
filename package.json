@@ -22,7 +22,7 @@
     "build:esm": "tsc --project ./esm.json && tsc-alias -p ./esm.json && echo '{\\n  \"type\": \"module\"\\n}' > dist/esm/package.json",
     "build:cjs": "tsc --project ./commonjs.json && echo '{\\n  \"type\": \"commonjs\"\\n}' > dist/commonjs/package.json",
     "typecheck": "tsc --noEmit",
-    "prepare": "npm test && npm run build",
+    "prepare": "npm run build",
     "prepack": "node node10stubs.mjs",
     "postpack": "node node10stubs.mjs --cleanup",
     "generate": "concurrently \"cd examples/next && npm run generate\" \"cd examples/react && npm run generate\" \"cd examples/tanstack && npm run generate\"",
@@ -138,13 +138,13 @@
     }
   },
   "peerDependencies": {
-    "better-auth": "^1.2.12",
+    "better-auth": "1.2.12",
     "convex": "~1.16.5 || >=1.17.0 <1.35.0",
     "react": "^18.3.1 || ^19.0.0",
     "react-dom": "^18.3.1 || ^19.0.0"
   },
   "devDependencies": {
-    "@better-auth/stripe": "^1.2.12",
+    "@better-auth/stripe": "1.2.12",
     "@edge-runtime/vm": "^5.0.0",
     "@eslint/js": "^9.9.1",
     "@polar-sh/better-auth": "^1.0.4",

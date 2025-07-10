@@ -701,6 +701,7 @@ export declare const components: {
         {
           limit?: number;
           model: string;
+          offset?: number;
           paginationOpts: {
             cursor: string | null;
             endCursor?: string | null;
@@ -743,6 +744,7 @@ export declare const components: {
         {
           limit?: number;
           model: string;
+          offset?: number;
           select?: Array<string>;
           sortBy?: { direction: "asc" | "desc"; field: string };
           unique?: boolean;
@@ -777,6 +779,7 @@ export declare const components: {
         {
           limit?: number;
           model: string;
+          offset?: number;
           paginationOpts: {
             cursor: string | null;
             endCursor?: string | null;
@@ -819,6 +822,7 @@ export declare const components: {
         {
           limit?: number;
           model: string;
+          offset?: number;
           select?: Array<string>;
           sortBy?: { direction: "asc" | "desc"; field: string };
           unique?: boolean;
@@ -856,6 +860,7 @@ export declare const components: {
             | {
                 limit?: number;
                 model: "user";
+                offset?: number;
                 paginationOpts: {
                   cursor: string | null;
                   endCursor?: string | null;
@@ -909,6 +914,7 @@ export declare const components: {
             | {
                 limit?: number;
                 model: "session";
+                offset?: number;
                 paginationOpts: {
                   cursor: string | null;
                   endCursor?: string | null;
@@ -956,6 +962,7 @@ export declare const components: {
             | {
                 limit?: number;
                 model: "account";
+                offset?: number;
                 paginationOpts: {
                   cursor: string | null;
                   endCursor?: string | null;
@@ -1007,6 +1014,7 @@ export declare const components: {
             | {
                 limit?: number;
                 model: "verification";
+                offset?: number;
                 paginationOpts: {
                   cursor: string | null;
                   endCursor?: string | null;
@@ -1051,6 +1059,7 @@ export declare const components: {
             | {
                 limit?: number;
                 model: "twoFactor";
+                offset?: number;
                 paginationOpts: {
                   cursor: string | null;
                   endCursor?: string | null;
@@ -1093,6 +1102,7 @@ export declare const components: {
             | {
                 limit?: number;
                 model: "passkey";
+                offset?: number;
                 paginationOpts: {
                   cursor: string | null;
                   endCursor?: string | null;
@@ -1142,6 +1152,7 @@ export declare const components: {
             | {
                 limit?: number;
                 model: "apikey";
+                offset?: number;
                 paginationOpts: {
                   cursor: string | null;
                   endCursor?: string | null;
@@ -1201,6 +1212,7 @@ export declare const components: {
             | {
                 limit?: number;
                 model: "oauthApplication";
+                offset?: number;
                 paginationOpts: {
                   cursor: string | null;
                   endCursor?: string | null;
@@ -1251,6 +1263,7 @@ export declare const components: {
             | {
                 limit?: number;
                 model: "oauthAccessToken";
+                offset?: number;
                 paginationOpts: {
                   cursor: string | null;
                   endCursor?: string | null;
@@ -1299,6 +1312,7 @@ export declare const components: {
             | {
                 limit?: number;
                 model: "oauthConsent";
+                offset?: number;
                 paginationOpts: {
                   cursor: string | null;
                   endCursor?: string | null;
@@ -1344,6 +1358,7 @@ export declare const components: {
             | {
                 limit?: number;
                 model: "organization";
+                offset?: number;
                 paginationOpts: {
                   cursor: string | null;
                   endCursor?: string | null;
@@ -1388,6 +1403,7 @@ export declare const components: {
             | {
                 limit?: number;
                 model: "member";
+                offset?: number;
                 paginationOpts: {
                   cursor: string | null;
                   endCursor?: string | null;
@@ -1432,6 +1448,7 @@ export declare const components: {
             | {
                 limit?: number;
                 model: "invitation";
+                offset?: number;
                 paginationOpts: {
                   cursor: string | null;
                   endCursor?: string | null;
@@ -1478,6 +1495,7 @@ export declare const components: {
             | {
                 limit?: number;
                 model: "team";
+                offset?: number;
                 paginationOpts: {
                   cursor: string | null;
                   endCursor?: string | null;
@@ -1521,6 +1539,7 @@ export declare const components: {
             | {
                 limit?: number;
                 model: "ssoProvider";
+                offset?: number;
                 paginationOpts: {
                   cursor: string | null;
                   endCursor?: string | null;
@@ -1567,6 +1586,7 @@ export declare const components: {
             | {
                 limit?: number;
                 model: "jwks";
+                offset?: number;
                 paginationOpts: {
                   cursor: string | null;
                   endCursor?: string | null;
@@ -1609,6 +1629,7 @@ export declare const components: {
             | {
                 limit?: number;
                 model: "subscription";
+                offset?: number;
                 paginationOpts: {
                   cursor: string | null;
                   endCursor?: string | null;
@@ -1657,6 +1678,7 @@ export declare const components: {
             | {
                 limit?: number;
                 model: "rateLimit";
+                offset?: number;
                 paginationOpts: {
                   cursor: string | null;
                   endCursor?: string | null;

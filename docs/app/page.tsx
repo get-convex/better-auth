@@ -467,7 +467,7 @@ export default function Home() {
                 label: "npm",
                 code: stripIndent`
                     npm install @convex-dev/better-auth
-                    npm install better-auth@1.2.7 --save-exact
+                    npm install better-auth@1.2.12 --save-exact
                   `,
                 language: "shell",
               },
@@ -476,7 +476,7 @@ export default function Home() {
                 label: "pnpm",
                 code: stripIndent`
                     pnpm add @convex-dev/better-auth
-                    pnpm add better-auth@1.2.7 --save-exact
+                    pnpm add better-auth@1.2.12 --save-exact
                   `,
                 language: "shell",
               },
@@ -484,7 +484,7 @@ export default function Home() {
                 id: "yarn",
                 code: stripIndent`
                     yarn add @convex-dev/better-auth
-                    yarn add better-auth@1.2.7 --exact
+                    yarn add better-auth@1.2.12 --exact
                   `,
                 language: "shell",
               },
@@ -492,7 +492,7 @@ export default function Home() {
                 id: "bun",
                 code: stripIndent`
                     bun add @convex-dev/better-auth
-                    bun add better-auth@1.2.7 --exact
+                    bun add better-auth@1.2.12 --exact
                   `,
                 language: "shell",
               },
@@ -2089,58 +2089,6 @@ export default function Home() {
             ]}
           />
         </Subsection>
-
-        <Subsection
-          id="integrations-supported-plugins"
-          title="Supported Plugins/Features"
-        >
-          <P>
-            The Better Auth Convex component currently supports the following
-            plugins/features:
-          </P>
-          <Ul>
-            <Li>
-              <a
-                href="https://www.better-auth.com/docs/plugins/magic-link"
-                className="underline"
-              >
-                Magic Link
-              </a>
-            </Li>
-            <Li>
-              <a
-                href="https://www.better-auth.com/docs/plugins/email-otp"
-                className="underline"
-              >
-                Email OTP
-              </a>
-            </Li>
-            <Li>
-              <a
-                href="https://www.better-auth.com/docs/plugins/2fa"
-                className="underline"
-              >
-                Two Factor
-              </a>
-            </Li>
-            <Li>
-              <a
-                href="https://www.better-auth.com/docs/authentication/google"
-                className="underline"
-              >
-                Social Providers
-              </a>
-            </Li>
-            <Li>
-              <a
-                href="https://www.better-auth.com/docs/authentication/email-password"
-                className="underline"
-              >
-                Email/Password Authentication
-              </a>
-            </Li>
-          </Ul>
-        </Subsection>
       </Section>
 
       <Section id="guides" title="Guides">
@@ -2332,6 +2280,21 @@ export default function Home() {
           />
         </Subsection>
         <Subsection id="migrate-0-6-to-0-7" title="Migrate 0.6 &rarr; 0.7">
+          <ContentHeading
+            id="migrate-0-6-to-0-7-update-better-auth"
+            title="Update Better Auth"
+          />
+          <P>
+            Update the <Code>better-auth</Code> package to <Code>1.2.12</Code>.
+          </P>
+          <CodeBlock
+            language="shell"
+            filename="package.json"
+            code={stripIndent`
+              npm install better-auth@1.2.12 --save-exact
+            `}
+          />
+
           <ContentHeading
             id="migrate-0-6-to-0-7-register-routes"
             title="registerRoutes()"
