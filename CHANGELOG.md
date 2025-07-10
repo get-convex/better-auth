@@ -1,7 +1,16 @@
 # Changelog
 
-## Unreleased
+## 0.7.0
 
+- Pass all Better Auth adapter tests.
+
+- Convert adapter to fully dynamic queries and mutations.
+
+- Add schema generation for component schema.
+
+- Support multiple `registerRoutes` calls.
+
+- Fix email verification redirect.
 - Support `trustedOrigins` as a function.
 
 - Simplify CORS handling and make it optional.
