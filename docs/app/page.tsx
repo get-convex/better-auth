@@ -2285,12 +2285,14 @@ export default function Home() {
             title="Update Better Auth"
           />
           <P>
-            Update the <Code>better-auth</Code> package to <Code>1.2.12</Code>.
+            Update the component to latest and the <Code>better-auth</Code>{" "}
+            package to <Code>1.2.12</Code>.
           </P>
           <CodeBlock
             language="shell"
             filename="package.json"
             code={stripIndent`
+              npm install @convex-dev/better-auth@latest
               npm install better-auth@1.2.12 --save-exact
             `}
           />
