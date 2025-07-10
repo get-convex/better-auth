@@ -11,6 +11,7 @@ import {
 import { partial } from "convex-helpers/validators";
 import { stream } from "convex-helpers/server/stream";
 import { mergedStream } from "convex-helpers/server/stream";
+import { stripIndent, stripIndents } from "common-tags";
 
 export const adapterWhereValidator = v.object({
   field: v.string(),
@@ -50,6 +51,7 @@ export const adapterArgsValidator = v.object({
   ),
   select: v.optional(v.array(v.string())),
   limit: v.optional(v.number()),
+  offset: v.optional(v.number()),
   unique: v.optional(v.boolean()),
 });
 
@@ -120,8 +122,13 @@ const findIndex = (args: {
     direction: "asc" | "desc";
   };
 }) => {
-  if (args.where?.some((w) => w.connector === "OR")) {
-    return;
+  if (
+    (args.where?.length ?? 0) > 1 &&
+    args.where?.some((w) => w.connector === "OR")
+  ) {
+    throw new Error(
+      `OR connector not supported with multiple where statements in findIndex, split up the where statements before calling findIndex: ${JSON.stringify(args.where)}`
+    );
   }
   const where = args.where?.filter((w) => {
     return (
@@ -216,9 +223,7 @@ const findIndex = (args: {
         return fieldsMatch && boundFieldMatch;
       });
   if (!index) {
-    throw new Error(
-      `Index on ${indexFields.join(", ")} not found for table ${args.model}`
-    );
+    return { indexFields };
   }
   return {
     index: {
@@ -253,50 +258,6 @@ const selectFields = <T extends TableNames, D extends Doc<T>>(
   }, {} as D);
 };
 
-const generateQuery = (
-  ctx: QueryCtx,
-  args: Infer<typeof adapterArgsValidator>
-) => {
-  const { index, values, boundField } = findIndex(args) ?? {};
-  const query = stream(ctx.db, schema).query(args.model as any);
-  const hasValues =
-    values?.eq?.length ||
-    values?.lt ||
-    values?.lte ||
-    values?.gt ||
-    values?.gte;
-  const indexedQuery =
-    index && index.indexDescriptor !== "by_creation_time"
-      ? query.withIndex(
-          index.indexDescriptor,
-          hasValues
-            ? (q: any) => {
-                for (const [idx, value] of (values?.eq ?? []).entries()) {
-                  q = q.eq(index.fields[idx], value);
-                }
-                if (values?.lt) {
-                  q = q.lt(boundField, values.lt);
-                }
-                if (values?.lte) {
-                  q = q.lte(boundField, values.lte);
-                }
-                if (values?.gt) {
-                  q = q.gt(boundField, values.gt);
-                }
-                if (values?.gte) {
-                  q = q.gte(boundField, values.gte);
-                }
-                return q;
-              }
-            : undefined
-        )
-      : query;
-  const orderedQuery = args.sortBy
-    ? indexedQuery.order(args.sortBy.direction === "asc" ? "asc" : "desc")
-    : indexedQuery;
-  return orderedQuery;
-};
-
 // Manually filter an individual document by where clauses. This is used to
 // simplify queries that can only return 0 or 1 documents, or "in" clauses that
 // query multiple single documents in parallel.
@@ -309,7 +270,7 @@ const filterByWhere = (
     return false;
   }
   for (const w of where ?? []) {
-    if (!filterWhere?.(w)) {
+    if (filterWhere && !filterWhere(w)) {
       continue;
     }
     const value = doc[w.field as keyof typeof doc] as Infer<
@@ -370,6 +331,70 @@ const filterByWhere = (
   return true;
 };
 
+const generateQuery = (
+  ctx: QueryCtx,
+  args: Infer<typeof adapterArgsValidator>
+) => {
+  const { index, values, boundField, indexFields } = findIndex(args) ?? {};
+  const query = stream(ctx.db, schema).query(args.model as any);
+  const hasValues =
+    values?.eq?.length ||
+    values?.lt ||
+    values?.lte ||
+    values?.gt ||
+    values?.gte;
+  const indexedQuery =
+    index && index.indexDescriptor !== "by_creation_time"
+      ? query.withIndex(
+          index.indexDescriptor,
+          hasValues
+            ? (q: any) => {
+                for (const [idx, value] of (values?.eq ?? []).entries()) {
+                  q = q.eq(index.fields[idx], value);
+                }
+                if (values?.lt) {
+                  q = q.lt(boundField, values.lt);
+                }
+                if (values?.lte) {
+                  q = q.lte(boundField, values.lte);
+                }
+                if (values?.gt) {
+                  q = q.gt(boundField, values.gt);
+                }
+                if (values?.gte) {
+                  q = q.gte(boundField, values.gte);
+                }
+                return q;
+              }
+            : undefined
+        )
+      : query;
+  const orderedQuery = args.sortBy
+    ? indexedQuery.order(args.sortBy.direction === "asc" ? "asc" : "desc")
+    : indexedQuery;
+  const filteredQuery = orderedQuery.filterWith(async (doc) => {
+    if (!index && indexFields?.length) {
+      console.warn(
+        stripIndent`
+          Querying without an index on table "${args.model}".
+          This can cause performance issues, and may hit the document read limit.
+          To fix, add an index that begins with the following fields in order:
+          [${indexFields.join(", ")}]
+        `
+      );
+      return filterByWhere(doc, args.where);
+    }
+    return filterByWhere(
+      doc,
+      args.where,
+      (w) =>
+        w.operator &&
+        ["contains", "starts_with", "ends_with", "ne"].includes(w.operator)
+    );
+  });
+  return filteredQuery;
+};
+
 // This is the core function for reading from the database, it parses and
 // validates where conditions, selects indexes, and allows the caller to
 // optionally paginate as needed. Every response is a pagination result.
@@ -379,6 +404,9 @@ const paginate = async (
     paginationOpts: PaginationOptions;
   }
 ): Promise<PaginationResult<Doc<any>>> => {
+  if (args.offset) {
+    throw new Error(`offset not supported: ${JSON.stringify(args.offset)}`);
+  }
   if (args.where?.some((w) => w.connector === "OR") && args.where?.length > 1) {
     throw new Error(
       `OR connector not supported with multiple where statements in paginate, split up the where statements before calling paginate: ${JSON.stringify(args.where)}`
@@ -514,17 +542,7 @@ const paginate = async (
   }
 
   const query = generateQuery(ctx, args);
-  const result = await query
-    .filterWith(async (doc) =>
-      filterByWhere(
-        doc,
-        args.where,
-        (w) =>
-          w.operator &&
-          ["contains", "starts_with", "ends_with", "ne"].includes(w.operator)
-      )
-    )
-    .paginate(paginationOpts);
+  const result = await query.paginate(paginationOpts);
   return {
     ...result,
     page: result.page.map((doc) => selectFields(doc, args.select)),

@@ -38,7 +38,7 @@ export const {
   createSession,
   isAuthenticated,
 } = betterAuthComponent.createAuthFunctions({
-  onCreateUser: async (ctx: GenericCtx, args: any) => {
+  onCreateUser: async () => {
     // noop
     // not required for the adapter test
   },

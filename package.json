@@ -150,6 +150,7 @@
     "@polar-sh/better-auth": "^1.0.4",
     "@polar-sh/sdk": "^0.32.16",
     "@tanstack/react-start": "^1.120.19",
+    "@types/common-tags": "^1.8.4",
     "@types/node": "^20",
     "@types/react": "19.1.6",
     "@types/react-dom": "19.1.6",
@@ -168,6 +169,7 @@
   "types": "./dist/commonjs/client/index.d.ts",
   "module": "./dist/esm/client/index.js",
   "dependencies": {
+    "common-tags": "^1.8.2",
     "convex-helpers": "^0.1.95",
     "is-network-error": "^1.1.0",
     "type-fest": "^4.39.1",

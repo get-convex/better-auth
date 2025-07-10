@@ -8,44 +8,42 @@ import schema from "../component/schema";
 import { serialize } from "../component/adapterTest";
 import { Adapter } from "better-auth";
 
-export const getAdapter =
-  (t: ReturnType<typeof convexTest>) =>
-  async (betterAuthOptions = {}) => {
-    return {
-      id: "convex",
-      create: async (data) => {
-        const result = await t.mutation(api.adapterTest.create, {
-          ...data,
-          data: serialize(data.data),
-        });
-        return result;
-      },
-      findOne: async (data) => {
-        return t.query(api.adapterTest.findOne, data);
-      },
-      findMany: async (data) => {
-        return t.query(api.adapterTest.findMany, data);
-      },
-      count: async () => {
-        throw new Error("count not implemented");
-      },
-      update: async (data) => {
-        return t.mutation(api.adapterTest.update, {
-          ...data,
-          update: serialize(data.update),
-        });
-      },
-      updateMany: async (data) => {
-        return t.mutation(api.adapterTest.updateMany, data);
-      },
-      delete: async (data) => {
-        await t.mutation(api.adapterTest.delete, data);
-      },
-      deleteMany: async (data) => {
-        return t.mutation(api.adapterTest.deleteMany, data);
-      },
-    } satisfies Adapter;
-  };
+export const getAdapter = (t: ReturnType<typeof convexTest>) => async () => {
+  return {
+    id: "convex",
+    create: async (data) => {
+      const result = await t.mutation(api.adapterTest.create, {
+        ...data,
+        data: serialize(data.data),
+      });
+      return result;
+    },
+    findOne: async (data) => {
+      return t.query(api.adapterTest.findOne, data);
+    },
+    findMany: async (data) => {
+      return t.query(api.adapterTest.findMany, data);
+    },
+    count: async (data) => {
+      return t.query(api.adapterTest.count, data);
+    },
+    update: async (data) => {
+      return t.mutation(api.adapterTest.update, {
+        ...data,
+        update: serialize(data.update),
+      });
+    },
+    updateMany: async (data) => {
+      return t.mutation(api.adapterTest.updateMany, data);
+    },
+    delete: async (data) => {
+      await t.mutation(api.adapterTest.delete, data);
+    },
+    deleteMany: async (data) => {
+      return t.mutation(api.adapterTest.deleteMany, data);
+    },
+  } satisfies Adapter;
+};
 
 describe("convex adapter", async () => {
   const _t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
@@ -328,5 +326,53 @@ describe("convex adapter", async () => {
         ],
       })
     ).toEqual(user);
+  });
+  test("should handle count", async () => {
+    const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
+    const adapter = await getAdapter(t)();
+    await adapter.create({
+      model: "user",
+      data: {
+        name: "foo",
+        email: "foo@bar.com",
+      },
+    });
+    await adapter.create({
+      model: "user",
+      data: {
+        name: "bar",
+        email: "bar@bar.com",
+      },
+    });
+    expect(
+      await adapter.count({
+        model: "user",
+        where: [{ field: "name", value: "foo" }],
+      })
+    ).toEqual(1);
+  });
+  test("should handle queries with no index", async () => {
+    const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
+    const adapter = await getAdapter(t)();
+    const user = await adapter.create({
+      model: "user",
+      data: {
+        name: "foo",
+        email: "foo@bar.com",
+        emailVerified: true,
+      },
+    });
+    expect(
+      await adapter.findOne({
+        model: "user",
+        where: [{ field: "emailVerified", value: true }],
+      })
+    ).toEqual(user);
+    expect(
+      await adapter.findOne({
+        model: "user",
+        where: [{ field: "emailVerified", value: false }],
+      })
+    ).toEqual(null);
   });
 });

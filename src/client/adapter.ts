@@ -188,8 +188,19 @@ export const convexAdapter = (
           );
           return result.docs;
         },
-        count: async () => {
-          throw new Error("count not implemented");
+        count: async (data) => {
+          // Yes, count is just findMany returning a number.
+          if (data.where?.some((w) => w.connector === "OR")) {
+            throw new Error("OR connector not supported in findMany");
+          }
+          const result = await handlePagination(async ({ paginationOpts }) => {
+            return await ctx.runQuery(component.component.lib.findMany, {
+              ...data,
+              where: parseWhere(data.where),
+              paginationOpts,
+            });
+          });
+          return result.docs?.length ?? 0;
         },
         update: async (data): Promise<any> => {
           if (!("runMutation" in ctx)) {
