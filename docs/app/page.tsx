@@ -1031,7 +1031,8 @@ export default function Home() {
 
                   const http = httpRouter()
 
-                  betterAuthComponent.registerRoutes(http, createAuth)
+                  // { cors: true } is required for client side frameworks
+                  betterAuthComponent.registerRoutes(http, createAuth, { cors: true })
 
                   export default http
                 `,
