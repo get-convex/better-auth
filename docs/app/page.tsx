@@ -708,6 +708,25 @@ export default function Home() {
                       ],
                     });
 
+                  // These are required named exports
+                  export const {
+                    createUser,
+                    updateUser,
+                    deleteUser,
+                    createSession,
+                  } =
+                    betterAuthComponent.createAuthFunctions<DataModel>({
+                      // Must create a user and return the user id
+                      onCreateUser: async (ctx, user) => {
+                        return ctx.db.insert("users", {});
+                      },
+
+                      // Delete the user when they are deleted from Better Auth
+                      onDeleteUser: async (ctx, userId) => {
+                        await ctx.db.delete(userId as Id<"users">);
+                      },
+                    });
+
                   // Example function for getting the current user
                   // Feel free to edit, omit, etc.
                   export const getCurrentUser = query({
@@ -832,7 +851,7 @@ export default function Home() {
                   } from "@convex-dev/better-auth";
                   import { convex } from "@convex-dev/better-auth/plugins";
                   import { betterAuth } from "better-auth";
-                  import { components, internal } from "./_generated/api";
+                  import { api, components, internal } from "./_generated/api";
                   import { query, type GenericCtx } from "./_generated/server";
                   import type { Id, DataModel } from "./_generated/dataModel";
 
@@ -1004,7 +1023,8 @@ export default function Home() {
 
                   const http = httpRouter()
 
-                  betterAuthComponent.registerRoutes(http, createAuth)
+                  // { cors: true } is required for client side frameworks
+                  betterAuthComponent.registerRoutes(http, createAuth, { cors: true })
 
                   export default http
                 `,
