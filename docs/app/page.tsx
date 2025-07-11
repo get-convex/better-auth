@@ -665,7 +665,6 @@ export default function Home() {
                     BetterAuth,
                     convexAdapter,
                     type AuthFunctions,
-                    type PublicAuthFunctions,
                   } from "@convex-dev/better-auth";
                   import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
                   import { requireEnv } from "@convex-dev/better-auth/utils";
@@ -679,14 +678,12 @@ export default function Home() {
 
                   // Typesafe way to pass Convex functions defined in this file
                   const authFunctions: AuthFunctions = internal.auth;
-                  const publicAuthFunctions: PublicAuthFunctions = api.auth;
 
                   // Initialize the component
                   export const betterAuthComponent = new BetterAuth(
                     components.betterAuth,
                     {
                       authFunctions,
-                      publicAuthFunctions,
                     }
                   );
 
@@ -717,7 +714,6 @@ export default function Home() {
                     updateUser,
                     deleteUser,
                     createSession,
-                    isAuthenticated,
                   } =
                     betterAuthComponent.createAuthFunctions<DataModel>({
                       // Must create a user and return the user id
@@ -852,7 +848,6 @@ export default function Home() {
                     BetterAuth,
                     convexAdapter,
                     type AuthFunctions,
-                    type PublicAuthFunctions,
                   } from "@convex-dev/better-auth";
                   import { convex } from "@convex-dev/better-auth/plugins";
                   import { betterAuth } from "better-auth";
@@ -862,14 +857,12 @@ export default function Home() {
 
                   // Typesafe way to pass Convex functions defined in this file
                   const authFunctions: AuthFunctions = internal.auth;
-                  const publicAuthFunctions: PublicAuthFunctions = api.auth;
 
                   // Initialize the component
                   export const betterAuthComponent = new BetterAuth(
                     components.betterAuth,
                     {
                       authFunctions,
-                      publicAuthFunctions,
                     }
                   );
 
@@ -897,7 +890,6 @@ export default function Home() {
                     updateUser,
                     deleteUser,
                     createSession,
-                    isAuthenticated,
                   } =
                     betterAuthComponent.createAuthFunctions<DataModel>({
                       // Must create a user and return the user id
