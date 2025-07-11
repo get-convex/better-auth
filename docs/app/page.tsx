@@ -665,6 +665,7 @@ export default function Home() {
                     BetterAuth,
                     convexAdapter,
                     type AuthFunctions,
+                    type PublicAuthFunctions,
                   } from "@convex-dev/better-auth";
                   import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
                   import { requireEnv } from "@convex-dev/better-auth/utils";
@@ -678,12 +679,14 @@ export default function Home() {
 
                   // Typesafe way to pass Convex functions defined in this file
                   const authFunctions: AuthFunctions = internal.auth;
+                  const publicAuthFunctions: PublicAuthFunctions = api.auth;
 
                   // Initialize the component
                   export const betterAuthComponent = new BetterAuth(
                     components.betterAuth,
                     {
                       authFunctions,
+                      publicAuthFunctions,
                     }
                   );
 
@@ -849,21 +852,24 @@ export default function Home() {
                     BetterAuth,
                     convexAdapter,
                     type AuthFunctions,
+                    type PublicAuthFunctions,
                   } from "@convex-dev/better-auth";
                   import { convex } from "@convex-dev/better-auth/plugins";
                   import { betterAuth } from "better-auth";
-                  import { components, internal } from "./_generated/api";
+                  import { api, components, internal } from "./_generated/api";
                   import { query, type GenericCtx } from "./_generated/server";
                   import type { Id, DataModel } from "./_generated/dataModel";
 
                   // Typesafe way to pass Convex functions defined in this file
                   const authFunctions: AuthFunctions = internal.auth;
+                  const publicAuthFunctions: PublicAuthFunctions = api.auth;
 
                   // Initialize the component
                   export const betterAuthComponent = new BetterAuth(
                     components.betterAuth,
                     {
                       authFunctions,
+                      publicAuthFunctions,
                     }
                   );
 
