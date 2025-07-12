@@ -455,9 +455,13 @@ export default function Home() {
             title="Install the component"
           />
           <P>
-            To get started, install the component and a pinned version of Better
-            Auth.
+            To get started, install the component, a pinned version of Better
+            Auth, and the latest version of Convex.
           </P>
+
+          <Callout>
+            This component requires Convex <Code>1.25.0</Code> or later.
+          </Callout>
 
           <CodeBlock
             variantGroup="package-manager"
@@ -468,6 +472,7 @@ export default function Home() {
                 code: stripIndent`
                     npm install @convex-dev/better-auth
                     npm install better-auth@1.2.12 --save-exact
+                    npm install convex@latest
                   `,
                 language: "shell",
               },
@@ -477,6 +482,7 @@ export default function Home() {
                 code: stripIndent`
                     pnpm add @convex-dev/better-auth
                     pnpm add better-auth@1.2.12 --save-exact
+                    pnpm add convex@latest
                   `,
                 language: "shell",
               },
@@ -485,6 +491,7 @@ export default function Home() {
                 code: stripIndent`
                     yarn add @convex-dev/better-auth
                     yarn add better-auth@1.2.12 --exact
+                    yarn add convex@latest
                   `,
                 language: "shell",
               },
@@ -493,6 +500,7 @@ export default function Home() {
                 code: stripIndent`
                     bun add @convex-dev/better-auth
                     bun add better-auth@1.2.12 --exact
+                    bun add convex@latest
                   `,
                 language: "shell",
               },
@@ -2305,11 +2313,12 @@ export default function Home() {
             title="Update Better Auth"
           />
           <P>
-            Update the component to latest and the <Code>better-auth</Code>{" "}
-            package to <Code>1.2.12</Code>.
+            Update the component to latest, the <Code>better-auth</Code> package
+            to <Code>1.2.12</Code>, and Convex to <Code>latest</Code> (or at
+            least <Code>1.25.0</Code>).
           </P>
-          
-           <CodeBlock
+
+          <CodeBlock
             variantGroup="package-manager"
             variants={[
               {
@@ -2318,6 +2327,7 @@ export default function Home() {
                 code: stripIndent`
                     npm install @convex-dev/better-auth
                     npm install better-auth@1.2.12 --save-exact
+                    npm install convex@latest
                   `,
                 language: "shell",
               },
@@ -2327,6 +2337,7 @@ export default function Home() {
                 code: stripIndent`
                     pnpm add @convex-dev/better-auth
                     pnpm add better-auth@1.2.12 --save-exact
+                    pnpm add convex@latest
                   `,
                 language: "shell",
               },
@@ -2335,6 +2346,7 @@ export default function Home() {
                 code: stripIndent`
                     yarn add @convex-dev/better-auth
                     yarn add better-auth@1.2.12 --exact
+                    yarn add convex@latest
                   `,
                 language: "shell",
               },
@@ -2343,6 +2355,7 @@ export default function Home() {
                 code: stripIndent`
                     bun add @convex-dev/better-auth
                     bun add better-auth@1.2.12 --exact
+                    bun add convex@latest
                   `,
                 language: "shell",
               },
