@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.2
+
+- fix: add Convex version requirement to docs and package.json.
+
 ## 0.7.1
 
 - fix: serialize output date values in the adapter.
