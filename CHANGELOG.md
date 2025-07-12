@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.1
+
+- fix: serialize output date values in the adapter.
+
 ## 0.7.0
 
 - Pass all Better Auth adapter tests.
