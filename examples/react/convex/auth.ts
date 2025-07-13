@@ -1,93 +1,15 @@
-import {
-  AuthFunctions,
-  BetterAuth,
-  convexAdapter,
-} from "@convex-dev/better-auth";
-import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
+import { AuthFunctions, BetterAuth } from "@convex-dev/better-auth";
 import { components, internal } from "./_generated/api";
-import { betterAuth } from "better-auth";
-import { GenericCtx, query } from "./_generated/server";
-import { requireEnv } from "./util";
+import { query } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
 import { asyncMap } from "convex-helpers";
-import { emailOTP } from "better-auth/plugins";
-import { magicLink } from "better-auth/plugins";
-import {
-  sendMagicLink,
-  sendOTPVerification,
-  sendEmailVerification,
-  sendResetPassword,
-} from "./email";
 
 const authFunctions: AuthFunctions = internal.auth;
-const siteUrl = requireEnv("SITE_URL");
 
 export const betterAuthComponent = new BetterAuth(components.betterAuth, {
   authFunctions,
   verbose: true,
 });
-
-export const createAuth = (ctx: GenericCtx) =>
-  betterAuth({
-    database: convexAdapter(ctx, betterAuthComponent),
-    emailVerification: {
-      sendVerificationEmail: async ({ user, url }) => {
-        await sendEmailVerification({
-          to: user.email,
-          url,
-        });
-      },
-    },
-    emailAndPassword: {
-      enabled: true,
-      requireEmailVerification: true,
-      sendResetPassword: async ({ user, url }) => {
-        await sendResetPassword({
-          to: user.email,
-          url,
-        });
-      },
-    },
-    socialProviders: {
-      github: {
-        clientId: requireEnv("GITHUB_CLIENT_ID"),
-        clientSecret: requireEnv("GITHUB_CLIENT_SECRET"),
-      },
-    },
-    user: {
-      deleteUser: {
-        enabled: true,
-      },
-    },
-    plugins: [
-      magicLink({
-        sendMagicLink: async ({ email, url }) => {
-          await sendMagicLink({
-            to: email,
-            url,
-          });
-        },
-      }),
-      emailOTP({
-        async sendVerificationOTP({ email, otp }) {
-          await sendOTPVerification({
-            to: email,
-            code: otp,
-          });
-        },
-      }),
-      crossDomain({ siteUrl }),
-      convex(),
-    ],
-    logger: {
-      level: "debug",
-    },
-    account: {
-      accountLinking: {
-        enabled: true,
-      },
-    },
-  });
 
 export const { createUser, deleteUser, updateUser, createSession } =
   betterAuthComponent.createAuthFunctions({

@@ -1,8 +1,6 @@
 import { v } from "convex/values";
 import { GenericCtx, mutation, query } from "./_generated/server";
-import { betterAuthComponent } from "./auth";
-import { DataModel, Id } from "./_generated/dataModel";
-import { GenericQueryCtx } from "convex/server";
+import { Id } from "./_generated/dataModel";
 
 const getUserId = async (ctx: GenericCtx) => {
   const identity = await ctx.auth.getUserIdentity();

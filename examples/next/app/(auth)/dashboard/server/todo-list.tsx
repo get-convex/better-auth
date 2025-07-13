@@ -1,6 +1,6 @@
 import { api } from "@/convex/_generated/api";
 import { getToken } from "@convex-dev/better-auth/nextjs";
-import { createAuth } from "@/convex/auth";
+import { createAuth } from "@/lib/auth";
 import {
   fetchMutation,
   preloadedQueryResult,

@@ -7,7 +7,7 @@ import {
   SettingsButton,
   SettingsButtonContent,
 } from "@/components/server";
-import { createAuth } from "@/convex/auth";
+import { createAuth } from "@/lib/auth";
 import { preloadQuery } from "convex/nextjs";
 import { getToken } from "@convex-dev/better-auth/nextjs";
 import { api } from "@/convex/_generated/api";

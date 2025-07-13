@@ -21,13 +21,6 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
 
   return {
     id: "cross-domain",
-    init(ctx) {
-      return {
-        options: {
-          trustedOrigins: [siteUrl],
-        },
-      };
-    },
     hooks: {
       before: [
         {

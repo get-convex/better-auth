@@ -659,7 +659,6 @@ export default function Home() {
             <strong>Note:</strong> Some Typescript errors will show until you
             save the file.
           </P>
-
           <CodeBlock
             variantGroup="framework"
             variants={[
@@ -667,37 +666,21 @@ export default function Home() {
                 id: "react",
                 label: "React",
                 language: "typescript",
-                filename: "convex/auth.ts",
+                filename: "src/lib/auth.ts",
                 code: stripIndent`
-                  import {
-                    BetterAuth,
-                    convexAdapter,
-                    type AuthFunctions,
-                  } from "@convex-dev/better-auth";
+                  import { convexAdapter } from "@convex-dev/better-auth";
                   import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
-                  import { requireEnv } from "@convex-dev/better-auth/utils";
                   import { betterAuth } from "better-auth";
-                  import { api, components, internal } from "./_generated/api";
-                  import { query, type GenericCtx } from "./_generated/server";
-                  import type { Id, DataModel } from "./_generated/dataModel";
+                  import { betterAuthComponent } from "../../convex/auth";
+                  import { type GenericCtx } from "../../convex/_generated/server";
 
                   // You'll want to replace this with an environment variable
                   const siteUrl = "http://localhost:5173";
 
-                  // Typesafe way to pass Convex functions defined in this file
-                  const authFunctions: AuthFunctions = internal.auth;
-
-                  // Initialize the component
-                  export const betterAuthComponent = new BetterAuth(
-                    components.betterAuth,
-                    {
-                      authFunctions,
-                    }
-                  );
-
                   export const createAuth = (ctx: GenericCtx) =>
                     // Configure your Better Auth instance here
                     betterAuth({
+                      trustedOrigins: [siteUrl],
                       database: convexAdapter(ctx, betterAuthComponent),
 
                       // Simple non-verified email/password to get started
@@ -715,6 +698,106 @@ export default function Home() {
                         }),
                       ],
                     });
+                `,
+              },
+              {
+                id: "nextjs",
+                label: "Next.js",
+                language: "typescript",
+                filename: "lib/auth.ts",
+                code: stripIndent`
+                  import { convexAdapter } from "@convex-dev/better-auth";
+                  import { convex } from "@convex-dev/better-auth/plugins";
+                  import { betterAuth } from "better-auth";
+                  import { betterAuthComponent } from "../convex/auth";
+                  import { type GenericCtx } from "../convex/_generated/server";
+
+                  // You'll want to replace this with an environment variable
+                  const siteUrl = "http://localhost:3000";
+
+                  export const createAuth = (ctx: GenericCtx) =>
+                    // Configure your Better Auth instance here
+                    betterAuth({
+                      // All auth requests will be proxied through your next.js server
+                      baseURL: siteUrl,
+                      database: convexAdapter(ctx, betterAuthComponent),
+
+                      // Simple non-verified email/password to get started
+                      emailAndPassword: {
+                        enabled: true,
+                        requireEmailVerification: false,
+                      },
+                      plugins: [
+                        // The Convex plugin is required
+                        convex(),
+                      ],
+                    });
+                `,
+              },
+              {
+                id: "tanstack",
+                label: "TanStack Start",
+                language: "typescript",
+                filename: "src/lib/auth.ts",
+                code: stripIndent`
+                  import { convexAdapter } from "@convex-dev/better-auth";
+                  import { convex } from "@convex-dev/better-auth/plugins";
+                  import { betterAuth } from "better-auth";
+                  import { betterAuthComponent } from "../../convex/auth";
+                  import { type GenericCtx } from "../../convex/_generated/server";
+
+                  // You'll want to replace this with an environment variable
+                  const siteUrl = "http://localhost:3000";
+
+                  export const createAuth = (ctx: GenericCtx) =>
+                    // Configure your Better Auth instance here
+                    betterAuth({
+                      // All auth requests will be proxied through your TanStack Start server
+                      baseURL: siteUrl,
+                      database: convexAdapter(ctx, betterAuthComponent),
+
+                      // Simple non-verified email/password to get started
+                      emailAndPassword: {
+                        enabled: true,
+                        requireEmailVerification: false,
+                      },
+                      plugins: [
+                        // The Convex plugin is required
+                        convex(),
+                      ],
+                    });
+                `,
+              },
+            ]}
+          />
+
+          <CodeBlock
+            variantGroup="framework"
+            variants={[
+              {
+                id: "react",
+                label: "React",
+                language: "typescript",
+                filename: "convex/auth.ts",
+                code: stripIndent`
+                  import {
+                    BetterAuth,
+                    type AuthFunctions,
+                  } from "@convex-dev/better-auth";
+                  import { api, components, internal } from "./_generated/api";
+                  import { query } from "./_generated/server";
+                  import type { Id, DataModel } from "./_generated/dataModel";
+
+                  // Typesafe way to pass Convex functions defined in this file
+                  const authFunctions: AuthFunctions = internal.auth;
+
+                  // Initialize the component
+                  export const betterAuthComponent = new BetterAuth(
+                    components.betterAuth,
+                    {
+                      authFunctions,
+                    }
+                  );
 
                   // These are required named exports
                   export const {
@@ -764,14 +847,11 @@ export default function Home() {
                 code: stripIndent`
                   import {
                     BetterAuth,
-                    convexAdapter,
                     type AuthFunctions,
                     type PublicAuthFunctions,
                   } from "@convex-dev/better-auth";
-                  import { convex } from "@convex-dev/better-auth/plugins";
-                  import { betterAuth } from "better-auth";
                   import { api, components, internal } from "./_generated/api";
-                  import { query, type GenericCtx } from "./_generated/server";
+                  import { query } from "./_generated/server";
                   import type { Id, DataModel } from "./_generated/dataModel";
 
                   // Typesafe way to pass Convex functions defined in this file
@@ -786,24 +866,6 @@ export default function Home() {
                       publicAuthFunctions,
                     }
                   );
-
-                  export const createAuth = (ctx: GenericCtx) =>
-                    // Configure your Better Auth instance here
-                    betterAuth({
-                      // All auth requests will be proxied through your next.js server
-                      baseURL: "http://localhost:3000",
-                      database: convexAdapter(ctx, betterAuthComponent),
-
-                      // Simple non-verified email/password to get started
-                      emailAndPassword: {
-                        enabled: true,
-                        requireEmailVerification: false,
-                      },
-                      plugins: [
-                        // The Convex plugin is required
-                        convex(),
-                      ],
-                    });
 
                   // These are required named exports
                   export const {
@@ -854,43 +916,25 @@ export default function Home() {
                 code: stripIndent`
                   import {
                     BetterAuth,
-                    convexAdapter,
                     type AuthFunctions,
+                    type PublicAuthFunctions,
                   } from "@convex-dev/better-auth";
-                  import { convex } from "@convex-dev/better-auth/plugins";
-                  import { betterAuth } from "better-auth";
                   import { api, components, internal } from "./_generated/api";
-                  import { query, type GenericCtx } from "./_generated/server";
+                  import { query } from "./_generated/server";
                   import type { Id, DataModel } from "./_generated/dataModel";
 
                   // Typesafe way to pass Convex functions defined in this file
                   const authFunctions: AuthFunctions = internal.auth;
+                  const publicAuthFunctions: PublicAuthFunctions = api.auth
 
                   // Initialize the component
                   export const betterAuthComponent = new BetterAuth(
                     components.betterAuth,
                     {
                       authFunctions,
+                      publicAuthFunctions,
                     }
                   );
-
-                  export const createAuth = (ctx: GenericCtx) =>
-                    // Configure your Better Auth instance here
-                    betterAuth({
-                      // All auth requests will be proxied through your TanStack Start server
-                      baseURL: "http://localhost:3000",
-                      database: convexAdapter(ctx, betterAuthComponent),
-
-                      // Simple non-verified email/password to get started
-                      emailAndPassword: {
-                        enabled: true,
-                        requireEmailVerification: false,
-                      },
-                      plugins: [
-                        // The Convex plugin is required
-                        convex(),
-                      ],
-                    });
 
                   // These are required named exports
                   export const {
@@ -993,25 +1037,46 @@ export default function Home() {
                 code: stripIndent`
                   import { createAuthClient } from "better-auth/react";
                   import { convexClient } from "@convex-dev/better-auth/client/plugins";
-                  import { reactStartHelpers } from "@convex-dev/better-auth/react-start";
-                  import { createAuth } from "convex/auth";
 
                   export const authClient = createAuthClient({
                     plugins: [
                       convexClient(),
                     ],
                   });
-
-                  // For TanStack you'll also want to export some framework
-                  // helpers here
-                  export const { fetchSession, reactStartHandler, getCookieName } =
-                    reactStartHelpers(createAuth, {
-                      convexSiteUrl: import.meta.env.VITE_CONVEX_SITE_URL,
-                    })
               `,
               },
             ]}
           />
+
+          {selectedFramework === "tanstack" && (
+            <>
+              <P>
+                You&apos;ll also want to export some framework helpers here.
+              </P>
+
+              <CodeBlock
+                variantGroup="framework"
+                variants={[
+                  {
+                    id: "react",
+                    label: "React",
+                    language: "typescript",
+                    filename: "src/lib/utils.ts",
+                    code: stripIndent`
+                      import { createAuth } from './auth'
+                      import { reactStartHelpers } from '@convex-dev/better-auth/react-start'
+
+                      export const { fetchSession, reactStartHandler, getCookieName } =
+                        reactStartHelpers(createAuth, {
+                          convexSiteUrl: import.meta.env.VITE_CONVEX_SITE_URL,
+                        })
+
+                    `,
+                  },
+                ]}
+              />
+            </>
+          )}
 
           <ContentHeading id="mount-handlers" title="Mount handlers" />
 
@@ -1027,7 +1092,8 @@ export default function Home() {
                 filename: "convex/http.ts",
                 code: stripIndent`
                   import { httpRouter } from 'convex/server'
-                  import { betterAuthComponent, createAuth } from './auth'
+                  import { betterAuthComponent } from './auth'
+                  import { createAuth } from '../src/lib/auth'
 
                   const http = httpRouter()
 
@@ -1044,7 +1110,8 @@ export default function Home() {
                 filename: "convex/http.ts",
                 code: stripIndent`
                   import { httpRouter } from 'convex/server'
-                  import { betterAuthComponent, createAuth } from './auth'
+                  import { betterAuthComponent } from './auth'
+                  import { createAuth } from '../lib/auth'
 
                   const http = httpRouter()
 
@@ -1060,7 +1127,8 @@ export default function Home() {
                 filename: "convex/http.ts",
                 code: stripIndent`
                   import { httpRouter } from 'convex/server'
-                  import { betterAuthComponent, createAuth } from './auth'
+                  import { betterAuthComponent } from './auth'
+                  import { createAuth } from '../src/lib/auth'
 
                   const http = httpRouter()
 
@@ -1188,11 +1256,12 @@ export default function Home() {
                       import { ConvexReactClient } from 'convex/react'
                       import { getCookie, getWebRequest } from '@tanstack/react-start/server'
                       import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
+                      import { createAuth } from '../lib/auth'
                       import {
                         authClient,
                         fetchSession,
                         getCookieName,
-                      } from '@/lib/auth-client'
+                      } from '@/lib/utils'
 
                       // Server side session request
                       const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
@@ -1821,7 +1890,7 @@ export default function Home() {
             addedLines={[2, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]}
             code={stripIndent`
               import { auth } from "./auth";
-              import { createAuth } from "./auth";
+              import { createAuth } from "../src/lib/auth";
 
               // Example: viewing backup codes with the Two Factor plugin
 
@@ -1858,7 +1927,8 @@ export default function Home() {
             language="typescript"
             filename="convex/someFile.ts"
             code={stripIndent`
-                import { createAuth, betterAuthComponent } from "./auth";
+                import { betterAuthComponent } from "./auth";
+                import { createAuth } from "../src/lib/auth";
 
                 export const getSession = query({
                   args: {},
@@ -1925,8 +1995,8 @@ export default function Home() {
 
                 import { api } from "@/convex/_generated/api";
                 import { getToken } from "@convex-dev/better-auth/nextjs";
-                import { createAuth } from "@/convex/auth";
                 import { fetchMutation } from "convex/nextjs";
+                import { createAuth } from "../lib/auth";
 
                 // Authenticated mutation via server function
                 export async function createPost(title: string, content: string) {
@@ -1942,10 +2012,9 @@ export default function Home() {
                 filename: "src/routes/index.tsx",
                 code: stripIndent`
                   import { createServerFn } from "@tanstack/react-start";
-                  import { getCookieName } from "@convex-dev/better-auth/react-start";
-                  import { createAuth } from "../../convex/auth";
-                  import { api } from "../../convex/_generated/api";
                   import { ConvexHttpClient } from "convex/browser";
+                  import { getCookieName } from "../lib/utils";
+                  import { api } from "../../convex/_generated/api";
 
                   const setupClient = (token?: string) => {
                     const client = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL)
@@ -2027,7 +2096,7 @@ export default function Home() {
                   import { HonoWithConvex, HttpRouterWithHono } from "convex-helpers/server/hono";
                   import { cors } from "hono/cors";
                   import { ActionCtx } from "./_generated/server";
-                  import { createAuth } from "./auth";
+                  import { createAuth } from "../lib/auth";
 
                   const app: HonoWithConvex<ActionCtx> = new Hono();
 
@@ -2067,7 +2136,7 @@ export default function Home() {
                   import { Hono } from "hono";
                   import { HonoWithConvex, HttpRouterWithHono } from "convex-helpers/server/hono";
                   import { ActionCtx } from "./_generated/server";
-                  import { createAuth } from "./auth";
+                  import { createAuth } from "../lib/auth";
 
                   const app: HonoWithConvex<ActionCtx> = new Hono();
 
@@ -2095,7 +2164,7 @@ export default function Home() {
                   import { Hono } from "hono";
                   import { HonoWithConvex, HttpRouterWithHono } from "convex-helpers/server/hono";
                   import { ActionCtx } from "./_generated/server";
-                  import { createAuth } from "./auth";
+                  import { createAuth } from "../src/lib/auth";
 
                   const app: HonoWithConvex<ActionCtx> = new Hono();
 
@@ -2325,7 +2394,7 @@ export default function Home() {
                 id: "npm",
                 label: "npm",
                 code: stripIndent`
-                    npm install @convex-dev/better-auth
+                    npm install @convex-dev/better-auth@latest
                     npm install better-auth@1.2.12 --save-exact
                     npm install convex@latest
                   `,
@@ -2335,7 +2404,7 @@ export default function Home() {
                 id: "pnpm",
                 label: "pnpm",
                 code: stripIndent`
-                    pnpm add @convex-dev/better-auth
+                    pnpm add @convex-dev/better-auth@latest
                     pnpm add better-auth@1.2.12 --save-exact
                     pnpm add convex@latest
                   `,
@@ -2344,7 +2413,7 @@ export default function Home() {
               {
                 id: "yarn",
                 code: stripIndent`
-                    yarn add @convex-dev/better-auth
+                    yarn add @convex-dev/better-auth@latest
                     yarn add better-auth@1.2.12 --exact
                     yarn add convex@latest
                   `,
@@ -2353,7 +2422,7 @@ export default function Home() {
               {
                 id: "bun",
                 code: stripIndent`
-                    bun add @convex-dev/better-auth
+                    bun add @convex-dev/better-auth@latest
                     bun add better-auth@1.2.12 --exact
                     bun add convex@latest
                   `,
@@ -2382,9 +2451,7 @@ export default function Home() {
               The <Code>path</Code> and <Code>allowedOrigins</Code> options have
               been removed, and now defer entirely to Better Auth&apos;s{" "}
               <Code>basePath</Code> and <Code>trustedOrigins</Code> options,
-              respectively. The crossDomain plugin <Code>siteUrl</Code> option
-              continues to be automatically added to <Code>trustedOrigins</Code>
-              .
+              respectively.
             </Li>
           </Ul>
           <CodeBlock
@@ -2394,7 +2461,8 @@ export default function Home() {
             addedLines={[11, 12]}
             code={stripIndent`
               import { httpRouter } from 'convex/server'
-              import { betterAuthComponent, createAuth } from './auth'
+              import { betterAuthComponent } from './auth'
+              import { createAuth } from '../src/lib/auth'
 
               const http = httpRouter()
 
@@ -2411,6 +2479,289 @@ export default function Home() {
             `}
           />
           <ContentHeading
+            id="migrate-0-6-to-0-7-relocate-create-auth"
+            title="Relocate createAuth()"
+          />
+          <P>
+            Relocate <Code>createAuth()</Code> from <Code>convex/auth.ts</Code>
+            to <Code>&lt;lib&gt;/auth.ts</Code> - this will avoid warnings from
+            Convex 1.25+ about importing Convex functions into the browser.
+          </P>
+          <Callout>
+            Be sure to update all imports of <Code>createAuth</Code> to the new
+            location.
+          </Callout>
+          <CodeBlock
+            variantGroup="framework"
+            variants={[
+              {
+                id: "react",
+                label: "React",
+                language: "typescript",
+                filename: "src/lib/auth.ts",
+                addedLines: [
+                  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+                  19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+                ],
+                code: stripIndent`
+                  import { convexAdapter } from "@convex-dev/better-auth";
+                  import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
+                  import { betterAuth } from "better-auth";
+                  import { betterAuthComponent } from "../../convex/auth";
+                  import { type GenericCtx } from "../../convex/_generated/server";
+
+                  // You'll want to replace this with an environment variable
+                  const siteUrl = "http://localhost:5173";
+
+                  export const createAuth = (ctx: GenericCtx) =>
+                    // Configure your Better Auth instance here
+                    betterAuth({
+                      database: convexAdapter(ctx, betterAuthComponent),
+
+                      // Simple non-verified email/password to get started
+                      emailAndPassword: {
+                        enabled: true,
+                        requireEmailVerification: false,
+                      },
+                      plugins: [
+                        // The Convex plugin is required
+                        convex(),
+
+                        // The cross domain plugin is required for client side frameworks
+                        crossDomain({
+                          siteUrl,
+                        }),
+                      ],
+                    });
+                `,
+              },
+              {
+                id: "nextjs",
+                label: "Next.js",
+                language: "typescript",
+                filename: "lib/auth.ts",
+                addedLines: [
+                  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+                  19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+                ],
+                code: stripIndent`
+                  import { convexAdapter } from "@convex-dev/better-auth";
+                  import { convex } from "@convex-dev/better-auth/plugins";
+                  import { betterAuth } from "better-auth";
+                  import { betterAuthComponent } from "../convex/auth";
+                  import { type GenericCtx } from "../convex/_generated/server";
+
+                  // You'll want to replace this with an environment variable
+                  const siteUrl = "http://localhost:3000";
+
+                  export const createAuth = (ctx: GenericCtx) =>
+                    // Configure your Better Auth instance here
+                    betterAuth({
+                      // All auth requests will be proxied through your next.js server
+                      baseURL: siteUrl,
+                      database: convexAdapter(ctx, betterAuthComponent),
+
+                      // Simple non-verified email/password to get started
+                      emailAndPassword: {
+                        enabled: true,
+                        requireEmailVerification: false,
+                      },
+                      plugins: [
+                        // The Convex plugin is required
+                        convex(),
+                      ],
+                    });
+                `,
+              },
+              {
+                id: "tanstack",
+                label: "TanStack Start",
+                language: "typescript",
+                filename: "src/lib/auth.ts",
+                addedLines: [
+                  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+                  19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+                ],
+                code: stripIndent`
+                  import { convexAdapter } from "@convex-dev/better-auth";
+                  import { convex } from "@convex-dev/better-auth/plugins";
+                  import { betterAuth } from "better-auth";
+                  import { betterAuthComponent } from "../../convex/auth";
+                  import { type GenericCtx } from "../../convex/_generated/server";
+
+                  // You'll want to replace this with an environment variable
+                  const siteUrl = "http://localhost:3000";
+
+                  export const createAuth = (ctx: GenericCtx) =>
+                    // Configure your Better Auth instance here
+                    betterAuth({
+                      // All auth requests will be proxied through your TanStack Start server
+                      baseURL: siteUrl,
+                      database: convexAdapter(ctx, betterAuthComponent),
+
+                      // Simple non-verified email/password to get started
+                      emailAndPassword: {
+                        enabled: true,
+                        requireEmailVerification: false,
+                      },
+                      plugins: [
+                        // The Convex plugin is required
+                        convex(),
+                      ],
+                    });
+                `,
+              },
+            ]}
+          />
+          <CodeBlock
+            variantGroup="framework"
+            variants={[
+              {
+                id: "react",
+                label: "React",
+                language: "typescript",
+                filename: "convex/auth.ts",
+                removedLines: [
+                  3, 6, 7, 9, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
+                  39, 40, 41, 42, 43, 44, 45, 46,
+                ],
+                addedLines: [10],
+                code: stripIndent`
+                  import {
+                    BetterAuth,
+                    convexAdapter,
+                    type AuthFunctions,
+                  } from "@convex-dev/better-auth";
+                  import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
+                  import { betterAuth } from "better-auth";
+                  import { api, components, internal } from "./_generated/api";
+                  import { query, type GenericCtx } from "./_generated/server";
+                  import { query } from "./_generated/server";
+                  import type { Id, DataModel } from "./_generated/dataModel";
+
+                  // ... existing code ...
+
+                  export const createAuth = (ctx: GenericCtx) =>
+                    // Configure your Better Auth instance here
+                    betterAuth({
+                      database: convexAdapter(ctx, betterAuthComponent),
+
+                      // Simple non-verified email/password to get started
+                      emailAndPassword: {
+                        enabled: true,
+                        requireEmailVerification: false,
+                      },
+                      plugins: [
+                        // The Convex plugin is required
+                        convex(),
+
+                        // The cross domain plugin is required for client side frameworks
+                        crossDomain({
+                          siteUrl,
+                        }),
+                      ],
+                    });
+
+                  // ... existing code ...
+                `,
+              },
+              {
+                id: "nextjs",
+                label: "Next.js",
+                language: "typescript",
+                filename: "convex/auth.ts",
+                removedLines: [
+                  3, 7, 8, 10, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27,
+                  28, 29, 30, 31, 32,
+                ],
+                addedLines: [11],
+                code: stripIndent`
+                  import {
+                    BetterAuth,
+                    convexAdapter,
+                    type AuthFunctions,
+                    type PublicAuthFunctions,
+                  } from "@convex-dev/better-auth";
+                  import { convex } from "@convex-dev/better-auth/plugins";
+                  import { betterAuth } from "better-auth";
+                  import { api, components, internal } from "./_generated/api";
+                  import { query, type GenericCtx } from "./_generated/server";
+                  import { query } from "./_generated/server";
+                  import type { Id, DataModel } from "./_generated/dataModel";
+
+                  // ... existing code ...
+
+                  export const createAuth = (ctx: GenericCtx) =>
+                    // Configure your Better Auth instance here
+                    betterAuth({
+                      // All auth requests will be proxied through your next.js server
+                      baseURL: "http://localhost:3000",
+                      database: convexAdapter(ctx, betterAuthComponent),
+
+                      // Simple non-verified email/password to get started
+                      emailAndPassword: {
+                        enabled: true,
+                        requireEmailVerification: false,
+                      },
+                      plugins: [
+                        // The Convex plugin is required
+                        convex(),
+                      ],
+                    });
+
+                  // ... existing code ...
+                `,
+              },
+              {
+                id: "tanstack",
+                label: "TanStack Start",
+                language: "typescript",
+                filename: "convex/auth.ts",
+                removedLines: [
+                  3, 6, 7, 9, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
+                  27, 28, 29, 30, 31,
+                ],
+                addedLines: [10],
+                code: stripIndent`
+                  import {
+                    BetterAuth,
+                    convexAdapter,
+                    type AuthFunctions,
+                  } from "@convex-dev/better-auth";
+                  import { convex } from "@convex-dev/better-auth/plugins";
+                  import { betterAuth } from "better-auth";
+                  import { api, components, internal } from "./_generated/api";
+                  import { query, type GenericCtx } from "./_generated/server";
+                  import { query } from "./_generated/server";
+                  import type { Id, DataModel } from "./_generated/dataModel";
+
+                  // ... existing code ...
+
+                  export const createAuth = (ctx: GenericCtx) =>
+                    // Configure your Better Auth instance here
+                    betterAuth({
+                      // All auth requests will be proxied through your TanStack Start server
+                      baseURL: "http://localhost:3000",
+                      database: convexAdapter(ctx, betterAuthComponent),
+
+                      // Simple non-verified email/password to get started
+                      emailAndPassword: {
+                        enabled: true,
+                        requireEmailVerification: false,
+                      },
+                      plugins: [
+                        // The Convex plugin is required
+                        convex(),
+                      ],
+                    });
+
+                  // ... existing code ...
+                `,
+              },
+            ]}
+          />
+
+          <ContentHeading
             id="migrate-0-6-to-0-7-tanstack-fetch-session"
             title="TanStack auth helpers"
           />
@@ -2418,17 +2769,15 @@ export default function Home() {
             Because environment variables are not accessible to dependencies
             with Vite, the react-start exports should now be initialized
             together in a single file. You can do this anywhere, but{" "}
-            <Code>auth-client.ts</Code> is a good place.
+            <Code>src/lib/utils.ts</Code> is a good place.
           </P>
           <CodeBlock
             language="typescript"
-            filename="src/lib/auth-client.ts"
-            addedLines={[1, 2, 6, 7, 8, 9]}
+            filename="src/lib/utils.ts"
+            addedLines={[1, 2, 3, 4, 5, 6, 7]}
             code={stripIndent`
               import { reactStartHelpers } from '@convex-dev/better-auth/react-start'
-              import { createAuth } from 'convex/auth'
-
-              // ...existing auth-client.ts code...
+              import { createAuth } from '../src/lib/auth'
 
               export const { fetchSession, reactStartHandler, getCookieName } =
                 reactStartHelpers(createAuth, {
@@ -2443,13 +2792,13 @@ export default function Home() {
           <CodeBlock
             language="typescript"
             filename="src/routes/__root.tsx"
-            removedLines={[1, 2, 3, 10]}
+            removedLines={[2, 3, 10]}
             addedLines={[4, 11]}
             code={stripIndent`
               import { authClient } from '@/lib/auth-client'
+              import { createAuth } from '@/lib/auth'
               import { fetchSession, getCookieName } from '@convex-dev/better-auth/react-start'
-              import { createAuth } from 'convex/auth'
-              import { authClient, fetchSession, getCookieName } from '@/lib/auth-client'
+              import { fetchSession, getCookieName } from '@/lib/utils'
 
               // ...
 
@@ -2476,7 +2825,7 @@ export default function Home() {
             code={stripIndent`
               import { createServerFileRoute } from '@tanstack/react-start/server'
               import { reactStartHandler } from '@convex-dev/better-auth/react-start'
-              import { reactStartHandler } from '@/lib/auth-client'
+              import { reactStartHandler } from '@/lib/utils'
             `}
           />
         </Subsection>
@@ -2503,12 +2852,6 @@ export default function Home() {
             <Li>
               The <Code>crossDomain</Code> plugin now requires a{" "}
               <Code>siteUrl</Code> option.
-            </Li>
-            <Li>
-              The <Code>siteUrl</Code> value will be added to{" "}
-              <Code>trustedOrigins</Code> automatically.{" "}
-              <Code>trustedOrigins</Code> can be removed if using the cross
-              domain plugin and your site url was the only value.
             </Li>
           </Ul>
           <CodeBlock

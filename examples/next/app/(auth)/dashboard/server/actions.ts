@@ -4,7 +4,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { fetchMutation } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
 import { getToken } from "@convex-dev/better-auth/nextjs";
-import { createAuth } from "@/convex/auth";
+import { createAuth } from "@/lib/auth";
 
 // Authenticated mutation via server function
 export async function removeTodo(id: Id<"todos">) {
