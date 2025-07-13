@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- fix: fail to push on invalid Convex version
+
 ## 0.7.2
 
 - fix: add Convex version requirement to docs and package.json.

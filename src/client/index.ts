@@ -25,7 +25,14 @@ import { requireEnv } from "../utils";
 import { partial } from "convex-helpers/validators";
 import { adapterArgsValidator, adapterWhereValidator } from "../component/lib";
 import { corsRouter } from "convex-helpers/server/cors";
+import { version as convexVersion } from "convex";
+import semver from "semver";
+
 export { convexAdapter };
+
+if (semver.lt(convexVersion, "1.25.0")) {
+  throw new Error("Convex version must be at least 1.25.0");
+}
 
 const createUserFields = omit(schema.tables.user.validator.fields, ["userId"]);
 const createUserValidator = v.object(createUserFields);
