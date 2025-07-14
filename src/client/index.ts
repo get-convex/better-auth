@@ -248,7 +248,16 @@ export class BetterAuth<UserId extends string = string> {
   registerRoutes(
     http: HttpRouter,
     createAuth: (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>,
-    opts = { cors: false }
+    opts: {
+      cors?:
+        | boolean
+        | {
+            // These values are appended to the default values
+            allowedOrigins?: string[];
+            allowedHeaders?: string[];
+            exposedHeaders?: string[];
+          };
+    } = {}
   ) {
     const betterAuthOptions = createAuth({} as any).options;
     const path = betterAuthOptions.basePath ?? "/api/auth";
@@ -295,6 +304,10 @@ export class BetterAuth<UserId extends string = string> {
 
       return;
     }
+    const corsOpts =
+      typeof opts.cors === "boolean"
+        ? { allowedOrigins: [], allowedHeaders: [], exposedHeaders: [] }
+        : opts.cors;
     const cors = corsRouter(http, {
       allowedOrigins: async (request) => {
         const trustedOriginsOption =
@@ -302,16 +315,22 @@ export class BetterAuth<UserId extends string = string> {
         const trustedOrigins = Array.isArray(trustedOriginsOption)
           ? trustedOriginsOption
           : await trustedOriginsOption(request);
-        return trustedOrigins.map((origin) =>
-          // Strip trailing wildcards, unsupported for allowedOrigins
-          origin.endsWith("*") && origin.length > 1
-            ? origin.slice(0, -1)
-            : origin
-        );
+        return trustedOrigins
+          .map((origin) =>
+            // Strip trailing wildcards, unsupported for allowedOrigins
+            origin.endsWith("*") && origin.length > 1
+              ? origin.slice(0, -1)
+              : origin
+          )
+          .concat(corsOpts.allowedOrigins ?? []);
       },
       allowCredentials: true,
-      allowedHeaders: ["Content-Type", "Better-Auth-Cookie"],
-      exposedHeaders: ["Set-Better-Auth-Cookie"],
+      allowedHeaders: ["Content-Type", "Better-Auth-Cookie"].concat(
+        corsOpts.allowedHeaders ?? []
+      ),
+      exposedHeaders: ["Set-Better-Auth-Cookie"].concat(
+        corsOpts.exposedHeaders ?? []
+      ),
       debug: this.config?.verbose,
       enforceAllowOrigins: false,
     });
