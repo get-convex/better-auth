@@ -199,6 +199,60 @@ export default function Home() {
         </div>
       </section>
 
+      <section id="latest-release" className="mb-12">
+        <div className="p-6 rounded-lg border bg-muted/50 space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="h-6 w-6 text-green-500 flex-shrink-0 text-2xl">
+              🎉
+            </div>
+            <h2 className="text-2xl font-bold text-green-500">
+              v0.7.0 Released!
+            </h2>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="font-semibold text-foreground">Highlights</h3>
+            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+              <li>All plugins supported!</li>
+              <li>
+                A proper internal database adapter that works dynamically for
+                generic plugin support
+              </li>
+              <li>
+                CORS handling improved and no longer on by default - no more
+                cors errors for full stack apps 🙌
+              </li>
+              <li>
+                Internal schema now generated with Better Auth for improved
+                stability
+              </li>
+            </ul>
+          </div>
+
+          <div className="space-y-4">
+            <p className="text-muted-foreground">
+              This comes with some breaking changes - check out the{" "}
+              <a href="#migrate-0-6-to-0-7" className="text-primary underline">
+                migration guide
+              </a>{" "}
+              to upgrade.
+            </p>
+
+            <p className="text-muted-foreground">
+              <a
+                href="https://discord.com/channels/1019350475847499849/1365754331873415440/1392921192154923169"
+                className="text-primary underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Read the full announcement on Discord
+              </a>{" "}
+              for detailed notes and future plans.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <Section id="what-is-this" title="What is this?">
         <P>
           This library is a{" "}
