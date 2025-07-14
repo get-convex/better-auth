@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.5
+
+- fix: roll back trusted origins breaking change for cors
+
+## 0.7.4
+
+- feat: allow `registerRoutes` to be called with a `cors` config object
+
 ## 0.7.3
 
 - fix: fail to push on invalid Convex version
