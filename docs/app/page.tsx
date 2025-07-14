@@ -979,7 +979,7 @@ export default function Home() {
 
                   // Typesafe way to pass Convex functions defined in this file
                   const authFunctions: AuthFunctions = internal.auth;
-                  const publicAuthFunctions: PublicAuthFunctions = api.auth
+                  const publicAuthFunctions: PublicAuthFunctions = api.auth;
 
                   // Initialize the component
                   export const betterAuthComponent = new BetterAuth(
@@ -996,6 +996,7 @@ export default function Home() {
                     updateUser,
                     deleteUser,
                     createSession,
+                    isAuthenticated,
                   } =
                     betterAuthComponent.createAuthFunctions<DataModel>({
                       // Must create a user and return the user id
