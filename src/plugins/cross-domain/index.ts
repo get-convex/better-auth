@@ -21,6 +21,17 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
 
   return {
     id: "cross-domain",
+    // TODO: remove this in the next minor release, it doesn't
+    // actually affect ctx.trustedOrigins. cors allowedOrigins
+    // is using it, via options.trustedOrigins, though, so it's
+    // a breaking change.
+    init() {
+      return {
+        options: {
+          trustedOrigins: [siteUrl],
+        },
+      };
+    },
     hooks: {
       before: [
         {
