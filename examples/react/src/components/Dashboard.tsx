@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from "convex/react";
+import { useQuery } from "convex/react";
 import { TodoList } from "./TodoList";
 import { Button } from "./ui/button";
 import { LogOut, Trash2 } from "lucide-react";

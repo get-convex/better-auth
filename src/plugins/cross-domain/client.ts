@@ -141,6 +141,18 @@ export const crossDomainClient = (
         updateSession: () => {
           $store.notify("$sessionSignal");
         },
+        /**
+         * Get the stored session data.
+         *
+         * @example
+         * ```ts
+         * const sessionData = client.getSessionData();
+         * ```
+         */
+        getSessionData: () => {
+          const sessionData = storage?.getItem(localCacheName);
+          return sessionData ? JSON.parse(sessionData) : null;
+        },
       };
     },
     fetchPlugins: [
