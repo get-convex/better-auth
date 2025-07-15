@@ -16,6 +16,7 @@ jobs:
             package.json
           node-version: "18.x"
           cache: "npm"
+      - run: npm install
       - run: npm ci
       - name: Install dependencies in all examples
         run: |
@@ -24,7 +25,7 @@ jobs:
               if [ -f "$dir/package-lock.json" ]; then
                 npm ci --prefix "$dir"
               else
-                npm i --prefix "$dir"
+                npm install --prefix "$dir"
               fi
             fi
           done
