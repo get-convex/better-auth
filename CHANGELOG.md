@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.7
+
+- generate admin plugin schema
+
 ## 0.7.5
 
 - fix: roll back trusted origins breaking change for cors
