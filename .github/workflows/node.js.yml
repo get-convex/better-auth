@@ -13,11 +13,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           cache-dependency-path: |
-            example/package.json
             package.json
           node-version: "18.x"
           cache: "npm"
-      - run: npm i
       - run: npm ci
-      - run: cd example && npm i && cd ..
+      - name: Install dependencies in all examples
+        run: |
+          for dir in examples/*/; do
+            if [ -f "$dir/package.json" ]; then
+              if [ -f "$dir/package-lock.json" ]; then
+                npm ci --prefix "$dir"
+              else
+                npm i --prefix "$dir"
+              fi
+            fi
+          done
       - run: npm test
