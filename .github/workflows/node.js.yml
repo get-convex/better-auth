@@ -1,9 +1,9 @@
 name: Run tests
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "test-ci"]
   pull_request:
-    branches: ["main"]
+    branches: ["main", "test-ci"]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,11 +13,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           cache-dependency-path: |
-            example/package.json
             package.json
           node-version: "18.x"
           cache: "npm"
-      - run: npm i
-      - run: npm ci
-      - run: cd example && npm i && cd ..
+      - run: npm install
       - run: npm test
