@@ -19,6 +19,10 @@ const schema = defineSchema({
     displayUsername: v.optional(v.string()),
     phoneNumber: v.optional(v.string()),
     phoneNumberVerified: v.optional(v.boolean()),
+    role: v.optional(v.string()),
+    banned: v.optional(v.boolean()),
+    banReason: v.optional(v.string()),
+    banExpires: v.optional(v.number()),
     stripeCustomerId: v.optional(v.string()),
     userId: v.optional(v.string()),
   })
@@ -37,6 +41,7 @@ const schema = defineSchema({
     ipAddress: v.optional(v.string()),
     userAgent: v.optional(v.string()),
     userId: v.string(),
+    impersonatedBy: v.optional(v.string()),
     activeOrganizationId: v.optional(v.string()),
   })
     .index("expiresAt", ["expiresAt"])

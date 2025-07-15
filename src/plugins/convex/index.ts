@@ -136,7 +136,7 @@ export const convex = (
                 maxAge: jwtExpirationSeconds,
               });
               ctx.setCookie(jwtCookie.name, token, jwtCookie.attributes);
-            } catch (err) {
+            } catch (_err) {
               // no-op, some sign-in calls (eg., when redirecting to 2fa)
               // 401 here
             }

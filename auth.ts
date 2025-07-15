@@ -1,5 +1,6 @@
 import { betterAuth, BetterAuthOptions } from "better-auth";
 import {
+  admin,
   anonymous,
   apiKey,
   bearer,
@@ -40,6 +41,7 @@ const options = {
     magicLink({ sendMagicLink: async () => {} }),
     emailOTP({ sendVerificationOTP: async () => {} }),
     passkey(),
+    admin(),
     genericOAuth({
       config: [
         {
