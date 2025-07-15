@@ -18,15 +18,4 @@ jobs:
           cache: "npm"
       - run: npm install
       - run: npm ci
-      - name: Install dependencies in all examples
-        run: |
-          for dir in examples/*/; do
-            if [ -f "$dir/package.json" ]; then
-              if [ -f "$dir/package-lock.json" ]; then
-                npm ci --prefix "$dir"
-              else
-                npm install --prefix "$dir"
-              fi
-            fi
-          done
       - run: npm test
