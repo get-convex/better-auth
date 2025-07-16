@@ -77,6 +77,9 @@ export declare const components: {
           input:
             | {
                 data: {
+                  banExpires?: number;
+                  banReason?: string;
+                  banned?: boolean;
                   createdAt: number;
                   displayUsername?: string;
                   email: string;
@@ -86,6 +89,7 @@ export declare const components: {
                   name: string;
                   phoneNumber?: string;
                   phoneNumberVerified?: boolean;
+                  role?: string;
                   stripeCustomerId?: string;
                   twoFactorEnabled?: boolean;
                   updatedAt: number;
@@ -121,6 +125,7 @@ export declare const components: {
                   activeOrganizationId?: string;
                   createdAt: number;
                   expiresAt: number;
+                  impersonatedBy?: string;
                   ipAddress?: string;
                   token: string;
                   updatedAt: number;
@@ -875,6 +880,9 @@ export declare const components: {
                 sortBy?: { direction: "asc" | "desc"; field: string };
                 unique?: boolean;
                 update: {
+                  banExpires?: number;
+                  banReason?: string;
+                  banned?: boolean;
                   createdAt?: number;
                   displayUsername?: string;
                   email?: string;
@@ -884,6 +892,7 @@ export declare const components: {
                   name?: string;
                   phoneNumber?: string;
                   phoneNumberVerified?: boolean;
+                  role?: string;
                   stripeCustomerId?: string;
                   twoFactorEnabled?: boolean;
                   updatedAt?: number;
@@ -932,6 +941,7 @@ export declare const components: {
                   activeOrganizationId?: string;
                   createdAt?: number;
                   expiresAt?: number;
+                  impersonatedBy?: string;
                   ipAddress?: string;
                   token?: string;
                   updatedAt?: number;
@@ -1727,6 +1737,9 @@ export declare const components: {
             | {
                 model: "user";
                 update: {
+                  banExpires?: number;
+                  banReason?: string;
+                  banned?: boolean;
                   createdAt?: number;
                   displayUsername?: string;
                   email?: string;
@@ -1736,6 +1749,7 @@ export declare const components: {
                   name?: string;
                   phoneNumber?: string;
                   phoneNumberVerified?: boolean;
+                  role?: string;
                   stripeCustomerId?: string;
                   twoFactorEnabled?: boolean;
                   updatedAt?: number;
@@ -1771,6 +1785,7 @@ export declare const components: {
                   activeOrganizationId?: string;
                   createdAt?: number;
                   expiresAt?: number;
+                  impersonatedBy?: string;
                   ipAddress?: string;
                   token?: string;
                   updatedAt?: number;
@@ -2349,6 +2364,62 @@ export declare const components: {
               };
         },
         any
+      >;
+    };
+  };
+  resend: {
+    lib: {
+      cancelEmail: FunctionReference<
+        "mutation",
+        "internal",
+        { emailId: string },
+        null
+      >;
+      get: FunctionReference<"query", "internal", { emailId: string }, any>;
+      getStatus: FunctionReference<
+        "query",
+        "internal",
+        { emailId: string },
+        {
+          complained: boolean;
+          errorMessage: string | null;
+          opened: boolean;
+          status:
+            | "waiting"
+            | "queued"
+            | "cancelled"
+            | "sent"
+            | "delivered"
+            | "delivery_delayed"
+            | "bounced";
+        }
+      >;
+      handleEmailEvent: FunctionReference<
+        "mutation",
+        "internal",
+        { event: any },
+        null
+      >;
+      sendEmail: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          from: string;
+          headers?: Array<{ name: string; value: string }>;
+          html?: string;
+          options: {
+            apiKey: string;
+            initialBackoffMs: number;
+            onEmailEvent?: { fnHandle: string };
+            retryAttempts: number;
+            testMode: boolean;
+          };
+          replyTo?: Array<string>;
+          subject: string;
+          text?: string;
+          to: string;
+        },
+        string
       >;
     };
   };

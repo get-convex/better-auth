@@ -8,5 +8,6 @@ export default defineConfig({
         projects: ['./tsconfig.json'],
       }),
     ],
+    ssr: { noExternal: ['@convex-dev/resend'] },
   },
 })

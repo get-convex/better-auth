@@ -19,4 +19,5 @@ export default defineConfig({
     },
     conditions: ['@convex-dev/component-source'],
   },
+  ssr: { noExternal: ['@convex-dev/resend'] },
 })
