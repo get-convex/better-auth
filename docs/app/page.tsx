@@ -1116,7 +1116,8 @@ export default function Home() {
                     id: "react",
                     label: "React",
                     language: "typescript",
-                    filename: "src/lib/utils.ts",
+                    filename: "src/lib/server-auth-utils.ts",
+                    addedLines: [1, 2, 3, 4, 5, 6, 7],
                     code: stripIndent`
                       import { createAuth } from './auth'
                       import { reactStartHelpers } from '@convex-dev/better-auth/react-start'
@@ -1316,7 +1317,7 @@ export default function Home() {
                         authClient,
                         fetchSession,
                         getCookieName,
-                      } from '@/lib/utils'
+                      } from '@/lib/server-auth-utils'
 
                       // Server side session request
                       const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
@@ -2068,7 +2069,7 @@ export default function Home() {
                 code: stripIndent`
                   import { createServerFn } from "@tanstack/react-start";
                   import { ConvexHttpClient } from "convex/browser";
-                  import { getCookieName } from "../lib/utils";
+                  import { getCookieName } from "../lib/server-auth-utils";
                   import { api } from "../../convex/_generated/api";
 
                   const setupClient = (token?: string) => {
@@ -2823,12 +2824,12 @@ export default function Home() {
           <P>
             Because environment variables are not accessible to dependencies
             with Vite, the react-start exports should now be initialized
-            together in a single file. You can do this anywhere, but{" "}
-            <Code>src/lib/utils.ts</Code> is a good place.
+            together in a single file. You can do this anywhere,{" "}
+            <Code>src/lib/server-auth-utils.ts</Code> is just a recommendation.
           </P>
           <CodeBlock
             language="typescript"
-            filename="src/lib/utils.ts"
+            filename="src/lib/server-auth-utils.ts"
             addedLines={[1, 2, 3, 4, 5, 6, 7]}
             code={stripIndent`
               import { reactStartHelpers } from '@convex-dev/better-auth/react-start'
@@ -2853,7 +2854,7 @@ export default function Home() {
               import { authClient } from '@/lib/auth-client'
               import { createAuth } from '@/lib/auth'
               import { fetchSession, getCookieName } from '@convex-dev/better-auth/react-start'
-              import { fetchSession, getCookieName } from '@/lib/utils'
+              import { fetchSession, getCookieName } from '@/lib/server-auth-utils'
 
               // ...
 
@@ -2880,7 +2881,7 @@ export default function Home() {
             code={stripIndent`
               import { createServerFileRoute } from '@tanstack/react-start/server'
               import { reactStartHandler } from '@convex-dev/better-auth/react-start'
-              import { reactStartHandler } from '@/lib/utils'
+              import { reactStartHandler } from '@/lib/server-auth-utils'
             `}
           />
         </Subsection>

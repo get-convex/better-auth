@@ -1,6 +1,4 @@
 import { api } from '@convex/_generated/api'
-import { getCookieName } from '@convex-dev/better-auth/react-start'
-import { createAuth } from '@convex/auth'
 import { Id } from '@convex/_generated/dataModel'
 import {
   AddTodoForm,
@@ -17,9 +15,10 @@ import { getCookie } from '@tanstack/react-start/server'
 import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { ConvexHttpClient } from 'convex/browser'
+import { getCookieName } from '@/lib/auth-server-utils'
 
 const getToken = async () => {
-  const sessionCookieName = await getCookieName(createAuth)
+  const sessionCookieName = await getCookieName()
   return getCookie(sessionCookieName)
 }
 

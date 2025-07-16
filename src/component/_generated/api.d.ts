@@ -51,6 +51,9 @@ export type Mounts = {
         input:
           | {
               data: {
+                banExpires?: number;
+                banReason?: string;
+                banned?: boolean;
                 createdAt: number;
                 displayUsername?: string;
                 email: string;
@@ -60,6 +63,7 @@ export type Mounts = {
                 name: string;
                 phoneNumber?: string;
                 phoneNumberVerified?: boolean;
+                role?: string;
                 stripeCustomerId?: string;
                 twoFactorEnabled?: boolean;
                 updatedAt: number;
@@ -95,6 +99,7 @@ export type Mounts = {
                 activeOrganizationId?: string;
                 createdAt: number;
                 expiresAt: number;
+                impersonatedBy?: string;
                 ipAddress?: string;
                 token: string;
                 updatedAt: number;
@@ -849,6 +854,9 @@ export type Mounts = {
               sortBy?: { direction: "asc" | "desc"; field: string };
               unique?: boolean;
               update: {
+                banExpires?: number;
+                banReason?: string;
+                banned?: boolean;
                 createdAt?: number;
                 displayUsername?: string;
                 email?: string;
@@ -858,6 +866,7 @@ export type Mounts = {
                 name?: string;
                 phoneNumber?: string;
                 phoneNumberVerified?: boolean;
+                role?: string;
                 stripeCustomerId?: string;
                 twoFactorEnabled?: boolean;
                 updatedAt?: number;
@@ -906,6 +915,7 @@ export type Mounts = {
                 activeOrganizationId?: string;
                 createdAt?: number;
                 expiresAt?: number;
+                impersonatedBy?: string;
                 ipAddress?: string;
                 token?: string;
                 updatedAt?: number;
@@ -1701,6 +1711,9 @@ export type Mounts = {
           | {
               model: "user";
               update: {
+                banExpires?: number;
+                banReason?: string;
+                banned?: boolean;
                 createdAt?: number;
                 displayUsername?: string;
                 email?: string;
@@ -1710,6 +1723,7 @@ export type Mounts = {
                 name?: string;
                 phoneNumber?: string;
                 phoneNumberVerified?: boolean;
+                role?: string;
                 stripeCustomerId?: string;
                 twoFactorEnabled?: boolean;
                 updatedAt?: number;
@@ -1745,6 +1759,7 @@ export type Mounts = {
                 activeOrganizationId?: string;
                 createdAt?: number;
                 expiresAt?: number;
+                impersonatedBy?: string;
                 ipAddress?: string;
                 token?: string;
                 updatedAt?: number;

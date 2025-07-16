@@ -1,5 +1,5 @@
-import { reactStartHandler } from '@convex-dev/better-auth/react-start'
 import { createAPIFileRoute } from '@tanstack/react-start/api'
+import { reactStartHandler } from '@/lib/auth-server-utils'
 
 export const APIRoute = createAPIFileRoute('/api/auth/$')({
   GET: ({ request }) => {

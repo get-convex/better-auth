@@ -15,7 +15,7 @@ import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { ConvexHttpClient } from 'convex/browser'
 import { getCookie } from '@tanstack/react-start/server'
-import { getCookieName } from '@/lib/utils'
+import { getCookieName } from '@/lib/auth-server-utils'
 
 const getToken = async () => {
   const sessionCookieName = await getCookieName()
