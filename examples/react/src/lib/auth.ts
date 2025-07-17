@@ -11,12 +11,11 @@ import {
   sendResetPassword,
 } from "../../convex/email";
 import { betterAuthComponent } from "../../convex/auth";
-import { DataModel } from "../../convex/_generated/dataModel";
-import { GenericActionCtx } from "convex/server";
+import { ActionCtx } from "../../convex/_generated/server";
 
 const siteUrl = requireEnv("SITE_URL");
 
-export const createAuth = (ctx: GenericActionCtx<DataModel>) => {
+export const createAuth = (ctx: ActionCtx) => {
   return betterAuth({
     trustedOrigins: [siteUrl],
     database: convexAdapter(ctx, betterAuthComponent),

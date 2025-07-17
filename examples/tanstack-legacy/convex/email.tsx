@@ -6,16 +6,15 @@ import VerifyOTP from './emails/verifyOTP'
 import { render } from '@react-email/components'
 import React from 'react'
 import ResetPasswordEmail from './emails/resetPassword'
-import { GenericActionCtx } from 'convex/server'
-import { DataModel } from './_generated/dataModel'
 import { components } from './_generated/api'
+import { ActionCtx } from './_generated/server'
 
 const resend: Resend = new Resend(components.resend, {
   testMode: false,
 })
 
 const sendEmail = async (
-  ctx: GenericActionCtx<DataModel>,
+  ctx: ActionCtx,
   {
     to,
     subject,
@@ -35,7 +34,7 @@ const sendEmail = async (
 }
 
 export const sendEmailVerification = async (
-  ctx: GenericActionCtx<DataModel>,
+  ctx: ActionCtx,
   {
     to,
     url,
@@ -52,7 +51,7 @@ export const sendEmailVerification = async (
 }
 
 export const sendOTPVerification = async (
-  ctx: GenericActionCtx<DataModel>,
+  ctx: ActionCtx,
   {
     to,
     code,
@@ -69,7 +68,7 @@ export const sendOTPVerification = async (
 }
 
 export const sendMagicLink = async (
-  ctx: GenericActionCtx<DataModel>,
+  ctx: ActionCtx,
   {
     to,
     url,
@@ -86,7 +85,7 @@ export const sendMagicLink = async (
 }
 
 export const sendResetPassword = async (
-  ctx: GenericActionCtx<DataModel>,
+  ctx: ActionCtx,
   {
     to,
     url,

@@ -9,10 +9,9 @@ import { betterAuth } from 'better-auth'
 import { convexAdapter } from '@convex-dev/better-auth'
 import { convex } from '@convex-dev/better-auth/plugins'
 import { emailOTP, magicLink, twoFactor } from 'better-auth/plugins'
-import { DataModel } from '../../convex/_generated/dataModel'
-import { GenericActionCtx } from 'convex/server'
+import { ActionCtx } from '../../convex/_generated/server'
 
-export const createAuth = (ctx: GenericActionCtx<DataModel>) =>
+export const createAuth = (ctx: ActionCtx) =>
   betterAuth({
     baseURL: process.env.SITE_URL,
     database: convexAdapter(ctx, betterAuthComponent),

@@ -11,10 +11,9 @@ import {
 import { magicLink } from "better-auth/plugins";
 import { betterAuth } from "better-auth";
 import { betterAuthComponent } from "../convex/auth";
-import { GenericActionCtx } from "convex/server";
-import { DataModel } from "../convex/_generated/dataModel";
+import { ActionCtx } from "../convex/_generated/server";
 
-export const createAuth = (ctx: GenericActionCtx<DataModel>) =>
+export const createAuth = (ctx: ActionCtx) =>
   betterAuth({
     baseURL: "https://localhost:3000",
     database: convexAdapter(ctx, betterAuthComponent),
