@@ -167,6 +167,23 @@ export class BetterAuth<UserId extends string = string> {
     return cookie.name;
   }
 
+  async updateUserMetadata(
+    ctx: GenericMutationCtx<GenericDataModel>,
+    userId: UserId,
+    metadata: Omit<
+      Partial<Infer<typeof schema.tables.user.validator>>,
+      "userId"
+    >
+  ) {
+    return ctx.runMutation(this.component.lib.updateOne, {
+      input: {
+        model: "user",
+        where: [{ field: "userId", value: userId }],
+        update: metadata,
+      },
+    });
+  }
+
   createAuthFunctions<DataModel extends GenericDataModel>(opts: {
     onCreateUser: (
       ctx: GenericMutationCtx<DataModel>,

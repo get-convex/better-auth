@@ -11,7 +11,7 @@ import {
 import { partial } from "convex-helpers/validators";
 import { stream } from "convex-helpers/server/stream";
 import { mergedStream } from "convex-helpers/server/stream";
-import { stripIndent, stripIndents } from "common-tags";
+import { stripIndent } from "common-tags";
 
 export const adapterWhereValidator = v.object({
   field: v.string(),
