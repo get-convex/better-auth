@@ -171,6 +171,7 @@
   "types": "./dist/commonjs/client/index.d.ts",
   "module": "./dist/esm/client/index.js",
   "dependencies": {
+    "@convex-dev/resend": "^0.1.5-alpha.0",
     "common-tags": "^1.8.2",
     "convex-helpers": "^0.1.95",
     "is-network-error": "^1.1.0",
