@@ -1925,93 +1925,15 @@ export default function Home() {
                 });
               `}
           />
-        </Subsection>
-
-        <Subsection id="basic-usage-server-side" title="Server side">
-          <ContentHeading id="using-auth-api" title="Using auth.api" />
-          <P>
-            For full stack frameworks like Next.js and TanStack Start, Better
-            Auth provides server side functionality via <Code>auth.api</Code>{" "}
-            methods. With Convex, you would instead run these methods in your
-            Convex functions.
-          </P>
-          <Callout>
-            <Code>auth.api</Code> read-only methods can be run in a query. Use a
-            mutation for anything that updates Better Auth tables.
-          </Callout>
-          <CodeBlock
-            language="typescript"
-            filename="convex/someFile.ts"
-            removedLines={[1, 6, 7, 8, 9, 10]}
-            addedLines={[2, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]}
-            code={stripIndent`
-              import { auth } from "./auth";
-              import { createAuth } from "../src/lib/auth";
-
-              // Example: viewing backup codes with the Two Factor plugin
-
-              export const getBackupCodes = () => {
-                return auth.api.viewBackupCodes({
-                  body: { userId: "user-id" }
-                })
-              }
-
-              export const getBackupCodes = query({
-                args: {
-                  userId: v.id("users"),
-                },
-                handler: async (ctx, args) => {
-                  const auth = createAuth(ctx);
-                  return await auth.api.viewBackupCodes({
-                    body: {
-                      userId: args.userId,
-                    },
-                  });
-                },
-              });
-            `}
-          />
-
-          <ContentHeading id="basic-usage-server-sessions" title="Sessions" />
-          <P>
-            Accessing the session server side requires request headers. The
-            Convex component provides a method for generating headers for the
-            current session.
-          </P>
-
-          <CodeBlock
-            language="typescript"
-            filename="convex/someFile.ts"
-            code={stripIndent`
-                import { betterAuthComponent } from "./auth";
-                import { createAuth } from "../src/lib/auth";
-
-                export const getSession = query({
-                  args: {},
-                  handler: async (ctx) => {
-                    const auth = createAuth(ctx);
-                    const headers = await betterAuthComponent.getHeaders(ctx);
-                    const session = await auth.api.getSession({
-                      headers,
-                    });
-                    if (!session) {
-                      return null;
-                    }
-                    // Do something with the session
-                    return session;
-                  }
-                });
-              `}
-          />
 
           <ContentHeading
-            id="basic-usage-server-side-auth"
-            title="Server-side auth"
+            id="basic-usage-authorization-framework-server"
+            title="Framework server"
           />
           <P>
-            Server-side authentication with the Better Auth component works
-            similar to other Convex authentication providers. See the Convex
-            docs for your framework for more details.
+            Framework server-side authentication with the Better Auth component
+            works similar to other Convex authentication providers. See the
+            Convex docs for your framework for more details.
           </P>
           <Ul>
             <Li>
@@ -2033,9 +1955,9 @@ export default function Home() {
           </Ul>
 
           <P>
-            Server side authentication with Convex requires a token. To get an
-            identity token with Better Auth, use the framework appropriate{" "}
-            <Code>getToken</Code> approach.
+            Framework server side authentication with Convex requires a token.
+            To get an identity token with Better Auth, use the framework
+            appropriate <Code>getToken</Code> approach.
           </P>
 
           <CodeBlock
@@ -2096,6 +2018,52 @@ export default function Home() {
                 `,
               },
             ]}
+          />
+        </Subsection>
+
+        <Subsection id="basic-usage-server-side" title="Server side">
+          <ContentHeading id="using-auth-api" title="Using auth.api" />
+          <P>
+            For full stack frameworks like Next.js and TanStack Start, Better
+            Auth provides server side functionality via <Code>auth.api</Code>{" "}
+            methods. With Convex, you would instead run these methods in your
+            Convex functions.
+          </P>
+          <P>
+            <Code>auth.api</Code> methods require request headers. The Convex
+            component provides a method for generating headers for the current
+            session.
+          </P>
+          <Callout>
+            <Code>auth.api</Code> read-only methods can be run in a query. Use a
+            mutation for anything that updates Better Auth tables.
+          </Callout>
+
+          <CodeBlock
+            language="typescript"
+            filename="convex/someFile.ts"
+            code={stripIndent`
+                import { betterAuthComponent } from "./auth";
+                import { createAuth } from "../src/lib/auth";
+
+                // Example: using the getSession method in a Convex query
+
+                export const getSession = query({
+                  args: {},
+                  handler: async (ctx) => {
+                    const auth = createAuth(ctx);
+                    const headers = await betterAuthComponent.getHeaders(ctx);
+                    const session = await auth.api.getSession({
+                      headers,
+                    });
+                    if (!session) {
+                      return null;
+                    }
+                    // Do something with the session
+                    return session;
+                  }
+                });
+              `}
           />
         </Subsection>
 
