@@ -368,9 +368,22 @@ export class BetterAuth<UserId extends string = string> {
 
 /* Type utils follow */
 
-type RunQueryCtx = {
+export type RunQueryCtx = {
   runQuery: GenericQueryCtx<GenericDataModel>["runQuery"];
 };
+
+export type RunMutationCtx = {
+  runQuery: GenericQueryCtx<GenericDataModel>["runQuery"];
+  runMutation: GenericMutationCtx<GenericDataModel>["runMutation"];
+};
+
+export type RunActionCtx = {
+  runQuery: GenericQueryCtx<GenericDataModel>["runQuery"];
+  runMutation: GenericMutationCtx<GenericDataModel>["runMutation"];
+  runAction: GenericActionCtx<GenericDataModel>["runAction"];
+};
+
+export type RunCtx = RunQueryCtx | RunMutationCtx | RunActionCtx;
 
 export type OpaqueIds<T> =
   T extends GenericId<infer _T>

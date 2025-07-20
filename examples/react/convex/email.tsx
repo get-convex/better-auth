@@ -6,11 +6,11 @@ import { render } from "@react-email/components";
 import React from "react";
 import ResetPasswordEmail from "./emails/resetPassword";
 import { Resend } from "@convex-dev/resend";
-import { ActionCtx } from "./_generated/server";
 import { components } from "./_generated/api";
+import { RunMutationCtx } from "@convex-dev/better-auth";
 
 const sendEmail = async (
-  ctx: ActionCtx,
+  ctx: RunMutationCtx,
   {
     to,
     subject,
@@ -33,7 +33,7 @@ const sendEmail = async (
 };
 
 export const sendEmailVerification = async (
-  ctx: ActionCtx,
+  ctx: RunMutationCtx,
   {
     to,
     url,
@@ -50,7 +50,7 @@ export const sendEmailVerification = async (
 };
 
 export const sendOTPVerification = async (
-  ctx: ActionCtx,
+  ctx: RunMutationCtx,
   {
     to,
     code,
@@ -67,7 +67,7 @@ export const sendOTPVerification = async (
 };
 
 export const sendMagicLink = async (
-  ctx: ActionCtx,
+  ctx: RunMutationCtx,
   {
     to,
     url,
@@ -84,7 +84,7 @@ export const sendMagicLink = async (
 };
 
 export const sendResetPassword = async (
-  ctx: ActionCtx,
+  ctx: RunMutationCtx,
   {
     to,
     url,

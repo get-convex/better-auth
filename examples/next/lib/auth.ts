@@ -11,9 +11,10 @@ import {
 import { magicLink } from "better-auth/plugins";
 import { betterAuth } from "better-auth";
 import { betterAuthComponent } from "../convex/auth";
-import { ActionCtx } from "../convex/_generated/server";
+import { requireMutationCtx } from "@convex-dev/better-auth/utils";
+import { GenericCtx } from "../convex/_generated/server";
 
-export const createAuth = (ctx: ActionCtx) =>
+export const createAuth = (ctx: GenericCtx) =>
   betterAuth({
     baseURL: "https://localhost:3000",
     database: convexAdapter(ctx, betterAuthComponent),
@@ -25,7 +26,7 @@ export const createAuth = (ctx: ActionCtx) =>
     },
     emailVerification: {
       sendVerificationEmail: async ({ user, url }) => {
-        await sendEmailVerification(ctx, {
+        await sendEmailVerification(requireMutationCtx(ctx), {
           to: user.email,
           url,
         });
@@ -35,7 +36,7 @@ export const createAuth = (ctx: ActionCtx) =>
       enabled: true,
       requireEmailVerification: true,
       sendResetPassword: async ({ user, url }) => {
-        await sendResetPassword(ctx, {
+        await sendResetPassword(requireMutationCtx(ctx), {
           to: user.email,
           url,
         });
@@ -59,7 +60,7 @@ export const createAuth = (ctx: ActionCtx) =>
     plugins: [
       magicLink({
         sendMagicLink: async ({ email, url }) => {
-          await sendMagicLink(ctx, {
+          await sendMagicLink(requireMutationCtx(ctx), {
             to: email,
             url,
           });
@@ -67,7 +68,7 @@ export const createAuth = (ctx: ActionCtx) =>
       }),
       emailOTP({
         async sendVerificationOTP({ email, otp }) {
-          await sendOTPVerification(ctx, {
+          await sendOTPVerification(requireMutationCtx(ctx), {
             to: email,
             code: otp,
           });

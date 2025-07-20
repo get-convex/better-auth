@@ -1,7 +1,7 @@
 import { convexAdapter } from "@convex-dev/better-auth";
 import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
 import { betterAuth } from "better-auth";
-import { requireEnv } from "@convex-dev/better-auth/utils";
+import { requireEnv, requireMutationCtx } from "@convex-dev/better-auth/utils";
 import { emailOTP } from "better-auth/plugins";
 import { magicLink } from "better-auth/plugins";
 import {
@@ -11,17 +11,17 @@ import {
   sendResetPassword,
 } from "../../convex/email";
 import { betterAuthComponent } from "../../convex/auth";
-import { ActionCtx } from "../../convex/_generated/server";
+import type { GenericCtx } from "convex/_generated/server";
 
 const siteUrl = requireEnv("SITE_URL");
 
-export const createAuth = (ctx: ActionCtx) => {
+export const createAuth = (ctx: GenericCtx) => {
   return betterAuth({
     trustedOrigins: [siteUrl],
     database: convexAdapter(ctx, betterAuthComponent),
     emailVerification: {
       sendVerificationEmail: async ({ user, url }) => {
-        await sendEmailVerification(ctx, {
+        await sendEmailVerification(requireMutationCtx(ctx), {
           to: user.email,
           url,
         });
@@ -31,7 +31,7 @@ export const createAuth = (ctx: ActionCtx) => {
       enabled: true,
       requireEmailVerification: true,
       sendResetPassword: async ({ user, url }) => {
-        await sendResetPassword(ctx, {
+        await sendResetPassword(requireMutationCtx(ctx), {
           to: user.email,
           url,
         });
@@ -51,7 +51,7 @@ export const createAuth = (ctx: ActionCtx) => {
     plugins: [
       magicLink({
         sendMagicLink: async ({ email, url }) => {
-          await sendMagicLink(ctx, {
+          await sendMagicLink(requireMutationCtx(ctx), {
             to: email,
             url,
           });
@@ -59,7 +59,7 @@ export const createAuth = (ctx: ActionCtx) => {
       }),
       emailOTP({
         async sendVerificationOTP({ email, otp }) {
-          await sendOTPVerification(ctx, {
+          await sendOTPVerification(requireMutationCtx(ctx), {
             to: email,
             code: otp,
           });
