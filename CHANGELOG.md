@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.9
+
+- Add context type guards to utils.
+
 ## 0.7.8
 
 - Add `updateUserMetadata` method to the client (undocumented, may change or be removed).
