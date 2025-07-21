@@ -18,13 +18,7 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "isolatedModules": true,
-    "noEmit": true,
-
-    /* This should only be used in this example. Real apps should not attempt
-     * to compile TypeScript because differences between tsconfig.json files can
-     * cause the code to be compiled differently.
-     */
-    "customConditions": ["@convex-dev/component-source"]
+    "noEmit": true
   },
   "include": ["./**/*"],
   "exclude": ["./_generated"]

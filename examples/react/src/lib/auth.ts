@@ -11,7 +11,7 @@ import {
   sendResetPassword,
 } from "../../convex/email";
 import { betterAuthComponent } from "../../convex/auth";
-import type { GenericCtx } from "convex/_generated/server";
+import type { GenericCtx } from "../../convex/_generated/server";
 
 const siteUrl = requireEnv("SITE_URL");
 

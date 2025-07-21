@@ -8,9 +8,5 @@ export default defineConfig({
         projects: ['./tsconfig.json'],
       }),
     ],
-    // Allows this example to use other components without importing
-    // them via @convex-dev/component-source. Not necessary for real
-    // apps.
-    ssr: { noExternal: ['@convex-dev/resend'] },
   },
 })

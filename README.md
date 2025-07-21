@@ -28,20 +28,26 @@ intentionally not set up for it.
 npm install
 ```
 
-3. Install example dependencies
+3. Run the component build watch task (keep this running)
+
+```bash
+npm run watch
+```
+
+4. In a separate terminal, install example dependencies
 
 ```bash
 cd examples/<example-name>
 npm install
 ```
 
-4. Initialize the database
+5. Initialize the database
 
 ```bash
 npx convex dev --once
 ```
 
-5. Run the example
+6. Run the example
 
 ```bash
 npm run dev

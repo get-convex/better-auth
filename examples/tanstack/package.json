@@ -7,9 +7,9 @@
   "scripts": {
     "dev": "concurrently -r npm:dev:web npm:dev:db",
     "dev:web": "vite dev --port 3000",
-    "dev:db": "npx convex dev --live-component-sources --typecheck-components",
+    "dev:db": "npx convex dev",
     "build": "vite build",
-    "generate": "convex dev --live-component-sources --typecheck-components --once",
+    "generate": "convex dev --once",
     "start": "node .output/server/index.mjs",
     "lint": "prettier --check '**/*' --ignore-unknown && eslint --ext .ts,.tsx ./app",
     "format": "prettier --write '**/*' --ignore-unknown"

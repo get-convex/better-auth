@@ -19,8 +19,13 @@
   "type": "module",
   "scripts": {
     "build": "npm run build:esm && npm run build:cjs",
-    "build:esm": "tsc --project ./esm.json && tsc-alias -p ./esm.json && echo '{\\n  \"type\": \"module\"\\n}' > dist/esm/package.json",
-    "build:cjs": "tsc --project ./commonjs.json && echo '{\\n  \"type\": \"commonjs\"\\n}' > dist/commonjs/package.json",
+    "build:esm": "tsc --project ./esm.json && npm run build:esm:generatePackageJson",
+    "build:cjs": "tsc --project ./commonjs.json && npm run build:cjs:generatePackageJson",
+    "build:esm:generatePackageJson": "echo '{\\n  \"type\": \"module\"\\n}' > dist/esm/package.json",
+    "build:cjs:generatePackageJson": "echo '{\\n  \"type\": \"commonjs\"\\n}' > dist/commonjs/package.json",
+    "watch": "concurrently \"npm run watch:esm\" \"npm run watch:cjs\"",
+    "watch:esm": "tsc --watch --project ./esm.json && npm run build:esm:generatePackageJson",
+    "watch:cjs": "tsc --watch --project ./commonjs.json && npm run build:cjs:generatePackageJson",
     "typecheck": "tsc --noEmit",
     "prepare": "npm run build",
     "prepack": "node node10stubs.mjs",
@@ -40,91 +45,76 @@
     "./package.json": "./package.json",
     ".": {
       "import": {
-        "@convex-dev/component-source": "./src/client/index.ts",
         "types": "./dist/esm/client/index.d.ts",
         "default": "./dist/esm/client/index.js"
       },
       "require": {
-        "@convex-dev/component-source": "./src/client/index.ts",
         "types": "./dist/commonjs/client/index.d.ts",
         "default": "./dist/commonjs/client/index.js"
       }
     },
     "./client/plugins": {
       "import": {
-        "@convex-dev/component-source": "./src/client/plugins/index.ts",
         "types": "./dist/esm/client/plugins/index.d.ts",
         "default": "./dist/esm/client/plugins/index.js"
       },
       "require": {
-        "@convex-dev/component-source": "./src/plugins/clientPlugins.ts",
         "types": "./dist/commonjs/plugins/clientPlugins.d.ts",
         "default": "./dist/commonjs/plugins/clientPlugins.js"
       }
     },
     "./nextjs": {
       "import": {
-        "@convex-dev/component-source": "./src/nextjs/index.ts",
         "types": "./dist/esm/nextjs/index.d.ts",
         "default": "./dist/esm/nextjs/index.js"
       },
       "require": {
-        "@convex-dev/component-source": "./src/nextjs/index.ts",
         "types": "./dist/commonjs/nextjs/index.d.ts",
         "default": "./dist/commonjs/nextjs/index.js"
       }
     },
     "./plugins": {
       "import": {
-        "@convex-dev/component-source": "./src/plugins/index.ts",
         "types": "./dist/esm/plugins/index.d.ts",
         "default": "./dist/esm/plugins/index.js"
       },
       "require": {
-        "@convex-dev/component-source": "./src/plugins/index.ts",
         "types": "./dist/commonjs/plugins/index.d.ts",
         "default": "./dist/commonjs/plugins/index.js"
       }
     },
     "./react": {
       "import": {
-        "@convex-dev/component-source": "./src/react/index.tsx",
         "types": "./dist/esm/react/index.d.ts",
         "default": "./dist/esm/react/index.js"
       },
       "require": {
-        "@convex-dev/component-source": "./src/react/index.tsx",
         "types": "./dist/commonjs/react/index.d.ts",
         "default": "./dist/commonjs/react/index.js"
       }
     },
     "./react-start": {
       "import": {
-        "@convex-dev/component-source": "./src/react-start/index.ts",
         "types": "./dist/esm/react-start/index.d.ts",
         "default": "./dist/esm/react-start/index.js"
       },
       "require": {
-        "@convex-dev/component-source": "./src/react-start/index.ts",
         "types": "./dist/commonjs/react-start/index.d.ts",
         "default": "./dist/commonjs/react-start/index.js"
       }
     },
     "./utils": {
       "import": {
-        "@convex-dev/component-source": "./src/utils/index.ts",
         "types": "./dist/esm/utils/index.d.ts",
         "default": "./dist/esm/utils/index.js"
       },
       "require": {
-        "@convex-dev/component-source": "./src/utils/index.ts",
         "types": "./dist/commonjs/utils/index.d.ts",
         "default": "./dist/commonjs/utils/index.js"
       }
     },
     "./convex.config": {
       "import": {
-        "@convex-dev/component-source": "./src/component/convex.config.ts",
         "types": "./dist/esm/component/convex.config.d.ts",
         "default": "./dist/esm/component/convex.config.js"
       }
@@ -162,7 +152,6 @@
     "next": "^15.1.8",
     "prettier": "3.2.5",
     "semver": "^7.7.2",
-    "tsc-alias": "^1.8.16",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.4.0",
     "vitest": "^3.2.2"
