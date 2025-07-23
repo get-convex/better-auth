@@ -1,6 +1,6 @@
 import { convexAdapter } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
-import { genericOAuth, twoFactor } from "better-auth/plugins";
+import { genericOAuth, organization, twoFactor } from "better-auth/plugins";
 import { emailOTP } from "better-auth/plugins";
 import {
   sendMagicLink,
@@ -9,13 +9,14 @@ import {
   sendResetPassword,
 } from "../convex/email";
 import { magicLink } from "better-auth/plugins";
-import { betterAuth } from "better-auth";
+import { betterAuth, BetterAuthOptions } from "better-auth";
 import { betterAuthComponent } from "../convex/auth";
 import { requireMutationCtx } from "@convex-dev/better-auth/utils";
 import { GenericCtx } from "../convex/_generated/server";
 
-export const createAuth = (ctx: GenericCtx) =>
-  betterAuth({
+// Split out options so they can be passed to the convex plugin
+const createOptions = (ctx: GenericCtx) =>
+  ({
     baseURL: "https://localhost:3000",
     database: convexAdapter(ctx, betterAuthComponent),
     account: {
@@ -86,6 +87,21 @@ export const createAuth = (ctx: GenericCtx) =>
           },
         ],
       }),
-      convex(),
+      organization(),
+    ],
+  }) satisfies BetterAuthOptions;
+
+export const createAuth = (ctx: GenericCtx) => {
+  const options = createOptions(ctx);
+  return betterAuth({
+    ...options,
+    plugins: [
+      ...options.plugins,
+      // Pass in options so plugin schema inference flows through. Only required
+      // for plugins that customize the user or session schema.
+      // See "Some caveats":
+      // https://www.better-auth.com/docs/concepts/session-management#customizing-session-response
+      convex({ options }),
     ],
   });
+};

@@ -7,15 +7,17 @@ import {
   bearer as bearerPlugin,
   oidcProvider as oidcProviderPlugin,
 } from "better-auth/plugins";
+import { BetterAuthOptions } from "better-auth/types";
 import { omit } from "convex-helpers";
 import { z } from "zod";
 
 export const JWT_COOKIE_NAME = "convex_jwt";
 
-export const convex = (
+export const convex = <O extends BetterAuthOptions>(
   opts: {
     jwtExpirationSeconds?: number;
     deleteExpiredSessionsOnLogin?: boolean;
+    options?: O;
   } = {}
 ) => {
   const {
@@ -23,17 +25,22 @@ export const convex = (
     deleteExpiredSessionsOnLogin = false,
   } = opts;
   const customSession = customSessionPlugin(async ({ user, session }) => {
-    const { userId, ...userData } = omit(user, ["id"]) as typeof user & {
+    // Doing terrible things with types because user and session aren't actually
+    // objects and we need plugin inference to work
+    const { userId, ...userData } = omit(
+      user as typeof user & { id: string; userId: string },
+      ["id"]
+    ) as typeof user & {
       userId: string;
     };
     return {
       user: { ...userData, id: userId },
       session: {
-        ...session,
+        ...(session as typeof session & {}),
         userId,
       },
     };
-  });
+  }, opts.options);
   const oidcProvider = oidcProviderPlugin({
     loginPage: "/not-used",
     metadata: {
