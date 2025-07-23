@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.10
+
+- fix: support inferring user/session schema changes from plugins
+- fix: remove redundant auth check in getCurrentSession
+
 ## 0.7.9
 
 - Add context type guards to utils.
