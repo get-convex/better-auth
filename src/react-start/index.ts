@@ -3,6 +3,7 @@ import { createCookieGetter } from "better-auth/cookies";
 import { betterFetch } from "@better-fetch/fetch";
 import { GenericActionCtx } from "convex/server";
 import { JWT_COOKIE_NAME } from "../plugins/convex";
+import { oneLine } from "common-tags";
 
 export const getCookieName = async (
   createAuth: (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>
@@ -70,6 +71,18 @@ export const reactStartHelpers = (
   createAuth: (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>,
   opts: { convexSiteUrl: string; verbose?: boolean }
 ) => {
+  if (!opts.convexSiteUrl) {
+    throw new Error("opts.convexSiteUrl is required");
+  }
+  if (opts.convexSiteUrl.endsWith(".convex.cloud")) {
+    throw new Error(
+      oneLine(`
+        opts.convexSiteUrl ends with .convex.cloud, which is your cloud URL.
+        Use your Convex site URL instead.
+        https://docs.convex.dev/production/environment-variables#system-environment-variables
+      `)
+    );
+  }
   return {
     fetchSession: (request: Request) => fetchSession(request, opts),
     reactStartHandler: (request: Request) => reactStartHandler(request, opts),

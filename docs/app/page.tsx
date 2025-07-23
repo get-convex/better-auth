@@ -2003,7 +2003,7 @@ export default function Home() {
                   }
 
                   const getToken = async () => {
-                    const sessionCookieName = await getCookieName(createAuth)
+                    const sessionCookieName = await getCookieName()
                     return getCookie(sessionCookieName)
                   }
 
