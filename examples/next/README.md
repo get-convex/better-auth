@@ -14,27 +14,27 @@ it is not set up for standalone use (but can be adapted).
 npm install
 ```
 
-3. Run the component build watch task (keep this running)
-
-```bash
-npm run watch
-```
-
-4. In a separate terminal, install example dependencies
+3. In a separate terminal, install example dependencies
 
 ```bash
 cd examples/next
 npm install
 ```
 
-5. Initialize the database
+4. Initialize the database
 
 ```bash
 npx convex dev --once
 ```
 
-6. Run the example
+5. Run the example
 
 ```bash
 npm run dev
+```
+
+6. Back in the first terminal, run the component build watch task (keep this running)
+
+```bash
+npm run build:watch
 ```

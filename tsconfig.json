@@ -19,6 +19,9 @@
     "outDir": "./dist",
     "skipLibCheck": true
   },
+  "tsc-alias": {
+    "resolveFullPaths": true
+  },
   "include": [
     "./src/**/*",
     "./auth.ts",
