@@ -43,6 +43,7 @@ const schema = defineSchema({
     userId: v.string(),
     impersonatedBy: v.optional(v.string()),
     activeOrganizationId: v.optional(v.string()),
+    activeTeamId: v.optional(v.string()),
   })
     .index("expiresAt", ["expiresAt"])
     .index("expiresAt_userId", ["expiresAt","userId"])
@@ -178,14 +179,12 @@ const schema = defineSchema({
     organizationId: v.string(),
     userId: v.string(),
     role: v.string(),
-    teamId: v.optional(v.string()),
     createdAt: v.number(),
   })
     .index("organizationId_userId", ["organizationId","userId"])
     .index("organizationId", ["organizationId"])
     .index("userId", ["userId"])
-    .index("role", ["role"])
-    .index("teamId", ["teamId"]),
+    .index("role", ["role"]),
 
   invitation: defineTable({
     organizationId: v.string(),
@@ -212,6 +211,13 @@ const schema = defineSchema({
     updatedAt: v.optional(v.number()),
   })
     .index("organizationId", ["organizationId"]),
+
+  teamMember: defineTable({
+    teamId: v.string(),
+    userId: v.string(),
+    createdAt: v.optional(v.number()),
+  })
+    .index("userId", ["userId"]),
 
   ssoProvider: defineTable({
     issuer: v.string(),
@@ -359,9 +365,6 @@ export const specialFields = {
     },
     role: {
       sortable: true
-    },
-    teamId: {
-      sortable: true
     }
   },
   invitation: {
@@ -394,6 +397,14 @@ export const specialFields = {
     organizationId: {
       references: {
         model: "organization",
+        field: "id"
+      }
+    }
+  },
+  teamMember: {
+    userId: {
+      references: {
+        model: "user",
         field: "id"
       }
     }
