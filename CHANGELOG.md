@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.11
+
+- fix build output type errors, simplify watch task
+- fix TanStack helper docs, throw on invalid env vars
+
 ## 0.7.10
 
 - fix: support inferring user/session schema changes from plugins
