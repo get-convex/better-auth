@@ -14,14 +14,14 @@ it is not set up for standalone use (but can be adapted).
 npm install
 ```
 
-3. In a separate terminal, install example dependencies
+3. Change to one of the example directories and install dependencies
 
 ```bash
 cd examples/react
 npm install
 ```
 
-4. Initialize the database
+4. If you haven't run this example before, initialize the database
 
 ```bash
 npx convex dev --once
@@ -33,7 +33,8 @@ npx convex dev --once
 npm run dev
 ```
 
-6. Back in the first terminal, run the component build watch task (keep this running)
+If you're making changes to the component, open a separate terminal
+and run the build watch task
 
 ```bash
 npm run build:watch
