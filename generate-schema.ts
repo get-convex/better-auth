@@ -94,7 +94,7 @@ ${Object.keys(fields)
     const attr = fields[field]!;
     const type = getType(field, attr);
     const optional = (fieldSchema: string) =>
-      attr.required ? fieldSchema : `v.optional(${fieldSchema})`;
+      attr.required ? fieldSchema : `v.optional(v.union(${fieldSchema}, v.null()))`;
     return `    ${field}: ${optional(type)},`;
   })
   .join("\n")}
