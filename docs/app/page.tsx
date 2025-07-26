@@ -9,6 +9,7 @@ import { cx } from "class-variance-authority";
 import { GenerateSecret } from "./generate-secret";
 import { cn } from "@/lib/utils";
 import { useSelectedVariant } from "@/app/code-block-variant-store";
+import ConvexBetterAuthGuideNextjs from "@/components/sections/convex-better-auth-guide-nextjs";
 
 const CodeBlock = (props: ComponentProps<typeof CodeBlockComponent>) => (
   <CodeBlockComponent className={cx(props.className, "mb-6")} {...props} />
@@ -3034,6 +3035,12 @@ export default function Home() {
                   });
               `}
           />
+        </Subsection>
+      </Section>
+
+      <Section id="llm-instructions" title="LLM Instructions">
+        <Subsection id="llm-instructions-nextjs" title="Convex Better Auth Next.js">
+          <ConvexBetterAuthGuideNextjs />
         </Subsection>
       </Section>
     </div>
