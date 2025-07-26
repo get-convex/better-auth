@@ -33,7 +33,20 @@ export default {
 };
 \`\`\`
 
-# 3. Generate a secret for encryption and generating hashes.
+# 3. Add the Better Auth plugin to your Convex app configuration
+
+\`\`\`ts
+// convex/convex.config.ts
+import { defineApp } from 'convex/server'
+import betterAuth from '@convex-dev/better-auth/convex.config'
+
+const app = defineApp()
+app.use(betterAuth)
+
+export default app
+\`\`\`
+
+# 4. Generate a secret for encryption and generating hashes.
 
 TIP: Make sure to check which port your Next.js app is running on (typically 3000) and adjust the BETTER_AUTH_URL accordingly
 
@@ -42,7 +55,7 @@ npx convex env set BETTER_AUTH_SECRET=$(openssl rand -base64 32)
 npx convex env set BETTER_AUTH_URL=http://localhost:3000
 \`\`\`
 
-# 4. Add the Convex site URL environment variable to the .env.local file created by npx convex dev. It will be picked up by your framework dev server.
+# 5. Add the Convex site URL environment variable to the .env.local file created by npx convex dev. It will be picked up by your framework dev server.
 
 \`\`\`bash
 # Deployment used by \`npx convex dev\`
@@ -54,7 +67,7 @@ NEXT_PUBLIC_CONVEX_URL=https://adjective-animal-123.convex.cloud
 NEXT_PUBLIC_CONVEX_SITE_URL=https://adjective-animal-123.convex.site
 \`\`\`
 
-# 5. First, add a users table to your schema. Name it whatever you like. Better Auth has its own user table that tracks basic user data, so your application user table only needs fields specific to your app (or none at all).
+# 6. First, add a users table to your schema. Name it whatever you like. Better Auth has its own user table that tracks basic user data, so your application user table only needs fields specific to your app (or none at all).
 
 \`\`\`ts
 // convex/schema.ts
@@ -67,7 +80,7 @@ export default defineSchema({
 });
 \`\`\`
 
-# 6. Create your Better Auth instance.
+# 7. Create your Better Auth instance.
 
 \`\`\`ts
 // convex/lib/auth.ts
@@ -160,7 +173,7 @@ export const getCurrentUser = query({
 });
 \`\`\`
 
-# 7. Create a Better Auth client instance for interacting with the Better Auth server from your client.
+# 8. Create a Better Auth client instance for interacting with the Better Auth server from your client.
 
 \`\`\`ts
 // lib/auth-client.ts
@@ -172,7 +185,7 @@ export const authClient = createAuthClient({
 });
 \`\`\`
 
-# 8. Register Better Auth route handlers on your Convex deployment.
+# 9. Register Better Auth route handlers on your Convex deployment.
 
 \`\`\`ts
 import { httpRouter } from "convex/server";
@@ -186,7 +199,7 @@ betterAuthComponent.registerRoutes(http, createAuth);
 export default http;
 \`\`\`
 
-# 9. Set up route handlers to proxy auth requests from your framework server to your Convex deployment.
+# 10. Set up route handlers to proxy auth requests from your framework server to your Convex deployment.
 
 \`\`\`ts
 import { nextJsHandler } from "@convex-dev/better-auth/nextjs";
@@ -194,7 +207,7 @@ import { nextJsHandler } from "@convex-dev/better-auth/nextjs";
 export const { GET, POST } = nextJsHandler();
 \`\`\`
 
-# 10. Wrap your app with the ConvexBetterAuthProvider component.
+# 11. Wrap your app with the ConvexBetterAuthProvider component.
 
 \`\`\`ts
 "use client";
@@ -227,7 +240,7 @@ npm install convex@latest
 
 # 2. Add a convex/auth.config.ts file to configure Better Auth...
 
-... and 8 more steps`;
+... and 9 more steps`;
 
   return (
     <div className="max-w-none">
@@ -253,7 +266,7 @@ npm install convex@latest
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-            {isExpanded ? 'Hide Guide' : 'Show Complete Guide (10 steps)'}
+            {isExpanded ? 'Hide Guide' : 'Show Complete Guide (11 steps)'}
           </button>
           
           <button
@@ -284,7 +297,7 @@ npm install convex@latest
               onClick={() => setIsExpanded(true)}
               className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
             >
-              Click to view all 10 steps →
+              Click to view all 11 steps →
             </button>
           </div>
         )}
