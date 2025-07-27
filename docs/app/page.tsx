@@ -1233,7 +1233,7 @@ export default function Home() {
                     language: "typescript",
                     filename: "src/routes/api/auth/$.ts",
                     code: stripIndent`
-                      import { reactStartHandler } from '@/lib/auth-client'
+                      import { reactStartHandler } from '@/lib/server-auth-utils'
 
                       export const ServerRoute = createServerFileRoute().methods({
                         GET: ({ request }) => {
