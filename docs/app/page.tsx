@@ -1234,8 +1234,9 @@ export default function Home() {
                     filename: "src/routes/api/auth/$.ts",
                     code: stripIndent`
                       import { reactStartHandler } from '@/lib/server-auth-utils'
+                      import { createServerFileRoute } from '@tanstack/react-start/server'
 
-                      export const ServerRoute = createServerFileRoute().methods({
+                      export const ServerRoute = createServerFileRoute('/api/auth/$').methods({
                         GET: ({ request }) => {
                           return reactStartHandler(request)
                         },
