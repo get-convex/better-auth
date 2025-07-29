@@ -10,26 +10,25 @@ const schema = defineSchema({
     name: v.string(),
     email: v.string(),
     emailVerified: v.boolean(),
-    image: v.optional(v.string()),
+    image: v.optional(v.union(v.null(), v.string())),
     createdAt: v.number(),
     updatedAt: v.number(),
-    twoFactorEnabled: v.optional(v.boolean()),
-    isAnonymous: v.optional(v.boolean()),
-    username: v.optional(v.string()),
-    displayUsername: v.optional(v.string()),
-    phoneNumber: v.optional(v.string()),
-    phoneNumberVerified: v.optional(v.boolean()),
-    role: v.optional(v.string()),
-    banned: v.optional(v.boolean()),
-    banReason: v.optional(v.string()),
-    banExpires: v.optional(v.number()),
-    stripeCustomerId: v.optional(v.string()),
-    userId: v.optional(v.string()),
+    twoFactorEnabled: v.optional(v.union(v.null(), v.boolean())),
+    isAnonymous: v.optional(v.union(v.null(), v.boolean())),
+    username: v.optional(v.union(v.null(), v.string())),
+    displayUsername: v.optional(v.union(v.null(), v.string())),
+    phoneNumber: v.optional(v.union(v.null(), v.string())),
+    phoneNumberVerified: v.optional(v.union(v.null(), v.boolean())),
+    role: v.optional(v.union(v.null(), v.string())),
+    banned: v.optional(v.union(v.null(), v.boolean())),
+    banReason: v.optional(v.union(v.null(), v.string())),
+    banExpires: v.optional(v.union(v.null(), v.number())),
+    stripeCustomerId: v.optional(v.union(v.null(), v.string())),
+    userId: v.optional(v.union(v.null(), v.string())),
   })
     .index("email_name", ["email","name"])
     .index("name", ["name"])
     .index("userId", ["userId"])
-    .index("email", ["email"])
     .index("username", ["username"])
     .index("phoneNumber", ["phoneNumber"]),
 
@@ -38,11 +37,12 @@ const schema = defineSchema({
     token: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
-    ipAddress: v.optional(v.string()),
-    userAgent: v.optional(v.string()),
+    ipAddress: v.optional(v.union(v.null(), v.string())),
+    userAgent: v.optional(v.union(v.null(), v.string())),
     userId: v.string(),
-    impersonatedBy: v.optional(v.string()),
-    activeOrganizationId: v.optional(v.string()),
+    impersonatedBy: v.optional(v.union(v.null(), v.string())),
+    activeOrganizationId: v.optional(v.union(v.null(), v.string())),
+    activeTeamId: v.optional(v.union(v.null(), v.string())),
   })
     .index("expiresAt", ["expiresAt"])
     .index("expiresAt_userId", ["expiresAt","userId"])
@@ -53,13 +53,13 @@ const schema = defineSchema({
     accountId: v.string(),
     providerId: v.string(),
     userId: v.string(),
-    accessToken: v.optional(v.string()),
-    refreshToken: v.optional(v.string()),
-    idToken: v.optional(v.string()),
-    accessTokenExpiresAt: v.optional(v.number()),
-    refreshTokenExpiresAt: v.optional(v.number()),
-    scope: v.optional(v.string()),
-    password: v.optional(v.string()),
+    accessToken: v.optional(v.union(v.null(), v.string())),
+    refreshToken: v.optional(v.union(v.null(), v.string())),
+    idToken: v.optional(v.union(v.null(), v.string())),
+    accessTokenExpiresAt: v.optional(v.union(v.null(), v.number())),
+    refreshTokenExpiresAt: v.optional(v.union(v.null(), v.number())),
+    scope: v.optional(v.union(v.null(), v.string())),
+    password: v.optional(v.union(v.null(), v.string())),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -72,8 +72,8 @@ const schema = defineSchema({
     identifier: v.string(),
     value: v.string(),
     expiresAt: v.number(),
-    createdAt: v.optional(v.number()),
-    updatedAt: v.optional(v.number()),
+    createdAt: v.optional(v.union(v.null(), v.number())),
+    updatedAt: v.optional(v.union(v.null(), v.number())),
   })
     .index("expiresAt", ["expiresAt"])
     .index("identifier", ["identifier"]),
@@ -86,90 +86,90 @@ const schema = defineSchema({
     .index("userId", ["userId"]),
 
   passkey: defineTable({
-    name: v.optional(v.string()),
+    name: v.optional(v.union(v.null(), v.string())),
     publicKey: v.string(),
     userId: v.string(),
     credentialID: v.string(),
     counter: v.number(),
     deviceType: v.string(),
     backedUp: v.boolean(),
-    transports: v.optional(v.string()),
-    createdAt: v.optional(v.number()),
-    aaguid: v.optional(v.string()),
+    transports: v.optional(v.union(v.null(), v.string())),
+    createdAt: v.optional(v.union(v.null(), v.number())),
+    aaguid: v.optional(v.union(v.null(), v.string())),
   })
     .index("credentialID", ["credentialID"])
     .index("userId", ["userId"]),
 
   apikey: defineTable({
-    name: v.optional(v.string()),
-    start: v.optional(v.string()),
-    prefix: v.optional(v.string()),
+    name: v.optional(v.union(v.null(), v.string())),
+    start: v.optional(v.union(v.null(), v.string())),
+    prefix: v.optional(v.union(v.null(), v.string())),
     key: v.string(),
     userId: v.string(),
-    refillInterval: v.optional(v.number()),
-    refillAmount: v.optional(v.number()),
-    lastRefillAt: v.optional(v.number()),
-    enabled: v.optional(v.boolean()),
-    rateLimitEnabled: v.optional(v.boolean()),
-    rateLimitTimeWindow: v.optional(v.number()),
-    rateLimitMax: v.optional(v.number()),
-    requestCount: v.optional(v.number()),
-    remaining: v.optional(v.number()),
-    lastRequest: v.optional(v.number()),
-    expiresAt: v.optional(v.number()),
+    refillInterval: v.optional(v.union(v.null(), v.number())),
+    refillAmount: v.optional(v.union(v.null(), v.number())),
+    lastRefillAt: v.optional(v.union(v.null(), v.number())),
+    enabled: v.optional(v.union(v.null(), v.boolean())),
+    rateLimitEnabled: v.optional(v.union(v.null(), v.boolean())),
+    rateLimitTimeWindow: v.optional(v.union(v.null(), v.number())),
+    rateLimitMax: v.optional(v.union(v.null(), v.number())),
+    requestCount: v.optional(v.union(v.null(), v.number())),
+    remaining: v.optional(v.union(v.null(), v.number())),
+    lastRequest: v.optional(v.union(v.null(), v.number())),
+    expiresAt: v.optional(v.union(v.null(), v.number())),
     createdAt: v.number(),
     updatedAt: v.number(),
-    permissions: v.optional(v.string()),
-    metadata: v.optional(v.string()),
+    permissions: v.optional(v.union(v.null(), v.string())),
+    metadata: v.optional(v.union(v.null(), v.string())),
   })
     .index("key", ["key"])
     .index("userId", ["userId"]),
 
   oauthApplication: defineTable({
-    name: v.optional(v.string()),
-    icon: v.optional(v.string()),
-    metadata: v.optional(v.string()),
-    clientId: v.optional(v.string()),
-    clientSecret: v.optional(v.string()),
-    redirectURLs: v.optional(v.string()),
-    type: v.optional(v.string()),
-    disabled: v.optional(v.boolean()),
-    userId: v.optional(v.string()),
-    createdAt: v.optional(v.number()),
-    updatedAt: v.optional(v.number()),
+    name: v.optional(v.union(v.null(), v.string())),
+    icon: v.optional(v.union(v.null(), v.string())),
+    metadata: v.optional(v.union(v.null(), v.string())),
+    clientId: v.optional(v.union(v.null(), v.string())),
+    clientSecret: v.optional(v.union(v.null(), v.string())),
+    redirectURLs: v.optional(v.union(v.null(), v.string())),
+    type: v.optional(v.union(v.null(), v.string())),
+    disabled: v.optional(v.union(v.null(), v.boolean())),
+    userId: v.optional(v.union(v.null(), v.string())),
+    createdAt: v.optional(v.union(v.null(), v.number())),
+    updatedAt: v.optional(v.union(v.null(), v.number())),
   })
     .index("clientId", ["clientId"]),
 
   oauthAccessToken: defineTable({
-    accessToken: v.optional(v.string()),
-    refreshToken: v.optional(v.string()),
-    accessTokenExpiresAt: v.optional(v.number()),
-    refreshTokenExpiresAt: v.optional(v.number()),
-    clientId: v.optional(v.string()),
-    userId: v.optional(v.string()),
-    scopes: v.optional(v.string()),
-    createdAt: v.optional(v.number()),
-    updatedAt: v.optional(v.number()),
+    accessToken: v.optional(v.union(v.null(), v.string())),
+    refreshToken: v.optional(v.union(v.null(), v.string())),
+    accessTokenExpiresAt: v.optional(v.union(v.null(), v.number())),
+    refreshTokenExpiresAt: v.optional(v.union(v.null(), v.number())),
+    clientId: v.optional(v.union(v.null(), v.string())),
+    userId: v.optional(v.union(v.null(), v.string())),
+    scopes: v.optional(v.union(v.null(), v.string())),
+    createdAt: v.optional(v.union(v.null(), v.number())),
+    updatedAt: v.optional(v.union(v.null(), v.number())),
   })
     .index("accessToken", ["accessToken"])
     .index("refreshToken", ["refreshToken"]),
 
   oauthConsent: defineTable({
-    clientId: v.optional(v.string()),
-    userId: v.optional(v.string()),
-    scopes: v.optional(v.string()),
-    createdAt: v.optional(v.number()),
-    updatedAt: v.optional(v.number()),
-    consentGiven: v.optional(v.boolean()),
+    clientId: v.optional(v.union(v.null(), v.string())),
+    userId: v.optional(v.union(v.null(), v.string())),
+    scopes: v.optional(v.union(v.null(), v.string())),
+    createdAt: v.optional(v.union(v.null(), v.number())),
+    updatedAt: v.optional(v.union(v.null(), v.number())),
+    consentGiven: v.optional(v.union(v.null(), v.boolean())),
   })
     .index("clientId_userId", ["clientId","userId"]),
 
   organization: defineTable({
     name: v.string(),
-    slug: v.optional(v.string()),
-    logo: v.optional(v.string()),
+    slug: v.optional(v.union(v.null(), v.string())),
+    logo: v.optional(v.union(v.null(), v.string())),
     createdAt: v.number(),
-    metadata: v.optional(v.string()),
+    metadata: v.optional(v.union(v.null(), v.string())),
   })
     .index("name", ["name"])
     .index("slug", ["slug"]),
@@ -178,28 +178,23 @@ const schema = defineSchema({
     organizationId: v.string(),
     userId: v.string(),
     role: v.string(),
-    teamId: v.optional(v.string()),
     createdAt: v.number(),
   })
     .index("organizationId_userId", ["organizationId","userId"])
-    .index("organizationId", ["organizationId"])
     .index("userId", ["userId"])
-    .index("role", ["role"])
-    .index("teamId", ["teamId"]),
+    .index("role", ["role"]),
 
   invitation: defineTable({
     organizationId: v.string(),
     email: v.string(),
-    role: v.optional(v.string()),
-    teamId: v.optional(v.string()),
+    role: v.optional(v.union(v.null(), v.string())),
+    teamId: v.optional(v.union(v.null(), v.string())),
     status: v.string(),
     expiresAt: v.number(),
     inviterId: v.string(),
   })
     .index("email_organizationId_status", ["email","organizationId","status"])
     .index("organizationId_status", ["organizationId","status"])
-    .index("organizationId", ["organizationId"])
-    .index("email", ["email"])
     .index("role", ["role"])
     .index("teamId", ["teamId"])
     .index("status", ["status"])
@@ -209,17 +204,24 @@ const schema = defineSchema({
     name: v.string(),
     organizationId: v.string(),
     createdAt: v.number(),
-    updatedAt: v.optional(v.number()),
+    updatedAt: v.optional(v.union(v.null(), v.number())),
   })
     .index("organizationId", ["organizationId"]),
 
+  teamMember: defineTable({
+    teamId: v.string(),
+    userId: v.string(),
+    createdAt: v.optional(v.union(v.null(), v.number())),
+  })
+    .index("userId", ["userId"]),
+
   ssoProvider: defineTable({
     issuer: v.string(),
-    oidcConfig: v.optional(v.string()),
-    samlConfig: v.optional(v.string()),
-    userId: v.optional(v.string()),
+    oidcConfig: v.optional(v.union(v.null(), v.string())),
+    samlConfig: v.optional(v.union(v.null(), v.string())),
+    userId: v.optional(v.union(v.null(), v.string())),
     providerId: v.string(),
-    organizationId: v.optional(v.string()),
+    organizationId: v.optional(v.union(v.null(), v.string())),
     domain: v.string(),
   })
     .index("organizationId", ["organizationId"])
@@ -236,22 +238,31 @@ const schema = defineSchema({
   subscription: defineTable({
     plan: v.string(),
     referenceId: v.string(),
-    stripeCustomerId: v.optional(v.string()),
-    stripeSubscriptionId: v.optional(v.string()),
-    status: v.optional(v.string()),
-    periodStart: v.optional(v.number()),
-    periodEnd: v.optional(v.number()),
-    cancelAtPeriodEnd: v.optional(v.boolean()),
-    seats: v.optional(v.number()),
+    stripeCustomerId: v.optional(v.union(v.null(), v.string())),
+    stripeSubscriptionId: v.optional(v.union(v.null(), v.string())),
+    status: v.optional(v.union(v.null(), v.string())),
+    periodStart: v.optional(v.union(v.null(), v.number())),
+    periodEnd: v.optional(v.union(v.null(), v.number())),
+    cancelAtPeriodEnd: v.optional(v.union(v.null(), v.boolean())),
+    seats: v.optional(v.union(v.null(), v.number())),
   })
     .index("stripeSubscriptionId", ["stripeSubscriptionId"])
     .index("stripeCustomerId", ["stripeCustomerId"])
     .index("referenceId", ["referenceId"]),
 
+  walletAddress: defineTable({
+    userId: v.string(),
+    address: v.string(),
+    chainId: v.number(),
+    isPrimary: v.optional(v.union(v.null(), v.boolean())),
+    createdAt: v.number(),
+  })
+    .index("userId", ["userId"]),
+
   rateLimit: defineTable({
-    key: v.optional(v.string()),
-    count: v.optional(v.number()),
-    lastRequest: v.optional(v.number()),
+    key: v.optional(v.union(v.null(), v.string())),
+    count: v.optional(v.union(v.null(), v.number())),
+    lastRequest: v.optional(v.union(v.null(), v.number())),
   })
     .index("key", ["key"]),
 
@@ -359,9 +370,6 @@ export const specialFields = {
     },
     role: {
       sortable: true
-    },
-    teamId: {
-      sortable: true
     }
   },
   invitation: {
@@ -398,6 +406,14 @@ export const specialFields = {
       }
     }
   },
+  teamMember: {
+    userId: {
+      references: {
+        model: "user",
+        field: "id"
+      }
+    }
+  },
   ssoProvider: {
     userId: {
       references: {
@@ -407,6 +423,14 @@ export const specialFields = {
     },
     providerId: {
       unique: true
+    }
+  },
+  walletAddress: {
+    userId: {
+      references: {
+        model: "user",
+        field: "id"
+      }
     }
   }
 };

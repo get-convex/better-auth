@@ -19,6 +19,7 @@ import {
   openAPI,
   organization,
   phoneNumber,
+  siwe,
   twoFactor,
   username,
 } from "better-auth/plugins";
@@ -79,6 +80,11 @@ const options = {
       },
     }),
     polar({ client: {} as any, use: [] as any }),
+    siwe({
+      domain: "example.com",
+      getNonce: async () => "",
+      verifyMessage: async () => true,
+    }),
     convex(),
   ],
 } as BetterAuthOptions; // assert type to avoid overloading ts compiler
@@ -104,3 +110,9 @@ export const indexFields = {
   ssoProvider: ["organizationId", "domain"],
   subscription: ["stripeSubscriptionId", "stripeCustomerId", "referenceId"],
 };
+
+/*
+export const deprecatedFields = {
+  user: {
+    teamId: {
+  */

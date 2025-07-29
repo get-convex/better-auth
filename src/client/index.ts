@@ -114,11 +114,10 @@ export class BetterAuth<UserId extends string = string> {
 
   async getHeaders(ctx: RunQueryCtx & { auth: ConvexAuth }) {
     const session = await ctx.runQuery(this.component.lib.getCurrentSession);
-    return session
-      ? new Headers({
-          authorization: `Bearer ${session.token}`,
-        })
-      : new Headers();
+    return new Headers({
+      ...(session?.token ? { authorization: `Bearer ${session.token}` } : {}),
+      ...(session?.ipAddress ? { "x-forwarded-for": session.ipAddress } : {}),
+    });
   }
 
   // TODO: use the proper id type for auth functions

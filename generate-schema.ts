@@ -36,7 +36,12 @@ const mergedIndexFields = Object.fromEntries(
     const manualIndexes = indexFields[key as keyof typeof indexFields] || [];
     const specialFieldIndexes = Object.keys(
       specialFields[key as keyof typeof specialFields] || {}
-    ).filter((index) => !manualIndexes.includes(index));
+    ).filter(
+      (index) =>
+        !manualIndexes.some((m) =>
+          Array.isArray(m) ? m[0] === index : m === index
+        )
+    );
     return [key, manualIndexes.concat(specialFieldIndexes)];
   })
 );
@@ -94,7 +99,9 @@ ${Object.keys(fields)
     const attr = fields[field]!;
     const type = getType(field, attr);
     const optional = (fieldSchema: string) =>
-      attr.required ? fieldSchema : `v.optional(${fieldSchema})`;
+      attr.required
+        ? fieldSchema
+        : `v.optional(v.union(v.null(), ${fieldSchema}))`;
     return `    ${field}: ${optional(type)},`;
   })
   .join("\n")}

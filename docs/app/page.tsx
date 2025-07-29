@@ -525,7 +525,7 @@ export default function Home() {
                 label: "npm",
                 code: stripIndent`
                     npm install @convex-dev/better-auth
-                    npm install better-auth@1.2.12 --save-exact
+                    npm install better-auth@1.3.4 --save-exact
                     npm install convex@latest
                   `,
                 language: "shell",
@@ -535,7 +535,7 @@ export default function Home() {
                 label: "pnpm",
                 code: stripIndent`
                     pnpm add @convex-dev/better-auth
-                    pnpm add better-auth@1.2.12 --save-exact
+                    pnpm add better-auth@1.3.4 --save-exact
                     pnpm add convex@latest
                   `,
                 language: "shell",
@@ -544,7 +544,7 @@ export default function Home() {
                 id: "yarn",
                 code: stripIndent`
                     yarn add @convex-dev/better-auth
-                    yarn add better-auth@1.2.12 --exact
+                    yarn add better-auth@1.3.4 --exact
                     yarn add convex@latest
                   `,
                 language: "shell",
@@ -553,7 +553,7 @@ export default function Home() {
                 id: "bun",
                 code: stripIndent`
                     bun add @convex-dev/better-auth
-                    bun add better-auth@1.2.12 --exact
+                    bun add better-auth@1.3.4 --exact
                     bun add convex@latest
                   `,
                 language: "shell",
@@ -2407,7 +2407,7 @@ export default function Home() {
           />
           <P>
             Update the component to latest, the <Code>better-auth</Code> package
-            to <Code>1.2.12</Code>, and Convex to <Code>latest</Code> (or at
+            to <Code>1.3.4</Code>, and Convex to <Code>latest</Code> (or at
             least <Code>1.25.0</Code>).
           </P>
 
@@ -2419,7 +2419,7 @@ export default function Home() {
                 label: "npm",
                 code: stripIndent`
                     npm install @convex-dev/better-auth@latest
-                    npm install better-auth@1.2.12 --save-exact
+                    npm install better-auth@1.3.4 --save-exact
                     npm install convex@latest
                   `,
                 language: "shell",
@@ -2429,7 +2429,7 @@ export default function Home() {
                 label: "pnpm",
                 code: stripIndent`
                     pnpm add @convex-dev/better-auth@latest
-                    pnpm add better-auth@1.2.12 --save-exact
+                    pnpm add better-auth@1.3.4 --save-exact
                     pnpm add convex@latest
                   `,
                 language: "shell",
@@ -2438,7 +2438,7 @@ export default function Home() {
                 id: "yarn",
                 code: stripIndent`
                     yarn add @convex-dev/better-auth@latest
-                    yarn add better-auth@1.2.12 --exact
+                    yarn add better-auth@1.3.4 --exact
                     yarn add convex@latest
                   `,
                 language: "shell",
@@ -2447,7 +2447,7 @@ export default function Home() {
                 id: "bun",
                 code: stripIndent`
                     bun add @convex-dev/better-auth@latest
-                    bun add better-auth@1.2.12 --exact
+                    bun add better-auth@1.3.4 --exact
                     bun add convex@latest
                   `,
                 language: "shell",

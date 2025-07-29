@@ -18,7 +18,7 @@
   ],
   "type": "module",
   "scripts": {
-    "build": "npm run generate && npm run build:esm && npm run build:cjs",
+    "build": "npm run build:esm && npm run build:cjs",
     "build:esm": "tsc --project ./esm.json && tsc-alias -p ./esm.json && npm run build:esm:generatePackageJson",
     "build:cjs": "tsc --project ./commonjs.json && npm run build:cjs:generatePackageJson",
     "build:esm:generatePackageJson": "echo '{\\n  \"type\": \"module\"\\n}' > dist/esm/package.json",
@@ -27,6 +27,7 @@
     "typecheck": "tsc --noEmit",
     "prepare": "npm run build",
     "prepack": "node node10stubs.mjs",
+    "prepublishOnly": "npm run generate && npm run build",
     "postpack": "node node10stubs.mjs --cleanup",
     "generate": "concurrently \"cd examples/next && npm run generate\" \"cd examples/react && npm run generate\" \"cd examples/tanstack && npm run generate\"",
     "test": "vitest run",
@@ -126,13 +127,13 @@
     }
   },
   "peerDependencies": {
-    "better-auth": "1.2.12",
+    "better-auth": "1.3.4",
     "convex": ">=1.25.0 <1.35.0",
     "react": "^18.3.1 || ^19.0.0",
     "react-dom": "^18.3.1 || ^19.0.0"
   },
   "devDependencies": {
-    "@better-auth/stripe": "1.2.12",
+    "@better-auth/stripe": "1.3.4",
     "@edge-runtime/vm": "^5.0.0",
     "@eslint/js": "^9.9.1",
     "@polar-sh/better-auth": "^1.0.4",
@@ -160,7 +161,6 @@
   "types": "./dist/commonjs/client/index.d.ts",
   "module": "./dist/esm/client/index.js",
   "dependencies": {
-    "@convex-dev/resend": "^0.1.5-alpha.0",
     "common-tags": "^1.8.2",
     "convex-helpers": "^0.1.95",
     "is-network-error": "^1.1.0",
