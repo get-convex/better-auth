@@ -3,7 +3,7 @@
 // npx tsx generate-schema.ts
 import { getAuthTables, type FieldAttribute } from "better-auth/db";
 import { writeFileSync } from "fs";
-import { auth, indexFields } from "./auth";
+import { auth, inactiveFields, indexFields } from "./auth";
 
 const tables = getAuthTables(auth.options);
 const filePath = "./src/component/schema.ts";
@@ -62,7 +62,10 @@ for (const tableKey in tables) {
 
   // No id fields in Convex schema
   const fields = Object.fromEntries(
-    Object.entries(table.fields).filter(([key]) => key !== "id")
+    Object.entries({
+      ...table.fields,
+      ...(inactiveFields[tableKey as keyof typeof inactiveFields] || {}),
+    }).filter(([key]) => key !== "id")
   );
 
   function getType(name: string, field: FieldAttribute) {
@@ -97,7 +100,7 @@ for (const tableKey in tables) {
 ${Object.keys(fields)
   .map((field) => {
     const attr = fields[field]!;
-    const type = getType(field, attr);
+    const type = getType(field, attr as FieldAttribute);
     const optional = (fieldSchema: string) =>
       attr.required
         ? fieldSchema

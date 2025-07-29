@@ -111,8 +111,15 @@ export const indexFields = {
   subscription: ["stripeSubscriptionId", "stripeCustomerId", "referenceId"],
 };
 
-/*
-export const deprecatedFields = {
+// Manually insert fields in the schema to avoid breaking deploys when
+// Better Auth drops fields
+export const inactiveFields = {
   user: {
+    // Dropped in 1.3.0
     teamId: {
-  */
+      fieldName: "teamId",
+      type: "string",
+      required: false,
+    },
+  },
+};
