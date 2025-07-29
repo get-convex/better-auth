@@ -11,8 +11,29 @@ export const getToken = async (
   const auth = createAuth({} as any);
   const createCookie = createCookieGetter(auth.options);
   const cookie = createCookie(JWT_COOKIE_NAME);
-  const token = cookieStore.get(cookie.name);
-  return token?.value;
+  const tokenCookie = cookieStore.get(cookie.name);
+
+  // Warn if there's a secure cookie mismatch between Convex and Next.js
+  if (!tokenCookie?.value) {
+    const isSecure = cookie.name.startsWith("__Secure-");
+    const insecureCookieName = cookie.name.replace("__Secure-", "");
+    const insecureCookie = cookieStore.get(insecureCookieName);
+    const secureCookieName = isSecure
+      ? cookie.name
+      : `__Secure-${insecureCookieName}`;
+    const secureCookie = cookieStore.get(secureCookieName);
+    if (isSecure && insecureCookie) {
+      console.warn(
+        `Looking for secure cookie ${cookie.name} but found insecure cookie ${insecureCookie.name}`
+      );
+    }
+    if (!isSecure && secureCookie) {
+      console.warn(
+        `Looking for insecure cookie ${cookie.name} but found secure cookie ${secureCookie.name}`
+      );
+    }
+  }
+  return tokenCookie?.value;
 };
 
 const handler = (request: Request, opts?: { convexSiteUrl?: string }) => {
