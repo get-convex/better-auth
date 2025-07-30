@@ -74,31 +74,6 @@ const hasUniqueFields = (model: TableNames, input: Record<string, any>) => {
   return false;
 };
 
-const checkUniqueFields = async (
-  ctx: QueryCtx,
-  table: TableNames,
-  input: Record<string, any>,
-  doc?: Doc<any>
-) => {
-  if (!hasUniqueFields(table, input)) {
-    return;
-  }
-  for (const field of Object.keys(input)) {
-    if (!isUniqueField(table, field)) {
-      continue;
-    }
-    const existingDoc = await ctx.db
-      .query(table as any)
-      .withIndex(field as any, (q) =>
-        q.eq(field, input[field as keyof typeof input])
-      )
-      .unique();
-    if (existingDoc && existingDoc._id !== doc?._id) {
-      throw new Error(`${table} ${field} already exists`);
-    }
-  }
-};
-
 const findIndex = (args: {
   model: string;
   where?: {
@@ -240,6 +215,41 @@ const findIndex = (args: {
       gte: upperBound?.operator === "gte" ? upperBound.value : undefined,
     },
   };
+};
+
+const checkUniqueFields = async (
+  ctx: QueryCtx,
+  table: TableNames,
+  input: Record<string, any>,
+  doc?: Doc<any>
+) => {
+  if (!hasUniqueFields(table, input)) {
+    return;
+  }
+  for (const field of Object.keys(input)) {
+    if (!isUniqueField(table, field)) {
+      continue;
+    }
+    const { index } =
+      findIndex({
+        model: table,
+        where: [
+          { field, operator: "eq", value: input[field as keyof typeof input] },
+        ],
+      }) || {};
+    if (!index) {
+      throw new Error(`No index found for ${table}${field}`);
+    }
+    const existingDoc = await ctx.db
+      .query(table as any)
+      .withIndex(index.indexDescriptor, (q) =>
+        q.eq(field, input[field as keyof typeof input])
+      )
+      .unique();
+    if (existingDoc && existingDoc._id !== doc?._id) {
+      throw new Error(`${table} ${field} already exists`);
+    }
+  }
 };
 
 const selectFields = <T extends TableNames, D extends Doc<T>>(
@@ -431,13 +441,18 @@ const paginate = async (
       (isUniqueField(args.model as TableNames, w.field) || w.field === "id")
   );
   if (uniqueWhere) {
+    const { index } =
+      findIndex({
+        model: args.model,
+        where: [uniqueWhere],
+      }) || {};
     const doc =
       uniqueWhere.field === "id"
         ? await ctx.db.get(uniqueWhere.value as Id<TableNames>)
         : await ctx.db
             .query(args.model as any)
-            .withIndex(uniqueWhere.field as any, (q) =>
-              q.eq(uniqueWhere.field, uniqueWhere.value)
+            .withIndex(index?.indexDescriptor as any, (q) =>
+              q.eq(index?.fields[0], uniqueWhere.value)
             )
             .unique();
 
