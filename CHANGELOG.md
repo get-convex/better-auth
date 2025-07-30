@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.12
+
+- warn on secure cookie mismatch between Convex and Next.js
+- maintain dropped fields in Better Auth schema to avoid breaking deploys
+- support Better Auth 1.3.4
+
 ## 0.7.11
 
 - fix build output type errors, simplify watch task
