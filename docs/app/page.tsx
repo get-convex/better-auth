@@ -2030,9 +2030,9 @@ export default function Home() {
             Convex functions.
           </P>
           <P>
-            <Code>auth.api</Code> methods require request headers. The Convex
-            component provides a method for generating headers for the current
-            session.
+            Some <Code>auth.api</Code> methods require request headers. The
+            Convex component provides a method for generating headers for the
+            current session.
           </P>
           <Callout>
             <Code>auth.api</Code> read-only methods can be run in a query. Use a
