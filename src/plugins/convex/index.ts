@@ -77,7 +77,34 @@ export const convex = <O extends BetterAuthOptions>(
   return {
     id: "convex",
     hooks: {
-      before: [...bearer.hooks.before],
+      before: [
+        {
+          matcher: (ctx) => {
+            return !!ctx.body?.userId;
+          },
+          handler: createAuthMiddleware(async (ctx) => {
+            const user: { id: string } | null =
+              await ctx.context.adapter.findOne({
+                model: "user",
+                where: [
+                  {
+                    field: "userId",
+                    operator: "eq",
+                    value: ctx.body?.userId,
+                  },
+                ],
+              });
+            if (!user) {
+              throw new Error("User not found");
+            }
+            ctx.body.userId = user.id;
+            return {
+              context: ctx,
+            };
+          }),
+        },
+        ...bearer.hooks.before,
+      ],
       after: [
         ...oidcProvider.hooks.after,
         {

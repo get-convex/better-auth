@@ -9,6 +9,7 @@ export const get = query({
     if (!identity) {
       return [];
     }
+
     return await ctx.db
       .query("todos")
       .withIndex("userId", (q) =>

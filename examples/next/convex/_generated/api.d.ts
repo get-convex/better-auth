@@ -91,6 +91,7 @@ export declare const components: {
                   phoneNumberVerified?: null | boolean;
                   role?: null | string;
                   stripeCustomerId?: null | string;
+                  teamId?: null | string;
                   twoFactorEnabled?: null | boolean;
                   updatedAt: number;
                   userId?: null | string;
@@ -960,6 +961,7 @@ export declare const components: {
                   phoneNumberVerified?: null | boolean;
                   role?: null | string;
                   stripeCustomerId?: null | string;
+                  teamId?: null | string;
                   twoFactorEnabled?: null | boolean;
                   updatedAt?: number;
                   userId?: null | string;
@@ -1909,6 +1911,7 @@ export declare const components: {
                   phoneNumberVerified?: null | boolean;
                   role?: null | string;
                   stripeCustomerId?: null | string;
+                  teamId?: null | string;
                   twoFactorEnabled?: null | boolean;
                   updatedAt?: number;
                   userId?: null | string;
