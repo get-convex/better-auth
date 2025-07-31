@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.13
+
+- fix: support auth.api calls without headers
+
 ## 0.7.12
 
 - warn on secure cookie mismatch between Convex and Next.js
