@@ -636,9 +636,13 @@ export default function Home() {
                   CONVEX_DEPLOYMENT=dev:adjective-animal-123 # team: team-name, project: project-name
 
                   VITE_CONVEX_URL=https://adjective-animal-123.convex.cloud
+                  # Or if you are using the local convex instance
+                  # VITE_CONVEX_URL=http://127.0.0.1:3210
                   
                   # Same as VITE_CONVEX_URL but ends in .site
                   VITE_CONVEX_SITE_URL=https://adjective-animal-123.convex.site
+                  # Or if you are using the local convex instance
+                  # VITE_CONVEX_SITE_URL=http://127.0.0.1:3211
                 `,
               },
               {
@@ -652,9 +656,13 @@ export default function Home() {
                   CONVEX_DEPLOYMENT=dev:adjective-animal-123 # team: team-name, project: project-name
 
                   NEXT_PUBLIC_CONVEX_URL=https://adjective-animal-123.convex.cloud
+                  # Or if you are using the local convex instance
+                  # NEXT_PUBLIC_CONVEX_URL=http://127.0.0.1:3210
                   
                   # Same as NEXT_PUBLIC_CONVEX_URL but ends in .site
                   NEXT_PUBLIC_CONVEX_SITE_URL=https://adjective-animal-123.convex.site
+                  # Or if you are using the local convex instance
+                  # NEXT_PUBLIC_CONVEX_SITE_URL=http://127.0.0.1:3211
                 `,
               },
               {
@@ -668,9 +676,13 @@ export default function Home() {
                   CONVEX_DEPLOYMENT=dev:adjective-animal-123 # team: team-name, project: project-name
 
                   VITE_CONVEX_URL=https://adjective-animal-123.convex.cloud
+                  # Or if you are using the local convex instance
+                  # VITE_CONVEX_URL=http://127.0.0.1:3210
                   
                   # Same as VITE_CONVEX_URL but ends in .site
                   VITE_CONVEX_SITE_URL=https://adjective-animal-123.convex.site
+                  # Or if you are using the local convex instance
+                  # VITE_CONVEX_SITE_URL=http://127.0.0.1:3211
                 `,
               },
             ]}
