@@ -58,8 +58,8 @@
         "default": "./dist/esm/client/plugins/index.js"
       },
       "require": {
-        "types": "./dist/commonjs/plugins/clientPlugins.d.ts",
-        "default": "./dist/commonjs/plugins/clientPlugins.js"
+        "types": "./dist/commonjs/client/plugins/index.d.ts",
+        "default": "./dist/commonjs/client/plugins/index.js"
       }
     },
     "./nextjs": {
