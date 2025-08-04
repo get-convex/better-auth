@@ -638,7 +638,7 @@ export default function Home() {
                   VITE_CONVEX_URL=https://adjective-animal-123.convex.cloud
                   # Or if you are using the local convex instance
                   # VITE_CONVEX_URL=http://127.0.0.1:3210
-                  
+
                   # Same as VITE_CONVEX_URL but ends in .site
                   VITE_CONVEX_SITE_URL=https://adjective-animal-123.convex.site
                   # Or if you are using the local convex instance
@@ -658,7 +658,7 @@ export default function Home() {
                   NEXT_PUBLIC_CONVEX_URL=https://adjective-animal-123.convex.cloud
                   # Or if you are using the local convex instance
                   # NEXT_PUBLIC_CONVEX_URL=http://127.0.0.1:3210
-                  
+
                   # Same as NEXT_PUBLIC_CONVEX_URL but ends in .site
                   NEXT_PUBLIC_CONVEX_SITE_URL=https://adjective-animal-123.convex.site
                   # Or if you are using the local convex instance
@@ -678,7 +678,7 @@ export default function Home() {
                   VITE_CONVEX_URL=https://adjective-animal-123.convex.cloud
                   # Or if you are using the local convex instance
                   # VITE_CONVEX_URL=http://127.0.0.1:3210
-                  
+
                   # Same as VITE_CONVEX_URL but ends in .site
                   VITE_CONVEX_SITE_URL=https://adjective-animal-123.convex.site
                   # Or if you are using the local convex instance
@@ -2003,6 +2003,7 @@ export default function Home() {
                 filename: "src/routes/index.tsx",
                 code: stripIndent`
                   import { createServerFn } from "@tanstack/react-start";
+                  import { getCookie } from "@tanstack/react-start/server"
                   import { ConvexHttpClient } from "convex/browser";
                   import { getCookieName } from "../lib/server-auth-utils";
                   import { api } from "../../convex/_generated/api";
