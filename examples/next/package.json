@@ -46,8 +46,5 @@
     "prettier": "^3.5.3",
     "tailwindcss": "^4.0.17",
     "typescript": "^5"
-  },
-  "overrides": {
-    "@react-email/render": "1.1.2"
   }
 }
