@@ -118,18 +118,15 @@ const Callout = ({
   </div>
 );
 
+const branch =
+  typeof window === "object" &&
+  window.location?.hostname.includes("--") &&
+  window.location?.hostname.split("--")[0];
+
 export default function Home() {
   const selectedFramework = useSelectedVariant("framework");
-  const selectedPackageManager = useSelectedVariant("package-manager");
-  console.log("selectedFramework", selectedFramework);
-  console.log("selectedPackageManager", selectedPackageManager);
   return (
-    <div
-      ref={(el) => {
-        console.log("test ref", el);
-      }}
-      className="max-w-3xl mx-auto px-4 sm:px-6 md:mt-12"
-    >
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 md:mt-12">
       <div className="py-8 sm:py-20 space-y-6 sm:space-y-10">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4 sm:mb-6">
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
@@ -290,7 +287,7 @@ export default function Home() {
         <P>Check out complete working examples on GitHub.</P>
         <div className="grid sm:grid-cols-2 gap-4 mb-6sm:gap-6">
           <a
-            href="https://github.com/get-convex/better-auth/tree/main/examples/react"
+            href={`https://github.com/get-convex/better-auth/tree/${branch || "latest"}/examples/react`}
             className={cn(
               "flex w-full flex-col items-center rounded-xl border bg-card p-6 text-card-foreground shadow transition-colors hover:bg-muted/50 sm:p-10"
             )}
@@ -308,7 +305,7 @@ export default function Home() {
             <p className="font-medium mt-2">React</p>
           </a>
           <a
-            href="https://github.com/get-convex/better-auth/tree/main/examples/next"
+            href={`https://github.com/get-convex/better-auth/tree/${branch || "latest"}/examples/next`}
             className={cn(
               "flex w-full flex-col items-center rounded-xl border bg-card p-6 text-card-foreground shadow transition-colors hover:bg-muted/50 sm:p-10"
             )}
@@ -326,7 +323,7 @@ export default function Home() {
             <p className="font-medium mt-2">Next.js</p>
           </a>
           <a
-            href="https://github.com/get-convex/better-auth/tree/main/examples/tanstack"
+            href={`https://github.com/get-convex/better-auth/tree/${branch || "latest"}/examples/tanstack`}
             className={cn(
               "flex w-full flex-col items-center rounded-xl border bg-card p-6 text-card-foreground shadow transition-colors hover:bg-muted/50 sm:p-10"
             )}

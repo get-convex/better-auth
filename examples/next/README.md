@@ -5,6 +5,10 @@ This example shows how to use Better Auth with Convex and Next.js.
 Note that dependencies are set up to work with the local component in this repo,
 it is not set up for standalone use (but can be adapted).
 
+**Note:** Examples on the `main` branch may not match your version of the Better
+Auth component. Use the `latest` branch for the latest stable release and the
+`alpha` branch for the latest alpha release.
+
 ### Running the example
 
 1. Clone or fork the repo
