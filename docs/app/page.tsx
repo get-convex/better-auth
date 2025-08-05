@@ -9,6 +9,7 @@ import { cx } from "class-variance-authority";
 import { GenerateSecret } from "./generate-secret";
 import { cn } from "@/lib/utils";
 import { useSelectedVariant } from "@/app/code-block-variant-store";
+import { getBranch } from "@/app/version-selector";
 
 const CodeBlock = (props: ComponentProps<typeof CodeBlockComponent>) => (
   <CodeBlockComponent className={cx(props.className, "mb-6")} {...props} />
@@ -118,12 +119,8 @@ const Callout = ({
   </div>
 );
 
-const branch =
-  typeof window === "object" &&
-  window.location?.hostname.includes("--") &&
-  window.location?.hostname.split("--")[0];
-
 export default function Home() {
+  const branch = getBranch();
   const selectedFramework = useSelectedVariant("framework");
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 md:mt-12">
