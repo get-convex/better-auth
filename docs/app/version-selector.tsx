@@ -39,11 +39,12 @@ export function VersionSelector() {
     typeof window === "object" &&
     window.location?.hostname.includes("--") &&
     window.location?.hostname.split("--")[0];
+  console.log("branch", branch);
   const current =
     (branch &&
       versions.find((v) => {
         return v.label === branch || v.version.replaceAll(".", "-") === branch;
-      })) ??
+      })) ||
     versions.find((v) => v.label === "latest");
 
   useEffect(() => {
@@ -74,6 +75,8 @@ export function VersionSelector() {
       button.removeAttribute("data-open");
     };
   }, [open]);
+
+  console.log("current", current);
 
   if (!current) return null;
 
