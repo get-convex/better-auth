@@ -21,6 +21,10 @@ Use [Better Auth](https://better-auth.com) with [Convex](https://www.convex.dev)
 locally within this repo. They can be adapted for standalone use, but are
 intentionally not set up for it.
 
+**Note:** Examples on the `main` branch may not match your version of the Better
+Auth component. Use the `latest` branch for the latest stable release and the
+`alpha` branch for the latest alpha release.
+
 1. Clone or fork the repo
 2. Install root dependencies
 

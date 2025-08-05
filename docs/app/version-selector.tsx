@@ -18,7 +18,7 @@ const getVersions = async () => {
     // Always pull the list of versions from the main branch
     const versions = await (
       await fetch(
-        "https://raw.githubusercontent.com/get-convex/better-auth/refs/heads/docs/docs/versions.json"
+        "https://raw.githubusercontent.com/get-convex/better-auth/refs/heads/latest/docs/versions.json"
       )
     ).json();
     const isArray = Array.isArray(versions);
@@ -36,11 +36,15 @@ export function VersionSelector() {
   const [versions, setVersions] = React.useState<Version[]>(localVersions);
   const triggerRef = useRef<HTMLSpanElement>(null);
   const branch =
-    typeof window === "object" && window.location?.hostname.split("--")[0];
+    typeof window === "object" &&
+    window.location?.hostname.includes("--") &&
+    window.location?.hostname.split("--")[0];
   const current =
-    versions.find((v) => {
-      return v.label === branch || v.version.replaceAll(".", "-") === branch;
-    }) ?? versions.find((v) => v.label === "latest");
+    (branch &&
+      versions.find((v) => {
+        return v.label === branch || v.version.replaceAll(".", "-") === branch;
+      })) ??
+    versions.find((v) => v.label === "latest");
 
   useEffect(() => {
     const fetchVersions = async () => {
