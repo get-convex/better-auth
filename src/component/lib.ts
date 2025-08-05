@@ -252,12 +252,33 @@ const checkUniqueFields = async (
   }
 };
 
-const selectFields = <T extends TableNames, D extends Doc<T>>(
+// This handles basic select (stripping out the other fields if there
+// is a select arg), but also swaps in the app userId for any user id
+// reference fields.
+const selectFields = async <T extends TableNames, D extends Doc<T>>(
+  ctx: QueryCtx,
   doc: D | null,
   select?: string[]
 ) => {
   if (!doc) {
     return null;
+  }
+  const modelSpecialFields =
+    specialFields[doc._table as keyof typeof specialFields];
+  const userIdField = modelSpecialFields
+    ? Object.entries(modelSpecialFields).find(
+        ([_, field]) => field.references?.model === "user"
+      )
+    : undefined;
+  if (userIdField) {
+    const userIdFieldName = userIdField[0] as keyof typeof doc;
+    const userId = doc[userIdFieldName];
+    if (userId) {
+      const user = await ctx.db.get(userId as unknown as Id<"user">);
+      if (user) {
+        (doc as any)[userIdFieldName] = user.userId;
+      }
+    }
   }
   if (!select?.length) {
     return doc;
@@ -458,7 +479,7 @@ const paginate = async (
 
     if (filterByWhere(doc, args.where, (w) => w !== uniqueWhere)) {
       return {
-        page: [selectFields(doc, args.select)].filter(Boolean),
+        page: [await selectFields(ctx, doc, args.select)].filter(Boolean),
         isDone: true,
         continueCursor: "",
       };
@@ -552,7 +573,9 @@ const paginate = async (
       .paginate(paginationOpts);
     return {
       ...result,
-      page: result.page.map((doc) => selectFields(doc, args.select)),
+      page: await asyncMap(result.page, (doc) =>
+        selectFields(ctx, doc, args.select)
+      ),
     };
   }
 
@@ -560,7 +583,9 @@ const paginate = async (
   const result = await query.paginate(paginationOpts);
   return {
     ...result,
-    page: result.page.map((doc) => selectFields(doc, args.select)),
+    page: await asyncMap(result.page, (doc) =>
+      selectFields(ctx, doc, args.select)
+    ),
   };
 };
 
@@ -610,7 +635,7 @@ export const create = mutation({
 export const findOne = query({
   args: adapterArgsValidator,
   handler: async (ctx, args) => {
-    return await listOne(ctx, args);
+    return listOne(ctx, args);
   },
 });
 

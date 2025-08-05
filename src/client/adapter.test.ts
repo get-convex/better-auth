@@ -45,37 +45,45 @@ export const getAdapter = (t: ReturnType<typeof convexTest>) => async () => {
   } satisfies Adapter;
 };
 
-describe("convex adapter", async () => {
+describe("Better Auth Adapter Tests", async () => {
   const _t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const activeTests = [
+    "CREATE_MODEL",
+    "CREATE_MODEL_SHOULD_ALWAYS_RETURN_AN_ID",
+    "FIND_MODEL",
+    "FIND_MODEL_WITHOUT_ID",
+    "FIND_MODEL_WITH_SELECT",
+    "FIND_MODEL_WITH_MODIFIED_FIELD_NAME",
+    "UPDATE_MODEL",
+    "SHOULD_FIND_MANY",
+    "SHOULD_FIND_MANY_WITH_WHERE",
+    "SHOULD_FIND_MANY_WITH_OPERATORS",
+    "SHOULD_WORK_WITH_REFERENCE_FIELDS",
+    "SHOULD_FIND_MANY_WITH_SORT_BY",
+    "SHOULD_FIND_MANY_WITH_LIMIT",
+    "SHOULD_UPDATE_WITH_MULTIPLE_WHERE",
+    "DELETE_MODEL",
+    "SHOULD_DELETE_MANY",
+    "SHOULD_NOT_THROW_ON_DELETE_RECORD_NOT_FOUND",
+    "SHOULD_NOT_THROW_ON_RECORD_NOT_FOUND",
+    "SHOULD_FIND_MANY_WITH_CONTAINS_OPERATOR",
+    "SHOULD_SEARCH_USERS_WITH_STARTS_WITH",
+    "SHOULD_SEARCH_USERS_WITH_ENDS_WITH",
+  ];
+  const inactiveTests = [
+    // not supported
+    "SHOULD_FIND_MANY_WITH_OFFSET",
+    "SHOULD_PREFER_GENERATE_ID_IF_PROVIDED",
+  ];
+
   await runAdapterTest({
     getAdapter: getAdapter(_t),
-    disableTests: {
-      CREATE_MODEL: false,
-      CREATE_MODEL_SHOULD_ALWAYS_RETURN_AN_ID: false,
-      FIND_MODEL: false,
-      FIND_MODEL_WITHOUT_ID: false,
-      FIND_MODEL_WITH_SELECT: false,
-      FIND_MODEL_WITH_MODIFIED_FIELD_NAME: false,
-      UPDATE_MODEL: false,
-      SHOULD_FIND_MANY: false,
-      SHOULD_FIND_MANY_WITH_WHERE: false,
-      SHOULD_FIND_MANY_WITH_OPERATORS: false,
-      SHOULD_WORK_WITH_REFERENCE_FIELDS: false,
-      SHOULD_FIND_MANY_WITH_SORT_BY: false,
-      SHOULD_FIND_MANY_WITH_LIMIT: false,
-      SHOULD_FIND_MANY_WITH_OFFSET: true, // disabled for now
-      SHOULD_UPDATE_WITH_MULTIPLE_WHERE: false,
-      DELETE_MODEL: false,
-      SHOULD_DELETE_MANY: false,
-      SHOULD_NOT_THROW_ON_DELETE_RECORD_NOT_FOUND: false,
-      SHOULD_NOT_THROW_ON_RECORD_NOT_FOUND: false,
-      SHOULD_FIND_MANY_WITH_CONTAINS_OPERATOR: false,
-      SHOULD_SEARCH_USERS_WITH_STARTS_WITH: false,
-      SHOULD_SEARCH_USERS_WITH_ENDS_WITH: false,
-      SHOULD_PREFER_GENERATE_ID_IF_PROVIDED: true,
-    },
+    disableTests: Object.fromEntries(inactiveTests.map((test) => [test, true])),
   });
+});
 
+describe("Convex Adapter Tests", async () => {
   test("should handle lone range operators", async () => {
     const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
     const adapter = await getAdapter(t)();

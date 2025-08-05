@@ -39,8 +39,8 @@ export const {
   isAuthenticated,
 } = betterAuthComponent.createAuthFunctions({
   onCreateUser: async () => {
-    // noop
-    // not required for the adapter test
+    // return a random string as a userId
+    return Math.random().toString(36).substring(2, 15);
   },
 });
 
