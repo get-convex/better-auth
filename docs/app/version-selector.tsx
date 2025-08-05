@@ -31,15 +31,19 @@ const getVersions = async () => {
   }
 };
 
+export const getBranch = () => {
+  return (
+    typeof window === "object" &&
+    window.location?.hostname.includes("--") &&
+    window.location?.hostname.split("--")[0]
+  );
+};
+
 export function VersionSelector() {
   const [open, setOpen] = React.useState(false);
   const [versions, setVersions] = React.useState<Version[]>(localVersions);
   const triggerRef = useRef<HTMLSpanElement>(null);
-  const branch =
-    typeof window === "object" &&
-    window.location?.hostname.includes("--") &&
-    window.location?.hostname.split("--")[0];
-  console.log("branch", branch);
+  const branch = getBranch();
   const current =
     (branch &&
       versions.find((v) => {
@@ -75,8 +79,6 @@ export function VersionSelector() {
       button.removeAttribute("data-open");
     };
   }, [open]);
-
-  console.log("current", current);
 
   if (!current) return null;
 
