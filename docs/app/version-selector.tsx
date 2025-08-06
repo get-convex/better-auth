@@ -31,19 +31,15 @@ const getVersions = async () => {
   }
 };
 
-export const getBranch = () => {
-  return (
-    typeof window === "object" &&
-    window.location?.hostname.includes("--") &&
-    window.location?.hostname.split("--")[0]
-  );
-};
-
 export function VersionSelector() {
   const [open, setOpen] = React.useState(false);
   const [versions, setVersions] = React.useState<Version[]>(localVersions);
   const triggerRef = useRef<HTMLSpanElement>(null);
-  const branch = getBranch();
+  const branch =
+    (typeof window === "object" &&
+      window.location?.hostname.includes("--") &&
+      window.location?.hostname.split("--")[0]) ||
+    "";
   const current =
     (branch &&
       versions.find((v) => {

@@ -91,9 +91,6 @@ function CodeBlockInternal({
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
     const sorted = [...expandedLines].sort((a, b) => a - b);
-    if (lines.some((line) => Array.isArray(line))) {
-      console.log("sorted", sorted);
-    }
     const sections: HighlightedSection[] = [];
     let current: HighlightedSection = { start: sorted[0], end: sorted[0] };
 
@@ -106,9 +103,6 @@ function CodeBlockInternal({
       }
     }
     sections.push(current);
-    if (lines.some((line) => Array.isArray(line))) {
-      console.log("sections", sections);
-    }
     return sections;
   };
 
