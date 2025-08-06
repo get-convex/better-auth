@@ -2508,8 +2508,8 @@ export default function Home() {
           <CodeBlock
             language="typescript"
             filename="convex/http.ts"
-            removedLines={[7, 8, 9]}
-            addedLines={[11, 12]}
+            removedLines={[8, 9, 10]}
+            addedLines={[12, 13]}
             code={stripIndent`
               import { httpRouter } from 'convex/server'
               import { betterAuthComponent } from './auth'
