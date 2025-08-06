@@ -9,7 +9,6 @@ import { cx } from "class-variance-authority";
 import { GenerateSecret } from "./generate-secret";
 import { cn } from "@/lib/utils";
 import { useSelectedVariant } from "@/app/code-block-variant-store";
-import { getBranch } from "@/app/version-selector";
 
 const CodeBlock = (props: ComponentProps<typeof CodeBlockComponent>) => (
   <CodeBlockComponent className={cx(props.className, "mb-6")} {...props} />
@@ -120,7 +119,12 @@ const Callout = ({
 );
 
 export default function Home() {
-  const branch = getBranch();
+  const branch =
+    (typeof window === "object" &&
+      window.location?.hostname.includes("--") &&
+      window.location?.hostname.split("--")[0]) ||
+    "";
+
   const exampleUrl = `https://github.com/get-convex/better-auth/tree/${branch || "latest"}/examples`;
   console.log("branch", branch);
   console.log("exampleUrl", exampleUrl);
