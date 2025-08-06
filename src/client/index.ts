@@ -181,6 +181,16 @@ export class BetterAuth<UserId extends string = string> {
     });
   }
 
+  async getUserByUsername(
+    ctx: GenericQueryCtx<GenericDataModel>,
+    username: string
+  ) {
+    return ctx.runQuery(this.component.lib.findOne, {
+      model: "user",
+      where: [{ field: "username", value: username }],
+    });
+  }
+
   createAuthFunctions<DataModel extends GenericDataModel>(opts: {
     onCreateUser: (
       ctx: GenericMutationCtx<DataModel>,
