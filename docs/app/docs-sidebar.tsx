@@ -395,6 +395,11 @@ export default function DocsSidebar({ children }: React.PropsWithChildren) {
                     <a href="#migrate-0-4-to-0-5">Migrate 0.4 &rarr; 0.5</a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <a href="#debugging">Debugging</a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

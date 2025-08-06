@@ -121,6 +121,9 @@ const Callout = ({
 
 export default function Home() {
   const branch = getBranch();
+  const exampleUrl = `https://github.com/get-convex/better-auth/tree/${branch || "latest"}/examples`;
+  console.log("branch", branch);
+  console.log("exampleUrl", exampleUrl);
   const selectedFramework = useSelectedVariant("framework");
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 md:mt-12">
@@ -284,7 +287,7 @@ export default function Home() {
         <P>Check out complete working examples on GitHub.</P>
         <div className="grid sm:grid-cols-2 gap-4 mb-6sm:gap-6">
           <a
-            href={`https://github.com/get-convex/better-auth/tree/${branch || "latest"}/examples/react`}
+            href={`${exampleUrl}/react`}
             className={cn(
               "flex w-full flex-col items-center rounded-xl border bg-card p-6 text-card-foreground shadow transition-colors hover:bg-muted/50 sm:p-10"
             )}
@@ -302,7 +305,7 @@ export default function Home() {
             <p className="font-medium mt-2">React</p>
           </a>
           <a
-            href={`https://github.com/get-convex/better-auth/tree/${branch || "latest"}/examples/next`}
+            href={`${exampleUrl}/next`}
             className={cn(
               "flex w-full flex-col items-center rounded-xl border bg-card p-6 text-card-foreground shadow transition-colors hover:bg-muted/50 sm:p-10"
             )}
@@ -320,7 +323,7 @@ export default function Home() {
             <p className="font-medium mt-2">Next.js</p>
           </a>
           <a
-            href={`https://github.com/get-convex/better-auth/tree/${branch || "latest"}/examples/tanstack`}
+            href={`${exampleUrl}/tanstack`}
             className={cn(
               "flex w-full flex-col items-center rounded-xl border bg-card p-6 text-card-foreground shadow transition-colors hover:bg-muted/50 sm:p-10"
             )}
@@ -3053,6 +3056,41 @@ export default function Home() {
                     plugins: [convex(), crossDomain()],
                   });
               `}
+          />
+        </Subsection>
+        <Subsection id="debugging" title="Debugging">
+          <P>
+            Verbose logs from the Better Auth component can be enabled on the
+            component constructor.
+          </P>
+          <CodeBlock
+            language="typescript"
+            filename="convex/auth.ts"
+            highlightedLines={[5]}
+            code={stripIndent`
+              export const betterAuthComponent = new BetterAuth(
+                components.betterAuth,
+                {
+                  // ...
+                  verbose: true,
+                }
+              );
+            `}
+          />
+
+          <P>
+            Verbose logs in the client can be enabled on the Convex client
+            constructor.
+          </P>
+          <CodeBlock
+            language="typescript"
+            filename="src/main.ts"
+            highlightedLines={[2]}
+            code={stripIndent`
+              const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string, {
+                verbose: true,
+              });
+            `}
           />
         </Subsection>
       </Section>
