@@ -116,6 +116,10 @@
       "import": {
         "types": "./dist/esm/component/convex.config.d.ts",
         "default": "./dist/esm/component/convex.config.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/component/convex.config.d.ts",
+        "default": "./dist/commonjs/component/convex.config.js"
       }
     }
   },
