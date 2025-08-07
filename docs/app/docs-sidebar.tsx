@@ -356,6 +356,18 @@ export default function DocsSidebar({ children }: React.PropsWithChildren) {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
+                    <a href="#llm-instructions">LLM Instructions</a>
+                  </SidebarMenuButton>
+                  <SidebarMenuSub>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <a href="#llm-instructions-nextjs">Next.js</a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  </SidebarMenuSub>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
                     <a href="#guides-users-table">Users table</a>
                   </SidebarMenuButton>
                   <SidebarMenuSub>
