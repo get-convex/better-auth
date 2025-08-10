@@ -28,6 +28,7 @@ export default function SignIn() {
     "passwordless",
   );
   const [otpSent, setOtpSent] = useState(false);
+  const [anonymousLoading, setAnonymousLoading] = useState(false);
 
   const handleSignIn = async () => {
     const { data, error } = await authClient.signIn.email(
@@ -70,6 +71,25 @@ export default function SignIn() {
     } finally {
       setForgotLoading(false);
     }
+  };
+
+  const handleAnonymousSignIn = async () => {
+    await authClient.signIn.anonymous(
+      {},
+      {
+        onRequest: () => {
+          setAnonymousLoading(true);
+        },
+        onSuccess: () => {
+          setAnonymousLoading(false);
+          router.push("/");
+        },
+        onError: (ctx) => {
+          setAnonymousLoading(false);
+          alert(ctx.error.message);
+        },
+      },
+    );
   };
 
   const handleMagicLinkSignIn = async () => {
@@ -281,6 +301,14 @@ export default function SignIn() {
                 Sign in with Password
               </Button>
             )}
+            <Button
+              type="button"
+              className="w-full"
+              disabled={anonymousLoading}
+              onClick={handleAnonymousSignIn}
+            >
+              Sign in anonymously
+            </Button>
             {signInMethod === "passwordless" && !otpSent && (
               <div className="flex flex-col gap-2">
                 <Button

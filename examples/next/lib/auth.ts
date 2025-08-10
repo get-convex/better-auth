@@ -1,6 +1,11 @@
 import { convexAdapter } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
-import { genericOAuth, organization, twoFactor } from "better-auth/plugins";
+import {
+  anonymous,
+  genericOAuth,
+  organization,
+  twoFactor,
+} from "better-auth/plugins";
 import { emailOTP } from "better-auth/plugins";
 import {
   sendMagicLink,
@@ -61,6 +66,7 @@ const createOptions = (ctx: GenericCtx) =>
       },
     },
     plugins: [
+      anonymous(),
       magicLink({
         sendMagicLink: async ({ email, url }) => {
           await sendMagicLink(requireMutationCtx(ctx), {

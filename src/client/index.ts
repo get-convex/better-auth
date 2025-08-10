@@ -307,7 +307,7 @@ export class BetterAuth<UserId extends string = string> {
         path: "/.well-known/openid-configuration",
         method: "GET",
         handler: httpActionGeneric(async () => {
-          const url = `${requireEnv("CONVEX_SITE_URL")}/api/auth/convex/.well-known/openid-configuration`;
+          const url = `${requireEnv("CONVEX_SITE_URL")}${path}/convex/.well-known/openid-configuration`;
           return Response.redirect(url);
         }),
       });

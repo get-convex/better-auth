@@ -610,7 +610,6 @@ export const create = mutation({
       ...Object.entries(schema.tables).map(([model, table]) =>
         v.object({
           model: v.literal(model),
-          where: v.optional(v.array(adapterWhereValidator)),
           data: v.object(table.validator.fields),
         })
       )
