@@ -1,11 +1,6 @@
 import { convexAdapter } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
-import {
-  anonymous,
-  genericOAuth,
-  organization,
-  twoFactor,
-} from "better-auth/plugins";
+import { anonymous, genericOAuth, twoFactor } from "better-auth/plugins";
 import { emailOTP } from "better-auth/plugins";
 import {
   sendMagicLink,
@@ -61,6 +56,15 @@ const createOptions = (ctx: GenericCtx) =>
       },
     },
     user: {
+      // This field is available in the `onCreateUser` hook from the component,
+      // but will not be committed to the database. Must be persisted in the
+      // hook if persistence is required.
+      additionalFields: {
+        foo: {
+          type: "string",
+          required: false,
+        },
+      },
       deleteUser: {
         enabled: true,
       },
@@ -95,7 +99,6 @@ const createOptions = (ctx: GenericCtx) =>
           },
         ],
       }),
-      organization(),
     ],
   }) satisfies BetterAuthOptions;
 
@@ -113,3 +116,5 @@ export const createAuth = (ctx: GenericCtx) => {
     ],
   });
 };
+
+export const authWithoutCtx = createAuth({} as any);
