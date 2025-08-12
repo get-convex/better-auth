@@ -22,7 +22,7 @@ import { createCookieGetter } from "better-auth/cookies";
 import { fetchQuery } from "convex/nextjs";
 import { JWT_COOKIE_NAME } from "../plugins/convex";
 import { requireEnv } from "../utils";
-import { partial } from "convex-helpers/validators";
+import { parse, partial } from "convex-helpers/validators";
 import { adapterArgsValidator, adapterWhereValidator } from "../component/lib";
 import { corsRouter } from "convex-helpers/server/cors";
 import { version as convexVersion } from "convex";
@@ -36,6 +36,22 @@ if (semver.lt(convexVersion, "1.25.0")) {
 
 const createUserFields = omit(schema.tables.user.validator.fields, ["userId"]);
 const createUserValidator = v.object(createUserFields);
+const createPermissiveArgsValidator = v.object({
+  input: v.object({
+    model: v.literal("user"),
+    data: v.record(
+      v.string(),
+      v.union(
+        v.string(),
+        v.number(),
+        v.boolean(),
+        v.array(v.string()),
+        v.array(v.number()),
+        v.null()
+      )
+    ),
+  }),
+});
 const createUserArgsValidator = v.object({
   input: v.object({
     model: v.literal("user"),
@@ -66,7 +82,7 @@ export type AuthFunctions = {
   createUser: FunctionReference<
     "mutation",
     "internal",
-    Infer<typeof createUserArgsValidator>
+    Infer<typeof createPermissiveArgsValidator>
   >;
   deleteUser: FunctionReference<
     "mutation",
@@ -218,13 +234,14 @@ export class BetterAuth<UserId extends string = string> {
         },
       }),
       createUser: internalMutationGeneric({
-        args: createUserArgsValidator,
+        args: createPermissiveArgsValidator,
         handler: async (ctx, args) => {
-          const userId = await opts.onCreateUser(ctx, args.input.data);
+          const userId = await opts.onCreateUser(ctx, args.input.data as any);
+          const parsedArgs = parse(createUserArgsValidator, args);
           return ctx.runMutation(this.component.lib.create, {
             input: {
-              ...args.input,
-              data: { ...args.input.data, userId },
+              ...parsedArgs.input,
+              data: { ...parsedArgs.input.data, userId },
             },
           });
         },
