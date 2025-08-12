@@ -110,7 +110,7 @@ export function AuthProvider({
     };
 
     return fetchWithRetry();
-  }, [client]);
+  }, [authClient, logVerbose]);
 
   const fetchAccessToken = useCallback(
     async ({ forceRefreshToken }: { forceRefreshToken: boolean }) => {
