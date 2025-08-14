@@ -117,4 +117,5 @@ export const createAuth = (ctx: GenericCtx) => {
   });
 };
 
+// Mostly for inferring types from Better Auth options
 export const authWithoutCtx = createAuth({} as any);
