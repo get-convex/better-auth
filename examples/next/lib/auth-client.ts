@@ -18,6 +18,6 @@ export const authClient = createAuthClient({
     emailOTPClient(),
     twoFactorClient(),
     genericOAuthClient(),
-    convexClient(),
+    convexClient<typeof authWithoutCtx>(),
   ],
 });
