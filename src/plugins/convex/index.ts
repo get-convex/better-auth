@@ -45,7 +45,7 @@ export const convex = <O extends BetterAuthOptions>(
     loginPage: "/not-used",
     metadata: {
       issuer: `${process.env.CONVEX_SITE_URL}`,
-      jwks_uri: `${process.env.CONVEX_SITE_URL}/api/auth/convex/jwks`,
+      jwks_uri: `${process.env.CONVEX_SITE_URL}${opts.options?.basePath ?? "/api/auth"}/convex/jwks`,
     },
   });
   const jwt = jwtPlugin({
