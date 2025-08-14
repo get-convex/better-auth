@@ -157,8 +157,11 @@ const findIndex = (args: {
   if (!indexEqFields?.length && !boundField && !args.sortBy) {
     return;
   }
-  const indexes =
-    schema.tables[args.model as keyof typeof schema.tables][" indexes"]();
+  const table = schema.tables[args.model as keyof typeof schema.tables];
+  if (!table) {
+    throw new Error(`Table ${args.model} not found`);
+  }
+  const indexes = table[" indexes"]();
   const sortField = args.sortBy?.field;
 
   // We internally use _creationTime in place of Better Auth's createdAt
