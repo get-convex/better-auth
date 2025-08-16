@@ -1326,7 +1326,6 @@ export default function Home() {
                       import { ConvexReactClient } from 'convex/react'
                       import { getCookie, getWebRequest } from '@tanstack/react-start/server'
                       import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
-                      import { createAuth } from '../lib/auth'
                       import {
                         authClient,
                         fetchSession,
@@ -1338,7 +1337,7 @@ export default function Home() {
                         const sessionCookieName = await getCookieName()
                         const token = getCookie(sessionCookieName)
                         const request = getWebRequest()
-                        const { session } = await fetchSession(createAuth, request)
+                        const { session } = await fetchSession(request)
                         return {
                           userId: session?.user.id,
                           token,
