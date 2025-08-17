@@ -126,8 +126,6 @@ export default function Home() {
     "";
 
   const exampleUrl = `https://github.com/get-convex/better-auth/tree/${branch || "latest"}/examples`;
-  console.log("branch", branch);
-  console.log("exampleUrl", exampleUrl);
   const selectedFramework = useSelectedVariant("framework");
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 md:mt-12">
