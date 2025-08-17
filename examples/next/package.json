@@ -11,6 +11,7 @@
     "lint": "next lint && tsc -p convex && eslint convex"
   },
   "dependencies": {
+    "@better-fetch/fetch": "^1.1.18",
     "@convex-dev/better-auth": "file:../..",
     "@convex-dev/resend": "^0.1.4",
     "@radix-ui/react-checkbox": "^1.1.4",
