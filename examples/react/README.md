@@ -5,9 +5,9 @@ This example shows how to use Better Auth with Convex and React.
 Note that dependencies are set up to work with the local component in this repo,
 it is not set up for standalone use (but can be adapted).
 
-**Note:** Examples on the `main` branch may not match your version of the Better
-Auth component. Use the `latest` branch for the latest stable release and the
-`alpha` branch for the latest alpha release.
+**Note:** Examples on the `main` branch use the `alpha` release. If you're not
+installing the `alpha`, use the `latest` branch for docs and examples matching
+the latest stable release.
 
 ### Running the example
 
