@@ -298,6 +298,7 @@ const selectFields = async <T extends TableNames, D extends Doc<T>>(
 const filterByWhere = (
   doc: Doc<any>,
   where?: Infer<typeof adapterWhereValidator>[],
+  // Optionally filter which where clauses to apply.
   filterWhere?: (w: Infer<typeof adapterWhereValidator>) => any
 ) => {
   if (!doc) {
@@ -328,38 +329,45 @@ const filterByWhere = (
       }
       return val > wVal;
     };
-    switch (w.operator) {
-      case undefined:
-      case "eq": {
-        return value === w.value;
+    const filter = (w: Infer<typeof adapterWhereValidator>) => {
+      switch (w.operator) {
+        case undefined:
+        case "eq": {
+          return value === w.value;
+        }
+        case "in": {
+          return Array.isArray(w.value) && (w.value as any[]).includes(value);
+        }
+        case "lt": {
+          return isLessThan(value, w.value);
+        }
+        case "lte": {
+          return value === w.value || isLessThan(value, w.value);
+        }
+        case "gt": {
+          return isGreaterThan(value, w.value);
+        }
+        case "gte": {
+          return value === w.value || isGreaterThan(value, w.value);
+        }
+        case "ne": {
+          return value !== w.value;
+        }
+        case "contains": {
+          return typeof value === "string" && value.includes(w.value as string);
+        }
+        case "starts_with": {
+          return (
+            typeof value === "string" && value.startsWith(w.value as string)
+          );
+        }
+        case "ends_with": {
+          return typeof value === "string" && value.endsWith(w.value as string);
+        }
       }
-      case "in": {
-        return Array.isArray(w.value) && (w.value as any[]).includes(value);
-      }
-      case "lt": {
-        return isLessThan(value, w.value);
-      }
-      case "lte": {
-        return value === w.value || isLessThan(value, w.value);
-      }
-      case "gt": {
-        return isGreaterThan(value, w.value);
-      }
-      case "gte": {
-        return value === w.value || isGreaterThan(value, w.value);
-      }
-      case "ne": {
-        return value !== w.value;
-      }
-      case "contains": {
-        return typeof value === "string" && value.includes(w.value as string);
-      }
-      case "starts_with": {
-        return typeof value === "string" && value.startsWith(w.value as string);
-      }
-      case "ends_with": {
-        return typeof value === "string" && value.endsWith(w.value as string);
-      }
+    };
+    if (!filter(w)) {
+      return false;
     }
   }
   return true;
@@ -416,11 +424,14 @@ const generateQuery = (
           [${indexFields.join(", ")}]
         `
       );
+      // No index, handle all where clauses statically.
       return filterByWhere(doc, args.where);
     }
     return filterByWhere(
       doc,
       args.where,
+      // Index used for all eq and range clauses, apply remaining clauses
+      // incompatible with Convex statically.
       (w) =>
         w.operator &&
         ["contains", "starts_with", "ends_with", "ne"].includes(w.operator)
@@ -480,6 +491,7 @@ const paginate = async (
             )
             .unique();
 
+    // Apply all other clauses as static filters to our 0 or 1 result.
     if (filterByWhere(doc, args.where, (w) => w !== uniqueWhere)) {
       return {
         page: [await selectFields(ctx, doc, args.select)].filter(Boolean),
@@ -563,17 +575,7 @@ const paginate = async (
         args.sortBy?.field !== "createdAt" && args.sortBy?.field,
         "_creationTime",
       ].flatMap((f) => (f ? [f] : []))
-    )
-      .filterWith(async (doc) =>
-        filterByWhere(
-          doc,
-          args.where,
-          (w) =>
-            w.operator &&
-            ["contains", "starts_with", "ends_with", "ne"].includes(w.operator)
-        )
-      )
-      .paginate(paginationOpts);
+    ).paginate(paginationOpts);
     return {
       ...result,
       page: await asyncMap(result.page, (doc) =>

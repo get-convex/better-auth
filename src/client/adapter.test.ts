@@ -79,7 +79,10 @@ describe("Better Auth Adapter Tests", async () => {
 
   await runAdapterTest({
     getAdapter: getAdapter(_t),
-    disableTests: Object.fromEntries(inactiveTests.map((test) => [test, true])),
+    disableTests: Object.fromEntries([
+      ...activeTests.map((test) => [test, false]),
+      ...inactiveTests.map((test) => [test, true]),
+    ]),
   });
 });
 
@@ -380,6 +383,41 @@ describe("Convex Adapter Tests", async () => {
       await adapter.findOne({
         model: "user",
         where: [{ field: "emailVerified", value: false }],
+      })
+    ).toEqual(null);
+  });
+
+  test("should handle compound operator on non-unique fieldwithout an index", async () => {
+    const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
+    const adapter = await getAdapter(t)();
+    await adapter.create({
+      model: "account",
+      data: {
+        accountId: "foo",
+        providerId: "bar",
+        userId: "baz",
+        accessTokenExpiresAt: null,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      },
+    });
+    expect(
+      await adapter.findOne({
+        model: "account",
+        where: [
+          {
+            operator: "lt",
+            connector: "AND",
+            field: "accessTokenExpiresAt",
+            value: Date.now(),
+          },
+          {
+            operator: "ne",
+            connector: "AND",
+            field: "accessTokenExpiresAt",
+            value: null,
+          },
+        ],
       })
     ).toEqual(null);
   });
