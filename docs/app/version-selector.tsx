@@ -6,30 +6,29 @@ import { cn } from "../lib/utils";
 import { useEffect, useRef } from "react";
 import localVersions from "../versions.json";
 
-const channels = ["latest", "alpha"];
-
 const DOCS_DOMAIN = "convex-better-auth.netlify.app";
 
 type Version = {
   label: string;
   version: string;
+  branch: string;
 };
 
 const getVersions = async () => {
   return (
     await Promise.all(
-      channels.map(async (channel) => {
+      localVersions.map(async (version) => {
         try {
           const versions: Version[] = await (
             await fetch(
-              `https://raw.githubusercontent.com/get-convex/better-auth/refs/heads/${channel}/docs/versions.json`
+              `https://raw.githubusercontent.com/get-convex/better-auth/refs/heads/${version.branch}/docs/versions.json`
             )
           ).json();
           const isArray = Array.isArray(versions);
           if (!isArray) {
             throw Error("versions is not an array");
           }
-          return versions.find((v) => v.label === channel);
+          return versions.find((v) => v.label === version.label);
         } catch (error) {
           console.error(error);
         }
