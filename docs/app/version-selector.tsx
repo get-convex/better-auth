@@ -6,6 +6,8 @@ import { cn } from "../lib/utils";
 import { useEffect, useRef } from "react";
 import localVersions from "../versions.json";
 
+const channels = ["latest", "alpha"];
+
 const DOCS_DOMAIN = "convex-better-auth.netlify.app";
 
 type Version = {
@@ -14,21 +16,26 @@ type Version = {
 };
 
 const getVersions = async () => {
-  try {
-    // Always pull the list of versions from the main branch
-    const versions = await (
-      await fetch(
-        "https://raw.githubusercontent.com/get-convex/better-auth/refs/heads/latest/docs/versions.json"
-      )
-    ).json();
-    const isArray = Array.isArray(versions);
-    if (!isArray) {
-      throw Error("versions is not an array");
-    }
-    return versions;
-  } catch (error) {
-    console.error(error);
-  }
+  return (
+    await Promise.all(
+      channels.map(async (channel) => {
+        try {
+          const versions: Version[] = await (
+            await fetch(
+              `https://raw.githubusercontent.com/get-convex/better-auth/refs/heads/${channel}/docs/versions.json`
+            )
+          ).json();
+          const isArray = Array.isArray(versions);
+          if (!isArray) {
+            throw Error("versions is not an array");
+          }
+          return versions.find((v) => v.label === channel);
+        } catch (error) {
+          console.error(error);
+        }
+      })
+    )
+  ).flatMap((v) => v || []);
 };
 
 export function VersionSelector() {
