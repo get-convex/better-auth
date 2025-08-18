@@ -49,7 +49,7 @@ export function VersionSelector() {
   const current =
     (branch &&
       versions.find((v) => {
-        return v.label === branch || v.version.replaceAll(".", "-") === branch;
+        return v.branch === branch || v.version.replaceAll(".", "-") === branch;
       })) ||
     versions.find((v) => v.label === "latest");
 
