@@ -16,13 +16,15 @@ import {
 import { magicLink } from "better-auth/plugins";
 import { betterAuth, BetterAuthOptions } from "better-auth";
 import { betterAuthComponent } from "../convex/auth";
-import { requireMutationCtx } from "@convex-dev/better-auth/utils";
+import { requireEnv, requireMutationCtx } from "@convex-dev/better-auth/utils";
 import { GenericCtx } from "../convex/_generated/server";
+
+const siteUrl = requireEnv("SITE_URL");
 
 // Split out options so they can be passed to the convex plugin
 const createOptions = (ctx: GenericCtx) =>
   ({
-    baseURL: "https://localhost:3000",
+    baseURL: siteUrl,
     database: convexAdapter(ctx, betterAuthComponent),
     account: {
       accountLinking: {

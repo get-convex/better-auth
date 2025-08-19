@@ -615,6 +615,37 @@ export default function Home() {
 
           <GenerateSecret />
 
+          <P>Add your site URL to your Convex deployment.</P>
+          <CodeBlock
+            variantGroup="framework"
+            variants={[
+              {
+                id: "react",
+                label: "React",
+                language: "shell",
+                code: stripIndent`
+                  npx convex env set SITE_URL http://localhost:5173
+                `,
+              },
+              {
+                id: "nextjs",
+                label: "Next.js",
+                language: "shell",
+                code: stripIndent`
+                  npx convex env set SITE_URL http://localhost:3000
+                `,
+              },
+              {
+                id: "tanstack",
+                label: "TanStack Start",
+                language: "shell",
+                code: stripIndent`
+                  npx convex env set SITE_URL http://localhost:5173
+                `,
+              },
+            ]}
+          />
+
           <P>
             Add the Convex site URL environment variable to the{" "}
             <Code>.env.local</Code> file created by <Code>npx convex dev</Code>.
@@ -642,6 +673,8 @@ export default function Home() {
                   VITE_CONVEX_SITE_URL=https://adjective-animal-123.convex.site
                   # Or if you are using the local convex instance
                   # VITE_CONVEX_SITE_URL=http://127.0.0.1:3211
+
+                  SITE_URL=http://localhost:5173
                 `,
               },
               {
@@ -662,6 +695,8 @@ export default function Home() {
                   NEXT_PUBLIC_CONVEX_SITE_URL=https://adjective-animal-123.convex.site
                   # Or if you are using the local convex instance
                   # NEXT_PUBLIC_CONVEX_SITE_URL=http://127.0.0.1:3211
+
+                  SITE_URL=http://localhost:3000
                 `,
               },
               {
@@ -682,6 +717,8 @@ export default function Home() {
                   VITE_CONVEX_SITE_URL=https://adjective-animal-123.convex.site
                   # Or if you are using the local convex instance
                   # VITE_CONVEX_SITE_URL=http://127.0.0.1:3211
+
+                  SITE_URL=http://localhost:5173
                 `,
               },
             ]}
@@ -735,12 +772,12 @@ export default function Home() {
                 code: stripIndent`
                   import { convexAdapter } from "@convex-dev/better-auth";
                   import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
+                  import { requireEnv } from "@convex-dev/better-auth/utils";
                   import { betterAuth } from "better-auth";
                   import { betterAuthComponent } from "../../convex/auth";
                   import { type GenericCtx } from "../../convex/_generated/server";
 
-                  // You'll want to replace this with an environment variable
-                  const siteUrl = "http://localhost:5173";
+                  const siteUrl = requireEnv("SITE_URL");
 
                   export const createAuth = (ctx: GenericCtx) =>
                     // Configure your Better Auth instance here
@@ -773,12 +810,12 @@ export default function Home() {
                 code: stripIndent`
                   import { convexAdapter } from "@convex-dev/better-auth";
                   import { convex } from "@convex-dev/better-auth/plugins";
+                  import { requireEnv } from "@convex-dev/better-auth/utils";
                   import { betterAuth } from "better-auth";
                   import { betterAuthComponent } from "../convex/auth";
                   import { type GenericCtx } from "../convex/_generated/server";
 
-                  // You'll want to replace this with an environment variable
-                  const siteUrl = "http://localhost:3000";
+                  const siteUrl = requireEnv("SITE_URL");
 
                   export const createAuth = (ctx: GenericCtx) =>
                     // Configure your Better Auth instance here
@@ -807,12 +844,12 @@ export default function Home() {
                 code: stripIndent`
                   import { convexAdapter } from "@convex-dev/better-auth";
                   import { convex } from "@convex-dev/better-auth/plugins";
+                  import { requireEnv } from "@convex-dev/better-auth/utils";
                   import { betterAuth } from "better-auth";
                   import { betterAuthComponent } from "../../convex/auth";
                   import { type GenericCtx } from "../../convex/_generated/server";
 
-                  // You'll want to replace this with an environment variable
-                  const siteUrl = "http://localhost:3000";
+                  const siteUrl = requireEnv("SITE_URL");
 
                   export const createAuth = (ctx: GenericCtx) =>
                     // Configure your Better Auth instance here

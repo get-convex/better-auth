@@ -10,11 +10,13 @@ import {
 } from '../../convex/email'
 import { betterAuthComponent } from '../../convex/auth'
 import type { GenericCtx } from '../../convex/_generated/server'
-import { requireMutationCtx } from '@convex-dev/better-auth/utils'
+import { requireEnv, requireMutationCtx } from '@convex-dev/better-auth/utils'
+
+const siteUrl = requireEnv('SITE_URL')
 
 export const createAuth = (ctx: GenericCtx) =>
   betterAuth({
-    baseURL: process.env.SITE_URL,
+    baseURL: siteUrl,
     database: convexAdapter(ctx, betterAuthComponent),
     account: {
       accountLinking: {
