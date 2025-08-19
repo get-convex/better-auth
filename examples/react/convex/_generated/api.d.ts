@@ -2162,48 +2162,7 @@ export declare const components: {
         { emailId: string },
         null
       >;
-      cleanupAbandonedEmails: FunctionReference<
-        "mutation",
-        "internal",
-        { olderThan?: number },
-        null
-      >;
-      cleanupOldEmails: FunctionReference<
-        "mutation",
-        "internal",
-        { olderThan?: number },
-        null
-      >;
-      get: FunctionReference<
-        "query",
-        "internal",
-        { emailId: string },
-        {
-          complained: boolean;
-          createdAt: number;
-          errorMessage?: string;
-          finalizedAt: number;
-          from: string;
-          headers?: Array<{ name: string; value: string }>;
-          html?: string;
-          opened: boolean;
-          replyTo: Array<string>;
-          resendId?: string;
-          segment: number;
-          status:
-            | "waiting"
-            | "queued"
-            | "cancelled"
-            | "sent"
-            | "delivered"
-            | "delivery_delayed"
-            | "bounced"
-            | "failed";
-          subject: string;
-          text?: string;
-          to: string;
-        } | null
-      >;
+      get: FunctionReference<"query", "internal", { emailId: string }, any>;
       getStatus: FunctionReference<
         "query",
         "internal",
@@ -2219,9 +2178,8 @@ export declare const components: {
             | "sent"
             | "delivered"
             | "delivery_delayed"
-            | "bounced"
-            | "failed";
-        } | null
+            | "bounced";
+        }
       >;
       handleEmailEvent: FunctionReference<
         "mutation",
