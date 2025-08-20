@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.8.x alpha
+
+- fix(adapter): apply all where clauses for compound queries
+- fix: support session type inference in client
+- fix: log error on invalid table name
+- feat: support additionalFields options for user table
+- fix: use options basePath for oidc discovery redirect
+- feat: add `getUserByUsername` component method
+- fix: return application userId for reference fields
+- fix: use correct package exports for client plugins
+
+## 0.7.15
+
+- fix: add missing return types to component methods
+
+## 0.7.14
+
+- fix: update jwks_uri to include options basePath
+
 ## 0.7.13
 
 - fix: support auth.api calls without headers
