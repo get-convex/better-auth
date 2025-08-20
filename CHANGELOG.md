@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.15
+
+- fix: add missing return types to component methods
+
+## 0.7.14
+
+- fix: update jwks_uri to include options basePath
+
 ## 0.7.13
 
 - fix: support auth.api calls without headers
