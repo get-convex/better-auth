@@ -151,7 +151,12 @@ export class BetterAuth<UserId extends string = string> {
     if (!identity) {
       return null;
     }
-    const doc = await ctx.runQuery(this.component.lib.findOne, {
+    const doc:
+      | null
+      | (Infer<typeof schema.tables.user.validator> & {
+          _id: string;
+          _creationTime: number;
+        }) = await ctx.runQuery(this.component.lib.findOne, {
       model: "user",
       where: [
         {
@@ -167,8 +172,7 @@ export class BetterAuth<UserId extends string = string> {
     if (!("emailVerified" in doc)) {
       throw new Error("invalid user");
     }
-    const { id: _id, ...user } = doc;
-    return user;
+    return omit(doc, ["_id", "_creationTime"]);
   }
 
   async getIdTokenCookieName(
@@ -201,10 +205,19 @@ export class BetterAuth<UserId extends string = string> {
     ctx: GenericQueryCtx<GenericDataModel>,
     username: string
   ) {
-    return ctx.runQuery(this.component.lib.findOne, {
+    const user:
+      | null
+      | (Infer<typeof schema.tables.user.validator> & {
+          _id: string;
+          _creationTime: number;
+        }) = await ctx.runQuery(this.component.lib.findOne, {
       model: "user",
       where: [{ field: "username", value: username }],
     });
+    if (!user) {
+      return null;
+    }
+    return omit(user, ["_id", "_creationTime"]);
   }
 
   createAuthFunctions<DataModel extends GenericDataModel>(opts: {
