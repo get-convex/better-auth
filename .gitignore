@@ -12,7 +12,7 @@ node_modules
 # components are libraries!
 package-lock.json
 
-# this is a package-json-redirect stub dir, see https://github.com/andrewbranch/example-subpath-exports-ts-compat?tab=readme-ov-file
-react/package.json
+!examples/**/package-lock.json
+
 # npm pack output
 *.tgz
