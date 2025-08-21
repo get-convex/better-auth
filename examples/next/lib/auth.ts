@@ -1,6 +1,10 @@
-import { convexAdapter } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
-import { anonymous, genericOAuth, twoFactor } from "better-auth/plugins";
+import {
+  anonymous,
+  genericOAuth,
+  twoFactor,
+  username,
+} from "better-auth/plugins";
 import { emailOTP } from "better-auth/plugins";
 import {
   sendMagicLink,
@@ -10,17 +14,20 @@ import {
 } from "../convex/email";
 import { magicLink } from "better-auth/plugins";
 import { betterAuth, BetterAuthOptions } from "better-auth";
-import { betterAuthComponent } from "../convex/auth";
-import { requireEnv, requireMutationCtx } from "@convex-dev/better-auth/utils";
-import { GenericCtx } from "../convex/_generated/server";
+import { requireMutationCtx } from "@convex-dev/better-auth/utils";
+import {
+  CreateAdapter,
+  getInactiveAuthInstance,
+  type RunCtx,
+} from "@convex-dev/better-auth";
 
-const siteUrl = requireEnv("SITE_URL");
+const siteUrl = process.env.SITE_URL;
 
 // Split out options so they can be passed to the convex plugin
-const createOptions = (ctx: GenericCtx) =>
+const createOptions = (ctx: RunCtx, createAdapter: CreateAdapter) =>
   ({
     baseURL: siteUrl,
-    database: convexAdapter(ctx, betterAuthComponent),
+    database: createAdapter(ctx),
     account: {
       accountLinking: {
         enabled: true,
@@ -73,6 +80,7 @@ const createOptions = (ctx: GenericCtx) =>
     },
     plugins: [
       anonymous(),
+      username(),
       magicLink({
         sendMagicLink: async ({ email, url }) => {
           await sendMagicLink(requireMutationCtx(ctx), {
@@ -104,8 +112,8 @@ const createOptions = (ctx: GenericCtx) =>
     ],
   }) satisfies BetterAuthOptions;
 
-export const createAuth = (ctx: GenericCtx) => {
-  const options = createOptions(ctx);
+export const createAuth = (ctx: RunCtx, createAdapter: CreateAdapter) => {
+  const options = createOptions(ctx, createAdapter);
   return betterAuth({
     ...options,
     plugins: [
@@ -114,10 +122,11 @@ export const createAuth = (ctx: GenericCtx) => {
       // for plugins that customize the user or session schema.
       // See "Some caveats":
       // https://www.better-auth.com/docs/concepts/session-management#customizing-session-response
-      convex({ options }),
+      convex(),
     ],
   });
 };
 
-// Mostly for inferring types from Better Auth options
-export const authWithoutCtx = createAuth({} as any);
+// Export a static instance for Better Auth schema generation and other
+// options-derived use cases.
+export const auth = getInactiveAuthInstance(createAuth);

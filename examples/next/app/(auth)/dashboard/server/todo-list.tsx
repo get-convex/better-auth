@@ -1,6 +1,5 @@
 import { api } from "@/convex/_generated/api";
 import { getToken } from "@convex-dev/better-auth/nextjs";
-import { createAuth } from "@/lib/auth";
 import {
   fetchMutation,
   preloadedQueryResult,
@@ -15,9 +14,9 @@ import {
 } from "@/components/server";
 
 export const TodoList = async () => {
-  const token = await getToken(createAuth);
-  const preloaded = await preloadQuery(api.todos.get, {}, { token });
-  const todos = preloadedQueryResult(preloaded);
+  const token = await getToken();
+  const preloadedTodosQuery = await preloadQuery(api.todos.get, {}, { token });
+  const todos = preloadedQueryResult(preloadedTodosQuery);
 
   // Authenticated inline server actions
   async function addTodo(formData: FormData) {
@@ -26,7 +25,7 @@ export const TodoList = async () => {
       api.todos.create,
       { text: formData.get("text") as string },
       // Outer token could expire, get a fresh one for the action
-      { token: await getToken(createAuth) },
+      { token: await getToken() },
     );
   }
 
@@ -35,7 +34,7 @@ export const TodoList = async () => {
     await fetchMutation(
       api.todos.toggle,
       { id: formData.get("id") as Id<"todos"> },
-      { token: await getToken(createAuth) },
+      { token: await getToken() },
     );
   };
 
@@ -43,7 +42,7 @@ export const TodoList = async () => {
     <TodoListContainer>
       <AddTodoForm action={addTodo} />
       <TodoItems
-        preloadedTodos={preloaded}
+        preloadedTodosQuery={preloadedTodosQuery}
         toggleCompletedAction={toggleCompletedAction}
       />
 

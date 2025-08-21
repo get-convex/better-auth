@@ -9,11 +9,10 @@ export const get = query({
     if (!identity) {
       return [];
     }
-
     return await ctx.db
       .query("todos")
       .withIndex("userId", (q) =>
-        q.eq("userId", identity.subject as Id<"users">),
+        q.eq("userId", (identity.userId ?? identity.subject) as Id<"users">),
       )
       .order("desc")
       .collect();
@@ -32,7 +31,7 @@ export const create = mutation({
     await ctx.db.insert("todos", {
       text: args.text,
       completed: false,
-      userId: identity.subject as Id<"users">,
+      userId: (identity.userId ?? identity.subject) as Id<"users">,
       createdAt: now,
       updatedAt: now,
     });
@@ -48,7 +47,7 @@ export const toggle = mutation({
     }
 
     const todo = await ctx.db.get(args.id);
-    if (!todo || todo.userId !== identity.subject) {
+    if (!todo || todo.userId !== (identity.userId ?? identity.subject)) {
       throw new Error("Todo not found or unauthorized");
     }
 
@@ -68,7 +67,7 @@ export const remove = mutation({
     }
 
     const todo = await ctx.db.get(args.id);
-    if (!todo || todo.userId !== identity.subject) {
+    if (!todo || todo.userId !== (identity.userId ?? identity.subject)) {
       throw new Error("Todo not found or unauthorized");
     }
 

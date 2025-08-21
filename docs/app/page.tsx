@@ -517,9 +517,8 @@ const Home = () => {
                 id: "npm",
                 label: "npm",
                 code: stripIndent`
-                    npm install @convex-dev/better-auth
                     npm install better-auth@1.3.8 --save-exact
-                    npm install convex@latest
+                    npm install convex@latest @convex-dev/better-auth
                   `,
                 language: "shell",
               },
@@ -527,27 +526,24 @@ const Home = () => {
                 id: "pnpm",
                 label: "pnpm",
                 code: stripIndent`
-                    pnpm add @convex-dev/better-auth
                     pnpm add better-auth@1.3.8 --save-exact
-                    pnpm add convex@latest
+                    pnpm add convex@latest @convex-dev/better-auth
                   `,
                 language: "shell",
               },
               {
                 id: "yarn",
                 code: stripIndent`
-                    yarn add @convex-dev/better-auth
                     yarn add better-auth@1.3.8 --exact
-                    yarn add convex@latest
+                    yarn add convex@latest @convex-dev/better-auth
                   `,
                 language: "shell",
               },
               {
                 id: "bun",
                 code: stripIndent`
-                    bun add @convex-dev/better-auth
                     bun add better-auth@1.3.8 --exact
-                    bun add convex@latest
+                    bun add convex@latest @convex-dev/better-auth
                   `,
                 language: "shell",
               },

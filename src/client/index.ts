@@ -2,75 +2,82 @@ import {
   type Auth as ConvexAuth,
   type DefaultFunctionArgs,
   type Expand,
+  FunctionHandle,
   type FunctionReference,
   GenericActionCtx,
   type GenericDataModel,
   GenericMutationCtx,
   type GenericQueryCtx,
   type HttpRouter,
+  SchemaDefinition,
   httpActionGeneric,
   internalMutationGeneric,
+  mutationGeneric,
+  paginationOptsValidator,
   queryGeneric,
 } from "convex/server";
 import { type GenericId, Infer, v } from "convex/values";
-import type { api } from "../component/_generated/api";
-import schema from "../component/schema";
 import { convexAdapter } from "./adapter";
-import { betterAuth } from "better-auth";
-import { omit } from "convex-helpers";
-import { createCookieGetter } from "better-auth/cookies";
-import { fetchQuery } from "convex/nextjs";
-import { JWT_COOKIE_NAME } from "../plugins/convex";
+import { AdapterInstance, betterAuth } from "better-auth";
+import { asyncMap, omit } from "convex-helpers";
 import { requireEnv } from "../utils";
-import { parse, partial } from "convex-helpers/validators";
-import { adapterArgsValidator, adapterWhereValidator } from "../component/lib";
+import { partial } from "convex-helpers/validators";
+import {
+  adapterWhereValidator,
+  checkUniqueFields,
+  hasUniqueFields,
+  listOne,
+  paginate,
+  selectFields,
+} from "./adapterUtils";
 import { corsRouter } from "convex-helpers/server/cors";
 import { version as convexVersion } from "convex";
 import semver from "semver";
+import defaultSchema from "../component/schema";
+import { getAuthTables } from "better-auth/db";
+import { api } from "../component/_generated/api";
 
 export { convexAdapter };
+
+export type CreateAdapter = <Ctx extends RunCtx>(ctx: Ctx) => AdapterInstance;
 
 if (semver.lt(convexVersion, "1.25.0")) {
   throw new Error("Convex version must be at least 1.25.0");
 }
 
-const createUserFields = omit(schema.tables.user.validator.fields, ["userId"]);
-const createUserValidator = v.object(createUserFields);
-const createPermissiveArgsValidator = v.object({
-  input: v.object({
-    model: v.literal("user"),
-    data: v.record(
-      v.string(),
-      v.union(
-        v.string(),
-        v.number(),
-        v.boolean(),
-        v.array(v.string()),
-        v.array(v.number()),
-        v.null()
-      )
+const whereValidator = (
+  schema: SchemaDefinition<any, any>,
+  tableName: string
+) =>
+  v.object({
+    field: v.union(
+      ...Object.keys(schema.tables[tableName].validator.fields).map((field) =>
+        v.literal(field)
+      ),
+      v.literal("id")
     ),
-  }),
-});
-const createUserArgsValidator = v.object({
-  input: v.object({
-    model: v.literal("user"),
-    data: v.object(createUserFields),
-  }),
-});
-const updateUserArgsValidator = v.object({
-  input: v.object({
-    model: v.literal("user"),
-    where: v.optional(v.array(adapterWhereValidator)),
-    update: v.object(partial(createUserFields)),
-  }),
-});
-const createSessionArgsValidator = v.object({
-  input: v.object({
-    model: v.literal("session"),
-    data: v.object(schema.tables.session.validator.fields),
-  }),
-});
+    operator: v.union(
+      v.literal("lt"),
+      v.literal("lte"),
+      v.literal("gt"),
+      v.literal("gte"),
+      v.literal("eq"),
+      v.literal("in"),
+      v.literal("ne"),
+      v.literal("contains"),
+      v.literal("starts_with"),
+      v.literal("ends_with")
+    ),
+    value: v.union(
+      v.string(),
+      v.number(),
+      v.boolean(),
+      v.array(v.string()),
+      v.array(v.number()),
+      v.null()
+    ),
+    connector: v.optional(v.union(v.literal("AND"), v.literal("OR"))),
+  });
 
 export type EventFunction<T extends DefaultFunctionArgs> = FunctionReference<
   "mutation",
@@ -78,330 +85,546 @@ export type EventFunction<T extends DefaultFunctionArgs> = FunctionReference<
   T
 >;
 
+export type GenericCtx<DataModel extends GenericDataModel = GenericDataModel> =
+  | GenericQueryCtx<DataModel>
+  | GenericMutationCtx<DataModel>
+  | GenericActionCtx<DataModel>;
+
 export type AuthFunctions = {
-  createUser: FunctionReference<
-    "mutation",
-    "internal",
-    Infer<typeof createPermissiveArgsValidator>
-  >;
-  deleteUser: FunctionReference<
-    "mutation",
-    "internal",
-    Infer<typeof adapterArgsValidator>
-  >;
-  updateUser: FunctionReference<
-    "mutation",
-    "internal",
-    Infer<typeof updateUserArgsValidator>
-  >;
-  createSession: FunctionReference<
-    "mutation",
-    "internal",
-    Infer<typeof createSessionArgsValidator>
-  >;
+  onCreate?: FunctionReference<"mutation", "internal", { [key: string]: any }>;
+  onUpdate?: FunctionReference<"mutation", "internal", { [key: string]: any }>;
+  onDelete?: FunctionReference<"mutation", "internal", { [key: string]: any }>;
 };
 
-export type PublicAuthFunctions = {
-  isAuthenticated: FunctionReference<"query", "public">;
-};
-
-export class BetterAuth<UserId extends string = string> {
-  constructor(
-    public component: UseApi<typeof api>,
-    public config: {
-      authFunctions: AuthFunctions;
-      publicAuthFunctions?: PublicAuthFunctions;
-      verbose?: boolean;
-    }
-  ) {}
-
-  async isAuthenticated(token?: string | null) {
-    if (!this.config.publicAuthFunctions?.isAuthenticated) {
-      throw new Error(
-        "isAuthenticated function not found. It must be a named export in convex/auth.ts"
-      );
-    }
-    return fetchQuery(
-      this.config.publicAuthFunctions.isAuthenticated,
-      {},
-      { token: token ?? undefined }
-    );
-  }
-
-  async getHeaders(ctx: RunQueryCtx & { auth: ConvexAuth }) {
-    const session = await ctx.runQuery(this.component.lib.getCurrentSession);
-    return new Headers({
-      ...(session?.token ? { authorization: `Bearer ${session.token}` } : {}),
-      ...(session?.ipAddress ? { "x-forwarded-for": session.ipAddress } : {}),
-    });
-  }
-
-  // TODO: use the proper id type for auth functions
-  async getAuthUserId(ctx: RunQueryCtx & { auth: ConvexAuth }) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return null;
-    }
-    return identity.subject as UserId;
-  }
-
-  // Convenience function for getting the Better Auth user
-  async getAuthUser(ctx: RunQueryCtx & { auth: ConvexAuth }) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return null;
-    }
-    const doc:
-      | null
-      | (Infer<typeof schema.tables.user.validator> & {
-          _id: string;
-          _creationTime: number;
-        }) = await ctx.runQuery(this.component.lib.findOne, {
-      model: "user",
-      where: [
-        {
-          field: "userId",
-          value: identity.subject,
-        },
-      ],
-    });
-    if (!doc) {
-      return null;
-    }
-    // Type narrowing
-    if (!("emailVerified" in doc)) {
-      throw new Error("invalid user");
-    }
-    return omit(doc, ["_id", "_creationTime"]);
-  }
-
-  async getIdTokenCookieName(
-    createAuth: (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>
-  ) {
-    const auth = createAuth({} as any);
-    const createCookie = createCookieGetter(auth.options);
-    const cookie = createCookie(JWT_COOKIE_NAME);
-    return cookie.name;
-  }
-
-  async updateUserMetadata(
-    ctx: GenericMutationCtx<GenericDataModel>,
-    userId: UserId,
-    metadata: Omit<
-      Partial<Infer<typeof schema.tables.user.validator>>,
-      "userId"
-    >
-  ) {
-    return ctx.runMutation(this.component.lib.updateOne, {
-      input: {
-        model: "user",
-        where: [{ field: "userId", value: userId }],
-        update: metadata,
+export const createApi = <Schema extends SchemaDefinition<any, any>>(
+  schema: Schema,
+  createAuth: (ctx: GenericCtx) => ReturnType<typeof betterAuth>
+) => {
+  const betterAuthSchema = getAuthTables(createAuth({} as any).options);
+  return {
+    create: mutationGeneric({
+      args: {
+        input: v.union(
+          ...Object.entries(schema.tables).map(([model, table]) =>
+            v.object({
+              model: v.literal(model),
+              data: v.object((table as any).validator.fields),
+            })
+          )
+        ),
+        select: v.optional(v.array(v.string())),
+        onCreateHandle: v.optional(v.string()),
       },
-    });
-  }
-
-  async getUserByUsername(
-    ctx: GenericQueryCtx<GenericDataModel>,
-    username: string
-  ) {
-    const user:
-      | null
-      | (Infer<typeof schema.tables.user.validator> & {
-          _id: string;
-          _creationTime: number;
-        }) = await ctx.runQuery(this.component.lib.findOne, {
-      model: "user",
-      where: [{ field: "username", value: username }],
-    });
-    if (!user) {
-      return null;
-    }
-    return omit(user, ["_id", "_creationTime"]);
-  }
-
-  createAuthFunctions<DataModel extends GenericDataModel>(opts: {
-    onCreateUser: (
-      ctx: GenericMutationCtx<DataModel>,
-      user: Infer<typeof createUserValidator>
-    ) => Promise<UserId>;
-    onDeleteUser?: (
-      ctx: GenericMutationCtx<DataModel>,
-      id: UserId
-    ) => void | Promise<void>;
-    onUpdateUser?: (
-      ctx: GenericMutationCtx<DataModel>,
-      user: Infer<typeof schema.tables.user.validator>
-    ) => void | Promise<void>;
-    onCreateSession?: (
-      ctx: GenericMutationCtx<DataModel>,
-      session: Infer<typeof schema.tables.session.validator>
-    ) => void | Promise<void>;
-  }) {
-    return {
-      isAuthenticated: queryGeneric({
-        args: v.object({}),
-        handler: async (ctx) => {
-          const identity = await ctx.auth.getUserIdentity();
-          return identity !== null;
-        },
-      }),
-      createUser: internalMutationGeneric({
-        args: createPermissiveArgsValidator,
-        handler: async (ctx, args) => {
-          const userId = await opts.onCreateUser(ctx, args.input.data as any);
-          const parsedArgs = parse(createUserArgsValidator, args);
-          return ctx.runMutation(this.component.lib.create, {
-            input: {
-              ...parsedArgs.input,
-              data: { ...parsedArgs.input.data, userId },
-            },
-          });
-        },
-      }),
-      deleteUser: internalMutationGeneric({
-        args: adapterArgsValidator,
-        handler: async (ctx, args) => {
-          const doc = await ctx.runMutation(this.component.lib.deleteOne, args);
-          if (doc && opts.onDeleteUser) {
-            await opts.onDeleteUser(ctx, doc.userId as UserId);
-          }
-          return doc;
-        },
-      }),
-      updateUser: internalMutationGeneric({
-        args: updateUserArgsValidator,
-        handler: async (ctx, args) => {
-          const updatedUser = await ctx.runMutation(
-            this.component.lib.updateOne,
-            { input: args.input }
+      handler: async (ctx, args) => {
+        await checkUniqueFields(
+          ctx,
+          schema,
+          betterAuthSchema,
+          args.input.model,
+          args.input.data
+        );
+        const id = await ctx.db.insert(
+          args.input.model as any,
+          args.input.data
+        );
+        const doc = await ctx.db.get(id);
+        if (!doc) {
+          throw new Error(`Failed to create ${args.input.model}`);
+        }
+        const result = selectFields(doc, args.select);
+        if (args.onCreateHandle) {
+          await ctx.runMutation(
+            args.onCreateHandle as FunctionHandle<"mutation">,
+            {
+              model: args.input.model,
+              doc,
+            }
           );
-          // Type narrowing
-          if (!("emailVerified" in updatedUser)) {
-            throw new Error("invalid user");
+        }
+        return result;
+      },
+    }),
+    findOne: queryGeneric({
+      args: {
+        model: v.union(
+          ...Object.keys(schema.tables).map((model) => v.literal(model))
+        ),
+        where: v.optional(v.array(adapterWhereValidator)),
+        select: v.optional(v.array(v.string())),
+      },
+      handler: async (ctx, args) => {
+        return await listOne(ctx, schema, betterAuthSchema, args);
+      },
+    }),
+    findMany: queryGeneric({
+      args: {
+        model: v.union(
+          ...Object.keys(schema.tables).map((model) => v.literal(model))
+        ),
+        where: v.optional(v.array(adapterWhereValidator)),
+        limit: v.optional(v.number()),
+        sortBy: v.optional(
+          v.object({
+            direction: v.union(v.literal("asc"), v.literal("desc")),
+            field: v.string(),
+          })
+        ),
+        offset: v.optional(v.number()),
+        paginationOpts: paginationOptsValidator,
+      },
+      handler: async (ctx, args) => {
+        return await paginate(ctx, schema, betterAuthSchema, args);
+      },
+    }),
+    updateOne: mutationGeneric({
+      args: {
+        input: v.union(
+          ...Object.entries(schema.tables).map(
+            ([tableName, table]: [string, Schema["tables"][string]]) => {
+              const fields = partial(table.validator.fields);
+              return v.object({
+                model: v.literal(tableName),
+                update: v.object(fields),
+                where: v.optional(v.array(whereValidator(schema, tableName))),
+              });
+            }
+          )
+        ),
+        onUpdateHandle: v.optional(v.string()),
+      },
+      handler: async (ctx, args) => {
+        const doc = await listOne(ctx, schema, betterAuthSchema, args.input);
+        if (!doc) {
+          throw new Error(`Failed to update ${args.input.model}`);
+        }
+        await checkUniqueFields(
+          ctx,
+          schema,
+          betterAuthSchema,
+          args.input.model,
+          args.input.update,
+          doc
+        );
+        await ctx.db.patch(
+          doc._id as GenericId<string>,
+          args.input.update as any
+        );
+        const updatedDoc = await ctx.db.get(doc._id as GenericId<string>);
+        if (!updatedDoc) {
+          throw new Error(`Failed to update ${args.input.model}`);
+        }
+        if (args.onUpdateHandle) {
+          await ctx.runMutation(
+            args.onUpdateHandle as FunctionHandle<"mutation">,
+            {
+              input: {
+                model: args.input.model,
+                oldDoc: doc,
+                newDoc: updatedDoc,
+              },
+            }
+          );
+        }
+        return updatedDoc;
+      },
+    }),
+    updateMany: mutationGeneric({
+      args: {
+        input: v.union(
+          ...Object.entries(schema.tables).map(
+            ([tableName, table]: [string, Schema["tables"][string]]) => {
+              const fields = partial(table.validator.fields);
+              return v.object({
+                model: v.literal(tableName),
+                update: v.object(fields),
+                where: v.optional(v.array(whereValidator(schema, tableName))),
+              });
+            }
+          )
+        ),
+        paginationOpts: paginationOptsValidator,
+        onUpdateHandle: v.optional(v.string()),
+      },
+      handler: async (ctx, args) => {
+        const { page, ...result } = await paginate(
+          ctx,
+          schema,
+          betterAuthSchema,
+          {
+            ...args.input,
+            paginationOpts: args.paginationOpts,
           }
-          if (opts.onUpdateUser) {
-            await opts.onUpdateUser(ctx, omit(updatedUser, ["_id"]));
+        );
+        if (args.input.update) {
+          if (
+            hasUniqueFields(
+              betterAuthSchema,
+              args.input.model,
+              args.input.update ?? {}
+            ) &&
+            page.length > 1
+          ) {
+            throw new Error(
+              `Attempted to set unique fields in multiple documents in ${args.input.model} with the same value. Fields: ${Object.keys(args.input.update ?? {}).join(", ")}`
+            );
           }
-          return updatedUser;
-        },
-      }),
-      createSession: internalMutationGeneric({
-        args: createSessionArgsValidator,
-        handler: async (ctx, args) => {
-          const session = await ctx.runMutation(this.component.lib.create, {
-            input: args.input,
+          await asyncMap(page, async (doc) => {
+            await checkUniqueFields(
+              ctx,
+              schema,
+              betterAuthSchema,
+              args.input.model,
+              args.input.update ?? {},
+              doc
+            );
+            await ctx.db.patch(
+              doc._id as GenericId<string>,
+              args.input.update as any
+            );
+
+            if (args.onUpdateHandle) {
+              await ctx.runMutation(
+                args.onUpdateHandle as FunctionHandle<"mutation">,
+                {
+                  model: args.input.model,
+                  oldDoc: doc,
+                  newDoc: await ctx.db.get(doc._id as GenericId<string>),
+                }
+              );
+            }
           });
-          await opts.onCreateSession?.(ctx, session);
-          return session;
-        },
-      }),
+        }
+        return {
+          ...result,
+          count: page.length,
+          ids: page.map((doc) => doc._id),
+        };
+      },
+    }),
+    deleteOne: mutationGeneric({
+      args: {
+        input: v.union(
+          ...Object.keys(schema.tables).map((tableName: string) => {
+            return v.object({
+              model: v.literal(tableName),
+              where: v.optional(v.array(whereValidator(schema, tableName))),
+            });
+          })
+        ),
+        onDeleteHandle: v.optional(v.string()),
+      },
+      handler: async (ctx, args) => {
+        const doc = await listOne(ctx, schema, betterAuthSchema, args.input);
+        if (!doc) {
+          return;
+        }
+        await ctx.db.delete(doc._id as GenericId<string>);
+        if (args.onDeleteHandle) {
+          await ctx.runMutation(
+            args.onDeleteHandle as FunctionHandle<"mutation">,
+            { model: args.input.model, doc }
+          );
+        }
+        return doc;
+      },
+    }),
+    deleteMany: mutationGeneric({
+      args: {
+        input: v.union(
+          ...Object.keys(schema.tables).map((tableName: string) => {
+            return v.object({
+              model: v.literal(tableName),
+              where: v.optional(v.array(whereValidator(schema, tableName))),
+            });
+          })
+        ),
+        paginationOpts: paginationOptsValidator,
+        onDeleteHandle: v.optional(v.string()),
+      },
+      handler: async (ctx, args) => {
+        const { page, ...result } = await paginate(
+          ctx,
+          schema,
+          betterAuthSchema,
+          {
+            ...args.input,
+            paginationOpts: args.paginationOpts,
+          }
+        );
+        await asyncMap(page, async (doc) => {
+          if (args.onDeleteHandle) {
+            await ctx.runMutation(
+              args.onDeleteHandle as FunctionHandle<"mutation">,
+              {
+                model: args.input.model,
+                doc,
+              }
+            );
+          }
+          await ctx.db.delete(doc._id as GenericId<string>);
+        });
+        return {
+          ...result,
+          count: page.length,
+          ids: page.map((doc) => doc._id),
+        };
+      },
+    }),
+  };
+};
+
+export const createClient = <
+  DataModel extends GenericDataModel,
+  Schema extends SchemaDefinition<any, any> = typeof defaultSchema,
+>(
+  component: UseApi<typeof api>,
+  config?: {
+    local?: {
+      schema?: Schema;
+    };
+    authFunctions?: AuthFunctions;
+    verbose?: boolean;
+    triggers?: {
+      [K in keyof Schema["tables"]]?: {
+        onCreate?: <Ctx extends GenericMutationCtx<DataModel>>(
+          ctx: Ctx,
+          doc: Infer<Schema["tables"][K]["validator"]> & {
+            _id: string;
+            _creationTime: number;
+          }
+        ) => Promise<void>;
+        onUpdate?: <Ctx extends GenericMutationCtx<DataModel>>(
+          ctx: Ctx,
+          oldDoc: Infer<Schema["tables"][K]["validator"]> & {
+            _id: string;
+            _creationTime: number;
+          },
+          newDoc: Infer<Schema["tables"][K]["validator"]> & {
+            _id: string;
+            _creationTime: number;
+          }
+        ) => Promise<void>;
+        onDelete?: <Ctx extends GenericMutationCtx<DataModel>>(
+          ctx: Ctx,
+          doc: Infer<Schema["tables"][K]["validator"]> & {
+            _id: string;
+            _creationTime: number;
+          }
+        ) => Promise<void>;
+      };
     };
   }
-
-  registerRoutes(
-    http: HttpRouter,
-    createAuth: (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>,
-    opts: {
-      cors?:
-        | boolean
-        | {
-            // These values are appended to the default values
-            allowedOrigins?: string[];
-            allowedHeaders?: string[];
-            exposedHeaders?: string[];
-          };
-    } = {}
-  ) {
-    const betterAuthOptions = createAuth({} as any).options;
-    const path = betterAuthOptions.basePath ?? "/api/auth";
-    const authRequestHandler = httpActionGeneric(async (ctx, request) => {
-      if (this.config.verbose) {
-        console.log("options.baseURL", betterAuthOptions.baseURL);
-        console.log("request headers", request.headers);
+) => {
+  return {
+    component,
+    getHeaders: async (ctx: RunQueryCtx & { auth: ConvexAuth }) => {
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return null;
       }
-      const auth = createAuth(ctx);
-      const response = await auth.handler(request);
-      if (this.config?.verbose) {
-        console.log("response headers", response.headers);
-      }
-      return response;
-    });
-
-    const wellKnown = http.lookup("/.well-known/openid-configuration", "GET");
-
-    // If registerRoutes is used multiple times, this may already be defined
-    if (!wellKnown) {
-      // Redirect root well-known to api well-known
-      http.route({
-        path: "/.well-known/openid-configuration",
-        method: "GET",
-        handler: httpActionGeneric(async () => {
-          const url = `${requireEnv("CONVEX_SITE_URL")}${path}/convex/.well-known/openid-configuration`;
-          return Response.redirect(url);
-        }),
+      const session = await ctx.runQuery(component.adapter.findOne, {
+        model: "session",
+        where: [
+          {
+            field: "userId",
+            value: identity.subject,
+          },
+        ],
       });
-    }
+      return new Headers({
+        ...(session?.token ? { authorization: `Bearer ${session.token}` } : {}),
+        ...(session?.ipAddress
+          ? { "x-forwarded-for": session.ipAddress as string }
+          : {}),
+      });
+    },
 
-    if (!opts.cors) {
-      http.route({
+    getAuthUserId: async (ctx: RunQueryCtx & { auth: ConvexAuth }) => {
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return null;
+      }
+      return identity.subject;
+    },
+
+    getAuthUser: async (ctx: RunQueryCtx & { auth: ConvexAuth }) => {
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return null;
+      }
+      const _schema = config?.local?.schema ?? defaultSchema;
+
+      const doc:
+        | null
+        | (Infer<typeof _schema.tables.user.validator> & {
+            _id: string;
+            _creationTime: number;
+          }) = await ctx.runQuery(component.adapter.findOne, {
+        model: "user",
+        where: [
+          {
+            field: "id",
+            value: identity.subject,
+          },
+        ],
+      });
+      if (!doc) {
+        return null;
+      }
+      // Type narrowing
+      if (!("emailVerified" in doc)) {
+        throw new Error("invalid user");
+      }
+      return omit(doc, ["_id", "_creationTime"]);
+    },
+
+    triggersApi: () => ({
+      onCreate: internalMutationGeneric({
+        args: {
+          doc: v.any(),
+          model: v.string(),
+        },
+        handler: async (ctx, args) => {
+          await config?.triggers?.[args.model]?.onCreate?.(ctx, args.doc);
+        },
+      }),
+      onUpdate: internalMutationGeneric({
+        args: {
+          oldDoc: v.any(),
+          newDoc: v.any(),
+          model: v.string(),
+        },
+        handler: async (ctx, args) => {
+          await config?.triggers?.[args.model]?.onUpdate?.(
+            ctx,
+            args.oldDoc,
+            args.newDoc
+          );
+        },
+      }),
+      onDelete: internalMutationGeneric({
+        args: {
+          doc: v.any(),
+          model: v.string(),
+        },
+        handler: async (ctx, args) => {
+          await config?.triggers?.[args.model]?.onDelete?.(ctx, args.doc);
+        },
+      }),
+    }),
+
+    registerRoutes: <
+      DataModel extends GenericDataModel,
+      Ctx extends GenericCtx<DataModel> = GenericActionCtx<DataModel>,
+    >(
+      http: HttpRouter,
+      createAuth: (ctx: Ctx) => ReturnType<typeof betterAuth>,
+      opts: {
+        cors?:
+          | boolean
+          | {
+              // These values are appended to the default values
+              allowedOrigins?: string[];
+              allowedHeaders?: string[];
+              exposedHeaders?: string[];
+            };
+      } = {}
+    ) => {
+      const authDummy = createAuth({} as any);
+      const path = authDummy.options.basePath ?? "/api/auth";
+      const authRequestHandler = httpActionGeneric(async (ctx, request) => {
+        if (config?.verbose) {
+          console.log("options.baseURL", authDummy.options.baseURL);
+          console.log("request headers", request.headers);
+        }
+        const auth = createAuth(ctx as any);
+        const response = await auth.handler(request);
+        if (config?.verbose) {
+          console.log("response headers", response.headers);
+        }
+        return response;
+      });
+      const wellKnown = http.lookup("/.well-known/openid-configuration", "GET");
+
+      // If registerRoutes is used multiple times, this may already be defined
+      if (!wellKnown) {
+        // Redirect root well-known to api well-known
+        http.route({
+          path: "/.well-known/openid-configuration",
+          method: "GET",
+          handler: httpActionGeneric(async () => {
+            const url = `${requireEnv("CONVEX_SITE_URL")}${path}/convex/.well-known/openid-configuration`;
+            return Response.redirect(url);
+          }),
+        });
+      }
+
+      if (!opts.cors) {
+        http.route({
+          pathPrefix: `${path}/`,
+          method: "GET",
+          handler: authRequestHandler,
+        });
+
+        http.route({
+          pathPrefix: `${path}/`,
+          method: "POST",
+          handler: authRequestHandler,
+        });
+
+        return;
+      }
+      const corsOpts =
+        typeof opts.cors === "boolean"
+          ? { allowedOrigins: [], allowedHeaders: [], exposedHeaders: [] }
+          : opts.cors;
+      let trustedOriginsOption:
+        | string[]
+        | ((request: Request) => string[] | Promise<string[]>)
+        | undefined;
+      const cors = corsRouter(http, {
+        allowedOrigins: async (request) => {
+          trustedOriginsOption =
+            trustedOriginsOption ??
+            (await authDummy.$context).options.trustedOrigins ??
+            [];
+          const trustedOrigins = Array.isArray(trustedOriginsOption)
+            ? trustedOriginsOption
+            : await trustedOriginsOption(request);
+          return trustedOrigins
+            .map((origin) =>
+              // Strip trailing wildcards, unsupported for allowedOrigins
+              origin.endsWith("*") && origin.length > 1
+                ? origin.slice(0, -1)
+                : origin
+            )
+            .concat(corsOpts.allowedOrigins ?? []);
+        },
+        allowCredentials: true,
+        allowedHeaders: ["Content-Type", "Better-Auth-Cookie"].concat(
+          corsOpts.allowedHeaders ?? []
+        ),
+        exposedHeaders: ["Set-Better-Auth-Cookie"].concat(
+          corsOpts.exposedHeaders ?? []
+        ),
+        debug: config?.verbose,
+        enforceAllowOrigins: false,
+      });
+
+      cors.route({
         pathPrefix: `${path}/`,
         method: "GET",
         handler: authRequestHandler,
       });
 
-      http.route({
+      cors.route({
         pathPrefix: `${path}/`,
         method: "POST",
         handler: authRequestHandler,
       });
-
-      return;
-    }
-    const corsOpts =
-      typeof opts.cors === "boolean"
-        ? { allowedOrigins: [], allowedHeaders: [], exposedHeaders: [] }
-        : opts.cors;
-    const cors = corsRouter(http, {
-      allowedOrigins: async (request) => {
-        const trustedOriginsOption =
-          (await createAuth({} as any).$context).options.trustedOrigins ?? [];
-        const trustedOrigins = Array.isArray(trustedOriginsOption)
-          ? trustedOriginsOption
-          : await trustedOriginsOption(request);
-        return trustedOrigins
-          .map((origin) =>
-            // Strip trailing wildcards, unsupported for allowedOrigins
-            origin.endsWith("*") && origin.length > 1
-              ? origin.slice(0, -1)
-              : origin
-          )
-          .concat(corsOpts.allowedOrigins ?? []);
-      },
-      allowCredentials: true,
-      allowedHeaders: ["Content-Type", "Better-Auth-Cookie"].concat(
-        corsOpts.allowedHeaders ?? []
-      ),
-      exposedHeaders: ["Set-Better-Auth-Cookie"].concat(
-        corsOpts.exposedHeaders ?? []
-      ),
-      debug: this.config?.verbose,
-      enforceAllowOrigins: false,
-    });
-
-    cors.route({
-      pathPrefix: `${path}/`,
-      method: "GET",
-      handler: authRequestHandler,
-    });
-
-    cors.route({
-      pathPrefix: `${path}/`,
-      method: "POST",
-      handler: authRequestHandler,
-    });
-  }
-}
+    },
+  };
+};
 
 /* Type utils follow */
 

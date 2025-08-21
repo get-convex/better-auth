@@ -4,11 +4,10 @@ import { betterFetch } from "@better-fetch/fetch";
 import { GenericActionCtx } from "convex/server";
 import { JWT_COOKIE_NAME } from "../plugins/convex";
 import { oneLine } from "common-tags";
+import { CreateAuth, getInactiveAuthInstance } from "../client";
 
-export const getCookieName = async (
-  createAuth: (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>
-) => {
-  const auth = createAuth({} as any);
+export const getCookieName = async (createAuth: CreateAuth) => {
+  const auth = getInactiveAuthInstance(createAuth);
   const createCookie = createCookieGetter(auth.options);
   const cookie = createCookie(JWT_COOKIE_NAME);
   return cookie.name;
@@ -68,7 +67,7 @@ export const reactStartHandler = (
 };
 
 export const reactStartHelpers = (
-  createAuth: (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>,
+  createAuth: CreateAuth,
   opts: { convexSiteUrl: string; verbose?: boolean }
 ) => {
   if (!opts.convexSiteUrl) {

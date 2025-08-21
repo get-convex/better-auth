@@ -1,7 +1,7 @@
 "use client";
 
 import { api } from "@/convex/_generated/api";
-import { Preloaded, usePreloadedQuery } from "convex/react";
+import { Preloaded, useConvexAuth, usePreloadedQuery } from "convex/react";
 import {
   TodoList,
   TodoRemoveButton,
@@ -10,15 +10,24 @@ import {
   TodoItem,
 } from "@/components/server";
 import { removeTodo } from "./actions";
+import { useEffect, useState } from "react";
 
 export const TodoItems = ({
-  preloadedTodos,
+  preloadedTodosQuery,
   toggleCompletedAction,
 }: {
-  preloadedTodos: Preloaded<typeof api.todos.get>;
+  preloadedTodosQuery: Preloaded<typeof api.todos.get>;
   toggleCompletedAction: (formData: FormData) => Promise<void>;
 }) => {
-  const todos = usePreloadedQuery(preloadedTodos);
+  const { isLoading } = useConvexAuth();
+  const preloadedTodos = usePreloadedQuery(preloadedTodosQuery);
+  const [todos, setTodos] = useState(preloadedTodos);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setTodos(preloadedTodos);
+    }
+  }, [preloadedTodos, isLoading]);
 
   return (
     <TodoList>

@@ -1,15 +1,20 @@
-import { betterAuth } from "better-auth";
 import { createCookieGetter } from "better-auth/cookies";
-import { GenericActionCtx } from "convex/server";
 import { JWT_COOKIE_NAME } from "../plugins/convex";
 
 export const getToken = async (
-  createAuth: (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>
+  { useSecureCookies, cookiePrefix } = {
+    useSecureCookies: true,
+    cookiePrefix: "better-auth",
+  }
 ) => {
   const { cookies } = await import("next/headers");
   const cookieStore = await cookies();
-  const auth = createAuth({} as any);
-  const createCookie = createCookieGetter(auth.options);
+  const createCookie = createCookieGetter({
+    advanced: {
+      useSecureCookies,
+      cookiePrefix,
+    },
+  });
   const cookie = createCookie(JWT_COOKIE_NAME);
   const tokenCookie = cookieStore.get(cookie.name);
 

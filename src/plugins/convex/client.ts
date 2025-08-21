@@ -1,10 +1,9 @@
 import { BetterAuthClientPlugin } from "better-auth/client";
 import { convex } from ".";
-import { BetterAuthOptions } from "better-auth";
 
-export const convexClient = <O extends { options: BetterAuthOptions }>() => {
+export const convexClient = () => {
   return {
     id: "convex",
-    $InferServerPlugin: {} as ReturnType<typeof convex<O["options"]>>,
+    $InferServerPlugin: {} as ReturnType<typeof convex>,
   } satisfies BetterAuthClientPlugin;
 };

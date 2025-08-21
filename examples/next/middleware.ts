@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { getSessionCookie } from "better-auth/cookies";
-import { createAuth } from "./lib/auth";
+//import { createAuth } from "./lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { betterFetch } from "@better-fetch/fetch";
 
-type Session = ReturnType<typeof createAuth>["$Infer"]["Session"];
+//type Session = ReturnType<typeof createAuth>["$Infer"]["Session"];
+/*
 const getSession = async (request: NextRequest) => {
   const { data: session } = await betterFetch<Session>(
     "/api/auth/get-session",
@@ -18,6 +19,7 @@ const getSession = async (request: NextRequest) => {
   );
   return session;
 };
+*/
 
 const signInRoutes = ["/sign-in", "/sign-up", "/verify-2fa"];
 

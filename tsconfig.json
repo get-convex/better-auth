@@ -22,10 +22,5 @@
   "tsc-alias": {
     "resolveFullPaths": true
   },
-  "include": [
-    "./src/**/*",
-    "./auth.ts",
-    "./generate-schema.ts",
-    "./vitest.config.mts"
-  ]
+  "include": ["./src/**/*", "./generate-schema.ts", "./vitest.config.mts"]
 }

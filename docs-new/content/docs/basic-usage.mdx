@@ -1,0 +1,36 @@
+---
+title: Basic Usage
+description: Using Better Auth with Convex
+---
+
+## Better Auth guide
+
+Better Auth's [basic usage guide](https://www.better-auth.com/docs/basic-usage)
+applies to Convex as well. It covers signing in and out, social providers,
+plugins, and more. You will be using Better Auth directly in your
+project, so their guides are a primary reference.
+
+### Exceptions
+
+There are a few areas in the Better Auth basic usage guide that work differently
+in Convex.
+
+- #### Server side authentication
+
+  Better Auth supports signing users in and out through server side functions. Because
+  Convex functions run over websockets and don't return HTTP responses or set
+  cookies, signing up/in/out must be done from the client via
+  `authClient.signIn.*` methods.
+
+- #### Schemas and migrations
+
+  The basic usage guide includes information on database schema generation and
+  migrations via the Better Auth CLI. This only applies for [local
+  installs](/replace-url), which support generating schemas. For projects not
+  using local install, the default schema provided with the Better Auth
+  component (preconfigured with the [officially supported
+  plugins](/replace-url)) is used, and cannot be altered.
+
+## Using server methods with `auth.api`
+
+Better Auth's server side functionality can be used

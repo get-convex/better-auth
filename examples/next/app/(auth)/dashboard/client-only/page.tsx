@@ -21,6 +21,7 @@ import { SignOutButton } from "@/components/client";
 const Header = () => {
   const router = useRouter();
   const user = useQuery(api.auth.getCurrentUser);
+  console.log("user", user);
 
   const handleSignOut = async () => {
     await authClient.signOut();

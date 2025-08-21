@@ -2,45 +2,21 @@ import { createAuthMiddleware, sessionMiddleware } from "better-auth/api";
 import {
   BetterAuthPlugin,
   createAuthEndpoint,
-  customSession as customSessionPlugin,
   jwt as jwtPlugin,
   bearer as bearerPlugin,
   oidcProvider as oidcProviderPlugin,
 } from "better-auth/plugins";
-import { BetterAuthOptions } from "better-auth/types";
-import { omit } from "convex-helpers";
-import { z } from "zod";
 
 export const JWT_COOKIE_NAME = "convex_jwt";
 
-export const convex = <O extends BetterAuthOptions>(
+export const convex = (
   opts: {
     jwtExpirationSeconds?: number;
     deleteExpiredSessionsOnLogin?: boolean;
-    options?: O;
+    options?: { basePath?: string };
   } = {}
 ) => {
-  const {
-    jwtExpirationSeconds = 60 * 15,
-    deleteExpiredSessionsOnLogin = false,
-  } = opts;
-  const customSession = customSessionPlugin(async ({ user, session }) => {
-    // Doing terrible things with types because user and session aren't actually
-    // objects and we need plugin inference to work
-    const { userId, ...userData } = omit(
-      user as typeof user & { id: string; userId: string },
-      ["id"]
-    ) as typeof user & {
-      userId: string;
-    };
-    return {
-      user: { ...userData, id: userId },
-      session: {
-        ...(session as typeof session & {}),
-        userId,
-      },
-    };
-  }, opts.options);
+  const { jwtExpirationSeconds = 60 * 15 } = opts;
   const oidcProvider = oidcProviderPlugin({
     loginPage: "/not-used",
     metadata: {
@@ -53,12 +29,8 @@ export const convex = <O extends BetterAuthOptions>(
       issuer: `${process.env.CONVEX_SITE_URL}`,
       audience: "convex",
       expirationTime: `${jwtExpirationSeconds}s`,
-      getSubject: (session) => {
-        // Return the userId from the app user table
-        return session.user.userId;
-      },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      definePayload: ({ user: { id, userId, image, ...user }, session }) => ({
+      definePayload: ({ user: { id, image, ...user }, session }) => ({
         ...user,
         sessionId: session.id,
         iat: Math.floor(new Date().getTime() / 1000),
@@ -77,69 +49,20 @@ export const convex = <O extends BetterAuthOptions>(
   };
   return {
     id: "convex",
+    init: ({ options }) => {
+      if (
+        options.plugins?.every((p) => p.id !== "cross-domain") &&
+        !options.baseURL
+      ) {
+        console.warn(
+          "cross-domain plugin detected, but Better Auth baseURL is undefined. This is probably a mistake."
+        );
+      }
+    },
     hooks: {
-      before: [
-        {
-          matcher: (ctx) => {
-            return !!ctx.body?.userId;
-          },
-          handler: createAuthMiddleware(async (ctx) => {
-            const user: { id: string } | null =
-              await ctx.context.adapter.findOne({
-                model: "user",
-                where: [
-                  {
-                    field: "userId",
-                    operator: "eq",
-                    value: ctx.body?.userId,
-                  },
-                ],
-              });
-            if (!user) {
-              throw new Error("User not found");
-            }
-            ctx.body.userId = user.id;
-            return {
-              context: ctx,
-            };
-          }),
-        },
-        ...bearer.hooks.before,
-      ],
+      before: [...bearer.hooks.before],
       after: [
         ...oidcProvider.hooks.after,
-        {
-          matcher: (ctx) => {
-            return (
-              deleteExpiredSessionsOnLogin &&
-              (ctx.path?.startsWith("/sign-in") ||
-                ctx.path?.startsWith("/callback"))
-            );
-          },
-          handler: createAuthMiddleware(async (ctx) => {
-            // Delete expired sessions at login
-            const userId = ctx.context.newSession?.user.id;
-            if (!userId) {
-              return;
-            }
-            await ctx.context.adapter.deleteMany({
-              model: "session",
-              where: [
-                {
-                  field: "userId",
-                  operator: "eq",
-                  value: userId,
-                  connector: "AND",
-                },
-                {
-                  operator: "lte",
-                  field: "expiresAt",
-                  value: new Date().getTime(),
-                },
-              ],
-            });
-          }),
-        },
         {
           matcher: (ctx) => {
             return (
@@ -194,61 +117,6 @@ export const convex = <O extends BetterAuthOptions>(
       ],
     },
     endpoints: {
-      getSession: createAuthEndpoint(
-        "/get-session",
-        {
-          method: "GET",
-          query: z.optional(
-            z.object({
-              // If cookie cache is enabled, it will disable the cache
-              // and fetch the session from the database
-              disableCookieCache: z
-                .boolean({
-                  description:
-                    "Disable cookie cache and fetch session from database",
-                })
-                .or(z.string().transform((v) => v === "true"))
-                .optional(),
-              disableRefresh: z
-                .boolean({
-                  description:
-                    "Disable session refresh. Useful for checking session status, without updating the session",
-                })
-                .optional(),
-            })
-          ),
-          metadata: {
-            CUSTOM_SESSION: true,
-            openapi: {
-              description: "Get custom session data",
-              responses: {
-                "200": {
-                  description: "Success",
-                  content: {
-                    "application/json": {
-                      schema: {
-                        type: "array",
-                        nullable: true,
-                        items: {
-                          $ref: "#/components/schemas/Session",
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          requireHeaders: true,
-        },
-        async (ctx) => {
-          const response = await customSession.endpoints.getSession({
-            ...ctx,
-            returnHeaders: false,
-          });
-          return response;
-        }
-      ),
       getOpenIdConfig: createAuthEndpoint(
         "/convex/.well-known/openid-configuration",
         {

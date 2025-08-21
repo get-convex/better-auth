@@ -7,7 +7,6 @@ import {
   SettingsButton,
   SettingsButtonContent,
 } from "@/components/server";
-import { createAuth } from "@/lib/auth";
 import { preloadQuery } from "convex/nextjs";
 import { getToken } from "@convex-dev/better-auth/nextjs";
 import { api } from "@/convex/_generated/api";
@@ -16,14 +15,18 @@ import { TodoList } from "./todo-list";
 import { ModeToggle } from "@/app/mode-toggle";
 
 const Header = async () => {
-  const token = await getToken(createAuth);
+  const token = await getToken();
 
   // Preload query for SSR
-  const preloaded = await preloadQuery(api.auth.getCurrentUser, {}, { token });
+  const preloadedUserQuery = await preloadQuery(
+    api.auth.getCurrentUser,
+    {},
+    { token },
+  );
 
   return (
     <AppHeader>
-      <UserProfile preloadedUser={preloaded} />
+      <UserProfile preloadedUserQuery={preloadedUserQuery} />
       <AppNav>
         <SettingsButton>
           <Link href="/settings">
@@ -36,7 +39,7 @@ const Header = async () => {
   );
 };
 
-const ServerPage = () => {
+const ServerPage = async () => {
   return (
     <AppContainer>
       <ModeToggle />

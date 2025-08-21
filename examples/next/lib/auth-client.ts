@@ -8,16 +8,16 @@ import {
 } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 import { convexClient } from "@convex-dev/better-auth/client/plugins";
-import type { authWithoutCtx } from "@/lib/auth";
+import type { auth } from "@/lib/auth";
 
 export const authClient = createAuthClient({
   plugins: [
-    inferAdditionalFields<typeof authWithoutCtx>(),
+    inferAdditionalFields<typeof auth>(),
     anonymousClient(),
     magicLinkClient(),
     emailOTPClient(),
     twoFactorClient(),
     genericOAuthClient(),
-    convexClient<typeof authWithoutCtx>(),
+    convexClient<typeof auth>(),
   ],
 });

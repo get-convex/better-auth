@@ -1,75 +1,169 @@
-import {
-  AuthFunctions,
-  BetterAuth,
-  PublicAuthFunctions,
-} from "@convex-dev/better-auth";
-import { api, components, internal } from "./_generated/api";
+import { components, internal } from "./_generated/api";
 import { query } from "./_generated/server";
-import { DataModel, Id } from "./_generated/dataModel";
-import { asyncMap } from "convex-helpers";
+import betterAuthSchema from "./betterAuth/schema";
+import { AuthFunctions, createClient } from "@convex-dev/better-auth";
+import { convex } from "@convex-dev/better-auth/plugins";
+import {
+  anonymous,
+  genericOAuth,
+  twoFactor,
+  username,
+} from "better-auth/plugins";
+import { emailOTP } from "better-auth/plugins";
+import {
+  sendMagicLink,
+  sendOTPVerification,
+  sendEmailVerification,
+  sendResetPassword,
+} from "../convex/email";
+import { magicLink } from "better-auth/plugins";
+import { betterAuth, BetterAuthOptions } from "better-auth";
+import { requireMutationCtx } from "@convex-dev/better-auth/utils";
+import {
+  CreateAdapter,
+  getInactiveAuthInstance,
+  type RunCtx,
+} from "@convex-dev/better-auth";
+import { Id } from "./_generated/dataModel";
+
+const siteUrl = process.env.SITE_URL;
+
+const createAuth = (ctx: RunCtx, createAdapter: CreateAdapter) =>
+  betterAuth({
+    baseURL: siteUrl,
+    database: createAdapter(ctx),
+    account: {
+      accountLinking: {
+        enabled: true,
+        allowDifferentEmails: true,
+      },
+    },
+    emailVerification: {
+      sendVerificationEmail: async ({ user, url }) => {
+        await sendEmailVerification(requireMutationCtx(ctx), {
+          to: user.email,
+          url,
+        });
+      },
+    },
+    emailAndPassword: {
+      enabled: true,
+      requireEmailVerification: true,
+      sendResetPassword: async ({ user, url }) => {
+        await sendResetPassword(requireMutationCtx(ctx), {
+          to: user.email,
+          url,
+        });
+      },
+    },
+    socialProviders: {
+      github: {
+        clientId: process.env.GITHUB_CLIENT_ID as string,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+      },
+      google: {
+        clientId: process.env.GOOGLE_CLIENT_ID as string,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+        accessType: "offline",
+        prompt: "select_account consent",
+      },
+    },
+    user: {
+      // This field is available in the `onCreateUser` hook from the component,
+      // but will not be committed to the database. Must be persisted in the
+      // hook if persistence is required.
+      additionalFields: {
+        foo: {
+          type: "string",
+          required: false,
+        },
+      },
+      deleteUser: {
+        enabled: true,
+      },
+    },
+    plugins: [
+      anonymous(),
+      username(),
+      magicLink({
+        sendMagicLink: async ({ email, url }) => {
+          await sendMagicLink(requireMutationCtx(ctx), {
+            to: email,
+            url,
+          });
+        },
+      }),
+      emailOTP({
+        async sendVerificationOTP({ email, otp }) {
+          await sendOTPVerification(requireMutationCtx(ctx), {
+            to: email,
+            code: otp,
+          });
+        },
+      }),
+      twoFactor(),
+      genericOAuth({
+        config: [
+          {
+            providerId: "slack",
+            clientId: process.env.SLACK_CLIENT_ID as string,
+            clientSecret: process.env.SLACK_CLIENT_SECRET as string,
+            discoveryUrl: "https://slack.com/.well-known/openid-configuration",
+            scopes: ["openid", "email", "profile"],
+          },
+        ],
+      }),
+      convex(),
+    ],
+  } satisfies BetterAuthOptions);
+
+// Export a static instance for Better Auth schema generation and other
+// options-derived use cases.
+export const auth = getInactiveAuthInstance(createAuth);
 
 const authFunctions: AuthFunctions = internal.auth;
-const publicAuthFunctions: PublicAuthFunctions = api.auth;
 
-export const betterAuthComponent = new BetterAuth(components.betterAuth, {
-  authFunctions,
-  publicAuthFunctions,
-  verbose: false,
-});
-
-export const {
-  createUser,
-  deleteUser,
-  updateUser,
-  createSession,
-  isAuthenticated,
-} = betterAuthComponent.createAuthFunctions<DataModel>({
-  onCreateUser: async (ctx, user) => {
-    // Example: copy the user's email to the application users table.
-    // We'll use onUpdateUser to keep it synced.
-    const userId = await ctx.db.insert("users", {
-      email: user.email,
-    });
-
-    // This function must return the user id.
-    return userId;
+export const betterAuthComponent = createClient(
+  components.betterAuth.adapter,
+  createAuth,
+  {
+    local: {
+      schema: betterAuthSchema,
+    },
+    authFunctions,
+    verbose: false,
+    triggers: {
+      user: {
+        onCreate: async (ctx, user) => {
+          console.log("onCreate", user);
+        },
+      },
+    },
   },
-  onDeleteUser: async (ctx, userId) => {
-    // Delete the user's data if the user is being deleted
-    const todos = await ctx.db
-      .query("todos")
-      .withIndex("userId", (q) => q.eq("userId", userId as Id<"users">))
-      .collect();
-    await asyncMap(todos, async (todo) => {
-      await ctx.db.delete(todo._id);
-    });
-    await ctx.db.delete(userId as Id<"users">);
-  },
-  onUpdateUser: async (ctx, user) => {
-    // Keep the user's email synced
-    const userId = user.userId as Id<"users">;
-    await ctx.db.patch(userId, {
-      email: user.email,
-    });
-  },
-});
+);
 
-// Example function for getting the current user
-// Feel free to edit, omit, etc.
+export const { onCreate } = betterAuthComponent.triggersApi();
+
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    // Get user data from Better Auth - email, name, image, etc.
-    const userMetadata = await betterAuthComponent.getAuthUser(ctx);
-    if (!userMetadata) {
-      return null;
+    const identity = await ctx.auth.getUserIdentity();
+    console.log("identity", identity);
+    if (!identity) {
+      return;
     }
-    // Get user data from your application's database (skip this if you have no
-    // fields in your users table schema)
-    const user = await ctx.db.get(userMetadata.userId as Id<"users">);
-    return {
+    const betterAuthUser = await betterAuthComponent.getAuthUser(ctx);
+    console.log("betterAuthUser", betterAuthUser);
+    if (!betterAuthUser) {
+      return;
+    }
+    const user = await ctx.db.get(
+      (identity.userId ?? identity.subject) as Id<"users">,
+    );
+    const result = {
+      ...betterAuthUser,
       ...user,
-      ...userMetadata,
     };
+    return result;
   },
 });

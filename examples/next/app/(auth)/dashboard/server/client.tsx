@@ -18,12 +18,12 @@ export function SignOut() {
 }
 
 export const UserProfile = ({
-  preloadedUser,
+  preloadedUserQuery,
 }: {
-  preloadedUser: Preloaded<typeof api.auth.getCurrentUser>;
+  preloadedUserQuery: Preloaded<typeof api.auth.getCurrentUser>;
 }) => {
   const { isLoading } = useConvexAuth();
-  const user = usePreloadedQuery(preloadedUser);
+  const user = usePreloadedQuery(preloadedUserQuery);
   const [currentUser, setCurrentUser] = useState(user);
   useEffect(() => {
     if (!isLoading) {
@@ -32,7 +32,7 @@ export const UserProfile = ({
   }, [user, isLoading]);
   return (
     <>
-      <UserProfileComponent user={currentUser} />
+      <UserProfileComponent user={currentUser as any} />
     </>
   );
 };

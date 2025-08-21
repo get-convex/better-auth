@@ -1,9 +1,9 @@
 import { httpRouter } from "convex/server";
-import { betterAuthComponent } from "./auth";
-import { createAuth } from "../src/lib/auth";
+import { authComponent, createAuth } from "./auth";
+import { DataModel } from "./_generated/dataModel";
 
 const http = httpRouter();
 
-betterAuthComponent.registerRoutes(http, createAuth, { cors: true });
+authComponent.registerRoutes<DataModel>(http, createAuth, { cors: true });
 
 export default http;

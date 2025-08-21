@@ -29,9 +29,8 @@
     "build:cjs:generatePackageJson": "echo '{\\n  \"type\": \"commonjs\"\\n}' > dist/commonjs/package.json",
     "build:watch": "chokidar 'tsconfig*.json' 'src/**/*.ts' -c 'npm run build' --initial",
     "typecheck": "tsc --noEmit",
-    "prepare": "npm run build",
     "prepack": "node node10stubs.mjs",
-    "prepublishOnly": "npm run generate && npm run build",
+    "prepublishOnly": "npm run build",
     "postpack": "node node10stubs.mjs --cleanup",
     "generate": "concurrently \"cd examples/next && npm run generate\" \"cd examples/react && npm run generate\" \"cd examples/tanstack && npm run generate\"",
     "test": "vitest run",
@@ -53,8 +52,21 @@
         "default": "./dist/esm/client/index.js"
       },
       "require": {
+        "@convex-dev/component-source": "./src/client/index.ts",
         "types": "./dist/commonjs/client/index.d.ts",
         "default": "./dist/commonjs/client/index.js"
+      }
+    },
+    "./adapter": {
+      "import": {
+        "@convex-dev/component-source": "./src/component/adapter.ts",
+        "types": "./dist/esm/component/adapter.d.ts",
+        "default": "./dist/esm/component/adapter.js"
+      },
+      "require": {
+        "@convex-dev/component-source": "./src/component/adapter.ts",
+        "types": "./dist/commonjs/component/adapter.d.ts",
+        "default": "./dist/commonjs/component/adapter.js"
       }
     },
     "./client/plugins": {
@@ -64,6 +76,7 @@
         "default": "./dist/esm/client/plugins/index.js"
       },
       "require": {
+        "@convex-dev/component-source": "./src/client/plugins/index.ts",
         "types": "./dist/commonjs/client/plugins/index.d.ts",
         "default": "./dist/commonjs/client/plugins/index.js"
       }
@@ -85,6 +98,7 @@
         "default": "./dist/esm/plugins/index.js"
       },
       "require": {
+        "@convex-dev/component-source": "./src/plugins/index.ts",
         "types": "./dist/commonjs/plugins/index.d.ts",
         "default": "./dist/commonjs/plugins/index.js"
       }
@@ -96,6 +110,7 @@
         "default": "./dist/esm/react/index.js"
       },
       "require": {
+        "@convex-dev/component-source": "./src/react/index.tsx",
         "types": "./dist/commonjs/react/index.d.ts",
         "default": "./dist/commonjs/react/index.js"
       }
@@ -117,6 +132,7 @@
         "default": "./dist/esm/utils/index.js"
       },
       "require": {
+        "@convex-dev/component-source": "./src/utils/index.ts",
         "types": "./dist/commonjs/utils/index.d.ts",
         "default": "./dist/commonjs/utils/index.js"
       }
@@ -163,7 +179,7 @@
     "prettier": "3.2.5",
     "semver": "^7.7.2",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.8.2",
+    "typescript": "^5.9.2",
     "typescript-eslint": "^8.4.0",
     "vitest": "^3.2.2"
   },

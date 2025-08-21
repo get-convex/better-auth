@@ -1,10 +1,5 @@
-import {
-  convexAdapter,
-  AuthFunctions,
-  BetterAuth,
-  PublicAuthFunctions,
-} from "../client";
-import { api, internal } from "./_generated/api";
+import { convexAdapter } from "../client";
+import { api } from "./_generated/api";
 import { GenericCtx, mutation, query } from "./_generated/server";
 import {
   GenericMutationCtx,
@@ -13,36 +8,12 @@ import {
   RegisteredQuery,
 } from "convex/server";
 
-// @ts-expect-error - this is a test
-const authFunctions: AuthFunctions = internal.adapterTest as any;
-
-const publicAuthFunctions: PublicAuthFunctions = api.adapterTest as any;
-
-export const betterAuthComponent = new BetterAuth(api as any, {
-  authFunctions,
-  publicAuthFunctions,
-  verbose: false,
-}) as any;
-
 export const createAdapter = (ctx: GenericCtx) =>
-  convexAdapter(ctx, betterAuthComponent, {
+  convexAdapter(ctx, api.adapter, {
     debugLogs: {
       isRunningAdapterTests: true,
     },
   });
-
-export const {
-  createUser,
-  deleteUser,
-  updateUser,
-  createSession,
-  isAuthenticated,
-} = betterAuthComponent.createAuthFunctions({
-  onCreateUser: async () => {
-    // return a random string as a userId
-    return Math.random().toString(36).substring(2, 15);
-  },
-});
 
 export const deserialize = (data: any) => {
   const dateStringRegex =

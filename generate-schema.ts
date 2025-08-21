@@ -3,10 +3,24 @@
 // npx tsx generate-schema.ts
 import { getAuthTables, type FieldAttribute } from "better-auth/db";
 import { writeFileSync } from "fs";
-import { auth, inactiveFields, indexFields } from "./auth";
+import { inactiveFields, indexFields } from "./src/auth";
+import { argv } from "process";
+import path from "path";
+
+if (!argv[2]) {
+  throw new Error("Auth path is required");
+}
+
+if (!argv[3]) {
+  throw new Error("Output path is required");
+}
+
+const authPath = path.resolve(argv[2]);
+const outputPath = path.resolve(argv[3]);
+
+const { authWithoutCtx: auth } = await import(authPath);
 
 const tables = getAuthTables(auth.options);
-const filePath = "./src/component/schema.ts";
 const specialFields = Object.fromEntries(
   Object.entries(tables)
     .map(([key, table]) => {
@@ -53,7 +67,7 @@ let code: string = `// This file is auto-generated from auth.ts by generate-sche
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
-const schema = defineSchema({
+export const tables = {
 `;
 
 for (const tableKey in tables) {
@@ -112,7 +126,12 @@ ${Object.keys(fields)
   code += `  ${schema}`;
 }
 
-code += `});\n\nexport default schema;\n\n`;
+code += `};
+
+const schema = defineSchema(tables);
+
+export default schema;
+`;
 
 // export map of unique, sortable, and reference fields
 code += `export const specialFields = ${JSON.stringify(
@@ -122,4 +141,4 @@ code += `export const specialFields = ${JSON.stringify(
 ).replace(/"([^"]+)":/g, "$1:")};\n`;
 
 // write code to file
-writeFileSync(filePath, code);
+writeFileSync(outputPath, code);
