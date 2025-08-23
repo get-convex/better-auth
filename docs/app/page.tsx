@@ -1355,8 +1355,8 @@ const Home = () => {
                       import { ConvexReactClient } from 'convex/react'
                       import { getCookie, getWebRequest } from '@tanstack/react-start/server'
                       import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
+                      import { authClient } from "@/lib/auth-client";
                       import {
-                        authClient,
                         fetchSession,
                         getCookieName,
                       } from '@/lib/server-auth-utils'
