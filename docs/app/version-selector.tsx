@@ -4,7 +4,14 @@ import * as React from "react";
 import * as Popover from "@radix-ui/react-popover";
 import { cn } from "../lib/utils";
 import { useEffect, useRef } from "react";
-import localVersions from "../versions.json";
+
+const localVersion = {
+  label: process.env.VERSION_LABEL!,
+  version: process.env.VERSION!,
+  branch: process.env.VERSION_BRANCH!,
+};
+
+const VERSION_BRANCHES = ["latest", "main"];
 
 const DOCS_DOMAIN = "convex-better-auth.netlify.app";
 
@@ -17,18 +24,24 @@ type Version = {
 const getVersions = async () => {
   return (
     await Promise.all(
-      localVersions.map(async (version) => {
+      VERSION_BRANCHES.map(async (branch) => {
         try {
-          const versions: Version[] = await (
+          const packageJson = (await (
             await fetch(
-              `https://raw.githubusercontent.com/get-convex/better-auth/refs/heads/${version.branch}/docs/versions.json`
+              `https://raw.githubusercontent.com/get-convex/better-auth/refs/heads/${branch}/package.json`
             )
-          ).json();
-          const isArray = Array.isArray(versions);
-          if (!isArray) {
-            throw Error("versions is not an array");
-          }
-          return versions.find((v) => v.label === version.label);
+          ).json()) as {
+            version: string;
+            versionMetadata: {
+              label: string;
+              branch: string;
+            };
+          };
+          return {
+            version: packageJson.version,
+            label: packageJson.versionMetadata.label,
+            branch: packageJson.versionMetadata.branch,
+          };
         } catch (error) {
           console.error(error);
         }
@@ -39,7 +52,7 @@ const getVersions = async () => {
 
 export function VersionSelector() {
   const [open, setOpen] = React.useState(false);
-  const [versions, setVersions] = React.useState<Version[]>(localVersions);
+  const [versions, setVersions] = React.useState<Version[]>([localVersion]);
   const triggerRef = useRef<HTMLSpanElement>(null);
   const branch =
     (typeof window === "object" &&
@@ -51,7 +64,7 @@ export function VersionSelector() {
       versions.find((v) => {
         return v.branch === branch || v.version.replaceAll(".", "-") === branch;
       })) ||
-    versions.find((v) => v.label === "latest");
+    versions[0];
 
   useEffect(() => {
     const fetchVersions = async () => {

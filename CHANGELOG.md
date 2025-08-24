@@ -11,6 +11,10 @@
 - fix: return application userId for reference fields
 - fix: use correct package exports for client plugins
 
+## 0.7.16
+
+- chore: upgrade to Better Auth 1.3.7
+
 ## 0.7.15
 
 - fix: add missing return types to component methods
