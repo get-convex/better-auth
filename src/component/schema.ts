@@ -165,6 +165,22 @@ const schema = defineSchema({
   })
     .index("clientId_userId", ["clientId","userId"]),
 
+  team: defineTable({
+    name: v.string(),
+    organizationId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.union(v.null(), v.number())),
+  })
+    .index("organizationId", ["organizationId"]),
+
+  teamMember: defineTable({
+    teamId: v.string(),
+    userId: v.string(),
+    createdAt: v.optional(v.union(v.null(), v.number())),
+  })
+    .index("teamId", ["teamId"])
+    .index("userId", ["userId"]),
+
   organization: defineTable({
     name: v.string(),
     slug: v.optional(v.union(v.null(), v.string())),
@@ -200,21 +216,6 @@ const schema = defineSchema({
     .index("teamId", ["teamId"])
     .index("status", ["status"])
     .index("inviterId", ["inviterId"]),
-
-  team: defineTable({
-    name: v.string(),
-    organizationId: v.string(),
-    createdAt: v.number(),
-    updatedAt: v.optional(v.union(v.null(), v.number())),
-  })
-    .index("organizationId", ["organizationId"]),
-
-  teamMember: defineTable({
-    teamId: v.string(),
-    userId: v.string(),
-    createdAt: v.optional(v.union(v.null(), v.number())),
-  })
-    .index("userId", ["userId"]),
 
   ssoProvider: defineTable({
     issuer: v.string(),
@@ -347,6 +348,28 @@ export const specialFields = {
       unique: true
     }
   },
+  team: {
+    organizationId: {
+      references: {
+        model: "organization",
+        field: "id"
+      }
+    }
+  },
+  teamMember: {
+    teamId: {
+      references: {
+        model: "team",
+        field: "id"
+      }
+    },
+    userId: {
+      references: {
+        model: "user",
+        field: "id"
+      }
+    }
+  },
   organization: {
     name: {
       sortable: true
@@ -393,22 +416,6 @@ export const specialFields = {
       sortable: true
     },
     inviterId: {
-      references: {
-        model: "user",
-        field: "id"
-      }
-    }
-  },
-  team: {
-    organizationId: {
-      references: {
-        model: "organization",
-        field: "id"
-      }
-    }
-  },
-  teamMember: {
-    userId: {
       references: {
         model: "user",
         field: "id"
