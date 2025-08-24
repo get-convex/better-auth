@@ -118,14 +118,8 @@ const Callout = ({
   </div>
 );
 
-export default function Home() {
-  const branch =
-    (typeof window === "object" &&
-      window.location?.hostname.includes("--") &&
-      window.location?.hostname.split("--")[0]) ||
-    "";
-
-  const exampleUrl = `https://github.com/get-convex/better-auth/tree/${branch || "latest"}/examples`;
+const Home = () => {
+  const exampleUrl = `https://github.com/get-convex/better-auth/tree/${process.env.NEXT_PUBLIC_BRANCH || "latest"}/examples`;
   const selectedFramework = useSelectedVariant("framework");
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 md:mt-12">
@@ -3134,4 +3128,6 @@ export default function Home() {
       </Section>
     </div>
   );
-}
+};
+
+export default Home;
