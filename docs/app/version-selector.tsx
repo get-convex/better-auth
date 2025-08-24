@@ -167,7 +167,7 @@ export function VersionSelector() {
                 v.version === current.version && "bg-accent"
               )}
             >
-              {v.version}
+              v{v.version}
               {v.label && <span className="ml-1">({v.label})</span>}
             </a>
           ))}

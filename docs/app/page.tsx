@@ -124,6 +124,11 @@ export default function Home() {
       window.location?.hostname.includes("--") &&
       window.location?.hostname.split("--")[0]) ||
     "";
+  if (typeof window === "object") {
+    console.log("window.location", window.location);
+    console.log("window.location.hostname", window.location?.hostname);
+    console.log("split", window.location?.hostname.split("--"));
+  }
 
   const exampleUrl = `https://github.com/get-convex/better-auth/tree/${branch || "latest"}/examples`;
   const selectedFramework = useSelectedVariant("framework");
