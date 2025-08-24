@@ -54,11 +54,7 @@ export function VersionSelector() {
   const [open, setOpen] = React.useState(false);
   const [versions, setVersions] = React.useState<Version[]>([localVersion]);
   const triggerRef = useRef<HTMLSpanElement>(null);
-  const branch =
-    (typeof window === "object" &&
-      window.location?.hostname.includes("--") &&
-      window.location?.hostname.split("--")[0]) ||
-    "";
+  const branch = process.env.NEXT_PUBLIC_BRANCH || "";
   const current =
     (branch &&
       versions.find((v) => {
@@ -122,7 +118,7 @@ export function VersionSelector() {
             : "group-hover/sidebar-menu-button:text-foreground"
         )}
       >
-        {current.version}
+        v{current.version}
         <svg
           width="14"
           height="14"
@@ -167,7 +163,7 @@ export function VersionSelector() {
                 v.version === current.version && "bg-accent"
               )}
             >
-              {v.version}
+              v{v.version}
               {v.label && <span className="ml-1">({v.label})</span>}
             </a>
           ))}
