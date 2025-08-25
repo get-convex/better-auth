@@ -122,7 +122,7 @@ export function VersionSelector() {
             : "group-hover/sidebar-menu-button:text-foreground"
         )}
       >
-        {current.version}
+        v{current.version}
         <svg
           width="14"
           height="14"

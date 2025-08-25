@@ -118,7 +118,7 @@ const Callout = ({
   </div>
 );
 
-export default function Home() {
+const Home = () => {
   const branch =
     (typeof window === "object" &&
       window.location?.hostname.includes("--") &&
@@ -3143,4 +3143,6 @@ export default function Home() {
       </Section>
     </div>
   );
-}
+};
+
+export default Home;
