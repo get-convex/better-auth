@@ -128,6 +128,7 @@ export default function Home() {
     console.log("window.location", window.location);
     console.log("window.location.hostname", window.location?.hostname);
     console.log("split", window.location?.hostname.split("--"));
+    console.log("test");
   }
 
   const exampleUrl = `https://github.com/get-convex/better-auth/tree/${branch || "latest"}/examples`;
