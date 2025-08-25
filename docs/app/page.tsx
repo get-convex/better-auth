@@ -303,10 +303,10 @@ const Home = () => {
         <P>Check out complete working examples on GitHub.</P>
         <div className="grid sm:grid-cols-2 gap-4 mb-6sm:gap-6">
           <a
-            href={`${testUrl}/react`}
+            href={`${branch2}/react`}
             className={cn(
               "flex w-full flex-col items-center rounded-xl border bg-card p-6 text-card-foreground shadow transition-colors hover:bg-muted/50 sm:p-10",
-              !!exampleUrl && "bg-red-500"
+              !!branch2 && "bg-red-500"
             )}
           >
             <svg
