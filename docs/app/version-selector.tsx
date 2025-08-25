@@ -54,11 +54,7 @@ export function VersionSelector() {
   const [open, setOpen] = React.useState(false);
   const [versions, setVersions] = React.useState<Version[]>([localVersion]);
   const triggerRef = useRef<HTMLSpanElement>(null);
-  const branch =
-    (typeof window === "object" &&
-      window.location?.hostname.includes("--") &&
-      window.location?.hostname.split("--")[0]) ||
-    "";
+  const branch = process.env.NEXT_PUBLIC_BRANCH || "";
   const current =
     (branch &&
       versions.find((v) => {

@@ -120,6 +120,8 @@ const Callout = ({
 
 const Home = () => {
   const exampleUrl = `https://github.com/get-convex/better-auth/tree/${process.env.NEXT_PUBLIC_BRANCH || "latest"}/examples`;
+  console.log("exampleUrl", exampleUrl);
+  console.log("NEXT_PUBLIC_BRANCH", process.env.NEXT_PUBLIC_BRANCH);
   const selectedFramework = useSelectedVariant("framework");
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 md:mt-12">
