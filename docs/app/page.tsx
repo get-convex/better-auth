@@ -131,10 +131,12 @@ const Home = () => {
     console.log("branch inline", window.location?.hostname.split("--")[0]);
     console.log("branch", branch);
   }
+  const branch2 = window.location?.hostname;
 
   const exampleUrl = `https://github.com/get-convex/better-auth/tree/${branch || "latest"}/examples`;
   console.log("exampleUrl", exampleUrl);
-  const testUrl = `https://github.com/get-convex/better-auth/tree/${window.location?.hostname || "latest"}/examples`;
+  const testUrl = `https://github.com/get-convex/better-auth/tree/${branch2 || "latest"}/examples`;
+  console.log("branch2", branch2);
   console.log("testUrl", testUrl);
   const selectedFramework = useSelectedVariant("framework");
   return (
