@@ -134,6 +134,8 @@ const Home = () => {
 
   const exampleUrl = `https://github.com/get-convex/better-auth/tree/${branch || "latest"}/examples`;
   console.log("exampleUrl", exampleUrl);
+  const testUrl = `https://github.com/get-convex/better-auth/tree/${window.location?.hostname || "latest"}/examples`;
+  console.log("testUrl", testUrl);
   const selectedFramework = useSelectedVariant("framework");
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 md:mt-12">
@@ -297,7 +299,7 @@ const Home = () => {
         <P>Check out complete working examples on GitHub.</P>
         <div className="grid sm:grid-cols-2 gap-4 mb-6sm:gap-6">
           <a
-            href={`${exampleUrl}/react`}
+            href={`${testUrl}/react`}
             className={cn(
               "flex w-full flex-col items-center rounded-xl border bg-card p-6 text-card-foreground shadow transition-colors hover:bg-muted/50 sm:p-10"
             )}
