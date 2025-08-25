@@ -130,7 +130,6 @@ const Home = () => {
     console.log("split", window.location?.hostname.split("--"));
     console.log("branch inline", window.location?.hostname.split("--")[0]);
     console.log("branch", branch);
-    console.log("test");
   }
 
   const exampleUrl = `https://github.com/get-convex/better-auth/tree/${branch || "latest"}/examples`;
