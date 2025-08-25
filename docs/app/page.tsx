@@ -157,7 +157,6 @@ const Home = () => {
         </div>
         <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed">
           Comprehensive, secure authentication with Better Auth for Convex.{" "}
-          {testUrl}
         </p>
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 pt-2">
           <a
