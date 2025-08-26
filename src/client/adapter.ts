@@ -133,7 +133,8 @@ export const convexAdapter = (
         return data;
       },
     },
-    adapter: () => {
+    adapter: ({ options }) => {
+      options.telemetry = { enabled: false };
       return {
         id: "convex",
         create: async ({ model, data, select }): Promise<any> => {
