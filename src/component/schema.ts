@@ -24,7 +24,7 @@ const schema = defineSchema({
     banReason: v.optional(v.union(v.null(), v.string())),
     banExpires: v.optional(v.union(v.null(), v.number())),
     stripeCustomerId: v.optional(v.union(v.null(), v.string())),
-    userId: v.optional(v.union(v.null(), v.string())),
+    userId: v.string(),
     teamId: v.optional(v.union(v.null(), v.string())),
   })
     .index("email_name", ["email","name"])
