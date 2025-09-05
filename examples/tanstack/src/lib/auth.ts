@@ -16,7 +16,7 @@ const siteUrl = requireEnv('SITE_URL')
 
 export const createAuth = (ctx: GenericCtx) =>
   betterAuth({
-    trustedOrigins: ["http://localhost:3000"],
+    trustedOrigins: [siteUrl],
     baseURL: siteUrl,
     database: convexAdapter(ctx, betterAuthComponent),
     account: {
