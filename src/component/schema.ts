@@ -268,6 +268,22 @@ const schema = defineSchema({
   })
     .index("key", ["key"]),
 
+  deviceCode: defineTable({
+    deviceCode: v.string(),
+    userCode: v.string(),
+    userId: v.optional(v.union(v.null(), v.string())),
+    clientId: v.optional(v.union(v.null(), v.string())),
+    scope: v.optional(v.union(v.null(), v.string())),
+    status: v.string(),
+    expiresAt: v.number(),
+    pollingInterval: v.optional(v.union(v.null(), v.number())),
+    lastPolledAt: v.optional(v.union(v.null(), v.number())),
+    createdAt: v.optional(v.union(v.null(), v.number())),
+    updatedAt: v.optional(v.union(v.null(), v.number())),
+  })
+    .index("deviceCode", ["deviceCode"])
+    .index("userCode", ["userCode"]),
+
 });
 
 export default schema;
@@ -434,6 +450,20 @@ export const specialFields = {
     }
   },
   walletAddress: {
+    userId: {
+      references: {
+        model: "user",
+        field: "id"
+      }
+    }
+  },
+  deviceCode: {
+    deviceCode: {
+      unique: true
+    },
+    userCode: {
+      unique: true
+    },
     userId: {
       references: {
         model: "user",
