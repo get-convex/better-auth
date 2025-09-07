@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.18
+
+- chore: upgrade to Better Auth 1.3.8
+
 ## 0.7.17
 
 - fix: disable telemetry by default
