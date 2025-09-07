@@ -61,6 +61,7 @@ export const convex = <O extends BetterAuthOptions>(
       definePayload: ({ user: { id, userId, image, ...user }, session }) => ({
         ...user,
         sessionId: session.id,
+        iat: Math.floor(new Date().getTime() / 1000),
       }),
     },
   });

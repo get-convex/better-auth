@@ -133,10 +133,10 @@ export declare const components: {
               }
             | {
                 data: {
-                  createdAt?: null | number;
+                  createdAt: number;
                   expiresAt: number;
                   identifier: string;
-                  updatedAt?: null | number;
+                  updatedAt: number;
                   value: string;
                 };
                 model: "verification";
@@ -305,6 +305,8 @@ export declare const components: {
                   status?: null | string;
                   stripeCustomerId?: null | string;
                   stripeSubscriptionId?: null | string;
+                  trialEnd?: null | number;
+                  trialStart?: null | number;
                 };
                 model: "subscription";
               }
@@ -668,10 +670,10 @@ export declare const components: {
                 sortBy?: { direction: "asc" | "desc"; field: string };
                 unique?: boolean;
                 update: {
-                  createdAt?: null | number;
+                  createdAt?: number;
                   expiresAt?: number;
                   identifier?: string;
-                  updatedAt?: null | number;
+                  updatedAt?: number;
                   value?: string;
                 };
                 where?: Array<{
@@ -1334,6 +1336,8 @@ export declare const components: {
                   status?: null | string;
                   stripeCustomerId?: null | string;
                   stripeSubscriptionId?: null | string;
+                  trialEnd?: null | number;
+                  trialStart?: null | number;
                 };
                 where?: Array<{
                   connector?: "AND" | "OR";
@@ -1579,10 +1583,10 @@ export declare const components: {
             | {
                 model: "verification";
                 update: {
-                  createdAt?: null | number;
+                  createdAt?: number;
                   expiresAt?: number;
                   identifier?: string;
-                  updatedAt?: null | number;
+                  updatedAt?: number;
                   value?: string;
                 };
                 where?: Array<{
@@ -2063,6 +2067,8 @@ export declare const components: {
                   status?: null | string;
                   stripeCustomerId?: null | string;
                   stripeSubscriptionId?: null | string;
+                  trialEnd?: null | number;
+                  trialStart?: null | number;
                 };
                 where?: Array<{
                   connector?: "AND" | "OR";
@@ -2162,7 +2168,60 @@ export declare const components: {
         { emailId: string },
         null
       >;
-      get: FunctionReference<"query", "internal", { emailId: string }, any>;
+      cleanupAbandonedEmails: FunctionReference<
+        "mutation",
+        "internal",
+        { olderThan?: number },
+        null
+      >;
+      cleanupOldEmails: FunctionReference<
+        "mutation",
+        "internal",
+        { olderThan?: number },
+        null
+      >;
+      createManualEmail: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          from: string;
+          headers?: Array<{ name: string; value: string }>;
+          replyTo?: Array<string>;
+          subject: string;
+          to: string;
+        },
+        string
+      >;
+      get: FunctionReference<
+        "query",
+        "internal",
+        { emailId: string },
+        {
+          complained: boolean;
+          createdAt: number;
+          errorMessage?: string;
+          finalizedAt: number;
+          from: string;
+          headers?: Array<{ name: string; value: string }>;
+          html?: string;
+          opened: boolean;
+          replyTo: Array<string>;
+          resendId?: string;
+          segment: number;
+          status:
+            | "waiting"
+            | "queued"
+            | "cancelled"
+            | "sent"
+            | "delivered"
+            | "delivery_delayed"
+            | "bounced"
+            | "failed";
+          subject: string;
+          text?: string;
+          to: string;
+        } | null
+      >;
       getStatus: FunctionReference<
         "query",
         "internal",
@@ -2178,8 +2237,9 @@ export declare const components: {
             | "sent"
             | "delivered"
             | "delivery_delayed"
-            | "bounced";
-        }
+            | "bounced"
+            | "failed";
+        } | null
       >;
       handleEmailEvent: FunctionReference<
         "mutation",
@@ -2207,6 +2267,25 @@ export declare const components: {
           to: string;
         },
         string
+      >;
+      updateManualEmail: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          emailId: string;
+          errorMessage?: string;
+          resendId?: string;
+          status:
+            | "waiting"
+            | "queued"
+            | "cancelled"
+            | "sent"
+            | "delivered"
+            | "delivery_delayed"
+            | "bounced"
+            | "failed";
+        },
+        null
       >;
     };
   };

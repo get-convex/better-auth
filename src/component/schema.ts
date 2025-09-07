@@ -73,8 +73,8 @@ const schema = defineSchema({
     identifier: v.string(),
     value: v.string(),
     expiresAt: v.number(),
-    createdAt: v.optional(v.union(v.null(), v.number())),
-    updatedAt: v.optional(v.union(v.null(), v.number())),
+    createdAt: v.number(),
+    updatedAt: v.number(),
   })
     .index("expiresAt", ["expiresAt"])
     .index("identifier", ["identifier"]),
@@ -139,7 +139,8 @@ const schema = defineSchema({
     createdAt: v.optional(v.union(v.null(), v.number())),
     updatedAt: v.optional(v.union(v.null(), v.number())),
   })
-    .index("clientId", ["clientId"]),
+    .index("clientId", ["clientId"])
+    .index("userId", ["userId"]),
 
   oauthAccessToken: defineTable({
     accessToken: v.optional(v.union(v.null(), v.string())),
@@ -153,7 +154,9 @@ const schema = defineSchema({
     updatedAt: v.optional(v.union(v.null(), v.number())),
   })
     .index("accessToken", ["accessToken"])
-    .index("refreshToken", ["refreshToken"]),
+    .index("refreshToken", ["refreshToken"])
+    .index("clientId", ["clientId"])
+    .index("userId", ["userId"]),
 
   oauthConsent: defineTable({
     clientId: v.optional(v.union(v.null(), v.string())),
@@ -163,7 +166,8 @@ const schema = defineSchema({
     updatedAt: v.optional(v.union(v.null(), v.number())),
     consentGiven: v.optional(v.union(v.null(), v.boolean())),
   })
-    .index("clientId_userId", ["clientId","userId"]),
+    .index("clientId_userId", ["clientId","userId"])
+    .index("userId", ["userId"]),
 
   team: defineTable({
     name: v.string(),
@@ -245,6 +249,8 @@ const schema = defineSchema({
     status: v.optional(v.union(v.null(), v.string())),
     periodStart: v.optional(v.union(v.null(), v.number())),
     periodEnd: v.optional(v.union(v.null(), v.number())),
+    trialStart: v.optional(v.union(v.null(), v.number())),
+    trialEnd: v.optional(v.union(v.null(), v.number())),
     cancelAtPeriodEnd: v.optional(v.union(v.null(), v.boolean())),
     seats: v.optional(v.union(v.null(), v.number())),
   })
@@ -338,6 +344,13 @@ export const specialFields = {
   oauthApplication: {
     clientId: {
       unique: true
+    },
+    userId: {
+      references: {
+        model: "user",
+        field: "id",
+        onDelete: "cascade"
+      }
     }
   },
   oauthAccessToken: {
@@ -346,6 +359,36 @@ export const specialFields = {
     },
     refreshToken: {
       unique: true
+    },
+    clientId: {
+      references: {
+        model: "oauthApplication",
+        field: "clientId",
+        onDelete: "cascade"
+      }
+    },
+    userId: {
+      references: {
+        model: "user",
+        field: "id",
+        onDelete: "cascade"
+      }
+    }
+  },
+  oauthConsent: {
+    clientId: {
+      references: {
+        model: "oauthApplication",
+        field: "clientId",
+        onDelete: "cascade"
+      }
+    },
+    userId: {
+      references: {
+        model: "user",
+        field: "id",
+        onDelete: "cascade"
+      }
     }
   },
   team: {

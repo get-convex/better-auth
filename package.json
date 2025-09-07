@@ -48,6 +48,7 @@
     "./package.json": "./package.json",
     ".": {
       "import": {
+        "@convex-dev/component-source": "./src/client/index.ts",
         "types": "./dist/esm/client/index.d.ts",
         "default": "./dist/esm/client/index.js"
       },
@@ -58,6 +59,7 @@
     },
     "./client/plugins": {
       "import": {
+        "@convex-dev/component-source": "./src/client/plugins/index.ts",
         "types": "./dist/esm/client/plugins/index.d.ts",
         "default": "./dist/esm/client/plugins/index.js"
       },
@@ -78,6 +80,7 @@
     },
     "./plugins": {
       "import": {
+        "@convex-dev/component-source": "./src/plugins/index.ts",
         "types": "./dist/esm/plugins/index.d.ts",
         "default": "./dist/esm/plugins/index.js"
       },
@@ -88,6 +91,7 @@
     },
     "./react": {
       "import": {
+        "@convex-dev/component-source": "./src/react/index.tsx",
         "types": "./dist/esm/react/index.d.ts",
         "default": "./dist/esm/react/index.js"
       },
@@ -108,6 +112,7 @@
     },
     "./utils": {
       "import": {
+        "@convex-dev/component-source": "./src/utils/index.ts",
         "types": "./dist/esm/utils/index.d.ts",
         "default": "./dist/esm/utils/index.js"
       },
@@ -118,6 +123,7 @@
     },
     "./convex.config": {
       "import": {
+        "@convex-dev/component-source": "./src/component/convex.config.ts",
         "types": "./dist/esm/component/convex.config.d.ts",
         "default": "./dist/esm/component/convex.config.js"
       }
@@ -131,13 +137,13 @@
     }
   },
   "peerDependencies": {
-    "better-auth": "1.3.7",
-    "convex": ">=1.25.0 <1.35.0",
+    "better-auth": "1.3.8",
+    "convex": "^1.26.2",
     "react": "^18.3.1 || ^19.0.0",
     "react-dom": "^18.3.1 || ^19.0.0"
   },
   "devDependencies": {
-    "@better-auth/stripe": "1.3.7",
+    "@better-auth/stripe": "1.3.8",
     "@edge-runtime/vm": "^5.0.0",
     "@eslint/js": "^9.9.1",
     "@polar-sh/better-auth": "^1.0.4",
