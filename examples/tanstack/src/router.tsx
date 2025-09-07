@@ -7,6 +7,12 @@ import { ConvexProvider, ConvexReactClient } from 'convex/react'
 import { ConvexQueryClient } from '@convex-dev/react-query'
 import { QueryClient } from '@tanstack/react-query'
 
+export interface RouterContext {
+  queryClient: QueryClient
+  convexClient: ConvexReactClient
+  convexQueryClient: ConvexQueryClient
+}
+
 export function createRouter() {
   const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!
   if (!CONVEX_URL) {
@@ -14,6 +20,7 @@ export function createRouter() {
   }
   const convex = new ConvexReactClient(CONVEX_URL, {
     unsavedChangesWarning: false,
+    // expectAuth: true
   })
   const convexQueryClient = new ConvexQueryClient(convex)
 

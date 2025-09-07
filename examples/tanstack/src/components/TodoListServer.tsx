@@ -14,13 +14,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { ConvexHttpClient } from 'convex/browser'
-import { getCookie } from '@tanstack/react-start/server'
-import { getCookieName } from '@/lib/auth-server-utils'
-
-const getToken = async () => {
-  const sessionCookieName = await getCookieName()
-  return getCookie(sessionCookieName)
-}
+import { getRequestToken } from '@/lib/auth-server-utils'
 
 function setupClient(token?: string) {
   const client = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL)
@@ -45,7 +39,7 @@ export const toggleCompletedTodo = createServerFn({ method: 'POST' })
     }
   })
   .handler(async ({ data: { id } }) => {
-    const token = await getToken()
+    const token = await getRequestToken()
     await setupClient(token).mutation(api.todos.toggle, {
       id: id as Id<'todos'>,
     })
@@ -59,7 +53,7 @@ export const removeTodo = createServerFn({ method: 'POST' })
     return data
   })
   .handler(async ({ data: { id } }) => {
-    const token = await getToken()
+    const token = await getRequestToken()
     await setupClient(token).mutation(api.todos.remove, {
       id: id as Id<'todos'>,
     })
@@ -79,7 +73,7 @@ export const addTodo = createServerFn({ method: 'POST' })
     }
   })
   .handler(async ({ data: { text } }) => {
-    const token = await getToken()
+    const token = await getRequestToken()
     await setupClient(token).mutation(api.todos.create, { text })
   })
 
@@ -93,7 +87,7 @@ export const TodoList = () => {
           event.preventDefault()
           const formData = new FormData(event.currentTarget)
           await addTodo({ data: formData })
-          ;(event.target as HTMLFormElement).reset()
+            ; (event.target as HTMLFormElement).reset()
         }}
       />
 

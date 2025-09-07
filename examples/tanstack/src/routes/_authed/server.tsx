@@ -15,6 +15,7 @@ import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { authClient } from '@/lib/auth-client'
 import { useTransition } from 'react'
+import { Authenticated } from 'convex/react'
 
 export const Route = createFileRoute('/_authed/server')({
   component: ServerComponent,
@@ -36,7 +37,9 @@ function ServerComponent() {
         isPending={isPending}
       />
       <Header />
-      <TodoList />
+      <Authenticated>
+        <TodoList />
+      </Authenticated>
       <Toaster />
     </AppContainer>
   )
