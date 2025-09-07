@@ -2,9 +2,11 @@ import {
   Outlet,
   createRootRouteWithContext,
   useRouteContext,
+  HeadContent,
+  Scripts,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-import { Meta, Scripts, createServerFn } from '@tanstack/react-start'
+import { createServerFn } from '@tanstack/react-start'
 import { QueryClient } from '@tanstack/react-query'
 import * as React from 'react'
 import appCss from '@/styles/app.css?url'
@@ -83,7 +85,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
       <head>
-        <Meta />
+        <HeadContent />
       </head>
       <body className="bg-neutral-950 text-neutral-50">
         {children}
