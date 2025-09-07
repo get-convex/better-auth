@@ -18,7 +18,8 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+    "customConditions": ["@convex-dev/component-source"]
   },
   "include": ["./**/*"],
   "exclude": ["./_generated"]

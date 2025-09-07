@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "npm-run-all --parallel dev:frontend dev:backend",
     "dev:frontend": "vite",
-    "dev:backend": "convex dev",
+    "dev:backend": "convex dev --typecheck-components --live-component-sources",
     "generate": "convex dev --once",
     "logs": "convex logs",
     "lint": "tsc -p convex && eslint convex"
@@ -18,7 +18,7 @@
     "@radix-ui/react-label": "^2.1.2",
     "@radix-ui/react-slot": "^1.1.2",
     "@react-email/components": "^0.1.1",
-    "@tailwindcss/vite": "^4.0.17",
+    "@tailwindcss/vite": "^4.1.13",
     "better-auth": "file:../../node_modules/better-auth",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -39,7 +39,7 @@
     "@types/node": "^22.14.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.1",
+    "@vitejs/plugin-react": "^5.0.2",
     "eslint": "^9.9.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",
@@ -47,6 +47,6 @@
     "npm-run-all": "^4.1.5",
     "typescript": "^5.5.0",
     "typescript-eslint": "^8.0.1",
-    "vite": "^5.4.1"
+    "vite": "^7.1.4"
   }
 }
