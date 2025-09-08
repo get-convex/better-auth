@@ -99,9 +99,9 @@ interface ConvexAdapterConfig {
    */
   debugLogs?: AdapterDebugLogs;
 }
-export const convexAdapter = (
+export const convexAdapter = <UserId extends string = string>(
   ctx: GenericCtx,
-  component: BetterAuth,
+  component: BetterAuth<UserId>,
   config: ConvexAdapterConfig = {}
 ) => {
   const { debugLogs } = config;
