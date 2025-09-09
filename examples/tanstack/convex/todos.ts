@@ -1,30 +1,17 @@
 import { v } from 'convex/values'
-import { mutation, query, QueryCtx } from './_generated/server'
-import { Id } from './_generated/dataModel'
-
-const getUserId = async (ctx: QueryCtx) => {
-  const identity = await ctx.auth.getUserIdentity()
-  return (identity?.subject as Id<'users'>) ?? null
-}
-
-const requireUserId = async (ctx: QueryCtx) => {
-  const userId = await getUserId(ctx)
-  if (!userId) {
-    throw new Error('Not authenticated')
-  }
-  return userId
-}
+import { mutation, query } from './_generated/server'
+import { getUser, safeGetUser } from './auth'
 
 export const get = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getUserId(ctx)
-    if (!userId) {
-      throw new Error('Not authenticated')
+    const user = await safeGetUser(ctx)
+    if (!user) {
+      return []
     }
     return await ctx.db
       .query('todos')
-      .withIndex('userId', (q) => q.eq('userId', userId))
+      .withIndex('userId', (q) => q.eq('userId', user._id))
       .order('desc')
       .collect()
   },
@@ -33,12 +20,12 @@ export const get = query({
 export const create = mutation({
   args: { text: v.string() },
   handler: async (ctx, args) => {
-    const userId = await requireUserId(ctx)
+    const user = await getUser(ctx)
     const now = Date.now()
     await ctx.db.insert('todos', {
       text: args.text,
       completed: false,
-      userId,
+      userId: user._id,
       createdAt: now,
       updatedAt: now,
     })
@@ -48,10 +35,10 @@ export const create = mutation({
 export const toggle = mutation({
   args: { id: v.id('todos') },
   handler: async (ctx, args) => {
-    const userId = await requireUserId(ctx)
+    const user = await getUser(ctx)
 
     const todo = await ctx.db.get(args.id)
-    if (!todo || todo.userId !== userId) {
+    if (!todo || todo.userId !== user._id) {
       throw new Error('Todo not found or unauthorized')
     }
 
@@ -65,10 +52,10 @@ export const toggle = mutation({
 export const remove = mutation({
   args: { id: v.id('todos') },
   handler: async (ctx, args) => {
-    const userId = await requireUserId(ctx)
+    const user = await getUser(ctx)
 
     const todo = await ctx.db.get(args.id)
-    if (!todo || todo.userId !== userId) {
+    if (!todo || todo.userId !== user._id) {
       throw new Error('Todo not found or unauthorized')
     }
 

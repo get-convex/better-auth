@@ -19,6 +19,9 @@ import { convexAdapter } from "./client";
 
 // This is the config used to generate the schema
 const options = {
+  logger: {
+    disabled: true,
+  },
   database: convexAdapter({} as any, {} as any),
   rateLimit: {
     storage: "database",
@@ -50,5 +53,5 @@ const options = {
     convex(),
   ],
 } as BetterAuthOptions; // assert type to avoid overloading ts compiler
-const config = betterAuth(options);
+const config = betterAuth(options) as ReturnType<typeof betterAuth>;
 export { config as auth };

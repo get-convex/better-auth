@@ -22,7 +22,7 @@
     "@radix-ui/react-dropdown-menu": "^2.1.6",
     "@radix-ui/react-label": "^2.1.2",
     "@radix-ui/react-slot": "^1.1.2",
-    "@react-email/components": "0.1.0",
+    "@react-email/components": "0.5.3",
     "@tailwindcss/postcss": "^4.1.8",
     "@tanstack/react-query": "^5.87.1",
     "@tanstack/react-router": "^1.131.35",

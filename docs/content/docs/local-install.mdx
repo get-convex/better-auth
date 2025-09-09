@@ -1,0 +1,209 @@
+---
+title: Local Install
+description: Own your auth.
+---
+
+Local install gives you full control over your Better Auth schema, allows schema
+related configuration to work, and makes it possible to use plugins beyond those
+[supported](/supported-plugins) for Convex + Better Auth.
+
+With this approach, the Better Auth plugin is defined in it's own Convex
+subdirectory. Installation is a bit different from the default approach, and
+includes a schema generation step via Better Auth CLI, similar to the
+installation experience with other providers.
+
+## Installation
+
+<Callout>
+  Before you begin, follow the [Getting Started](/) guide to set up Convex +
+  Better Auth for your project. Then return here to walk through converting the
+  default install to a local install.
+</Callout>
+
+<div className="fd-steps">
+  <div className="fd-step">
+
+    ### Create the component definition
+
+Create a `convex/betterAuth/convex.config.ts` file to define the component. This
+will signal to Convex that the `convex/betterAuth` directory is a locally
+installed component.
+
+    ```ts title="convex/betterAuth/convex.config.ts"
+    import { defineComponent } from "convex/server";
+
+    const component = defineComponent("betterAuth");
+
+    export default component;
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    ### Generate the schema
+
+    Add a static `auth` export to the `convex/betterAuth/auth.ts` file.
+
+    ```ts title="convex/betterAuth/auth.ts"
+    import { createAuth } from '../auth'
+
+    // Export a static instance for Better Auth schema generation
+    export const auth = createAuth({} as any)
+
+    ```
+
+    Generate the schema for the component.
+
+    ```bash
+    cd convex/betterAuth
+    npx @better-auth/cli generate -y
+    ```
+
+  </div>
+
+  <div className="fd-step">
+
+    ### Export adapter functions
+
+    Export adapter functions for the component.
+
+    ```ts title="convex/betterAuth/adapter.ts"
+    import { createApi } from "@convex-dev/better-auth";
+    import schema from "./schema";
+    import { createAuth } from "../auth";
+
+    export const {
+      create,
+      findOne,
+      findMany,
+      updateOne,
+      updateMany,
+      deleteOne,
+      deleteMany,
+    } = createApi(schema, createAuth);
+    ```
+
+  </div>
+
+  <div className="fd-step">
+
+    ### Update component registration
+
+    Update component registration to use the locally installed component.
+
+    ```ts title="convex/convex.config.ts"
+    import { defineApp } from "convex/server";
+    import betterAuth from "@convex-dev/better-auth/convex.config"; // [!code --]
+    import betterAuth from "./betterAuth/convex.config"; // [!code ++]
+
+    const app = defineApp();
+    app.use(betterAuth);
+
+    export default app;
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    ### Update component config
+
+    Update the component client config to use the local schema.
+
+    ```ts title="convex/auth.ts"
+    import authSchema from "./betterAuth/schema";
+
+    // ...
+
+    export const authComponent = createClient<DataModel>(components.betterAuth); // [!code --]
+    export const authComponent = createClient<DataModel, typeof authSchema>( // [!code ++]
+      components.betterAuth,
+      // [!code ++:5]
+      {
+        local: {
+          schema: authSchema,
+        },
+      }
+    );
+
+    // ...
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    ### You're done!
+
+    The Better Auth component and schema are now locally defined in your Convex project.
+
+  </div>
+
+</div>
+
+## Usage
+
+### Updating the schema
+
+Certain options changes may require schema generation. The Better Auth docs will
+often note when this is the case. To regenerate the schema at any time (as it's
+generally safe to do), move into the component directory and run the Better Auth
+CLI generate command.
+
+```bash
+cd convex/betterAuth
+npx @better-auth/cli generate -y
+```
+
+### Adding custom indexes
+
+Some database interactions through Better Auth may run queries that don't use an
+index. The Better Auth component automatically selects a suitable index for a
+given query if one exists, and will log a warning indicating what index should
+be added.
+
+Custom indexes can be added by generating the schema to a secondary file,
+importing it `convex/betterAuth/schema.ts` and adding the indexes. This way
+custom indexes aren't overwritten when the schema is regenerated.
+
+<Callout>
+  Schema table names and fields should not be customized directly, as any
+  customizations won't match your Better Auth configuration, and will be
+  overwritten when the schema is regenerated. Instead, Better Auth schema can be
+  [customized through
+  options](https://www.better-auth.com/docs/concepts/database#core-schema).
+</Callout>
+
+<div className="fd-steps">
+  <div className="fd-step">
+
+    #### Generate the schema
+
+    Generate the schema to a secondary file.
+
+    ```bash
+    cd convex/betterAuth
+    npx @better-auth/cli generate -y --output generatedSchema.ts
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    #### Update the final schema
+
+    Delete the contents of `schema.ts` and replace with table definitions from the
+    generated schema.
+
+    ```ts title="convex/betterAuth/schema.ts"
+    import { defineSchema } from "convex/server";
+    import { tables } from "./generatedSchema";
+
+    const schema = defineSchema({
+      ...tables,
+      // Spread the generated schema and add a custom index
+      user: tables.user.index("custom_index", ["field1", "field2"]),
+    });
+
+    export default schema;
+    ```
+
+  </div>
+</div>

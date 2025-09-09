@@ -1,9 +1,10 @@
 import "./polyfills";
 import { httpRouter } from "convex/server";
-import { betterAuthComponent } from "./auth";
+import { authComponent } from "./auth";
+import { createAuth } from "./auth";
 
 const http = httpRouter();
 
-betterAuthComponent.registerRoutes(http);
+authComponent.registerRoutes(http, createAuth);
 
 export default http;

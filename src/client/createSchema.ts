@@ -20,7 +20,8 @@ export const indexFields = {
   subscription: ["stripeSubscriptionId", "stripeCustomerId", "referenceId"],
 };
 
-export const specialFields = (tables: BetterAuthDbSchema) =>
+// Return map of unique, sortable, and reference fields
+const specialFields = (tables: BetterAuthDbSchema) =>
   Object.fromEntries(
     Object.entries(tables)
       .map(([key, table]) => {
@@ -140,17 +141,9 @@ const schema = defineSchema(tables);
 export default schema;
 `;
 
-  // export map of unique, sortable, and reference fields
-  code += `
-export const specialFields = ${JSON.stringify(
-    specialFields(tables),
-    null,
-    2
-  ).replace(/"([^"]+)":/g, "$1:")};\n`;
-
   return {
     code,
-    path: file ?? "./convex/betterAuth/schema.ts",
+    path: file ?? "./schema.ts",
     overwrite: true,
   };
 };

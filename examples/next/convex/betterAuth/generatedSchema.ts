@@ -20,7 +20,7 @@ export const tables = {
     userId: v.optional(v.union(v.null(), v.string())),
     foo: v.optional(v.union(v.null(), v.string())),
   })
-    .index("email_name", ["email","name"])
+    .index("email_name", ["email", "name"])
     .index("name", ["name"])
     .index("userId", ["userId"])
     .index("username", ["username"]),
@@ -34,7 +34,7 @@ export const tables = {
     userId: v.string(),
   })
     .index("expiresAt", ["expiresAt"])
-    .index("expiresAt_userId", ["expiresAt","userId"])
+    .index("expiresAt_userId", ["expiresAt", "userId"])
     .index("token", ["token"])
     .index("userId", ["userId"]),
   account: defineTable({
@@ -52,8 +52,8 @@ export const tables = {
     updatedAt: v.number(),
   })
     .index("accountId", ["accountId"])
-    .index("accountId_providerId", ["accountId","providerId"])
-    .index("providerId_userId", ["providerId","userId"])
+    .index("accountId_providerId", ["accountId", "providerId"])
+    .index("providerId_userId", ["providerId", "userId"])
     .index("userId", ["userId"]),
   verification: defineTable({
     identifier: v.string(),
@@ -68,8 +68,7 @@ export const tables = {
     secret: v.string(),
     backupCodes: v.string(),
     userId: v.string(),
-  })
-    .index("userId", ["userId"]),
+  }).index("userId", ["userId"]),
   jwks: defineTable({
     publicKey: v.string(),
     privateKey: v.string(),
@@ -80,48 +79,3 @@ export const tables = {
 const schema = defineSchema(tables);
 
 export default schema;
-
-export const specialFields = {
-  user: {
-    name: {
-      sortable: true
-    },
-    email: {
-      sortable: true,
-      unique: true
-    },
-    username: {
-      sortable: true,
-      unique: true
-    }
-  },
-  session: {
-    token: {
-      unique: true
-    },
-    userId: {
-      references: {
-        model: "user",
-        field: "id",
-        onDelete: "cascade"
-      }
-    }
-  },
-  account: {
-    userId: {
-      references: {
-        model: "user",
-        field: "id",
-        onDelete: "cascade"
-      }
-    }
-  },
-  twoFactor: {
-    userId: {
-      references: {
-        model: "user",
-        field: "id"
-      }
-    }
-  }
-};

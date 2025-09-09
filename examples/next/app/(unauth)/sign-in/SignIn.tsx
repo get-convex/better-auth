@@ -31,7 +31,7 @@ export default function SignIn() {
   const [anonymousLoading, setAnonymousLoading] = useState(false);
 
   const handleSignIn = async () => {
-    const { data, error } = await authClient.signIn.email(
+    await authClient.signIn.email(
       {
         email,
         password,
@@ -54,8 +54,6 @@ export default function SignIn() {
         },
       },
     );
-
-    console.log({ data, error });
   };
 
   const handleResetPassword = async () => {

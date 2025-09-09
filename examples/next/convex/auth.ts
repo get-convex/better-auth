@@ -1,7 +1,7 @@
-import { components, internal } from "./_generated/api";
-import { query } from "./_generated/server";
-import betterAuthSchema from "./betterAuth/schema";
-import { AuthFunctions, createClient } from "@convex-dev/better-auth";
+import { components } from "./_generated/api";
+import { query, QueryCtx } from "./_generated/server";
+import authSchema from "./betterAuth/schema";
+import { createClient, GenericCtx } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
 import {
   anonymous,
@@ -19,19 +19,26 @@ import {
 import { magicLink } from "better-auth/plugins";
 import { betterAuth, BetterAuthOptions } from "better-auth";
 import { requireMutationCtx } from "@convex-dev/better-auth/utils";
-import {
-  CreateAdapter,
-  getInactiveAuthInstance,
-  type RunCtx,
-} from "@convex-dev/better-auth";
-import { Id } from "./_generated/dataModel";
+import { DataModel } from "./_generated/dataModel";
+
+// This implementation uses Local Install as it would be in a new project.
 
 const siteUrl = process.env.SITE_URL;
 
-const createAuth = (ctx: RunCtx, createAdapter: CreateAdapter) =>
+export const authComponent = createClient<DataModel, typeof authSchema>(
+  components.betterAuth,
+  {
+    local: {
+      schema: authSchema,
+    },
+    verbose: false,
+  },
+);
+
+export const createAuth = (ctx: GenericCtx<DataModel>) =>
   betterAuth({
     baseURL: siteUrl,
-    database: createAdapter(ctx),
+    database: authComponent.adapter(ctx),
     account: {
       accountLinking: {
         enabled: true,
@@ -69,9 +76,6 @@ const createAuth = (ctx: RunCtx, createAdapter: CreateAdapter) =>
       },
     },
     user: {
-      // This field is available in the `onCreateUser` hook from the component,
-      // but will not be committed to the database. Must be persisted in the
-      // hook if persistence is required.
       additionalFields: {
         foo: {
           type: "string",
@@ -117,53 +121,19 @@ const createAuth = (ctx: RunCtx, createAdapter: CreateAdapter) =>
     ],
   } satisfies BetterAuthOptions);
 
-// Export a static instance for Better Auth schema generation and other
-// options-derived use cases.
-export const auth = getInactiveAuthInstance(createAuth);
+// Below are example helpers and functions for getting the current user
+// Feel free to edit, omit, etc.
+export const safeGetUser = async (ctx: QueryCtx) => {
+  return authComponent.safeGetAuthUser(ctx);
+};
 
-const authFunctions: AuthFunctions = internal.auth;
-
-export const betterAuthComponent = createClient(
-  components.betterAuth.adapter,
-  createAuth,
-  {
-    local: {
-      schema: betterAuthSchema,
-    },
-    authFunctions,
-    verbose: false,
-    triggers: {
-      user: {
-        onCreate: async (ctx, user) => {
-          console.log("onCreate", user);
-        },
-      },
-    },
-  },
-);
-
-export const { onCreate } = betterAuthComponent.triggersApi();
+export const getUser = async (ctx: QueryCtx) => {
+  return authComponent.getAuthUser(ctx);
+};
 
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    console.log("identity", identity);
-    if (!identity) {
-      return;
-    }
-    const betterAuthUser = await betterAuthComponent.getAuthUser(ctx);
-    console.log("betterAuthUser", betterAuthUser);
-    if (!betterAuthUser) {
-      return;
-    }
-    const user = await ctx.db.get(
-      (identity.userId ?? identity.subject) as Id<"users">,
-    );
-    const result = {
-      ...betterAuthUser,
-      ...user,
-    };
-    return result;
+    return safeGetUser(ctx);
   },
 });

@@ -316,7 +316,7 @@ export declare const components: {
                     | "phoneNumberVerified"
                     | "userId"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -349,7 +349,7 @@ export declare const components: {
                     | "userAgent"
                     | "userId"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -387,7 +387,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -418,7 +418,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -443,7 +443,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "secret" | "backupCodes" | "userId" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -479,7 +479,7 @@ export declare const components: {
                     | "createdAt"
                     | "aaguid"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -516,7 +516,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -551,7 +551,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -583,7 +583,7 @@ export declare const components: {
                     | "updatedAt"
                     | "consentGiven"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -613,7 +613,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -638,7 +638,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "teamId" | "userId" | "createdAt" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -669,7 +669,7 @@ export declare const components: {
                     | "createdAt"
                     | "metadata"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -699,7 +699,7 @@ export declare const components: {
                     | "role"
                     | "createdAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -732,7 +732,7 @@ export declare const components: {
                     | "expiresAt"
                     | "inviterId"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -765,7 +765,7 @@ export declare const components: {
                     | "organizationId"
                     | "domain"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -790,7 +790,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "publicKey" | "privateKey" | "createdAt" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -827,7 +827,7 @@ export declare const components: {
                     | "cancelAtPeriodEnd"
                     | "seats"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -858,7 +858,7 @@ export declare const components: {
                     | "isPrimary"
                     | "createdAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -883,7 +883,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "key" | "count" | "lastRequest" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -908,7 +908,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "key" | "count" | "lastRequest" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -964,7 +964,7 @@ export declare const components: {
                     | "phoneNumberVerified"
                     | "userId"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -997,7 +997,7 @@ export declare const components: {
                     | "userAgent"
                     | "userId"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1035,7 +1035,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1066,7 +1066,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1091,7 +1091,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "secret" | "backupCodes" | "userId" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1127,7 +1127,7 @@ export declare const components: {
                     | "createdAt"
                     | "aaguid"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1164,7 +1164,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1199,7 +1199,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1231,7 +1231,7 @@ export declare const components: {
                     | "updatedAt"
                     | "consentGiven"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1261,7 +1261,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1286,7 +1286,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "teamId" | "userId" | "createdAt" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1317,7 +1317,7 @@ export declare const components: {
                     | "createdAt"
                     | "metadata"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1347,7 +1347,7 @@ export declare const components: {
                     | "role"
                     | "createdAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1380,7 +1380,7 @@ export declare const components: {
                     | "expiresAt"
                     | "inviterId"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1413,7 +1413,7 @@ export declare const components: {
                     | "organizationId"
                     | "domain"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1438,7 +1438,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "publicKey" | "privateKey" | "createdAt" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1475,7 +1475,7 @@ export declare const components: {
                     | "cancelAtPeriodEnd"
                     | "seats"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1506,7 +1506,7 @@ export declare const components: {
                     | "isPrimary"
                     | "createdAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1531,7 +1531,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "key" | "count" | "lastRequest" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1556,7 +1556,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "key" | "count" | "lastRequest" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1731,7 +1731,7 @@ export declare const components: {
                     | "phoneNumberVerified"
                     | "userId"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1773,7 +1773,7 @@ export declare const components: {
                     | "userAgent"
                     | "userId"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1825,7 +1825,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1863,7 +1863,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1893,7 +1893,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "secret" | "backupCodes" | "userId" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1941,7 +1941,7 @@ export declare const components: {
                     | "createdAt"
                     | "aaguid"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1991,7 +1991,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2037,7 +2037,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2077,7 +2077,7 @@ export declare const components: {
                     | "updatedAt"
                     | "consentGiven"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2113,7 +2113,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2143,7 +2143,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "teamId" | "userId" | "createdAt" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2181,7 +2181,7 @@ export declare const components: {
                     | "createdAt"
                     | "metadata"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2217,7 +2217,7 @@ export declare const components: {
                     | "role"
                     | "createdAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2259,7 +2259,7 @@ export declare const components: {
                     | "expiresAt"
                     | "inviterId"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2301,7 +2301,7 @@ export declare const components: {
                     | "organizationId"
                     | "domain"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2331,7 +2331,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "publicKey" | "privateKey" | "createdAt" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2381,7 +2381,7 @@ export declare const components: {
                     | "cancelAtPeriodEnd"
                     | "seats"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2419,7 +2419,7 @@ export declare const components: {
                     | "isPrimary"
                     | "createdAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2449,7 +2449,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "key" | "count" | "lastRequest" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2475,7 +2475,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "key" | "count" | "lastRequest" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2546,7 +2546,7 @@ export declare const components: {
                     | "phoneNumberVerified"
                     | "userId"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2588,7 +2588,7 @@ export declare const components: {
                     | "userAgent"
                     | "userId"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2640,7 +2640,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2678,7 +2678,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2708,7 +2708,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "secret" | "backupCodes" | "userId" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2756,7 +2756,7 @@ export declare const components: {
                     | "createdAt"
                     | "aaguid"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2806,7 +2806,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2852,7 +2852,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2892,7 +2892,7 @@ export declare const components: {
                     | "updatedAt"
                     | "consentGiven"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2928,7 +2928,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2958,7 +2958,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "teamId" | "userId" | "createdAt" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -2996,7 +2996,7 @@ export declare const components: {
                     | "createdAt"
                     | "metadata"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -3032,7 +3032,7 @@ export declare const components: {
                     | "role"
                     | "createdAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -3074,7 +3074,7 @@ export declare const components: {
                     | "expiresAt"
                     | "inviterId"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -3116,7 +3116,7 @@ export declare const components: {
                     | "organizationId"
                     | "domain"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -3146,7 +3146,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "publicKey" | "privateKey" | "createdAt" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -3196,7 +3196,7 @@ export declare const components: {
                     | "cancelAtPeriodEnd"
                     | "seats"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -3234,7 +3234,7 @@ export declare const components: {
                     | "isPrimary"
                     | "createdAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -3264,7 +3264,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "key" | "count" | "lastRequest" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -3290,7 +3290,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "key" | "count" | "lastRequest" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"

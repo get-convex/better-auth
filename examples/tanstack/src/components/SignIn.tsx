@@ -22,6 +22,7 @@ export const SignIn = () => {
   const [otp, setOtp] = useState('')
   const [magicLinkLoading, setMagicLinkLoading] = useState(false)
   const [otpLoading, setOtpLoading] = useState(false)
+  const [anonymousLoading, setAnonymousLoading] = useState(false)
   const [forgotLoading, setForgotLoading] = useState(false)
   const [signInMethod, setSignInMethod] = useState<'password' | 'passwordless'>(
     'passwordless',
@@ -86,6 +87,25 @@ export const SignIn = () => {
         },
         onError: (ctx) => {
           setMagicLinkLoading(false)
+          alert(ctx.error.message)
+        },
+      },
+    )
+  }
+
+  const handleAnonymousSignIn = async () => {
+    await authClient.signIn.anonymous(
+      {},
+      {
+        onRequest: () => {
+          setAnonymousLoading(true)
+        },
+        onSuccess: async () => {
+          setAnonymousLoading(false)
+          await navigate({ to: '/client-only' })
+        },
+        onError: (ctx) => {
+          setAnonymousLoading(false)
           alert(ctx.error.message)
         },
       },
@@ -265,7 +285,9 @@ export const SignIn = () => {
                   <Button
                     type="button"
                     className="w-full"
-                    disabled={magicLinkLoading || otpLoading}
+                    disabled={
+                      magicLinkLoading || otpLoading || anonymousLoading
+                    }
                     onClick={handleMagicLinkSignIn}
                   >
                     {magicLinkLoading ? (
@@ -278,13 +300,31 @@ export const SignIn = () => {
                     type="button"
                     className="w-full"
                     variant="outline"
-                    disabled={magicLinkLoading || otpLoading}
+                    disabled={
+                      magicLinkLoading || otpLoading || anonymousLoading
+                    }
                     onClick={handleOtpSignIn}
                   >
                     {otpLoading ? (
                       <Loader2 size={16} className="animate-spin" />
                     ) : (
                       'Send Verification Code'
+                    )}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    className="w-full"
+                    variant="outline"
+                    disabled={
+                      magicLinkLoading || otpLoading || anonymousLoading
+                    }
+                    onClick={handleAnonymousSignIn}
+                  >
+                    {anonymousLoading ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      'Sign in anonymously'
                     )}
                   </Button>
                 </div>

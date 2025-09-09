@@ -129,7 +129,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
             // Mostly copied from the one-time-token plugin
             const session = ctx.context.newSession;
             if (!session) {
-              console.error("No session found");
+              ctx.context.logger.error("No session found");
               return;
             }
             const token = generateRandomString(32);
@@ -141,7 +141,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
             });
             const redirectTo = ctx.context.responseHeaders?.get("location");
             if (!redirectTo) {
-              console.error("No redirect to found");
+              ctx.context.logger.error("No redirect to found");
               return;
             }
             const url = new URL(redirectTo);

@@ -1,15 +1,18 @@
-import { convexAdapter } from "../client";
+import { convexAdapter, GenericCtx } from "../client";
 import { api } from "./_generated/api";
-import { GenericCtx, mutation, query } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import {
+  GenericDataModel,
   GenericMutationCtx,
   GenericQueryCtx,
   RegisteredMutation,
   RegisteredQuery,
 } from "convex/server";
 
-export const createAdapter = (ctx: GenericCtx) =>
-  convexAdapter(ctx, api.adapter, {
+export const createAdapter = <DataModel extends GenericDataModel>(
+  ctx: GenericCtx<DataModel>
+) =>
+  convexAdapter(ctx as any, api as any, {
     debugLogs: {
       isRunningAdapterTests: true,
     },

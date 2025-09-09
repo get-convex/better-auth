@@ -1,0 +1,341 @@
+---
+title: Migrate to 0.8
+description: Migrate to @convex-dev/better-auth@0.8
+---
+
+<Callout>
+  To use Local Install, complete this migration guide first and then follow the
+  [Local Install guide](/docs/local-install).
+</Callout>
+
+## Upgrade
+
+<div className="fd-steps">
+
+  <div className="fd-step">
+    ### Update the component
+
+    Update the component to the latest version.
+
+    ```npm
+    npm install @convex-dev/better-auth@latest
+    ```
+
+  </div>
+
+  <div className="fd-step">
+
+    ### Update component instance
+
+    Replace the component instance with createClient.
+
+    ```ts title="convex/auth.ts"
+    import {
+      AuthFunctions,
+      BetterAuth, // [!code --]
+      PublicAuthFunctions, // [!code --]
+      createClient, // [!code ++]
+    } from "@convex-dev/better-auth";
+    import { DataModel } from "./_generated/dataModel";
+    import { components } from "./_generated/api";
+
+    const authFunctions: AuthFunctions = internal.auth;
+    const publicAuthFunctions: PublicAuthFunctions = api.auth; // [!code --]
+
+    export const betterAuthComponent = new BetterAuth(// [!code --]
+    export const authComponent = createClient<DataModel>(// [!code ++]
+      components.betterAuth, {
+        authFunctions,
+        publicAuthFunctions, // [!code --]
+      });
+    ```
+
+  </div>
+
+  <div className="fd-step">
+
+    ### Convert hooks from `createAuthFunctions` to triggers
+
+    The previously supported `onCreateUser`, `onUpdateUser`, and `onDeleteUser` hooks from
+    `betterAuthComponent.createAuthFunctions()` have been replaced by triggers. See the
+    [Triggers guide](/docs/triggers) for more information.
+
+    ```ts title="convex/auth.ts"
+    // [!code --:14]
+    export const {
+      createUser,
+      deleteUser,
+      updateUser,
+    } = betterAuthComponent.createAuthFunctions<DataModel>({
+      onCreateUser: async (ctx, user) => {
+        return ctx.db.insert("users", {
+          email: user.email,
+        });
+      },
+      onDeleteUser: async (ctx, userId) => {
+        await ctx.db.delete(userId as Id<"users">);
+      },
+    });
+
+    const authFunctions: AuthFunctions = internal.auth;
+
+    export const authComponent = createClient<DataModel>(
+      components.betterAuth,
+      // [!code ++:28]
+      {
+        authFunctions,
+        triggers: {
+          user: {
+            onCreate: async (ctx, authUser) => {
+              // Any `onCreateUser` logic should be moved here
+              const userId = await ctx.db.insert('users', {
+                email: authUser.email,
+              })
+              // Instead of returning the user id, we set it to the component
+              // user table manually. This is no longer required behavior, but
+              // is necessary when migrating from previous versions to avoid
+              // a required database migration.
+              // This helper method exists solely to facilitate this migration.
+              await authComponent.setUserId(ctx, authUser._id, userId)
+            },
+            onUpdate: async (ctx, oldUser, newUser) => {
+              // Any `onUpdateUser` logic should be moved here
+            },
+            onDelete: async (ctx, authUser) => {
+              await ctx.db.delete(authUser.userId as Id<'users'>)
+            },
+          },
+        },
+      },
+    )
+
+    export const { onCreate, onUpdate, onDelete } = authComponent.triggersApi()
+    ```
+
+  </div>
+
+  <div className="fd-step">
+
+    ### Move and update Better Auth config
+
+The `createAuth` function should be moved to `convex/auth.ts`. This isn't
+required, but better represents where the code actually runs, colocates it
+with other related server side auth code, and avoids potentially writing
+Convex code outside of the Convex directory for some function based config
+properties.
+
+The Convex database adapter is now provided through a method on the auth
+component, and a `GenericCtx` type from the component library is now used to
+type the `createAuth` ctx arg.
+
+<Callout>
+  Be sure to update any imports of `createAuth` to the new path.
+</Callout>
+
+    ```ts title="convex/auth.ts"
+    import type { GenericCtx } from './_generated/server'; // [!code --]
+    const {
+      convexAdapter, // [!code --]
+      type GenericCtx, // [!code ++]
+      createClient,
+    } from "@convex-dev/better-auth";
+    import { DataModel } from "./_generated/dataModel";
+
+    export const authComponent = createClient<DataModel>(
+      components.betterAuth
+      // ...
+    )
+
+    // [!code ++]
+    export const createAuth = (ctx: GenericCtx) => { // [!code --]
+    export const createAuth = (ctx: GenericCtx<DataModel>) => { // [!code ++]
+      return betterAuth({
+        // ...
+        database: authComponent.adapter(ctx), // [!code ++]
+        database: convexAdapter(ctx, authComponent), // [!code --]
+      })
+    }
+    ```
+    </div>
+
+    <div className="fd-step">
+
+    ### Update `ctx.auth.getUserIdentity()` usage
+
+The `subject` property of the id token, as well as the user identity object returned from
+`ctx.auth.getUserIdentity()`, was formerly the user id from the application user
+table. It is now the user id from the Better Auth user table. Any direct usage
+of the `subject` property should be replaced with
+`authComponent.getAuthUser(ctx)`, which returns the entire Better Auth user
+object (formerly referred to as user metadata).
+
+```ts title="convex/messages.ts"
+export const listMessages = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = (await ctx.auth.getUserIdentity())?.subject; // [!code --]
+    const userId = (await authComponent.getAuthUser(ctx))?.userId; // [!code ++]
+    return ctx.db
+      .query("messages")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .collect();
+  },
+});
+```
+
+</div>
+
+<div className="fd-step">
+  ### Update `authComponent.getAuthUser()` usage
+
+`authComponent.getAuthUser()` now throws an error if the user is not found. Use
+`authComponent.safeGetAuthUser()` to match the previous behavior.
+
+```ts title="convex/auth.ts"
+export const getCurrentUser = query({
+  args: {},
+  handler: async (ctx) => {
+    const  authComponent.getAuthUser(ctx);
+    return authComponent.safeGetAuthUser(ctx);
+  },
+});
+export const getCurrentUser = query({
+  args: {},
+  handler: async (ctx) => {
+    const userMetadata = await betterAuthComponent.getAuthUser(ctx); // [!code --]
+    const userMetadata = await authComponent.safeGetAuthUser(ctx); // [!code ++]
+    if (!userMetadata) {
+      return null;
+    }
+    const user = await ctx.db.get(userMetadata.userId as Id<"users">);
+    return {
+      ...user,
+      ...userMetadata,
+    };
+  },
+});
+```
+
+</div>
+
+<div className="fd-step">
+
+### That's it!
+
+Please report any issues or inaccuracies from this guide via [GitHub
+issues](https://github.com/get-convex/better-auth/issues) or in the
+[**#better-auth**](https://discord.com/channels/1019350475847499849/1365754331873415440)
+channel on Discord.
+
+</div>
+
+</div>
+
+## Other breaking changes
+
+### Convex plugin `options` removed
+
+The named `options` parameter to the Convex plugin that accepted Better Auth
+options has been removed. This was necessary because the Convex plugin
+previously customized the session, breaking type inference for configuration
+that affected the session, so the Better Auth options had to be separated to a
+new function and passed in to the Convex plugin.
+
+None of this is necessary anymore, if you were doing this you can go back to
+using a single `createAuth` function.
+
+```ts title="convex/auth.ts"
+const createOptions = (ctx: GenericCtx) =>
+  ({
+    baseURL: siteUrl,
+    database: convexAdapter(ctx, betterAuthComponent),
+    account: {
+      accountLinking: {
+        enabled: true,
+        allowDifferentEmails: true,
+      },
+    },
+    emailVerification: {
+      sendVerificationEmail: async ({ user, url }) => {
+        await sendEmailVerification(requireMutationCtx(ctx), {
+          to: user.email,
+          url,
+        });
+      },
+    },
+    emailAndPassword: {
+      enabled: true,
+      requireEmailVerification: true,
+      sendResetPassword: async ({ user, url }) => {
+        await sendResetPassword(requireMutationCtx(ctx), {
+          to: user.email,
+          url,
+        });
+      },
+    },
+    socialProviders: {
+      github: {
+        clientId: process.env.GITHUB_CLIENT_ID as string,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+      },
+      google: {
+        clientId: process.env.GOOGLE_CLIENT_ID as string,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+        accessType: "offline",
+        prompt: "select_account consent",
+      },
+    },
+    user: {
+      deleteUser: {
+        enabled: true,
+      },
+    },
+    plugins: [
+      anonymous(),
+      magicLink({
+        sendMagicLink: async ({ email, url }) => {
+          await sendMagicLink(requireMutationCtx(ctx), {
+            to: email,
+            url,
+          });
+        },
+      }),
+      emailOTP({
+        async sendVerificationOTP({ email, otp }) {
+          await sendOTPVerification(requireMutationCtx(ctx), {
+            to: email,
+            code: otp,
+          });
+        },
+      }),
+      twoFactor(),
+      genericOAuth({
+        config: [
+          {
+            providerId: "slack",
+            clientId: process.env.SLACK_CLIENT_ID as string,
+            clientSecret: process.env.SLACK_CLIENT_SECRET as string,
+            discoveryUrl: "https://slack.com/.well-known/openid-configuration",
+            scopes: ["openid", "email", "profile"],
+          },
+        ],
+      }),
+      organization(),
+    ],
+  }) satisfies BetterAuthOptions;
+
+export const createAuth = (ctx: GenericCtx) => {
+  const options = createOptions(ctx);
+  return betterAuth({
+    ...options,
+    plugins: [
+      ...options.plugins,
+      // Pass in options so plugin schema inference flows through. Only required
+      // for plugins that customize the user or session schema.
+      // See "Some caveats":
+      // https://www.better-auth.com/docs/concepts/session-management#customizing-session-response
+      convex({ options }),
+    ],
+  });
+};
+```

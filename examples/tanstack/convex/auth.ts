@@ -1,12 +1,10 @@
 import { betterAuth } from 'better-auth'
 import {
   AuthFunctions,
-  CreateAdapter,
   createClient,
-  getInactiveAuthInstance,
-  RunCtx,
+  GenericCtx,
 } from '@convex-dev/better-auth'
-import { emailOTP, magicLink, twoFactor } from 'better-auth/plugins'
+import { anonymous, emailOTP, magicLink, twoFactor } from 'better-auth/plugins'
 import { convex } from '@convex-dev/better-auth/plugins'
 import {
   sendEmailVerification,
@@ -17,16 +15,71 @@ import {
 import { requireMutationCtx } from '@convex-dev/better-auth/utils'
 import { components, internal } from './_generated/api'
 import betterAuthSchema from './betterAuth/schema'
-import { query } from './_generated/server'
+import { query, QueryCtx } from './_generated/server'
 import { DataModel, Id } from './_generated/dataModel'
-import { asyncMap } from 'convex-helpers'
+import { asyncMap, withoutSystemFields } from 'convex-helpers'
+
+// This implementation is upgraded to 0.8 Local Install with no
+// database migration required. It continues the pattern of writing
+// userId to the Better Auth users table and maintaining a separate
+// users table for application data.
 
 const siteUrl = process.env.SITE_URL
 
-export const createAuth = (ctx: RunCtx, createAdapter: CreateAdapter) =>
+const authFunctions: AuthFunctions = internal.auth
+
+export const authComponent = createClient<DataModel, typeof betterAuthSchema>(
+  components.betterAuth,
+  {
+    authFunctions,
+    local: {
+      schema: betterAuthSchema,
+    },
+    verbose: false,
+    triggers: {
+      user: {
+        onCreate: async (ctx, authUser) => {
+          const userId = await ctx.db.insert('users', {
+            email: authUser.email,
+          })
+          await authComponent.setUserId(ctx, authUser._id, userId)
+        },
+        onUpdate: async (ctx, oldUser, newUser) => {
+          if (oldUser.email === newUser.email) {
+            return
+          }
+          await ctx.db.patch(newUser.userId as Id<'users'>, {
+            email: newUser.email,
+          })
+        },
+        onDelete: async (ctx, authUser) => {
+          const user = await ctx.db.get(authUser.userId as Id<'users'>)
+          if (!user) {
+            return
+          }
+          const todos = await ctx.db
+            .query('todos')
+            .withIndex('userId', (q) => q.eq('userId', user._id))
+            .collect()
+          await asyncMap(todos, async (todo) => {
+            await ctx.db.delete(todo._id)
+          })
+          await ctx.db.delete(user._id)
+        },
+      },
+    },
+  },
+)
+
+export const { onCreate, onUpdate, onDelete } = authComponent.triggersApi()
+
+export const createAuth = (ctx: GenericCtx<DataModel>) =>
   betterAuth({
     baseURL: siteUrl,
-    database: createAdapter(ctx),
+    logger: {
+      disabled: true,
+    },
+    database: authComponent.adapter(ctx),
     account: {
       accountLinking: {
         enabled: true,
@@ -64,6 +117,12 @@ export const createAuth = (ctx: RunCtx, createAdapter: CreateAdapter) =>
       deleteUser: {
         enabled: true,
       },
+      additionalFields: {
+        foo: {
+          type: 'string',
+          required: false,
+        },
+      },
     },
     plugins: [
       magicLink({
@@ -83,69 +142,36 @@ export const createAuth = (ctx: RunCtx, createAdapter: CreateAdapter) =>
         },
       }),
       twoFactor(),
+      anonymous(),
       convex(),
     ],
   })
 
-export const auth = getInactiveAuthInstance(createAuth)
-
-const authFunctions: AuthFunctions = internal.auth
-
-export const betterAuthComponent = createClient<DataModel>(
-  components.betterAuth.adapter,
-  createAuth,
-  {
-    authFunctions,
-    local: {
-      schema: betterAuthSchema,
-    },
-    verbose: false,
-    triggers: {
-      user: {
-        onCreate: async (ctx, user) => {
-          await ctx.db.insert('users', {
-            email: user.email,
-          })
-        },
-        onUpdate: async (ctx, oldUser, newUser) => {
-          await ctx.db.patch(oldUser.userId as Id<'users'>, {
-            email: newUser.email,
-          })
-        },
-        onDelete: async (ctx, userId) => {
-          const todos = await ctx.db
-            .query('todos')
-            .withIndex('userId', (q) => q.eq('userId', userId as Id<'users'>))
-            .collect()
-          await asyncMap(todos, async (todo) => {
-            await ctx.db.delete(todo._id)
-          })
-          await ctx.db.delete(userId as Id<'users'>)
-        },
-      },
-    },
-  },
-)
-
-export const { onCreate, onUpdate, onDelete } =
-  betterAuthComponent.triggersApi()
-
-// Example function for getting the current user
+// Below are example functions for getting the current user
 // Feel free to edit, omit, etc.
+export const safeGetUser = async (ctx: QueryCtx) => {
+  const authUser = await authComponent.safeGetAuthUser(ctx)
+  if (!authUser) {
+    return
+  }
+  const user = await ctx.db.get(authUser.userId as Id<'users'>)
+  if (!user) {
+    return
+  }
+  return { ...user, ...withoutSystemFields(authUser) }
+}
+
+export const getUser = async (ctx: QueryCtx) => {
+  const user = await safeGetUser(ctx)
+  if (!user) {
+    throw new Error('User not found')
+  }
+  return user
+}
+
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    // Get user data from Better Auth - email, name, image, etc.
-    const userMetadata = await betterAuthComponent.getAuthUser(ctx)
-    if (!userMetadata) {
-      return null
-    }
-    // Get user data from your application's database (skip this if you have no
-    // fields in your users table schema)
-    const user = await ctx.db.get(userMetadata.userId as Id<'users'>)
-    return {
-      ...user,
-      ...userMetadata,
-    }
+    return safeGetUser(ctx)
   },
 })

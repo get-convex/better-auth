@@ -8,14 +8,15 @@ import {
   FunctionHandle,
   GenericActionCtx,
   GenericDataModel,
-  GenericMutationCtx,
-  GenericQueryCtx,
   PaginationOptions,
   PaginationResult,
+  SchemaDefinition,
 } from "convex/server";
 import { SetOptional } from "type-fest";
 import { createSchema } from "./createSchema";
-import { AuthFunctions, createClient, GenericCtx } from ".";
+import { AuthFunctions, GenericCtx, Triggers, UseApi } from ".";
+import defaultSchema from "../component/schema";
+import { api as componentApi } from "../component/_generated/api";
 
 const handlePagination = async (
   next: ({
@@ -95,16 +96,16 @@ const parseWhere = (where?: CleanedWhere[]): ConvexCleanedWhere[] => {
 export const convexAdapter = <
   DataModel extends GenericDataModel,
   Ctx extends GenericCtx<DataModel> = GenericActionCtx<DataModel>,
+  Schema extends SchemaDefinition<any, any> = typeof defaultSchema,
 >(
   ctx: Ctx,
-  componentClient: ReturnType<typeof createClient>,
+  api: UseApi<typeof componentApi>,
   config: {
     debugLogs?: AdapterDebugLogs;
     authFunctions?: AuthFunctions;
-    triggers?: NonNullable<Parameters<typeof createClient>[1]>["triggers"];
+    triggers?: Triggers<DataModel, Schema>;
   } = {}
 ) => {
-  const api = componentClient.component.adapter;
   return createAdapter({
     config: {
       adapterId: "convex",
@@ -148,7 +149,7 @@ export const convexAdapter = <
                   config.authFunctions.onCreate
                 )) as FunctionHandle<"mutation">)
               : undefined;
-          return ctx.runMutation(api.create, {
+          return ctx.runMutation(api.adapter.create, {
             input: { model, data },
             select,
             onCreateHandle: onCreateHandle,
@@ -157,7 +158,7 @@ export const convexAdapter = <
         findOne: async (data): Promise<any> => {
           if (data.where?.every((w) => w.connector === "OR")) {
             for (const w of data.where) {
-              const result = await ctx.runQuery(api.findOne, {
+              const result = await ctx.runQuery(api.adapter.findOne, {
                 ...data,
                 where: parseWhere([w]),
               });
@@ -166,7 +167,7 @@ export const convexAdapter = <
               }
             }
           }
-          return await ctx.runQuery(api.findOne, {
+          return await ctx.runQuery(api.adapter.findOne, {
             ...data,
             where: parseWhere(data.where),
           });
@@ -180,7 +181,7 @@ export const convexAdapter = <
           }
           const result = await handlePagination(
             async ({ paginationOpts }) => {
-              return await ctx.runQuery(api.findMany, {
+              return await ctx.runQuery(api.adapter.findMany, {
                 ...data,
                 where: parseWhere(data.where),
                 paginationOpts,
@@ -196,7 +197,7 @@ export const convexAdapter = <
             throw new Error("OR connector not supported in findMany");
           }
           const result = await handlePagination(async ({ paginationOpts }) => {
-            return await ctx.runQuery(api.findMany, {
+            return await ctx.runQuery(api.adapter.findMany, {
               ...data,
               where: parseWhere(data.where),
               paginationOpts,
@@ -216,7 +217,7 @@ export const convexAdapter = <
                     config.authFunctions.onUpdate
                   )) as FunctionHandle<"mutation">)
                 : undefined;
-            return ctx.runMutation(api.updateOne, {
+            return ctx.runMutation(api.adapter.updateOne, {
               input: {
                 model: data.model,
                 where: parseWhere(data.where),
@@ -231,7 +232,6 @@ export const convexAdapter = <
           if (!("runMutation" in ctx)) {
             throw new Error("ctx is not a mutation ctx");
           }
-          console.log("pre onDeleteHandle");
           const onDeleteHandle =
             config.authFunctions?.onDelete &&
             config.triggers?.[data.model]?.onDelete
@@ -239,8 +239,7 @@ export const convexAdapter = <
                   config.authFunctions.onDelete
                 )) as FunctionHandle<"mutation">)
               : undefined;
-          console.log("post onDeleteHandle");
-          await ctx.runMutation(api.deleteOne, {
+          await ctx.runMutation(api.adapter.deleteOne, {
             input: {
               model: data.model,
               where: parseWhere(data.where),
@@ -252,7 +251,6 @@ export const convexAdapter = <
           if (!("runMutation" in ctx)) {
             throw new Error("ctx is not a mutation ctx");
           }
-          console.log("pre onDeleteHandle 2", config.authFunctions?.onDelete);
           const onDeleteHandle =
             config.authFunctions?.onDelete &&
             config.triggers?.[data.model]?.onDelete
@@ -260,10 +258,8 @@ export const convexAdapter = <
                   config.authFunctions.onDelete
                 )) as FunctionHandle<"mutation">)
               : undefined;
-          console.log("post onDeleteHandle 2");
           const result = await handlePagination(async ({ paginationOpts }) => {
-            console.log("paginationOpts", paginationOpts);
-            return await ctx.runMutation(api.deleteMany, {
+            return await ctx.runMutation(api.adapter.deleteMany, {
               input: {
                 ...data,
                 where: parseWhere(data.where),
@@ -286,7 +282,7 @@ export const convexAdapter = <
                 )) as FunctionHandle<"mutation">)
               : undefined;
           const result = await handlePagination(async ({ paginationOpts }) => {
-            return await ctx.runMutation(api.updateMany, {
+            return await ctx.runMutation(api.adapter.updateMany, {
               input: {
                 ...data,
                 where: parseWhere(data.where),

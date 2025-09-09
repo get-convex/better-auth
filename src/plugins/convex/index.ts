@@ -49,13 +49,13 @@ export const convex = (
   };
   return {
     id: "convex",
-    init: ({ options }) => {
+    init: ({ logger, options }) => {
       if (
         options.plugins?.every((p) => p.id !== "cross-domain") &&
         !options.baseURL
       ) {
-        console.warn(
-          "cross-domain plugin detected, but Better Auth baseURL is undefined. This is probably a mistake."
+        logger.warn(
+          "Better Auth baseURL is undefined. This is probably a mistake."
         );
       }
     },

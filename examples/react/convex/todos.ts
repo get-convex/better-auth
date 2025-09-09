@@ -1,14 +1,6 @@
 import { v } from "convex/values";
-import { GenericCtx, mutation, query } from "./_generated/server";
-import { Id } from "./_generated/dataModel";
-
-const getUserId = async (ctx: GenericCtx) => {
-  const identity = await ctx.auth.getUserIdentity();
-  if (!identity) {
-    return null;
-  }
-  return identity.subject as Id<"users">;
-};
+import { mutation, query } from "./_generated/server";
+import { getUserId } from "./auth";
 
 export const get = query({
   args: {},

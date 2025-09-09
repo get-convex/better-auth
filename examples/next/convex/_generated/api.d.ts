@@ -139,23 +139,6 @@ export declare const components: {
                   publicKey: string;
                 };
                 model: "jwks";
-              }
-            | {
-                data: {
-                  createdAt: number;
-                  displayUsername?: null | string;
-                  email: string;
-                  emailVerified: boolean;
-                  foo?: null | string;
-                  image?: null | string;
-                  isAnonymous?: null | boolean;
-                  name: string;
-                  twoFactorEnabled?: null | boolean;
-                  updatedAt: number;
-                  userId?: null | string;
-                  username?: null | string;
-                };
-                model: "users";
               };
           onCreateHandle?: string;
           select?: Array<string>;
@@ -185,7 +168,7 @@ export declare const components: {
                     | "userId"
                     | "foo"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -218,7 +201,7 @@ export declare const components: {
                     | "userAgent"
                     | "userId"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -256,7 +239,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -287,7 +270,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -312,7 +295,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "secret" | "backupCodes" | "userId" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -337,45 +320,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "publicKey" | "privateKey" | "createdAt" | "id";
-                  operator:
-                    | "lt"
-                    | "lte"
-                    | "gt"
-                    | "gte"
-                    | "eq"
-                    | "in"
-                    | "ne"
-                    | "contains"
-                    | "starts_with"
-                    | "ends_with";
-                  value:
-                    | string
-                    | number
-                    | boolean
-                    | Array<string>
-                    | Array<number>
-                    | null;
-                }>;
-              }
-            | {
-                model: "users";
-                where?: Array<{
-                  connector?: "AND" | "OR";
-                  field:
-                    | "name"
-                    | "email"
-                    | "emailVerified"
-                    | "image"
-                    | "createdAt"
-                    | "updatedAt"
-                    | "isAnonymous"
-                    | "username"
-                    | "displayUsername"
-                    | "twoFactorEnabled"
-                    | "userId"
-                    | "foo"
-                    | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -430,7 +375,7 @@ export declare const components: {
                     | "userId"
                     | "foo"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -463,7 +408,7 @@ export declare const components: {
                     | "userAgent"
                     | "userId"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -501,7 +446,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -532,7 +477,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -557,7 +502,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "secret" | "backupCodes" | "userId" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -582,45 +527,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "publicKey" | "privateKey" | "createdAt" | "id";
-                  operator:
-                    | "lt"
-                    | "lte"
-                    | "gt"
-                    | "gte"
-                    | "eq"
-                    | "in"
-                    | "ne"
-                    | "contains"
-                    | "starts_with"
-                    | "ends_with";
-                  value:
-                    | string
-                    | number
-                    | boolean
-                    | Array<string>
-                    | Array<number>
-                    | null;
-                }>;
-              }
-            | {
-                model: "users";
-                where?: Array<{
-                  connector?: "AND" | "OR";
-                  field:
-                    | "name"
-                    | "email"
-                    | "emailVerified"
-                    | "image"
-                    | "createdAt"
-                    | "updatedAt"
-                    | "isAnonymous"
-                    | "username"
-                    | "displayUsername"
-                    | "twoFactorEnabled"
-                    | "userId"
-                    | "foo"
-                    | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -655,8 +562,7 @@ export declare const components: {
             | "account"
             | "verification"
             | "twoFactor"
-            | "jwks"
-            | "users";
+            | "jwks";
           offset?: number;
           paginationOpts: {
             cursor: string | null;
@@ -702,8 +608,7 @@ export declare const components: {
             | "account"
             | "verification"
             | "twoFactor"
-            | "jwks"
-            | "users";
+            | "jwks";
           select?: Array<string>;
           where?: Array<{
             connector?: "AND" | "OR";
@@ -767,7 +672,7 @@ export declare const components: {
                     | "userId"
                     | "foo"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -809,7 +714,7 @@ export declare const components: {
                     | "userAgent"
                     | "userId"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -861,7 +766,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -899,7 +804,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -929,7 +834,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "secret" | "backupCodes" | "userId" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -959,59 +864,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "publicKey" | "privateKey" | "createdAt" | "id";
-                  operator:
-                    | "lt"
-                    | "lte"
-                    | "gt"
-                    | "gte"
-                    | "eq"
-                    | "in"
-                    | "ne"
-                    | "contains"
-                    | "starts_with"
-                    | "ends_with";
-                  value:
-                    | string
-                    | number
-                    | boolean
-                    | Array<string>
-                    | Array<number>
-                    | null;
-                }>;
-              }
-            | {
-                model: "users";
-                update: {
-                  createdAt?: number;
-                  displayUsername?: null | string;
-                  email?: string;
-                  emailVerified?: boolean;
-                  foo?: null | string;
-                  image?: null | string;
-                  isAnonymous?: null | boolean;
-                  name?: string;
-                  twoFactorEnabled?: null | boolean;
-                  updatedAt?: number;
-                  userId?: null | string;
-                  username?: null | string;
-                };
-                where?: Array<{
-                  connector?: "AND" | "OR";
-                  field:
-                    | "name"
-                    | "email"
-                    | "emailVerified"
-                    | "image"
-                    | "createdAt"
-                    | "updatedAt"
-                    | "isAnonymous"
-                    | "username"
-                    | "displayUsername"
-                    | "twoFactorEnabled"
-                    | "userId"
-                    | "foo"
-                    | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1080,7 +933,7 @@ export declare const components: {
                     | "userId"
                     | "foo"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1122,7 +975,7 @@ export declare const components: {
                     | "userAgent"
                     | "userId"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1174,7 +1027,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1212,7 +1065,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1242,7 +1095,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "secret" | "backupCodes" | "userId" | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"
@@ -1272,59 +1125,7 @@ export declare const components: {
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "publicKey" | "privateKey" | "createdAt" | "id";
-                  operator:
-                    | "lt"
-                    | "lte"
-                    | "gt"
-                    | "gte"
-                    | "eq"
-                    | "in"
-                    | "ne"
-                    | "contains"
-                    | "starts_with"
-                    | "ends_with";
-                  value:
-                    | string
-                    | number
-                    | boolean
-                    | Array<string>
-                    | Array<number>
-                    | null;
-                }>;
-              }
-            | {
-                model: "users";
-                update: {
-                  createdAt?: number;
-                  displayUsername?: null | string;
-                  email?: string;
-                  emailVerified?: boolean;
-                  foo?: null | string;
-                  image?: null | string;
-                  isAnonymous?: null | boolean;
-                  name?: string;
-                  twoFactorEnabled?: null | boolean;
-                  updatedAt?: number;
-                  userId?: null | string;
-                  username?: null | string;
-                };
-                where?: Array<{
-                  connector?: "AND" | "OR";
-                  field:
-                    | "name"
-                    | "email"
-                    | "emailVerified"
-                    | "image"
-                    | "createdAt"
-                    | "updatedAt"
-                    | "isAnonymous"
-                    | "username"
-                    | "displayUsername"
-                    | "twoFactorEnabled"
-                    | "userId"
-                    | "foo"
-                    | "id";
-                  operator:
+                  operator?:
                     | "lt"
                     | "lte"
                     | "gt"

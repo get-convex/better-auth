@@ -421,4 +421,19 @@ describe("Convex Adapter Tests", async () => {
       })
     ).toEqual(null);
   });
+
+  test("should fail to create a record with a unique field that already exists", async () => {
+    const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
+    const adapter = await getAdapter(t)();
+    await adapter.create({
+      model: "user",
+      data: { name: "foo", email: "foo@bar.com" },
+    });
+    await expect(
+      adapter.create({
+        model: "user",
+        data: { name: "foo", email: "foo@bar.com" },
+      })
+    ).rejects.toThrow("user email already exists");
+  });
 });

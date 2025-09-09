@@ -1,0 +1,51 @@
+---
+title: Triggers
+description: Run transactional callbacks when auth data changes
+---
+
+Triggers are a Convex-first approach to running mutations when your Better Auth
+data changes. Better Auth already supports this behavior for some tables through
+`databaseHooks` configuration, but database hooks cannot currently run in the
+same transaction as the original operation.
+
+Triggers run in the same transaction as the original operation, and work on any
+table in your Better Auth schema.
+
+## Configuration
+
+To enable triggers, pass the `triggers` option to the component client config. A
+trigger config object has table names as keys, and each table name can be
+assigned an object with any of `onCreate`, `onUpdate`, or `onDelete` hooks.
+Throwing an error in a trigger will stop the original operation from committing.
+
+<Callout>
+  A single Better Auth endpoint or `auth.api` call can perform multiple database
+  interactions. Throwing an error in a trigger will only ensure the database
+  operation that triggered will fail, but any previous operations will still
+  commit.
+</Callout>
+
+```ts title="convex/auth.ts"
+import { createClient } from "@convex-dev/better-auth";
+import { components } from "./_generated/api";
+import { DataModel } from "./_generated/dataModel";
+
+export const authComponent = createClient<DataModel>(components.betterAuth, {
+  triggers: {
+    user: {
+      onCreate: async (ctx, authUser) => {
+        await ctx.db.insert("posts", {
+          title: "Hello, world!",
+          userId: authUser._id,
+        });
+      },
+      onUpdate: async (ctx, oldUser, newUser) => {
+        // Both old and new documents are available
+      },
+      onDelete: async (ctx, authUser) => {
+        // The entire deleted document is available
+      },
+    },
+  },
+});
+```

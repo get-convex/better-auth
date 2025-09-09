@@ -13,22 +13,7 @@ import {
 import { createServerFn } from '@tanstack/react-start'
 import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { ConvexHttpClient } from 'convex/browser'
-import { getCookie } from '@tanstack/react-start/server'
-import { getCookieName } from '@/lib/auth-server-utils'
-
-const getToken = async () => {
-  const sessionCookieName = await getCookieName()
-  return getCookie(sessionCookieName)
-}
-
-function setupClient(token?: string) {
-  const client = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL)
-  if (token) {
-    client.setAuth(token)
-  }
-  return client
-}
+import { fetchMutation } from '@/lib/auth-server'
 
 // Handle form data
 export const toggleCompletedTodo = createServerFn({ method: 'POST' })
@@ -45,8 +30,7 @@ export const toggleCompletedTodo = createServerFn({ method: 'POST' })
     }
   })
   .handler(async ({ data: { id } }) => {
-    const token = await getToken()
-    await setupClient(token).mutation(api.todos.toggle, {
+    await fetchMutation(api.todos.toggle, {
       id: id as Id<'todos'>,
     })
   })
@@ -59,8 +43,7 @@ export const removeTodo = createServerFn({ method: 'POST' })
     return data
   })
   .handler(async ({ data: { id } }) => {
-    const token = await getToken()
-    await setupClient(token).mutation(api.todos.remove, {
+    await fetchMutation(api.todos.remove, {
       id: id as Id<'todos'>,
     })
   })
@@ -79,8 +62,7 @@ export const addTodo = createServerFn({ method: 'POST' })
     }
   })
   .handler(async ({ data: { text } }) => {
-    const token = await getToken()
-    await setupClient(token).mutation(api.todos.create, { text })
+    await fetchMutation(api.todos.create, { text })
   })
 
 export const TodoList = () => {
@@ -106,8 +88,7 @@ export const TodoList = () => {
               onSubmit={async (event) => {
                 event.preventDefault()
                 const formData = new FormData(event.currentTarget)
-                const response = await toggleCompletedTodo({ data: formData })
-                console.log(response)
+                await toggleCompletedTodo({ data: formData })
               }}
             >
               <input type="hidden" name="id" value={todo._id} />

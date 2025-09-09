@@ -1,37 +1,72 @@
 import { betterAuth } from "better-auth";
 import { createCookieGetter } from "better-auth/cookies";
 import { betterFetch } from "@better-fetch/fetch";
-import { GenericActionCtx } from "convex/server";
+import {
+  FunctionReference,
+  FunctionReturnType,
+  GenericActionCtx,
+} from "convex/server";
 import { JWT_COOKIE_NAME } from "../plugins/convex";
-import { oneLine } from "common-tags";
-import { CreateAuth, getInactiveAuthInstance } from "../client";
+import { ConvexHttpClient } from "convex/browser";
 
-export const getCookieName = async (createAuth: CreateAuth) => {
-  const auth = getInactiveAuthInstance(createAuth);
-  const createCookie = createCookieGetter(auth.options);
+export const getCookieName = (
+  createAuth: (ctx: any) => ReturnType<typeof betterAuth>
+) => {
+  const createCookie = createCookieGetter(createAuth({} as any).options);
   const cookie = createCookie(JWT_COOKIE_NAME);
   return cookie.name;
 };
 
-const requireConvexSiteUrl = (
-  opts: { convexSiteUrl: string; verbose?: boolean },
-  calledFrom: string
+export const setupFetchClient = async (
+  createAuth: (ctx: any) => ReturnType<typeof betterAuth>
 ) => {
-  if (!opts.convexSiteUrl) {
-    throw new Error(`${calledFrom}: opts.convexSiteUrl is required`);
-  }
-  if (opts.verbose) {
-    console.log(`${calledFrom}: opts.convexSiteUrl: ${opts.convexSiteUrl}`);
-  }
-  return opts.convexSiteUrl;
+  const { getCookie } = await import("@tanstack/react-start/server");
+  const createClient = () => {
+    const sessionCookieName = getCookieName(createAuth);
+    const token = getCookie(sessionCookieName);
+    const client = new ConvexHttpClient(process.env.VITE_CONVEX_URL!);
+    if (token) {
+      client.setAuth(token);
+    }
+    return client;
+  };
+  return {
+    fetchQuery<
+      Query extends FunctionReference<"query">,
+      FuncRef extends FunctionReference<any, any>,
+    >(
+      query: Query,
+      args: FuncRef["_args"]
+    ): Promise<FunctionReturnType<Query>> {
+      return createClient().query(query, args);
+    },
+    fetchMutation<
+      Mutation extends FunctionReference<"mutation">,
+      FuncRef extends FunctionReference<any, any>,
+    >(
+      mutation: Mutation,
+      args: FuncRef["_args"]
+    ): Promise<FunctionReturnType<Mutation>> {
+      return createClient().mutation(mutation, args);
+    },
+    fetchAction<
+      Action extends FunctionReference<"action">,
+      FuncRef extends FunctionReference<any, any>,
+    >(
+      action: Action,
+      args: FuncRef["_args"]
+    ): Promise<FunctionReturnType<Action>> {
+      return createClient().action(action, args);
+    },
+  };
 };
 
 export const fetchSession = async <
   T extends (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>,
 >(
   request: Request,
-  opts: {
-    convexSiteUrl: string;
+  opts?: {
+    convexSiteUrl?: string;
     verbose?: boolean;
   }
 ) => {
@@ -40,7 +75,10 @@ export const fetchSession = async <
   if (!request) {
     throw new Error("No request found");
   }
-  const convexSiteUrl = requireConvexSiteUrl(opts, "fetchSession");
+  const convexSiteUrl = opts?.convexSiteUrl ?? process.env.VITE_CONVEX_SITE_URL;
+  if (!convexSiteUrl) {
+    throw new Error("VITE_CONVEX_SITE_URL is not set");
+  }
   const { data: session } = await betterFetch<Session>(
     "/api/auth/get-session",
     {
@@ -55,36 +93,31 @@ export const fetchSession = async <
   };
 };
 
+export const getAuth = async (
+  request: Request,
+  createAuth: (ctx: any) => ReturnType<typeof betterAuth>,
+  opts?: { convexSiteUrl?: string }
+) => {
+  const { getCookie } = await import("@tanstack/react-start/server");
+  const sessionCookieName = getCookieName(createAuth);
+  const token = getCookie(sessionCookieName);
+  const { session } = await fetchSession(request, opts);
+  return {
+    userId: session?.user.id,
+    token,
+  };
+};
+
 export const reactStartHandler = (
   request: Request,
-  opts: { convexSiteUrl: string; verbose?: boolean }
+  opts?: { convexSiteUrl?: string; verbose?: boolean }
 ) => {
   const requestUrl = new URL(request.url);
-  const convexSiteUrl = requireConvexSiteUrl(opts, "reactStartHandler");
+  const convexSiteUrl = opts?.convexSiteUrl ?? process.env.VITE_CONVEX_SITE_URL;
+  if (!convexSiteUrl) {
+    throw new Error("VITE_CONVEX_SITE_URL is not set");
+  }
   const nextUrl = `${convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
   request.headers.set("accept-encoding", "application/json");
   return fetch(nextUrl, new Request(request, { redirect: "manual" }));
-};
-
-export const reactStartHelpers = (
-  createAuth: CreateAuth,
-  opts: { convexSiteUrl: string; verbose?: boolean }
-) => {
-  if (!opts.convexSiteUrl) {
-    throw new Error("opts.convexSiteUrl is required");
-  }
-  if (opts.convexSiteUrl.endsWith(".convex.cloud")) {
-    throw new Error(
-      oneLine(`
-        opts.convexSiteUrl ends with .convex.cloud, which is your cloud URL.
-        Use your Convex site URL instead.
-        https://docs.convex.dev/production/environment-variables#system-environment-variables
-      `)
-    );
-  }
-  return {
-    fetchSession: (request: Request) => fetchSession(request, opts),
-    reactStartHandler: (request: Request) => reactStartHandler(request, opts),
-    getCookieName: () => getCookieName(createAuth),
-  };
 };

@@ -1,0 +1,34 @@
+---
+title: Debugging
+description: Debugging Convex + Better Auth
+---
+
+## Verbose logging
+
+### Backend
+
+Verbose logs from the Better Auth component can be enabled on the component
+constructor.
+
+```ts title="convex/auth.ts"
+export const authComponent = createClient(
+  components.betterAuth,
+  // [!code ++:3]
+  {
+    verbose: true,
+  }
+);
+```
+
+## Client side
+
+Verbose logs in the client can be enabled on the Convex client constructor.
+
+```ts title="src/main.ts"
+// Replace this with your framework prefixed environment variable
+// for your project's Convex cloud URL
+const convexUrl = import.meta.env.PUBLIC_CONVEX_URL as string;
+const convex = new ConvexReactClient(convexUrl, {
+  verbose: true, // [!code ++]
+});
+```

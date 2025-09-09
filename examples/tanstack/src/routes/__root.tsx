@@ -10,19 +10,17 @@ import * as React from 'react'
 import appCss from '@/styles/app.css?url'
 import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
 import { authClient } from '@/lib/auth-client'
-import { fetchSession, getCookieName } from '@/lib/auth-server-utils'
+import { getAuth } from '@convex-dev/better-auth/react-start'
 import { ConvexReactClient } from 'convex/react'
 import { ConvexQueryClient } from '@convex-dev/react-query'
-import { getCookie, getWebRequest } from '@tanstack/react-start/server'
+import { getWebRequest } from '@tanstack/react-start/server'
 
-// Server side session request
+// Get auth information for SSR using available cookies
 const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
-  const sessionCookieName = await getCookieName()
-  const token = getCookie(sessionCookieName)
-  const request = getWebRequest()
-  const { session } = await fetchSession(request)
+  const { createAuth } = await import('@convex/auth')
+  const { userId, token } = await getAuth(getWebRequest(), createAuth)
   return {
-    userId: session?.user.id,
+    userId,
     token,
   }
 })
@@ -48,8 +46,7 @@ export const Route = createRootRouteWithContext<{
     ],
   }),
   beforeLoad: async (ctx) => {
-    const auth = await fetchAuth()
-    const { userId, token } = auth
+    const { userId, token } = await fetchAuth()
 
     // During SSR only (the only time serverHttpClient exists),
     // set the auth token to make HTTP queries with.

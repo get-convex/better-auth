@@ -1,5 +1,4 @@
 import { api } from "@/convex/_generated/api";
-import { getToken } from "@convex-dev/better-auth/nextjs";
 import {
   fetchMutation,
   preloadedQueryResult,
@@ -12,6 +11,7 @@ import {
   TodoListContainer,
   TodoEmptyState,
 } from "@/components/server";
+import { getToken } from "@/lib/auth-server";
 
 export const TodoList = async () => {
   const token = await getToken();
@@ -21,11 +21,13 @@ export const TodoList = async () => {
   // Authenticated inline server actions
   async function addTodo(formData: FormData) {
     "use server";
+    const token = await getToken();
+    console.log("token addTodo", token);
     await fetchMutation(
       api.todos.create,
       { text: formData.get("text") as string },
       // Outer token could expire, get a fresh one for the action
-      { token: await getToken() },
+      { token },
     );
   }
 

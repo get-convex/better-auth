@@ -179,7 +179,7 @@
     "prettier": "3.2.5",
     "semver": "^7.7.2",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.9.2",
+    "typescript": "5.8.3",
     "typescript-eslint": "^8.4.0",
     "vitest": "^3.2.2"
   },
@@ -187,6 +187,7 @@
   "types": "./dist/commonjs/client/index.d.ts",
   "module": "./dist/esm/client/index.js",
   "dependencies": {
+    "@better-fetch/fetch": "^1.1.18",
     "common-tags": "^1.8.2",
     "convex-helpers": "^0.1.95",
     "is-network-error": "^1.1.0",

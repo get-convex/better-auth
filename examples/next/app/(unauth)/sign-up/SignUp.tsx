@@ -38,7 +38,7 @@ export default function SignUp() {
   };
 
   const handleSignUp = async () => {
-    const { data, error } = await authClient.signUp.email(
+    await authClient.signUp.email(
       {
         email,
         password,
@@ -63,7 +63,6 @@ export default function SignUp() {
         },
       },
     );
-    console.log({ data, error });
   };
 
   return (

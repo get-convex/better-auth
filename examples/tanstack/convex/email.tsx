@@ -1,4 +1,3 @@
-import './polyfills'
 import { Resend } from '@convex-dev/resend'
 import VerifyEmail from './emails/verifyEmail'
 import MagicLinkEmail from './emails/magicLink'

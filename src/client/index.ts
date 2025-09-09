@@ -1,13 +1,16 @@
 import {
   type Auth as ConvexAuth,
+  DataModelFromSchemaDefinition,
   type DefaultFunctionArgs,
   type Expand,
   FunctionHandle,
   type FunctionReference,
   GenericActionCtx,
   type GenericDataModel,
+  GenericDocument,
   GenericMutationCtx,
   type GenericQueryCtx,
+  GenericSchema,
   type HttpRouter,
   SchemaDefinition,
   httpActionGeneric,
@@ -56,17 +59,19 @@ const whereValidator = (
       ),
       v.literal("id")
     ),
-    operator: v.union(
-      v.literal("lt"),
-      v.literal("lte"),
-      v.literal("gt"),
-      v.literal("gte"),
-      v.literal("eq"),
-      v.literal("in"),
-      v.literal("ne"),
-      v.literal("contains"),
-      v.literal("starts_with"),
-      v.literal("ends_with")
+    operator: v.optional(
+      v.union(
+        v.literal("lt"),
+        v.literal("lte"),
+        v.literal("gt"),
+        v.literal("gte"),
+        v.literal("eq"),
+        v.literal("in"),
+        v.literal("ne"),
+        v.literal("contains"),
+        v.literal("starts_with"),
+        v.literal("ends_with")
+      )
     ),
     value: v.union(
       v.string(),
@@ -96,11 +101,14 @@ export type AuthFunctions = {
   onDelete?: FunctionReference<"mutation", "internal", { [key: string]: any }>;
 };
 
-export const createApi = <Schema extends SchemaDefinition<any, any>>(
+export const createApi = <
+  DataModel extends GenericDataModel,
+  Schema extends SchemaDefinition<any, any>,
+>(
   schema: Schema,
-  createAuth: (ctx: GenericCtx) => ReturnType<typeof betterAuth>
+  createAuth: (ctx: GenericCtx<DataModel>) => ReturnType<typeof betterAuth>
 ) => {
-  const betterAuthSchema = getAuthTables(createAuth({} as any).options);
+  const betterAuthSchema = getAuthTables(createAuth({} as any)!.options);
   return {
     create: mutationGeneric({
       args: {
@@ -373,9 +381,42 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
   };
 };
 
+export type Triggers<
+  DataModel extends GenericDataModel,
+  Schema extends SchemaDefinition<any, any>,
+> = {
+  [K in keyof Schema["tables"]]?: {
+    onCreate?: <Ctx extends GenericMutationCtx<DataModel>>(
+      ctx: Ctx,
+      doc: Infer<Schema["tables"][K]["validator"]> & {
+        _id: string;
+        _creationTime: number;
+      }
+    ) => Promise<void>;
+    onUpdate?: <Ctx extends GenericMutationCtx<DataModel>>(
+      ctx: Ctx,
+      oldDoc: Infer<Schema["tables"][K]["validator"]> & {
+        _id: string;
+        _creationTime: number;
+      },
+      newDoc: Infer<Schema["tables"][K]["validator"]> & {
+        _id: string;
+        _creationTime: number;
+      }
+    ) => Promise<void>;
+    onDelete?: <Ctx extends GenericMutationCtx<DataModel>>(
+      ctx: Ctx,
+      doc: Infer<Schema["tables"][K]["validator"]> & {
+        _id: string;
+        _creationTime: number;
+      }
+    ) => Promise<void>;
+  };
+};
+
 export const createClient = <
   DataModel extends GenericDataModel,
-  Schema extends SchemaDefinition<any, any> = typeof defaultSchema,
+  Schema extends SchemaDefinition<GenericSchema, true> = typeof defaultSchema,
 >(
   component: UseApi<typeof api>,
   config?: {
@@ -384,43 +425,39 @@ export const createClient = <
     };
     authFunctions?: AuthFunctions;
     verbose?: boolean;
-    triggers?: {
-      [K in keyof Schema["tables"]]?: {
-        onCreate?: <Ctx extends GenericMutationCtx<DataModel>>(
-          ctx: Ctx,
-          doc: Infer<Schema["tables"][K]["validator"]> & {
-            _id: string;
-            _creationTime: number;
-          }
-        ) => Promise<void>;
-        onUpdate?: <Ctx extends GenericMutationCtx<DataModel>>(
-          ctx: Ctx,
-          oldDoc: Infer<Schema["tables"][K]["validator"]> & {
-            _id: string;
-            _creationTime: number;
-          },
-          newDoc: Infer<Schema["tables"][K]["validator"]> & {
-            _id: string;
-            _creationTime: number;
-          }
-        ) => Promise<void>;
-        onDelete?: <Ctx extends GenericMutationCtx<DataModel>>(
-          ctx: Ctx,
-          doc: Infer<Schema["tables"][K]["validator"]> & {
-            _id: string;
-            _creationTime: number;
-          }
-        ) => Promise<void>;
-      };
-    };
+    triggers?: Triggers<DataModel, Schema>;
   }
 ) => {
+  const safeGetAuthUser = async (ctx: GenericQueryCtx<DataModel>) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return;
+    }
+
+    type BetterAuthDataModel = DataModelFromSchemaDefinition<Schema>;
+
+    const doc = (await ctx.runQuery(component.adapter.findOne, {
+      model: "user",
+      where: [
+        {
+          field: "id",
+          value: identity.subject,
+        },
+      ],
+    })) as BetterAuthDataModel["user"]["document"] | null;
+    if (!doc) {
+      return;
+    }
+    return doc;
+  };
   return {
     component,
+    adapter: (ctx: GenericCtx<DataModel>) =>
+      convexAdapter<DataModel, typeof ctx, Schema>(ctx, component, config),
     getHeaders: async (ctx: RunQueryCtx & { auth: ConvexAuth }) => {
       const identity = await ctx.auth.getUserIdentity();
       if (!identity) {
-        return null;
+        return;
       }
       const session = await ctx.runQuery(component.adapter.findOne, {
         model: "session",
@@ -439,43 +476,30 @@ export const createClient = <
       });
     },
 
-    getAuthUserId: async (ctx: RunQueryCtx & { auth: ConvexAuth }) => {
-      const identity = await ctx.auth.getUserIdentity();
-      if (!identity) {
-        return null;
+    safeGetAuthUser,
+
+    getAuthUser: async (ctx: GenericQueryCtx<DataModel>) => {
+      const user = await safeGetAuthUser(ctx);
+      if (!user) {
+        throw new Error("Unauthenticated");
       }
-      return identity.subject;
+      return user;
     },
 
-    getAuthUser: async (ctx: RunQueryCtx & { auth: ConvexAuth }) => {
-      const identity = await ctx.auth.getUserIdentity();
-      if (!identity) {
-        return null;
-      }
-      const _schema = config?.local?.schema ?? defaultSchema;
-
-      const doc:
-        | null
-        | (Infer<typeof _schema.tables.user.validator> & {
-            _id: string;
-            _creationTime: number;
-          }) = await ctx.runQuery(component.adapter.findOne, {
-        model: "user",
-        where: [
-          {
-            field: "id",
-            value: identity.subject,
-          },
-        ],
+    // Replaces 0.7 behavior of returning a new user id from
+    // onCreateUser
+    setUserId: async (
+      ctx: GenericMutationCtx<DataModel>,
+      authId: string,
+      userId: string
+    ) => {
+      await ctx.runMutation(component.adapter.updateOne, {
+        input: {
+          model: "user",
+          where: [{ field: "id", value: authId }],
+          update: { userId },
+        },
       });
-      if (!doc) {
-        return null;
-      }
-      // Type narrowing
-      if (!("emailVerified" in doc)) {
-        throw new Error("invalid user");
-      }
-      return omit(doc, ["_id", "_creationTime"]);
     },
 
     triggersApi: () => ({
@@ -513,12 +537,9 @@ export const createClient = <
       }),
     }),
 
-    registerRoutes: <
-      DataModel extends GenericDataModel,
-      Ctx extends GenericCtx<DataModel> = GenericActionCtx<DataModel>,
-    >(
+    registerRoutes: (
       http: HttpRouter,
-      createAuth: (ctx: Ctx) => ReturnType<typeof betterAuth>,
+      createAuth: (ctx: GenericCtx<DataModel>) => ReturnType<typeof betterAuth>,
       opts: {
         cors?:
           | boolean

@@ -70,11 +70,9 @@ export default function EnableTwoFactor() {
   const handleVerifyCode = async () => {
     try {
       setLoading(true);
-      const { data, error } = await authClient.twoFactor.verifyTotp({
+      await authClient.twoFactor.verifyTotp({
         code,
       });
-      console.log("data", data);
-      console.log("error", error);
       setStep("backup");
     } catch {
       alert("Failed to verify code. Please try again.");
