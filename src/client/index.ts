@@ -65,6 +65,23 @@ const updateUserArgsValidator = v.object({
     update: v.object(partial(createUserFields)),
   }),
 });
+const updatePermissiveArgsValidator = v.object({
+  input: v.object({
+    model: v.literal("user"),
+    where: v.optional(v.array(adapterWhereValidator)),
+    update: v.record(
+      v.string(),
+      v.union(
+        v.string(),
+        v.number(),
+        v.boolean(),
+        v.array(v.string()),
+        v.array(v.number()),
+        v.null()
+      )
+    ),
+  }),
+});
 const createSessionArgsValidator = v.object({
   input: v.object({
     model: v.literal("session"),
@@ -92,7 +109,7 @@ export type AuthFunctions = {
   updateUser: FunctionReference<
     "mutation",
     "internal",
-    Infer<typeof updateUserArgsValidator>
+    Infer<typeof updatePermissiveArgsValidator>
   >;
   createSession: FunctionReference<
     "mutation",
@@ -270,18 +287,24 @@ export class BetterAuth<UserId extends string = string> {
         },
       }),
       updateUser: internalMutationGeneric({
-        args: updateUserArgsValidator,
+        args: updatePermissiveArgsValidator,
         handler: async (ctx, args) => {
+          const parsedArgs = parse(updateUserArgsValidator, args);
           const updatedUser = await ctx.runMutation(
             this.component.lib.updateOne,
-            { input: args.input }
+            { input: parsedArgs.input as any }
           );
           // Type narrowing
           if (!("emailVerified" in updatedUser)) {
             throw new Error("invalid user");
           }
           if (opts.onUpdateUser) {
-            await opts.onUpdateUser(ctx, omit(updatedUser, ["_id"]));
+            // Merge DB user fields with any additional Better Auth fields from the update payload
+            const userForHook = {
+              ...(omit(updatedUser, ["_id"]) as any),
+              ...(args.input.update as any),
+            };
+            await opts.onUpdateUser(ctx, userForHook as any);
           }
           return updatedUser;
         },
