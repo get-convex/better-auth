@@ -7,7 +7,6 @@ import {
   type FunctionReference,
   GenericActionCtx,
   type GenericDataModel,
-  GenericDocument,
   GenericMutationCtx,
   type GenericQueryCtx,
   GenericSchema,
@@ -22,7 +21,7 @@ import {
 import { type GenericId, Infer, v } from "convex/values";
 import { convexAdapter } from "./adapter";
 import { AdapterInstance, betterAuth } from "better-auth";
-import { asyncMap, omit } from "convex-helpers";
+import { asyncMap } from "convex-helpers";
 import { requireEnv } from "../utils";
 import { partial } from "convex-helpers/validators";
 import {
@@ -457,7 +456,7 @@ export const createClient = <
     getHeaders: async (ctx: RunQueryCtx & { auth: ConvexAuth }) => {
       const identity = await ctx.auth.getUserIdentity();
       if (!identity) {
-        return;
+        return new Headers();
       }
       const session = await ctx.runQuery(component.adapter.findOne, {
         model: "session",
