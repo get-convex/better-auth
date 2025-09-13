@@ -1,7 +1,9 @@
 # Changelog
 
-## 0.8.x alpha
+## 0.8.0
 
+- docs: rewrite docs
+- feat: support local install, improve unrelated apis
 - fix(adapter): apply all where clauses for compound queries
 - fix: support session type inference in client
 - fix: log error on invalid table name
