@@ -48,6 +48,9 @@ description: Migrate to @convex-dev/better-auth@0.8
         authFunctions,
         publicAuthFunctions, // [!code --]
       });
+
+    // These will be used in the next step
+    export const { onCreate, onUpdate, onDelete } = authComponent.triggersApi() // [!code ++]
     ```
 
   </div>
@@ -81,7 +84,7 @@ description: Migrate to @convex-dev/better-auth@0.8
 
     export const authComponent = createClient<DataModel>(
       components.betterAuth,
-      // [!code ++:28]
+      // [!code ++:26]
       {
         authFunctions,
         triggers: {
