@@ -35,10 +35,10 @@ description: Install and configure Convex + Better Auth for TanStack Start.
 
     ```ts title="convex/convex.config.ts"
     import { defineApp } from "convex/server";
-    import { betterAuthComponent } from "@convex-dev/better-auth/convex.config";
+    import betterAuth from "@convex-dev/better-auth/convex.config";
 
     const app = defineApp();
-    app.use(betterAuthComponent);
+    app.use(betterAuth);
 
     export default app;
     ```
