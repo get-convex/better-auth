@@ -224,11 +224,9 @@ export const createApi = <
           await ctx.runMutation(
             args.onUpdateHandle as FunctionHandle<"mutation">,
             {
-              input: {
-                model: args.input.model,
-                oldDoc: doc,
-                newDoc: updatedDoc,
-              },
+              model: args.input.model,
+              oldDoc: doc,
+              newDoc: updatedDoc,
             }
           );
         }
