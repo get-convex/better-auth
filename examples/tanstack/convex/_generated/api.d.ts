@@ -12,6 +12,7 @@ import type * as auth from "../auth.js";
 import type * as betterAuth__generated_api from "../betterAuth/_generated/api.js";
 import type * as betterAuth__generated_server from "../betterAuth/_generated/server.js";
 import type * as betterAuth_adapter from "../betterAuth/adapter.js";
+import type * as betterAuth_auth from "../betterAuth/auth.js";
 import type * as email from "../email.js";
 import type * as emails_components_BaseEmail from "../emails/components/BaseEmail.js";
 import type * as emails_magicLink from "../emails/magicLink.js";
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   "betterAuth/_generated/api": typeof betterAuth__generated_api;
   "betterAuth/_generated/server": typeof betterAuth__generated_server;
   "betterAuth/adapter": typeof betterAuth_adapter;
+  "betterAuth/auth": typeof betterAuth_auth;
   email: typeof email;
   "emails/components/BaseEmail": typeof emails_components_BaseEmail;
   "emails/magicLink": typeof emails_magicLink;

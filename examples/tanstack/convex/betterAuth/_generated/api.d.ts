@@ -9,6 +9,7 @@
  */
 
 import type * as adapter from "../adapter.js";
+import type * as auth from "../auth.js";
 
 import type {
   ApiFromModules,
@@ -26,6 +27,7 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   adapter: typeof adapter;
+  auth: typeof auth;
 }>;
 export type Mounts = {
   adapter: {

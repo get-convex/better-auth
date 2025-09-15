@@ -95,10 +95,10 @@ export const fetchSession = async <
 
 export const getAuth = async (
   request: Request,
+  getCookie: (name: string) => string | null,
   createAuth: (ctx: any) => ReturnType<typeof betterAuth>,
   opts?: { convexSiteUrl?: string }
 ) => {
-  const { getCookie } = await import("@tanstack/react-start/server");
   const sessionCookieName = getCookieName(createAuth);
   const token = getCookie(sessionCookieName);
   const { session } = await fetchSession(request, opts);

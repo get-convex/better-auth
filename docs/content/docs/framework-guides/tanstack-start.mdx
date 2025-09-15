@@ -230,18 +230,20 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     // [!code ++:6]
     import { ConvexQueryClient } from '@convex-dev/react-query'
     import { ConvexReactClient } from 'convex/react'
-    import { getWebRequest } from '@tanstack/react-start/server'
+    import { getCookie, getWebRequest } from '@tanstack/react-start/server'
     import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
-    import { getAuth } from '@convex-dev/better-auth/react-start'
+    import { fetchSession, getCookieName } from '@convex-dev/better-auth/react-start'
     import { authClient } from "@/lib/auth-client";
 
-    // [!code ++:9]
+    // [!code ++:11]
     // Get auth information for SSR using available cookies
     const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
       const { createAuth } = await import('@convex/auth')
-      const { userId, token } = await getAuth(getWebRequest(), createAuth)
+      const { session } = await fetchSession(getWebRequest())
+      const sessionCookieName = getCookieName(createAuth)
+      const token = getCookie(sessionCookieName)
       return {
-        userId,
+        userId: session?.user.id,
         token,
       }
     })

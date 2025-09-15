@@ -27,10 +27,14 @@ Throwing an error in a trigger will stop the original operation from committing.
 
 ```ts title="convex/auth.ts"
 import { createClient } from "@convex-dev/better-auth";
-import { components } from "./_generated/api";
+import { components, internal } from "./_generated/api";
+import { AuthFunctions } from "@convex-dev/better-auth";
 import { DataModel } from "./_generated/dataModel";
 
+const authFunctions: AuthFunctions = internal.auth;
+
 export const authComponent = createClient<DataModel>(components.betterAuth, {
+  authFunctions,
   triggers: {
     user: {
       onCreate: async (ctx, authUser) => {

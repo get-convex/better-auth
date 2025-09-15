@@ -10,17 +10,22 @@ import * as React from 'react'
 import appCss from '@/styles/app.css?url'
 import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
 import { authClient } from '@/lib/auth-client'
-import { getAuth } from '@convex-dev/better-auth/react-start'
+import {
+  fetchSession,
+  getCookieName,
+} from '@convex-dev/better-auth/react-start'
 import { ConvexReactClient } from 'convex/react'
 import { ConvexQueryClient } from '@convex-dev/react-query'
-import { getWebRequest } from '@tanstack/react-start/server'
+import { getCookie, getWebRequest } from '@tanstack/react-start/server'
 
 // Get auth information for SSR using available cookies
 const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
   const { createAuth } = await import('@convex/auth')
-  const { userId, token } = await getAuth(getWebRequest(), createAuth)
+  const { session } = await fetchSession(getWebRequest())
+  const sessionCookieName = getCookieName(createAuth)
+  const token = getCookie(sessionCookieName)
   return {
-    userId,
+    userId: session?.user.id,
     token,
   }
 })
