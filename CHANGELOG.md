@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.1
+
+- fix(tanstack): drop getAuth, update docs to implement locally
+- fix: always return a headers object from getHeaders
+- fix: use correct signature for onUpdate trigger
+
 ## 0.8.0
 
 - docs: rewrite docs
