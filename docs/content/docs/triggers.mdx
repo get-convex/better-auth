@@ -52,4 +52,6 @@ export const authComponent = createClient<DataModel>(components.betterAuth, {
     },
   },
 });
+
+export const { onCreate, onUpdate, onDelete } = authComponent.triggersApi();
 ```
