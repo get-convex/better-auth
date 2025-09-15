@@ -129,7 +129,7 @@ description: Install and configure Convex + Better Auth for Next.js.
 
     export const createAuth = (ctx: GenericCtx<DataModel>) => {
       return betterAuth({
-        trustedOrigins: [siteUrl],
+        baseUrl: siteUrl,
         database: authComponent.adapter(ctx),
         // Configure simple, non-verified email/password to get started
         emailAndPassword: {
@@ -165,7 +165,6 @@ description: Install and configure Convex + Better Auth for Next.js.
     import { convexClient } from "@convex-dev/better-auth/client/plugins";
 
     export const authClient = createAuthClient({
-      baseURL: import.meta.env.NEXT_PUBLIC_CONVEX_SITE_URL,
       plugins: [convexClient()],
     });
     ```

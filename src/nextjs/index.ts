@@ -8,7 +8,6 @@ export const getToken = async (
   const options = createAuth({} as any).options;
   const { cookies } = await import("next/headers");
   const cookieStore = await cookies();
-  console.log("options", options);
   const createCookie = createCookieGetter(options);
   const cookie = createCookie(JWT_COOKIE_NAME);
   const tokenCookie = cookieStore.get(cookie.name);
