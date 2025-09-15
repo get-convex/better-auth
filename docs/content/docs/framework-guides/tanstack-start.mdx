@@ -237,7 +237,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     // [!code ++:11]
     // Get auth information for SSR using available cookies
     const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
-      const { createAuth } = await import('@convex/auth')
+      const { createAuth } = await import('../../convex/auth')
       const { session } = await fetchSession(getWebRequest())
       const sessionCookieName = getCookieName(createAuth)
       const token = getCookie(sessionCookieName)
