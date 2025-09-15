@@ -1,5 +1,4 @@
 import { BetterAuthDbSchema, type FieldAttribute } from "better-auth/db";
-import path from "path";
 
 // Manually add fields to index on for schema generation,
 // all fields in the schema specialFields are automatically indexed
@@ -71,7 +70,14 @@ export const createSchema = async ({
   tables: BetterAuthDbSchema;
   file?: string;
 }) => {
-  const baseName = path.basename(process.cwd());
+  // stop convex esbuild from throwing over this import, only runs
+  // in the better auth cli
+  const pathImport = "path";
+  const path = await import(pathImport);
+  const baseName = path.basename(path.resolve(process.cwd(), file ?? ""));
+  // if the target directory is named "convex", they're almost definitely
+  // generating the schema in the wrong directory, likely would replace the
+  // app schema
   if (baseName === "convex") {
     throw new Error(
       "Better Auth schema must be generated in the Better Auth component directory."

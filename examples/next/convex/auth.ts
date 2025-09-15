@@ -137,3 +137,5 @@ export const getCurrentUser = query({
     return safeGetUser(ctx);
   },
 });
+
+export const auth = createAuth({} as any);
