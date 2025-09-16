@@ -1,5 +1,4 @@
 import {
-  type Auth as ConvexAuth,
   DataModelFromSchemaDefinition,
   type DefaultFunctionArgs,
   type Expand,
@@ -41,7 +40,9 @@ import { api } from "../component/_generated/api";
 
 export { convexAdapter };
 
-export type CreateAdapter = <Ctx extends RunCtx>(ctx: Ctx) => AdapterInstance;
+export type CreateAdapter = <Ctx extends GenericCtx<GenericDataModel>>(
+  ctx: Ctx
+) => AdapterInstance;
 
 export type CreateAuth<DataModel extends GenericDataModel> =
   | ((ctx: GenericCtx<DataModel>) => ReturnType<typeof betterAuth>)
@@ -464,7 +465,7 @@ export const createClient = <
     component,
     adapter: (ctx: GenericCtx<DataModel>) =>
       convexAdapter<DataModel, typeof ctx, Schema>(ctx, component, config),
-    getHeaders: async (ctx: RunQueryCtx & { auth: ConvexAuth }) => {
+    getHeaders: async (ctx: GenericQueryCtx<DataModel>) => {
       const identity = await ctx.auth.getUserIdentity();
       if (!identity) {
         return new Headers();
@@ -659,21 +660,33 @@ export const createClient = <
 
 /* Type utils follow */
 
+/**
+ * @deprecated Use `QueryCtx` from _generated/server instead
+ */
 export type RunQueryCtx = {
   runQuery: GenericQueryCtx<GenericDataModel>["runQuery"];
 };
 
+/**
+ * @deprecated Use `MutationCtx` from _generated/server instead
+ */
 export type RunMutationCtx = {
   runQuery: GenericQueryCtx<GenericDataModel>["runQuery"];
   runMutation: GenericMutationCtx<GenericDataModel>["runMutation"];
 };
 
+/**
+ * @deprecated Use `ActionCtx` from _generated/server instead
+ */
 export type RunActionCtx = {
   runQuery: GenericQueryCtx<GenericDataModel>["runQuery"];
   runMutation: GenericMutationCtx<GenericDataModel>["runMutation"];
   runAction: GenericActionCtx<GenericDataModel>["runAction"];
 };
 
+/**
+ * @deprecated
+ */
 export type RunCtx = RunQueryCtx | RunMutationCtx | RunActionCtx;
 
 export type OpaqueIds<T> =
