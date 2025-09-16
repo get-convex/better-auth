@@ -5,10 +5,6 @@ This example shows how to use Better Auth with Convex and TanStack Start.
 Note that dependencies are set up to work with the local component in this repo,
 it is not set up for standalone use (but can be adapted).
 
-**Note:** Examples on the `main` branch use the `alpha` release. If you're not
-installing the `alpha`, use the `latest` branch for docs and examples matching
-the latest stable release.
-
 ### Running the example
 
 1. Clone or fork the repo

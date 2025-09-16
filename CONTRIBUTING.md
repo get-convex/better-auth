@@ -39,12 +39,3 @@ npm publish --dry-run
 npm publish
 git push --tags
 ```
-
-#### Alpha release
-
-The same as above, but it requires extra flags so the release is only installed with `@alpha`:
-
-```sh
-npm version prerelease --preid alpha
-npm publish --tag alpha
-```
