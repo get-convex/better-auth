@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.3
+
+- fix: use correct type for getAuthUser ctx
+
 ## 0.8.2
 
 - fix: error if generating component schema in app convex directory
