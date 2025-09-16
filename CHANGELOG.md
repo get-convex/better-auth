@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.2
+
+- fix: error if generating component schema in app convex directory
+- fix: fix esbuild error due to node import in createSchema
+- fix: support disabling logging for static auth instances
+
 ## 0.8.1
 
 - fix(tanstack): drop getAuth, update docs to implement locally
