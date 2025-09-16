@@ -438,7 +438,7 @@ export const createClient = <
     triggers?: Triggers<DataModel, Schema>;
   }
 ) => {
-  const safeGetAuthUser = async (ctx: GenericQueryCtx<DataModel>) => {
+  const safeGetAuthUser = async (ctx: GenericCtx<DataModel>) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       return;
@@ -488,7 +488,7 @@ export const createClient = <
 
     safeGetAuthUser,
 
-    getAuthUser: async (ctx: GenericQueryCtx<DataModel>) => {
+    getAuthUser: async (ctx: GenericCtx<DataModel>) => {
       const user = await safeGetAuthUser(ctx);
       if (!user) {
         throw new Error("Unauthenticated");
