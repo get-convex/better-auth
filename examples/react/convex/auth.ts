@@ -17,9 +17,15 @@ const siteUrl = process.env.SITE_URL!;
 
 export const authComponent = createClient<DataModel>(components.betterAuth);
 
-export const createAuth = (ctx: GenericCtx<DataModel>) => {
+export const createAuth = (
+  ctx: GenericCtx<DataModel>,
+  { optionsOnly } = { optionsOnly: false }
+) => {
   return betterAuth({
     trustedOrigins: [siteUrl],
+    logger: {
+      disabled: optionsOnly,
+    },
     database: authComponent.adapter(ctx),
     emailVerification: {
       sendVerificationEmail: async ({ user, url }) => {

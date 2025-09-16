@@ -43,6 +43,19 @@ export { convexAdapter };
 
 export type CreateAdapter = <Ctx extends RunCtx>(ctx: Ctx) => AdapterInstance;
 
+export type CreateAuth<DataModel extends GenericDataModel> =
+  | ((ctx: GenericCtx<DataModel>) => ReturnType<typeof betterAuth>)
+  | ((
+      ctx: GenericCtx<DataModel>,
+      opts?: { optionsOnly?: boolean }
+    ) => ReturnType<typeof betterAuth>);
+
+export const getStaticAuth = <DataModel extends GenericDataModel>(
+  createAuth: CreateAuth<DataModel>
+) => {
+  return createAuth({} as any, { optionsOnly: true });
+};
+
 if (semver.lt(convexVersion, "1.25.0")) {
   throw new Error("Convex version must be at least 1.25.0");
 }
@@ -105,9 +118,9 @@ export const createApi = <
   Schema extends SchemaDefinition<any, any>,
 >(
   schema: Schema,
-  createAuth: (ctx: GenericCtx<DataModel>) => ReturnType<typeof betterAuth>
+  createAuth: CreateAuth<DataModel>
 ) => {
-  const betterAuthSchema = getAuthTables(createAuth({} as any)!.options);
+  const betterAuthSchema = getAuthTables(getStaticAuth(createAuth).options);
   return {
     create: mutationGeneric({
       args: {
@@ -536,7 +549,7 @@ export const createClient = <
 
     registerRoutes: (
       http: HttpRouter,
-      createAuth: (ctx: GenericCtx<DataModel>) => ReturnType<typeof betterAuth>,
+      createAuth: CreateAuth<DataModel>,
       opts: {
         cors?:
           | boolean
@@ -548,11 +561,11 @@ export const createClient = <
             };
       } = {}
     ) => {
-      const authDummy = createAuth({} as any);
-      const path = authDummy.options.basePath ?? "/api/auth";
+      const staticAuth = getStaticAuth(createAuth);
+      const path = staticAuth.options.basePath ?? "/api/auth";
       const authRequestHandler = httpActionGeneric(async (ctx, request) => {
         if (config?.verbose) {
-          console.log("options.baseURL", authDummy.options.baseURL);
+          console.log("options.baseURL", staticAuth.options.baseURL);
           console.log("request headers", request.headers);
         }
         const auth = createAuth(ctx as any);
@@ -604,7 +617,7 @@ export const createClient = <
         allowedOrigins: async (request) => {
           trustedOriginsOption =
             trustedOriginsOption ??
-            (await authDummy.$context).options.trustedOrigins ??
+            (await staticAuth.$context).options.trustedOrigins ??
             [];
           const trustedOrigins = Array.isArray(trustedOriginsOption)
             ? trustedOriginsOption

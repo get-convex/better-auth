@@ -248,82 +248,13 @@ None of this is necessary anymore, if you were doing this you can go back to
 using a single `createAuth` function.
 
 ```ts title="convex/auth.ts"
+// [!code --:19]
 const createOptions = (ctx: GenericCtx) =>
   ({
     baseURL: siteUrl,
     database: convexAdapter(ctx, betterAuthComponent),
-    account: {
-      accountLinking: {
-        enabled: true,
-        allowDifferentEmails: true,
-      },
-    },
-    emailVerification: {
-      sendVerificationEmail: async ({ user, url }) => {
-        await sendEmailVerification(requireMutationCtx(ctx), {
-          to: user.email,
-          url,
-        });
-      },
-    },
-    emailAndPassword: {
-      enabled: true,
-      requireEmailVerification: true,
-      sendResetPassword: async ({ user, url }) => {
-        await sendResetPassword(requireMutationCtx(ctx), {
-          to: user.email,
-          url,
-        });
-      },
-    },
-    socialProviders: {
-      github: {
-        clientId: process.env.GITHUB_CLIENT_ID as string,
-        clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-      },
-      google: {
-        clientId: process.env.GOOGLE_CLIENT_ID as string,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-        accessType: "offline",
-        prompt: "select_account consent",
-      },
-    },
-    user: {
-      deleteUser: {
-        enabled: true,
-      },
-    },
     plugins: [
-      anonymous(),
-      magicLink({
-        sendMagicLink: async ({ email, url }) => {
-          await sendMagicLink(requireMutationCtx(ctx), {
-            to: email,
-            url,
-          });
-        },
-      }),
-      emailOTP({
-        async sendVerificationOTP({ email, otp }) {
-          await sendOTPVerification(requireMutationCtx(ctx), {
-            to: email,
-            code: otp,
-          });
-        },
-      }),
-      twoFactor(),
-      genericOAuth({
-        config: [
-          {
-            providerId: "slack",
-            clientId: process.env.SLACK_CLIENT_ID as string,
-            clientSecret: process.env.SLACK_CLIENT_SECRET as string,
-            discoveryUrl: "https://slack.com/.well-known/openid-configuration",
-            scopes: ["openid", "email", "profile"],
-          },
-        ],
-      }),
-      organization(),
+      // ...plugins
     ],
   }) satisfies BetterAuthOptions;
 
@@ -331,13 +262,18 @@ export const createAuth = (ctx: GenericCtx) => {
   const options = createOptions(ctx);
   return betterAuth({
     ...options,
+    plugins: [...options.plugins, convex({ options })],
+  });
+};
+
+// [!code ++:10]
+export const createAuth = (ctx: GenericCtx<DataModel>) => {
+  return betterAuth({
+    baseURL: siteUrl,
+    database: authComponent.adapter(ctx),
     plugins: [
-      ...options.plugins,
-      // Pass in options so plugin schema inference flows through. Only required
-      // for plugins that customize the user or session schema.
-      // See "Some caveats":
-      // https://www.better-auth.com/docs/concepts/session-management#customizing-session-response
-      convex({ options }),
+      // ...plugins
+      convex(),
     ],
   });
 };

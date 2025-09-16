@@ -8,11 +8,15 @@ import {
 } from "convex/server";
 import { JWT_COOKIE_NAME } from "../plugins/convex";
 import { ConvexHttpClient } from "convex/browser";
+import { getStaticAuth } from "../client";
 
 export const getCookieName = (
-  createAuth: (ctx: any) => ReturnType<typeof betterAuth>
+  createAuth: (
+    ctx: any,
+    opts?: { optionsOnly?: boolean }
+  ) => ReturnType<typeof betterAuth>
 ) => {
-  const createCookie = createCookieGetter(createAuth({} as any).options);
+  const createCookie = createCookieGetter(getStaticAuth(createAuth).options);
   const cookie = createCookie(JWT_COOKIE_NAME);
   return cookie.name;
 };

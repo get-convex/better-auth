@@ -127,8 +127,16 @@ description: Install and configure Convex + Better Auth for Next.js.
     // as well as helper methods for general use.
     export const authComponent = createClient<DataModel>(components.betterAuth);
 
-    export const createAuth = (ctx: GenericCtx<DataModel>) => {
+    export const createAuth = (
+      ctx: GenericCtx<DataModel>,
+      { optionsOnly } = { optionsOnly: false },
+    ) => {
       return betterAuth({
+        // disable logging when createAuth is called just to generate options.
+        // this is not required, but there's a lot of noise in logs without it.
+        logger: {
+          disabled: optionsOnly,
+        },
         baseUrl: siteUrl,
         database: authComponent.adapter(ctx),
         // Configure simple, non-verified email/password to get started
@@ -182,8 +190,7 @@ description: Install and configure Convex + Better Auth for Next.js.
 
     const http = httpRouter();
 
-    // CORS handling is required for client side frameworks
-    authComponent.registerRoutes(http, createAuth, { cors: true });
+    authComponent.registerRoutes(http, createAuth);
 
     export default http;
     ```

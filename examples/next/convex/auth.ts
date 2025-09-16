@@ -35,9 +35,15 @@ export const authComponent = createClient<DataModel, typeof authSchema>(
   },
 );
 
-export const createAuth = (ctx: GenericCtx<DataModel>) =>
+export const createAuth = (
+  ctx: GenericCtx<DataModel>,
+  { optionsOnly } = { optionsOnly: false },
+) =>
   betterAuth({
     baseURL: siteUrl,
+    logger: {
+      disabled: optionsOnly,
+    },
     database: authComponent.adapter(ctx),
     account: {
       accountLinking: {
@@ -137,5 +143,3 @@ export const getCurrentUser = query({
     return safeGetUser(ctx);
   },
 });
-
-export const auth = createAuth({} as any);

@@ -73,11 +73,14 @@ export const authComponent = createClient<DataModel, typeof betterAuthSchema>(
 
 export const { onCreate, onUpdate, onDelete } = authComponent.triggersApi()
 
-export const createAuth = (ctx: GenericCtx<DataModel>) =>
+export const createAuth = (
+  ctx: GenericCtx<DataModel>,
+  { optionsOnly } = { optionsOnly: false },
+) =>
   betterAuth({
     baseURL: siteUrl,
     logger: {
-      disabled: true,
+      disabled: optionsOnly,
     },
     database: authComponent.adapter(ctx),
     account: {
