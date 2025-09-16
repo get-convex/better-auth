@@ -5,24 +5,22 @@ import {
   FunctionReference,
   FunctionReturnType,
   GenericActionCtx,
+  GenericDataModel,
 } from "convex/server";
 import { JWT_COOKIE_NAME } from "../plugins/convex";
 import { ConvexHttpClient } from "convex/browser";
-import { getStaticAuth } from "../client";
+import { CreateAuth, getStaticAuth } from "../client";
 
-export const getCookieName = (
-  createAuth: (
-    ctx: any,
-    opts?: { optionsOnly?: boolean }
-  ) => ReturnType<typeof betterAuth>
+export const getCookieName = <DataModel extends GenericDataModel>(
+  createAuth: CreateAuth<DataModel>
 ) => {
   const createCookie = createCookieGetter(getStaticAuth(createAuth).options);
   const cookie = createCookie(JWT_COOKIE_NAME);
   return cookie.name;
 };
 
-export const setupFetchClient = async (
-  createAuth: (ctx: any) => ReturnType<typeof betterAuth>
+export const setupFetchClient = async <DataModel extends GenericDataModel>(
+  createAuth: CreateAuth<DataModel>
 ) => {
   const { getCookie } = await import("@tanstack/react-start/server");
   const createClient = () => {
@@ -97,10 +95,10 @@ export const fetchSession = async <
   };
 };
 
-export const getAuth = async (
+export const getAuth = async <DataModel extends GenericDataModel>(
   request: Request,
   getCookie: (name: string) => string | null,
-  createAuth: (ctx: any) => ReturnType<typeof betterAuth>,
+  createAuth: CreateAuth<DataModel>,
   opts?: { convexSiteUrl?: string }
 ) => {
   const sessionCookieName = getCookieName(createAuth);

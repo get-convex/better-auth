@@ -1,13 +1,10 @@
 import { createCookieGetter } from "better-auth/cookies";
 import { JWT_COOKIE_NAME } from "../plugins/convex";
-import { betterAuth } from "better-auth";
-import { getStaticAuth } from "../client";
+import { CreateAuth, getStaticAuth } from "../client";
+import { GenericDataModel } from "convex/server";
 
-export const getToken = async (
-  createAuth: (
-    ctx: any,
-    opts?: { optionsOnly?: boolean }
-  ) => ReturnType<typeof betterAuth>
+export const getToken = async <DataModel extends GenericDataModel>(
+  createAuth: CreateAuth<DataModel>
 ) => {
   const options = getStaticAuth(createAuth).options;
   const { cookies } = await import("next/headers");
