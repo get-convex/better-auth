@@ -149,7 +149,6 @@ type the `createAuth` ctx arg.
       // ...
     )
 
-    // [!code ++]
     export const createAuth = (ctx: GenericCtx) => { // [!code --]
     export const createAuth = (ctx: GenericCtx<DataModel>) => { // [!code ++]
       return betterAuth({

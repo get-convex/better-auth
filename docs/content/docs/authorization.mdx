@@ -63,6 +63,16 @@ Otherwise, it will throw on page load.
 ```ts title="convex/messages.ts"
 import { query } from "./_generated/server";
 
+// You can get the current user from the auth component
+export const getCurrentUser = query({
+  args: {},
+  handler: async (ctx) => {
+    return await authComponent.getAuthUser(ctx);
+  },
+});
+
+// You can also just get the authenticated user id as you
+// normally would from ctx.auth.getUserIdentity
 export const getForCurrentUser = query({
   args: {},
   handler: async (ctx) => {
