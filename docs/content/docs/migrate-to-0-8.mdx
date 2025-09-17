@@ -131,6 +131,10 @@ The Convex database adapter is now provided through a method on the auth
 component, and a `GenericCtx` type from the component library is now used to
 type the `createAuth` ctx arg.
 
+There is also a new `optionsOnly` parameter to the `createAuth` function. This
+is used to disable logging when the function is called just to generate options.
+This is not required, but helpful for reducing noise in logs.
+
 <Callout>
   Be sure to update any imports of `createAuth` to the new path.
 </Callout>
@@ -150,11 +154,20 @@ type the `createAuth` ctx arg.
     )
 
     export const createAuth = (ctx: GenericCtx) => { // [!code --]
-    export const createAuth = (ctx: GenericCtx<DataModel>) => { // [!code ++]
+    export const createAuth = (
+      ctx: GenericCtx<DataModel>, // [!code ++]
+      { optionsOnly } = { optionsOnly: false }, // [!code ++]
+    ) => {
       return betterAuth({
         // ...
         database: authComponent.adapter(ctx), // [!code ++]
         database: convexAdapter(ctx, authComponent), // [!code --]
+        // [!code ++:5]
+        // When createAuth is called just to generate options, we don't want to
+        // log anything
+        logger: {
+          disabled: optionsOnly,
+        },
       })
     }
     ```
@@ -217,6 +230,18 @@ export const getCurrentUser = query({
   },
 });
 ```
+
+</div>
+
+<div className="fd-step">
+  ### Framework specific changes
+
+If your project uses TanStack Start, follow the [last few
+steps](/framework-guides/tanstack-start#mount-handlers)
+of the TanStack Start guide and make sure your code aligns.
+
+This migration should not have framework specific impacts for any other
+framework.
 
 </div>
 
