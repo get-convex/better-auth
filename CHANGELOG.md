@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.4
+
+- fix: fix createAuth types in framework helpers
+- feat: improve ctx types passed to createAuth
+
 ## 0.8.3
 
 - fix: use correct type for getAuthUser ctx
