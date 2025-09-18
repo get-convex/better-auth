@@ -21,7 +21,7 @@ export const getCookieName = <DataModel extends GenericDataModel>(
 
 export const setupFetchClient = async <DataModel extends GenericDataModel>(
   createAuth: CreateAuth<DataModel>,
-  getCookie: (name: string) => string | null
+  getCookie: (name: string) => string | undefined
 ) => {
   const createClient = () => {
     const sessionCookieName = getCookieName(createAuth);
@@ -97,7 +97,7 @@ export const fetchSession = async <
 
 export const getAuth = async <DataModel extends GenericDataModel>(
   request: Request,
-  getCookie: (name: string) => string | null,
+  getCookie: (name: string) => string | undefined,
   createAuth: CreateAuth<DataModel>,
   opts?: { convexSiteUrl?: string }
 ) => {
