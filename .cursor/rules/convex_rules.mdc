@@ -170,7 +170,7 @@ globs: **/*.{ts,tsx,js,jsx}
 - Index fields must be queried in the same order they are defined. If you want to be able to query by "field1" then "field2" and by "field2" then "field1", you must create separate indexes.
 
 ## Typescript guidelines
-- You can use the helper typescript type `Id` imported from './_generated/dataModel' to get the type of the id for a given table. For example if there is a table called 'users' you can use `Id<'users'>` to get the type of the id for that table.
+- You can use the helper typescript type `Id` imported from './_generated/dataModel' to get the type of the ID for a given table. For example if there is a table called 'users' you can use `Id<'users'>` to get the type of the ID for that table.
 - If you need to define a `Record` make sure that you correctly provide the type of the key and value in the type. For example a validator `v.record(v.id('users'), v.string())` would have the type `Record<Id<'users'>, string>`. Below is an example of using `Record` with an `Id` type in a query:
                     ```ts
                     import { query } from "./_generated/server";
@@ -192,7 +192,7 @@ globs: **/*.{ts,tsx,js,jsx}
                         },
                     });
                     ```
-- Be strict with types, particularly around id's of documents. For example, if a function takes in an id for a document in the 'users' table, take in `Id<'users'>` rather than `string`.
+- Be strict with types, particularly around IDs of documents. For example, if a function takes in an ID for a document in the 'users' table, take in `Id<'users'>` rather than `string`.
 - Always use `as const` for string literals in discriminated union types.
 - When using the `Array` type, make sure to always define your arrays as `const array: Array<T> = [...];`
 - When using the `Record` type, make sure to always define your records as `const record: Record<KeyType, ValueType> = {...};`

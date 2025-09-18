@@ -497,7 +497,7 @@ export const createClient = <
       return user;
     },
 
-    // Replaces 0.7 behavior of returning a new user id from
+    // Replaces 0.7 behavior of returning a new user ID from
     // onCreateUser
     setUserId: async (
       ctx: GenericMutationCtx<DataModel>,

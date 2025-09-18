@@ -66,7 +66,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
   <div className="fd-step">
     ### Set environment variables
 
-    Generate a secret for encryption and generating hashes. Use the command below if you have openssl installed, or use the button to generate a random value instead. Or generate your own however you like.
+    Generate a secret for encryption and generating hashes. Use the command below if you have OpenSSL installed, or use the button to generate a random value instead. Or generate your own however you like.
 
     ```shell
     npx convex env set BETTER_AUTH_SECRET=$(openssl rand -base64 32)
@@ -135,8 +135,8 @@ description: Install and configure Convex + Better Auth for TanStack Start.
       { optionsOnly } = { optionsOnly: false },
     ) => {
       return betterAuth({
-        // disable logging when createAuth is called just to generate options.
-        // this is not required, but there's a lot of noise in logs without it.
+        // Disable logging when createAuth is called just to generate options.
+        // This is not required, but there's a lot of noise in logs without it.
         logger: {
           disabled: optionsOnly,
         },
@@ -278,7 +278,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
       }),
       // [!code ++:14]
       beforeLoad: async (ctx) => {
-        // all queries, mutations and action made with TanStack Query will be
+        // All queries, mutations, and actions made with TanStack Query will be
         // authenticated by an identity token.
         const { userId, token } = await fetchAuth()
 

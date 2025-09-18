@@ -532,7 +532,7 @@ export const paginate = async <
     if (!Array.isArray(inWhere.value)) {
       throw new Error("in clause value must be an array");
     }
-    // For ids, just use asyncMap + .get()
+    // For IDs, just use asyncMap + .get()
     if (inWhere.field === "id") {
       const docs = await asyncMap(inWhere.value as any[], async (value) => {
         return ctx.db.get(value as GenericId<T>);

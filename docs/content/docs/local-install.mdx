@@ -7,8 +7,8 @@ Local install gives you full control over your Better Auth schema, allows schema
 related configuration to work, and makes it possible to use plugins beyond those
 [supported](/supported-plugins) for Convex + Better Auth.
 
-With this approach, the Better Auth plugin is defined in it's own Convex
-subdirectory. Installation is a bit different from the default approach, and
+With this approach, the Better Auth plugin is defined in its own Convex
+subdirectory. Installation is a bit different from the default approach and
 includes a schema generation step via Better Auth CLI, similar to the
 installation experience with other providers.
 
@@ -144,7 +144,7 @@ installed component.
 
 ### Updating the schema
 
-Certain options changes may require schema generation. The Better Auth docs will
+Certain option changes may require schema generation. The Better Auth docs will
 often note when this is the case. To regenerate the schema at any time (as it's
 generally safe to do), move into the component directory and run the Better Auth
 CLI generate command.
@@ -168,7 +168,7 @@ custom indexes aren't overwritten when the schema is regenerated.
 <Callout>
   Schema table names and fields should not be customized directly, as any
   customizations won't match your Better Auth configuration, and will be
-  overwritten when the schema is regenerated. Instead, Better Auth schema can be
+  overwritten when the schema is regenerated. Instead, Better Auth's schema can be
   [customized through
   options](https://www.better-auth.com/docs/concepts/database#core-schema).
 </Callout>

@@ -6,7 +6,7 @@ description: Authorization with Better Auth
 ### Showing UI based on authentication state
 
 You can control which UI is shown when the user is signed in or signed out using
-Convex's `<Authenticated>`, `<Unauthenticated>` and `<AuthLoading>` helper
+Convex's `<Authenticated>`, `<Unauthenticated>`, and `<AuthLoading>` helper
 components. These components are powered by Convex's `useConvexAuth()` hook,
 which provides `isAuthenticated` and `isLoading` flags. This hook can be used
 directly if preferred.
@@ -71,7 +71,7 @@ export const getCurrentUser = query({
   },
 });
 
-// You can also just get the authenticated user id as you
+// You can also just get the authenticated user ID as you
 // normally would from ctx.auth.getUserIdentity
 export const getForCurrentUser = query({
   args: {},

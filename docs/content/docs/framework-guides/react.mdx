@@ -65,7 +65,7 @@ description: Install and configure Convex + Better Auth for React.
   <div className="fd-step">
     ### Set environment variables
 
-    Generate a secret for encryption and generating hashes. Use the command below if you have openssl installed, or use the button to generate a random value instead. Or generate your own however you like.
+    Generate a secret for encryption and generating hashes. Use the command below if you have OpenSSL installed, or use the button to generate a random value instead. Or generate your own however you like.
 
     ```shell
     npx convex env set BETTER_AUTH_SECRET=$(openssl rand -base64 32)
@@ -134,8 +134,8 @@ description: Install and configure Convex + Better Auth for React.
       { optionsOnly } = { optionsOnly: false },
     ) => {
       return betterAuth({
-        // disable logging when createAuth is called just to generate options.
-        // this is not required, but there's a lot of noise in logs without it.
+        // Disable logging when createAuth is called just to generate options.
+        // This is not required, but there's a lot of noise in logs without it.
         logger: {
           disabled: optionsOnly,
         },
@@ -147,7 +147,7 @@ description: Install and configure Convex + Better Auth for React.
           requireEmailVerification: false,
         },
         plugins: [
-          // The cross domain plugin is required for client side frameworks
+          // The cross-domain plugin is required for client-side frameworks
           crossDomain({ siteUrl }),
           // The Convex plugin is required for Convex compatibility
           convex(),
@@ -198,7 +198,7 @@ description: Install and configure Convex + Better Auth for React.
 
     const http = httpRouter();
 
-    // CORS handling is required for client side frameworks
+    // CORS handling is required for client-side frameworks
     authComponent.registerRoutes(http, createAuth, { cors: true });
 
     export default http;

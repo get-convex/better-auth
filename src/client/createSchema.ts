@@ -97,7 +97,7 @@ export const tables = {
     const table = tables[tableKey]!;
     const modelName = table.modelName;
 
-    // No id fields in Convex schema
+    // No ID fields in Convex schema
     const fields = Object.fromEntries(
       Object.entries(table.fields).filter(([key]) => key !== "id")
     );
