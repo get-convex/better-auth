@@ -14,9 +14,9 @@ import {
   fetchSession,
   getCookieName,
 } from '@convex-dev/better-auth/react-start'
-import { ConvexReactClient } from 'convex/react'
-import { ConvexQueryClient } from '@convex-dev/react-query'
 import { getCookie, getWebRequest } from '@tanstack/react-start/server'
+import { seo } from '@/utils/seo'
+import { ConvexQueryClient } from '@convex-dev/react-query'
 
 // Get auth information for SSR using available cookies
 const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
@@ -32,7 +32,6 @@ const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
-  convexClient: ConvexReactClient
   convexQueryClient: ConvexQueryClient
 }>()({
   head: () => ({
@@ -44,6 +43,10 @@ export const Route = createRootRouteWithContext<{
         name: 'viewport',
         content: 'width=device-width, initial-scale=1',
       },
+      ...seo({
+        title: 'Convex + Better Auth + TanStack Start',
+        description: `Convex + Better Auth + TanStack Start`,
+      }),
     ],
     links: [
       { rel: 'stylesheet', href: appCss },
@@ -71,7 +74,7 @@ function RootComponent() {
   const context = useRouteContext({ from: Route.id })
   return (
     <ConvexBetterAuthProvider
-      client={context.convexClient}
+      client={context.convexQueryClient.convexClient}
       authClient={authClient}
     >
       <RootDocument>
