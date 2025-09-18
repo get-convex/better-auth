@@ -439,13 +439,13 @@ export const createClient = <
     triggers?: Triggers<DataModel, Schema>;
   }
 ) => {
+  type BetterAuthDataModel = DataModelFromSchemaDefinition<Schema>;
+
   const safeGetAuthUser = async (ctx: GenericCtx<DataModel>) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       return;
     }
-
-    type BetterAuthDataModel = DataModelFromSchemaDefinition<Schema>;
 
     const doc = (await ctx.runQuery(component.adapter.findOne, {
       model: "user",
@@ -495,6 +495,13 @@ export const createClient = <
         throw new Error("Unauthenticated");
       }
       return user;
+    },
+
+    getAnyUserById: async (ctx: GenericCtx<DataModel>, id: string) => {
+      return (await ctx.runQuery(component.adapter.findOne, {
+        model: "user",
+        where: [{ field: "id", value: id }],
+      })) as BetterAuthDataModel["user"]["document"] | null;
     },
 
     // Replaces 0.7 behavior of returning a new user id from
