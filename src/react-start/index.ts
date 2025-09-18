@@ -20,9 +20,9 @@ export const getCookieName = <DataModel extends GenericDataModel>(
 };
 
 export const setupFetchClient = async <DataModel extends GenericDataModel>(
-  createAuth: CreateAuth<DataModel>
+  createAuth: CreateAuth<DataModel>,
+  getCookie: (name: string) => string | null
 ) => {
-  const { getCookie } = await import("@tanstack/react-start/server");
   const createClient = () => {
     const sessionCookieName = getCookieName(createAuth);
     const token = getCookie(sessionCookieName);
