@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.5
+
+- fix(react-start): get setupFetchClient getCookie through args
+- feat: add authComponent.getAnyUserById method
+
 ## 0.8.4
 
 - fix: fix createAuth types in framework helpers
