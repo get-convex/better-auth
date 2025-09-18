@@ -147,7 +147,7 @@ describe("Convex Adapter Tests", async () => {
     ).toEqual([user]);
   });
 
-  test("should handle compound indexes that include id field", async () => {
+  test("should handle compound indexes that include an ID field", async () => {
     const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
     const adapter = await getAdapter(t)();
     const user = await adapter.create({

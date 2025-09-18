@@ -20,12 +20,12 @@ export const authComponent = createClient(
 );
 ```
 
-## Client side
+## Client-side
 
 Verbose logs in the client can be enabled on the Convex client constructor.
 
 ```ts title="src/main.ts"
-// Replace this with your framework prefixed environment variable
+// Replace this with your framework-prefixed environment variable
 // for your project's Convex cloud URL
 const convexUrl = import.meta.env.PUBLIC_CONVEX_URL as string;
 const convex = new ConvexReactClient(convexUrl, {

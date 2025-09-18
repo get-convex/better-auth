@@ -15,9 +15,9 @@ project, so their guides are a primary reference.
 There are a few areas in the Better Auth basic usage guide that work differently
 in Convex.
 
-- #### Server side authentication
+- #### Server-side authentication
 
-  Better Auth supports signing users in and out through server side functions. Because
+  Better Auth supports signing users in and out through server-side functions. Because
   Convex functions run over websockets and don't return HTTP responses or set
   cookies, signing up/in/out must be done from the client via
   `authClient.signIn.*` methods.
@@ -29,11 +29,11 @@ in Convex.
   installs](/local-install), which support generating schemas. For projects not
   using local install, the default schema provided with the Better Auth
   component (preconfigured with the [supported
-  plugins](/supported-plugins)) is used, and cannot be altered.
+  plugins](/supported-plugins)) is used and cannot be altered.
 
 ## Using server methods with `auth.api`
 
-Better Auth's server side `auth.api` methods can be used with your `createAuth`
+Better Auth's server-side `auth.api` methods can be used with your `createAuth`
 function and the component `headers` method. Here's an example implementing the [`changePassword` server
 method](https://www.better-auth.com/docs/concepts/users-accounts#api-method-change-password).
 

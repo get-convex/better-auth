@@ -122,9 +122,9 @@ description: Migrate to @convex-dev/better-auth@0.8
     ### Move and update Better Auth config
 
 The `createAuth` function should be moved to `convex/auth.ts`. This isn't
-required, but better represents where the code actually runs, colocates it
-with other related server side auth code, and avoids potentially writing
-Convex code outside of the Convex directory for some function based config
+required, but it better represents where the code actually runs, colocates it
+with other related server-side auth code, and avoids potentially writing
+Convex code outside of the Convex directory for some function-based config
 properties.
 
 The Convex database adapter is now provided through a method on the auth
@@ -177,9 +177,9 @@ This is not required, but helpful for reducing noise in logs.
 
     ### Update `ctx.auth.getUserIdentity()` usage
 
-The `subject` property of the id token, as well as the user identity object returned from
-`ctx.auth.getUserIdentity()`, was formerly the user id from the application user
-table. It is now the user id from the Better Auth user table. Any direct usage
+The `subject` property of the ID token, as well as the user identity object returned from
+`ctx.auth.getUserIdentity()`, was formerly the user ID from the application user
+table. It is now the user ID from the Better Auth user table. Any direct usage
 of the `subject` property should be replaced with
 `authComponent.getAuthUser(ctx)`, which returns the entire Better Auth user
 object (formerly referred to as user metadata).
@@ -234,13 +234,13 @@ export const getCurrentUser = query({
 </div>
 
 <div className="fd-step">
-  ### Framework specific changes
+  ### Framework-specific changes
 
 If your project uses TanStack Start, follow the [last few
 steps](/framework-guides/tanstack-start#mount-handlers)
 of the TanStack Start guide and make sure your code aligns.
 
-This migration should not have framework specific impacts for any other
+This migration should not have framework-specific impacts for any other
 framework.
 
 </div>
@@ -265,10 +265,10 @@ channel on Discord.
 The named `options` parameter to the Convex plugin that accepted Better Auth
 options has been removed. This was necessary because the Convex plugin
 previously customized the session, breaking type inference for configuration
-that affected the session, so the Better Auth options had to be separated to a
+that affected the session, so the Better Auth options had to be separated into a
 new function and passed in to the Convex plugin.
 
-None of this is necessary anymore, if you were doing this you can go back to
+None of this is necessary anymore; if you were doing this you can go back to
 using a single `createAuth` function.
 
 ```ts title="convex/auth.ts"

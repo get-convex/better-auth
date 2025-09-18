@@ -38,7 +38,7 @@ export const convex = (
     },
   });
   // Bearer plugin converts the session token to a cookie
-  // for cross domain social login after code verification,
+  // for cross-domain social login after code verification,
   // and is required for the headers() helper to work.
   const bearer = bearerPlugin();
   const schema = {
