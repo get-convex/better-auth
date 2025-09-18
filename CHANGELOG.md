@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.6
+
+- fix(react-start): fix TanStack utility types
+
 ## 0.8.5
 
 - fix(react-start): get setupFetchClient getCookie through args
