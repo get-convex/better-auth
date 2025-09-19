@@ -7,14 +7,14 @@ import React from "react";
 import ResetPasswordEmail from "./emails/resetPassword";
 import { components } from "./_generated/api";
 import { Resend } from "@convex-dev/resend";
-import { type MutationCtx } from "./_generated/server";
+import { type ActionCtx } from "./_generated/server";
 
 export const resend: Resend = new Resend(components.resend, {
   testMode: false,
 });
 
 export const sendEmailVerification = async (
-  ctx: MutationCtx,
+  ctx: ActionCtx,
   {
     to,
     url,
@@ -32,7 +32,7 @@ export const sendEmailVerification = async (
 };
 
 export const sendOTPVerification = async (
-  ctx: MutationCtx,
+  ctx: ActionCtx,
   {
     to,
     code,
@@ -50,7 +50,7 @@ export const sendOTPVerification = async (
 };
 
 export const sendMagicLink = async (
-  ctx: MutationCtx,
+  ctx: ActionCtx,
   {
     to,
     url,
@@ -68,7 +68,7 @@ export const sendMagicLink = async (
 };
 
 export const sendResetPassword = async (
-  ctx: MutationCtx,
+  ctx: ActionCtx,
   {
     to,
     url,

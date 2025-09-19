@@ -18,7 +18,7 @@ import {
 } from "../convex/email";
 import { magicLink } from "better-auth/plugins";
 import { betterAuth, BetterAuthOptions } from "better-auth";
-import { requireMutationCtx } from "@convex-dev/better-auth/utils";
+import { requireActionCtx } from "@convex-dev/better-auth/utils";
 import { DataModel } from "./_generated/dataModel";
 
 // This implementation uses Local Install as it would be in a new project.
@@ -53,7 +53,7 @@ export const createAuth = (
     },
     emailVerification: {
       sendVerificationEmail: async ({ user, url }) => {
-        await sendEmailVerification(requireMutationCtx(ctx), {
+        await sendEmailVerification(requireActionCtx(ctx), {
           to: user.email,
           url,
         });
@@ -63,7 +63,7 @@ export const createAuth = (
       enabled: true,
       requireEmailVerification: true,
       sendResetPassword: async ({ user, url }) => {
-        await sendResetPassword(requireMutationCtx(ctx), {
+        await sendResetPassword(requireActionCtx(ctx), {
           to: user.email,
           url,
         });
@@ -97,7 +97,7 @@ export const createAuth = (
       username(),
       magicLink({
         sendMagicLink: async ({ email, url }) => {
-          await sendMagicLink(requireMutationCtx(ctx), {
+          await sendMagicLink(requireActionCtx(ctx), {
             to: email,
             url,
           });
@@ -105,7 +105,7 @@ export const createAuth = (
       }),
       emailOTP({
         async sendVerificationOTP({ email, otp }) {
-          await sendOTPVerification(requireMutationCtx(ctx), {
+          await sendOTPVerification(requireActionCtx(ctx), {
             to: email,
             code: otp,
           });
