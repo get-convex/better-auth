@@ -1,0 +1,523 @@
+---
+title: Sveltekit
+description: Install and configure Convex + Better Auth for Sveltekit.
+---
+
+<Callout>
+  Sveltekit support is currently community maintained, and relies on the
+  [@mmailaender/convex-better-auth-svelte](https://github.com/mmailaender/convex-better-auth-svelte)
+  package. Issues with this integration should be reported there.
+</Callout>
+
+## Prerequisites
+
+You'll first need a project where Convex is already set-up. Ensure that all steps in prerequisites are completed.
+
+<div className="fd-steps">
+
+<div className="fd-step">
+
+### Install convex
+
+```npm
+npm install convex convex-svelte
+```
+
+</div>
+
+  <div className="fd-step">
+    ### Customize the convex path
+
+    SvelteKit doesn't like referencing code outside of source, so customize the convex functionsDir to be under src/.
+
+    ```json title="convex.json"
+    {
+      "functions": "src/convex/"
+    }
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    ### Set up a Convex dev deployment
+
+    Next, run `npx convex dev`. This will prompt you to log in with GitHub, create a project, and save your production and deployment URLs.
+
+    It will also create a `src/convex/` folder for you to write your backend API functions in. The dev command will then continue running to sync your functions with your dev deployment in the cloud.
+
+    ```bash
+    npx convex dev
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    ### Add $convex alias
+
+    Add the following to your `svelte.config.js` file:
+
+    ```ts title="svelte.config.js"
+    import adapter from '@sveltejs/adapter-auto';
+    import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+
+    /** @type {import('@sveltejs/kit').Config} */
+    const config = {
+      // Consult https://svelte.dev/docs/kit/integrations
+      // for more information about preprocessors
+      preprocess: vitePreprocess(),
+
+      kit: {
+        // adapter-auto only supports some environments, see https://svelte.dev/docs/kit/adapter-auto for a list.
+        // If your environment is not supported, or you settled on a specific environment, switch out the adapter.
+        // See https://svelte.dev/docs/kit/adapters for more information about adapters.
+        adapter: adapter(),
+        alias: {
+          $convex: './src/convex'
+        }
+      }
+    };
+
+    export default config;
+    ```
+
+  </div>
+</div>
+
+## Installation
+
+<div className="fd-steps">
+
+  <div className="fd-step">
+    ### Install packages
+
+    Install the component, a pinned version of Better Auth, and ensure the latest version
+    of Convex.
+
+    <Callout>This component requires Convex `1.25.0` or later.</Callout>
+
+    ```npm
+    npm install better-auth@1.3.8 --save-exact
+    npm install @convex-dev/better-auth @mmailaender/convex-better-auth-svelte
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    ### Register the component
+
+    Register the Better Auth component in your Convex project.
+
+    ```ts title="convex/convex.config.ts"
+    import { defineApp } from "convex/server";
+    import betterAuth from "@convex-dev/better-auth/convex.config";
+
+    const app = defineApp();
+    app.use(betterAuth);
+
+    export default app;
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    ### Add Convex auth config
+
+    Add a `convex/auth.config.ts` file to configure Better Auth as an authentication provider.
+
+    ```ts title="convex/auth.config.ts"
+    export default {
+      providers: [
+        {
+          domain: process.env.CONVEX_SITE_URL,
+          applicationID: "convex",
+        },
+      ],
+    };
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    ### Set environment variables
+
+    Generate a secret for encryption and generating hashes. Use the command below if you have openssl installed, or generate your own however you like.
+
+    ```shell
+    npx convex env set BETTER_AUTH_SECRET=$(openssl rand -base64 32)
+    ```
+
+    Add your site URL to your Convex deployment.
+
+    ```shell
+    npx convex env set SITE_URL http://localhost:3000
+    ```
+
+    Add environment variables to the `.env.local` file created by `npx convex dev`. It will be picked up by your framework dev server.
+
+    ```shell title=".env.local" tab="Cloud"
+    # Deployment used by \`npx convex dev\`
+    CONVEX_DEPLOYMENT=dev:adjective-animal-123 # team: team-name, project: project-name
+
+    PUBLIC_CONVEX_URL=https://adjective-animal-123.convex.cloud
+
+    # Same as PUBLIC_CONVEX_URL but ends in .site // [!code ++]
+    PUBLIC_CONVEX_SITE_URL=https://adjective-animal-123.convex.site # [!code ++]
+
+    # Your local site URL // [!code ++]
+    SITE_URL=http://localhost:5173 # [!code ++]
+    ```
+
+    ```shell title=".env.local" tab="Self hosted"
+    # Deployment used by \`npx convex dev\`
+    CONVEX_DEPLOYMENT=dev:adjective-animal-123 # team: team-name, project: project-name
+
+    PUBLIC_CONVEX_URL=http://127.0.0.1:3210
+
+    # Will generally be one number higher than PUBLIC_CONVEX_URL,
+    # so if your convex url is :3212, your site url will be :3213
+    PUBLIC_CONVEX_SITE_URL=http://127.0.0.1:3211 # [!code ++]
+
+    # Your local site URL // [!code ++]
+    SITE_URL=http://localhost:5173 # [!code ++]
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    ### Create a Better Auth instance
+
+    Create a Better Auth instance and initialize the component.
+
+    <Callout>Some Typescript errors will show until you save the file.</Callout>
+
+    ```ts title="src/lib/convex/auth.ts"
+    import { createClient, type GenericCtx } from "@convex-dev/better-auth";
+    import { convex } from "@convex-dev/better-auth/plugins";
+    import { components } from "./_generated/api";
+    import { type DataModel } from "./_generated/dataModel";
+    import { query } from "./_generated/server";
+    import { betterAuth } from "better-auth";
+
+    const siteUrl = process.env.SITE_URL!;
+
+    // The component client has methods needed for integrating Convex with Better Auth,
+    // as well as helper methods for general use.
+    export const authComponent = createClient<DataModel>(components.betterAuth);
+
+    export const createAuth = (
+      ctx: GenericCtx<DataModel>,
+      { optionsOnly } = { optionsOnly: false },
+    ) => {
+      return betterAuth({
+        // disable logging when createAuth is called just to generate options.
+        // this is not required, but there's a lot of noise in logs without it.
+        logger: {
+          disabled: optionsOnly,
+        },
+        baseURL: siteUrl,
+        database: authComponent.adapter(ctx),
+        // Configure simple, non-verified email/password to get started
+        emailAndPassword: {
+          enabled: true,
+          requireEmailVerification: false,
+        },
+        plugins: [
+          // The Convex plugin is required for Convex compatibility
+          convex(),
+        ],
+      });
+    };
+
+    // Example function for getting the current user
+    // Feel free to edit, omit, etc.
+    export const getCurrentUser = query({
+      args: {},
+      handler: async (ctx) => {
+        return authComponent.getAuthUser(ctx);
+      },
+    });
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    ### Create a Better Auth client instance
+
+    Create a Better Auth client instance for interacting with the Better Auth server from your client.
+
+    ```ts title="src/lib/auth-client.ts"
+    import { createAuthClient } from 'better-auth/svelte';
+    import { convexClient } from "@convex-dev/better-auth/client/plugins";
+
+    export const authClient = createAuthClient({
+      plugins: [convexClient()],
+    });
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    ### Mount handlers
+
+    Register Better Auth route handlers on your Convex deployment.
+
+    ```ts title="src/lib/convex/http.ts"
+    import { httpRouter } from "convex/server";
+    import { authComponent, createAuth } from "./auth";
+
+    const http = httpRouter();
+
+    authComponent.registerRoutes(http, createAuth);
+
+    export default http;
+    ```
+
+    Set up route handlers to proxy auth requests from your framework server to your Convex deployment.
+
+    ```ts title="src/routes/api/auth/[...all]/+server.ts"
+    import { createSvelteKitHandler } from '@mmailaender/convex-better-auth-svelte/sveltekit';
+
+    export const { GET, POST } = createSvelteKitHandler();
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    ### Set up Convex client provider
+
+    Initialize the Convex client with auth in your app.
+    Note: `createSvelteAuthClient` includes already `setupConvex()` from convex-svelte.
+
+    ```ts title="src/routes/+layout.svelte"
+    <script lang="ts">
+      import '../app.css';
+      import favicon from '$lib/assets/favicon.svg';
+      import { createSvelteAuthClient } from '@mmailaender/convex-better-auth-svelte/svelte'; // [!code ++]
+      import { authClient } from '$lib/auth-client'; // [!code ++]
+
+      createSvelteAuthClient({ authClient }); // [!code ++]
+
+      let { children } = $props();
+    </script>
+
+    <svelte:head>
+      <link rel="icon" href={favicon} />
+    </svelte:head>
+
+    {@render children?.()}
+    ```
+
+  </div>
+</div>
+
+### You're done!
+
+You're now ready to start using Better Auth with Convex.
+
+## Usage
+
+### Using Better Auth from the client
+
+Note: To add SSR support (`data.currentUser`) also add the `src/routes/+page.server.ts` file from the `Using Better Auth from the server` example.
+
+```svelte title="src/routes/+page.svelte"
+<script lang="ts">
+	import { authClient } from '$lib/auth-client.js';
+	import { api } from '$convex/_generated/api.js';
+	import { useQuery } from 'convex-svelte';
+	import { useAuth } from '$lib/svelte/index.js';
+
+	let { data } = $props();
+
+	// Auth state store
+	const auth = useAuth();
+	const isLoading = $derived(auth.isLoading && !data.currentUser);
+	const isAuthenticated = $derived(auth.isAuthenticated || !!data.currentUser);
+
+	const currentUserResponse = useQuery(api.auth.getCurrentUser, {});
+	let user = $derived(currentUserResponse.data ?? data.currentUser);
+
+	// Sign in/up form state
+	let showSignIn = $state(true);
+	let name = $state('');
+	let email = $state('');
+	let password = $state('');
+
+	// Handle form submission
+	async function handlePasswordSubmit(event: Event) {
+		event.preventDefault();
+
+		try {
+			if (showSignIn) {
+				await authClient.signIn.email(
+					{ email, password },
+					{
+						onError: (ctx) => {
+							alert(ctx.error.message);
+						}
+					}
+				);
+			} else {
+				await authClient.signUp.email(
+					{ name, email, password },
+					{
+						onError: (ctx) => {
+							alert(ctx.error.message);
+						}
+					}
+				);
+			}
+		} catch (error) {
+			console.error('Authentication error:', error);
+		}
+	}
+
+	// Sign out function
+	async function signOut() {
+
+		const result = await authClient.signOut();
+		if(result.error) {
+			console.error('Sign out error:', result.error);
+		}
+	}
+
+	// Toggle between sign in and sign up
+	function toggleSignMode() {
+		showSignIn = !showSignIn;
+		// Clear form fields when toggling
+		name = '';
+		email = '';
+		password = '';
+	}
+
+	// Demo: Fetch access token
+	let accessToken = $state<string | null>(null);
+	let tokenLoading = $state(false);
+
+	async function fetchToken() {
+		tokenLoading = true;
+		try {
+			const token = await auth.fetchAccessToken({ forceRefreshToken: true });
+			accessToken = token;
+		} catch (error) {
+			console.error('Error fetching access token:', error);
+			accessToken = 'Error fetching token';
+		} finally {
+			tokenLoading = false;
+		}
+	}
+</script>
+
+<div class="flex h-screen flex-col items-center justify-center bg-gray-50">
+	{#if isLoading}
+		<div class="text-lg text-gray-600">Loading...</div>
+	{:else if !isAuthenticated}
+		<!-- Sign In Component -->
+		<div class="flex w-full max-w-md flex-col gap-4 rounded-lg bg-white p-6 shadow-md">
+			<h2 class="mb-6 text-center text-2xl font-bold text-gray-800">
+				{showSignIn ? 'Sign In' : 'Sign Up'}
+			</h2>
+
+			<form onsubmit={handlePasswordSubmit} class="flex flex-col gap-4">
+				{#if !showSignIn}
+					<input
+						bind:value={name}
+						placeholder="Name"
+						required
+						class="rounded-md border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
+					/>
+				{/if}
+				<input
+					type="email"
+					bind:value={email}
+					placeholder="Email"
+					required
+					class="rounded-md border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
+				/>
+				<input
+					type="password"
+					bind:value={password}
+					placeholder="Password"
+					required
+					class="rounded-md border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
+				/>
+				<button
+					type="submit"
+					class="cursor-pointer rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+				>
+					{showSignIn ? 'Sign in' : 'Sign up'}
+				</button>
+			</form>
+
+			<p class="mt-4 text-center text-gray-600">
+				{showSignIn ? "Don't have an account? " : 'Already have an account? '}
+				<button
+					type="button"
+					onclick={toggleSignMode}
+					class="cursor-pointer border-none bg-transparent text-blue-600 underline hover:text-blue-800"
+				>
+					{showSignIn ? 'Sign up' : 'Sign in'}
+				</button>
+			</p>
+		</div>
+	{:else if isAuthenticated}
+		<!-- Dashboard Component -->
+		<div class="w-full max-w-md rounded-lg bg-white p-6 text-center shadow-md">
+			<div class="mb-4 text-xl font-semibold text-gray-800">
+				Hello {user?.name}!
+			</div>
+
+			<!-- Demo: Access Token Section -->
+			<div class="mb-4 rounded-md bg-gray-50 p-4">
+				<h3 class="mb-2 text-sm font-medium text-gray-700">Access Token Demo</h3>
+				<button
+					onclick={fetchToken}
+					disabled={tokenLoading}
+					class="cursor-pointer rounded-md bg-blue-600 px-3 py-1 text-sm text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+				>
+					{tokenLoading ? 'Fetching...' : 'Fetch Access Token'}
+				</button>
+				{#if accessToken}
+					<div class="mt-2 rounded border bg-white p-2 text-xs break-all text-gray-600">
+						{accessToken.length > 50 ? accessToken.substring(0, 50) + '...' : accessToken}
+					</div>
+				{/if}
+			</div>
+
+			<button
+				onclick={signOut}
+				class="cursor-pointer rounded-md bg-red-600 px-4 py-2 text-white transition-colors hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none"
+			>
+				Sign out
+			</button>
+		</div>
+	{/if}
+</div>
+
+```
+
+### Using Better Auth from the server
+
+To use Better Auth's [server
+methods](https://www.better-auth.com/docs/concepts/api) in server rendering,
+server functions, or any other Sveltekit server code, use Convex functions
+and call the function from your server code.
+
+Here's an example server action that calls the Convex function `getCurrentUser` from `src/lib/convex/auth.ts`.
+
+```ts title="src/routes/+page.server.ts"
+import type { PageServerLoad } from "./$types.ts";
+import { api } from "$convex/_generated/api.js";
+import { createConvexHttpClient } from "@mmailaender/convex-better-auth-svelte/sveltekit";
+
+export const load: PageServerLoad = async ({ cookies }) => {
+  const client = createConvexHttpClient({ cookies });
+
+  try {
+    const currentUser = await client.query(api.auth.getCurrentUser, {});
+    return { currentUser };
+  } catch {
+    return { currentUser: null };
+  }
+};
+```

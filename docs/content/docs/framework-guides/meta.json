@@ -1,5 +1,5 @@
 {
   "title": "Framework Guides",
-  "pages": ["react", "expo", "tanstack-start", "next"],
+  "pages": ["react", "expo", "tanstack-start", "next", "sveltekit"],
   "defaultOpen": true
 }
