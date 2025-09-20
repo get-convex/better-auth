@@ -3,17 +3,27 @@ title: Sveltekit
 description: Install and configure Convex + Better Auth for Sveltekit.
 ---
 
+<Callout>
+  Sveltekit support is currently community maintained, and relies on the
+  [@mmailaender/convex-better-auth-svelte](https://github.com/mmailaender/convex-better-auth-svelte)
+  package. Issues with this integration should be reported there.
+</Callout>
+
 ## Prerequisites
+
 You'll first need a project where Convex is already set-up. Ensure that all steps in prerequisites are completed.
 
 <div className="fd-steps">
 
-  <div className="fd-step">
-    ### Install convex
-    ```npm
-    npm install convex convex-svelte
-    ```
-  </div>
+<div className="fd-step">
+
+### Install convex
+
+```npm
+npm install convex convex-svelte
+```
+
+</div>
 
   <div className="fd-step">
     ### Customize the convex path
@@ -25,6 +35,7 @@ You'll first need a project where Convex is already set-up. Ensure that all step
       "functions": "src/convex/"
     }
     ```
+
   </div>
 
   <div className="fd-step">
@@ -37,6 +48,7 @@ You'll first need a project where Convex is already set-up. Ensure that all step
     ```bash
     npx convex dev
     ```
+
   </div>
 
   <div className="fd-step">
@@ -67,6 +79,7 @@ You'll first need a project where Convex is already set-up. Ensure that all step
 
     export default config;
     ```
+
   </div>
 </div>
 
@@ -293,6 +306,7 @@ You'll first need a project where Convex is already set-up. Ensure that all step
 
     {@render children?.()}
     ```
+
   </div>
 </div>
 
@@ -360,7 +374,7 @@ Note: To add SSR support (`data.currentUser`) also add the `src/routes/+page.ser
 
 	// Sign out function
 	async function signOut() {
-		
+
 		const result = await authClient.signOut();
 		if(result.error) {
 			console.error('Sign out error:', result.error);
@@ -492,18 +506,18 @@ and call the function from your server code.
 Here's an example server action that calls the Convex function `getCurrentUser` from `src/lib/convex/auth.ts`.
 
 ```ts title="src/routes/+page.server.ts"
-import type { PageServerLoad } from './$types.ts';
-import { api } from '$convex/_generated/api.js';
-import { createConvexHttpClient } from '@mmailaender/convex-better-auth-svelte/sveltekit';
+import type { PageServerLoad } from "./$types.ts";
+import { api } from "$convex/_generated/api.js";
+import { createConvexHttpClient } from "@mmailaender/convex-better-auth-svelte/sveltekit";
 
 export const load: PageServerLoad = async ({ cookies }) => {
-	const client = createConvexHttpClient({ cookies });
+  const client = createConvexHttpClient({ cookies });
 
-	try {
-		const currentUser = await client.query(api.auth.getCurrentUser, {});
-		return { currentUser };
-	} catch {
-		return { currentUser: null };
-	}
+  try {
+    const currentUser = await client.query(api.auth.getCurrentUser, {});
+    return { currentUser };
+  } catch {
+    return { currentUser: null };
+  }
 };
 ```
