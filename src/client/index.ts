@@ -239,8 +239,8 @@ export const createApi = <
             args.onUpdateHandle as FunctionHandle<"mutation">,
             {
               model: args.input.model,
-              oldDoc: doc,
               newDoc: updatedDoc,
+              oldDoc: doc,
             }
           );
         }
@@ -306,8 +306,8 @@ export const createApi = <
                 args.onUpdateHandle as FunctionHandle<"mutation">,
                 {
                   model: args.input.model,
-                  oldDoc: doc,
                   newDoc: await ctx.db.get(doc._id as GenericId<string>),
+                  oldDoc: doc,
                 }
               );
             }
@@ -539,8 +539,8 @@ export const createClient = <
         handler: async (ctx, args) => {
           await config?.triggers?.[args.model]?.onUpdate?.(
             ctx,
-            args.oldDoc,
-            args.newDoc
+            args.newDoc,
+            args.oldDoc
           );
         },
       }),

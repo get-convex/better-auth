@@ -37,16 +37,17 @@ export const authComponent = createClient<DataModel>(components.betterAuth, {
   authFunctions,
   triggers: {
     user: {
-      onCreate: async (ctx, authUser) => {
+      onCreate: async (ctx, doc) => {
         await ctx.db.insert("posts", {
           title: "Hello, world!",
-          userId: authUser._id,
+          userId: doc._id,
         });
       },
-      onUpdate: async (ctx, oldUser, newUser) => {
-        // Both old and new documents are available
+      onUpdate: async (ctx, newDoc, oldDoc) => {
+        // Both old and new documents are available so you can compare and detect
+        // changes - you can ignore oldDoc if you don't need it.
       },
-      onDelete: async (ctx, authUser) => {
+      onDelete: async (ctx, doc) => {
         // The entire deleted document is available
       },
     },
