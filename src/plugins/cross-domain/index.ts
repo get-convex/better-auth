@@ -1,3 +1,4 @@
+import { HookEndpointContext } from "better-auth";
 import { setSessionCookie } from "better-auth/cookies";
 import { generateRandomString } from "better-auth/crypto";
 import {
@@ -19,6 +20,10 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
     return new URL(relativeCallbackURL, siteUrl).toString();
   };
 
+  const isExpoNative = (ctx: HookEndpointContext) => {
+    return ctx.headers?.has("expo-origin");
+  };
+
   return {
     id: "cross-domain",
     // TODO: remove this in the next minor release, it doesn't
@@ -35,15 +40,17 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
     hooks: {
       before: [
         {
-          matcher(context) {
-            return Boolean(
-              context.request?.headers.get("better-auth-cookie") ||
-                context.headers?.get("better-auth-cookie")
+          matcher(ctx) {
+            return (
+              Boolean(
+                ctx.request?.headers.get("better-auth-cookie") ||
+                  ctx.headers?.get("better-auth-cookie")
+              ) && !isExpoNative(ctx)
             );
           },
-          handler: createAuthMiddleware(async (c) => {
-            const existingHeaders = (c.request?.headers ||
-              c.headers) as Headers;
+          handler: createAuthMiddleware(async (ctx) => {
+            const existingHeaders = (ctx.request?.headers ||
+              ctx.headers) as Headers;
             const headers = new Headers({
               ...Object.fromEntries(existingHeaders?.entries()),
             });
@@ -65,7 +72,11 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         },
         {
           matcher: (ctx) => {
-            return ctx.method === "GET" && ctx.path.startsWith("/verify-email");
+            return (
+              ctx.method === "GET" &&
+              ctx.path.startsWith("/verify-email") &&
+              !isExpoNative(ctx)
+            );
           },
           handler: createAuthMiddleware(async (ctx) => {
             if (ctx.query?.callbackURL) {
@@ -77,13 +88,14 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         {
           matcher: (ctx) => {
             return (
-              (ctx.method === "POST" && ctx.path.startsWith("/link-social")) ||
-              ctx.path.startsWith("/send-verification-email") ||
-              ctx.path.startsWith("/sign-in/email") ||
-              ctx.path.startsWith("/sign-in/social") ||
-              ctx.path.startsWith("/sign-in/magic-link") ||
-              ctx.path.startsWith("/delete-user") ||
-              ctx.path.startsWith("/change-email")
+              ((ctx.method === "POST" && ctx.path.startsWith("/link-social")) ||
+                ctx.path.startsWith("/send-verification-email") ||
+                ctx.path.startsWith("/sign-in/email") ||
+                ctx.path.startsWith("/sign-in/social") ||
+                ctx.path.startsWith("/sign-in/magic-link") ||
+                ctx.path.startsWith("/delete-user") ||
+                ctx.path.startsWith("/change-email")) &&
+              !isExpoNative(ctx)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
@@ -105,8 +117,8 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
       ],
       after: [
         {
-          matcher() {
-            return true;
+          matcher(ctx) {
+            return !isExpoNative(ctx);
           },
           handler: createAuthMiddleware(async (ctx) => {
             const setCookie = ctx.context.responseHeaders?.get("set-cookie");
@@ -120,9 +132,10 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         {
           matcher: (ctx) => {
             return (
-              ctx.path?.startsWith("/callback") ||
-              ctx.path?.startsWith("/oauth2/callback") ||
-              ctx.path?.startsWith("/magic-link/verify")
+              (ctx.path?.startsWith("/callback") ||
+                ctx.path?.startsWith("/oauth2/callback") ||
+                ctx.path?.startsWith("/magic-link/verify")) &&
+              !isExpoNative(ctx)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
