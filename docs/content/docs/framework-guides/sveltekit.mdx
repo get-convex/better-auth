@@ -150,7 +150,7 @@ npm install convex convex-svelte
     Add your site URL to your Convex deployment.
 
     ```shell
-    npx convex env set SITE_URL http://localhost:3000
+    npx convex env set SITE_URL http://localhost:5173
     ```
 
     Add environment variables to the `.env.local` file created by `npx convex dev`. It will be picked up by your framework dev server.
@@ -191,7 +191,7 @@ npm install convex convex-svelte
 
     <Callout>Some Typescript errors will show until you save the file.</Callout>
 
-    ```ts title="src/lib/convex/auth.ts"
+    ```ts title="src/convex/auth.ts"
     import { createClient, type GenericCtx } from "@convex-dev/better-auth";
     import { convex } from "@convex-dev/better-auth/plugins";
     import { components } from "./_generated/api";
@@ -262,7 +262,7 @@ npm install convex convex-svelte
 
     Register Better Auth route handlers on your Convex deployment.
 
-    ```ts title="src/lib/convex/http.ts"
+    ```ts title="src/convex/http.ts"
     import { httpRouter } from "convex/server";
     import { authComponent, createAuth } from "./auth";
 
@@ -504,7 +504,7 @@ methods](https://www.better-auth.com/docs/concepts/api) in server rendering,
 server functions, or any other Sveltekit server code, use Convex functions
 and call the function from your server code.
 
-Here's an example server action that calls the Convex function `getCurrentUser` from `src/lib/convex/auth.ts`.
+Here's an example server action that calls the Convex function `getCurrentUser` from `src/convex/auth.ts`.
 
 ```ts title="src/routes/+page.server.ts"
 import type { PageServerLoad } from "./$types.ts";
