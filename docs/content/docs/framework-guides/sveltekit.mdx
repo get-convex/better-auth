@@ -326,7 +326,7 @@ Note: To add SSR support (`data.currentUser`) also add the `src/routes/+page.ser
 	import { authClient } from '$lib/auth-client.js';
 	import { api } from '$convex/_generated/api.js';
 	import { useQuery } from 'convex-svelte';
-	import { useAuth } from '$lib/svelte/index.js';
+	import { useAuth } from '@mmailaender/convex-better-auth-svelte/svelte';
 
 	let { data } = $props();
 
