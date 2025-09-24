@@ -21,7 +21,6 @@ import { type GenericId, Infer, v } from "convex/values";
 import { convexAdapter } from "./adapter";
 import { AdapterInstance, betterAuth } from "better-auth";
 import { asyncMap } from "convex-helpers";
-import { requireEnv } from "../utils";
 import { partial } from "convex-helpers/validators";
 import {
   adapterWhereValidator,
@@ -80,6 +79,7 @@ const whereValidator = (
         v.literal("gte"),
         v.literal("eq"),
         v.literal("in"),
+        v.literal("not_in"),
         v.literal("ne"),
         v.literal("contains"),
         v.literal("starts_with"),
@@ -465,7 +465,7 @@ export const createClient = <
     component,
     adapter: (ctx: GenericCtx<DataModel>) =>
       convexAdapter<DataModel, typeof ctx, Schema>(ctx, component, config),
-    getHeaders: async (ctx: GenericQueryCtx<DataModel>) => {
+    getHeaders: async (ctx: GenericCtx<DataModel>) => {
       const identity = await ctx.auth.getUserIdentity();
       if (!identity) {
         return new Headers();
@@ -592,7 +592,7 @@ export const createClient = <
           path: "/.well-known/openid-configuration",
           method: "GET",
           handler: httpActionGeneric(async () => {
-            const url = `${requireEnv("CONVEX_SITE_URL")}${path}/convex/.well-known/openid-configuration`;
+            const url = `${process.env.CONVEX_SITE_URL}${path}/convex/.well-known/openid-configuration`;
             return Response.redirect(url);
           }),
         });
@@ -666,35 +666,6 @@ export const createClient = <
 };
 
 /* Type utils follow */
-
-/**
- * @deprecated Use `QueryCtx` from _generated/server instead
- */
-export type RunQueryCtx = {
-  runQuery: GenericQueryCtx<GenericDataModel>["runQuery"];
-};
-
-/**
- * @deprecated Use `MutationCtx` from _generated/server instead
- */
-export type RunMutationCtx = {
-  runQuery: GenericQueryCtx<GenericDataModel>["runQuery"];
-  runMutation: GenericMutationCtx<GenericDataModel>["runMutation"];
-};
-
-/**
- * @deprecated Use `ActionCtx` from _generated/server instead
- */
-export type RunActionCtx = {
-  runQuery: GenericQueryCtx<GenericDataModel>["runQuery"];
-  runMutation: GenericMutationCtx<GenericDataModel>["runMutation"];
-  runAction: GenericActionCtx<GenericDataModel>["runAction"];
-};
-
-/**
- * @deprecated
- */
-export type RunCtx = RunQueryCtx | RunMutationCtx | RunActionCtx;
 
 export type OpaqueIds<T> =
   T extends GenericId<infer _T>

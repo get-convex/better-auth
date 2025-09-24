@@ -24,6 +24,7 @@ export const adapterWhereValidator = v.object({
       v.literal("gte"),
       v.literal("eq"),
       v.literal("in"),
+      v.literal("not_in"),
       v.literal("ne"),
       v.literal("contains"),
       v.literal("starts_with"),
@@ -96,6 +97,7 @@ const findIndex = (
         | "gte"
         | "eq"
         | "in"
+        | "not_in"
         | "ne"
         | "contains"
         | "starts_with"
@@ -120,7 +122,9 @@ const findIndex = (
   const where = args.where?.filter((w) => {
     return (
       (!w.operator ||
-        ["lt", "lte", "gt", "gte", "eq", "in"].includes(w.operator)) &&
+        ["lt", "lte", "gt", "gte", "eq", "in", "not_in"].includes(
+          w.operator
+        )) &&
       w.field !== "id"
     );
   });
@@ -341,6 +345,12 @@ const filterByWhere = <
         case "in": {
           return Array.isArray(w.value) && (w.value as any[]).includes(value);
         }
+        case "not_in": {
+          const result =
+            Array.isArray(w.value) && !(w.value as any[]).includes(value);
+          console.log(doc, "not_in", w, value, result);
+          return result;
+        }
         case "lt": {
           return isLessThan(value, w.value);
         }
@@ -439,7 +449,9 @@ const generateQuery = (
       // incompatible with Convex statically.
       (w) =>
         w.operator &&
-        ["contains", "starts_with", "ends_with", "ne"].includes(w.operator)
+        ["contains", "starts_with", "ends_with", "ne", "not_in"].includes(
+          w.operator
+        )
     );
   });
   return filteredQuery;
@@ -470,11 +482,13 @@ export const paginate = async <
   if (
     args.where?.some(
       (w) =>
-        w.field === "id" && w.operator && !["eq", "in"].includes(w.operator)
+        w.field === "id" &&
+        w.operator &&
+        !["eq", "in", "not_in"].includes(w.operator)
     )
   ) {
     throw new Error(
-      `id can only be used with eq or in operator: ${JSON.stringify(args.where)}`
+      `id can only be used with eq, in, or not_in operator: ${JSON.stringify(args.where)}`
     );
   }
   // If any where clause is "eq" (or missing operator) on a unique field,

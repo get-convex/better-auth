@@ -21,7 +21,7 @@ export const tables = {
     phoneNumberVerified: v.optional(v.union(v.null(), v.boolean())),
     userId: v.optional(v.union(v.null(), v.string())),
   })
-    .index("email_name", ["email", "name"])
+    .index("email_name", ["email","name"])
     .index("name", ["name"])
     .index("userId", ["userId"])
     .index("username", ["username"])
@@ -36,7 +36,7 @@ export const tables = {
     userId: v.string(),
   })
     .index("expiresAt", ["expiresAt"])
-    .index("expiresAt_userId", ["expiresAt", "userId"])
+    .index("expiresAt_userId", ["expiresAt","userId"])
     .index("token", ["token"])
     .index("userId", ["userId"]),
   account: defineTable({
@@ -54,8 +54,8 @@ export const tables = {
     updatedAt: v.number(),
   })
     .index("accountId", ["accountId"])
-    .index("accountId_providerId", ["accountId", "providerId"])
-    .index("providerId_userId", ["providerId", "userId"])
+    .index("accountId_providerId", ["accountId","providerId"])
+    .index("providerId_userId", ["providerId","userId"])
     .index("userId", ["userId"]),
   verification: defineTable({
     identifier: v.string(),
@@ -70,7 +70,8 @@ export const tables = {
     secret: v.string(),
     backupCodes: v.string(),
     userId: v.string(),
-  }).index("userId", ["userId"]),
+  })
+    .index("userId", ["userId"]),
   passkey: defineTable({
     name: v.optional(v.union(v.null(), v.string())),
     publicKey: v.string(),
@@ -100,7 +101,6 @@ export const tables = {
   })
     .index("clientId", ["clientId"])
     .index("userId", ["userId"]),
-
   oauthAccessToken: defineTable({
     accessToken: v.optional(v.union(v.null(), v.string())),
     refreshToken: v.optional(v.union(v.null(), v.string())),
@@ -116,7 +116,6 @@ export const tables = {
     .index("refreshToken", ["refreshToken"])
     .index("clientId", ["clientId"])
     .index("userId", ["userId"]),
-
   oauthConsent: defineTable({
     clientId: v.optional(v.union(v.null(), v.string())),
     userId: v.optional(v.union(v.null(), v.string())),
@@ -125,229 +124,27 @@ export const tables = {
     updatedAt: v.optional(v.union(v.null(), v.number())),
     consentGiven: v.optional(v.union(v.null(), v.boolean())),
   })
-    .index("clientId_userId", ["clientId", "userId"])
+    .index("clientId_userId", ["clientId","userId"])
     .index("userId", ["userId"]),
-
-  team: defineTable({
-    name: v.string(),
-    organizationId: v.string(),
-    createdAt: v.number(),
-    updatedAt: v.optional(v.union(v.null(), v.number())),
-  }).index("organizationId", ["organizationId"]),
-
-  teamMember: defineTable({
-    teamId: v.string(),
-    userId: v.string(),
-    createdAt: v.optional(v.union(v.null(), v.number())),
-  })
-    .index("teamId", ["teamId"])
-    .index("userId", ["userId"]),
-
-  organization: defineTable({
-    name: v.string(),
-    slug: v.optional(v.union(v.null(), v.string())),
-    logo: v.optional(v.union(v.null(), v.string())),
-    createdAt: v.number(),
-    metadata: v.optional(v.union(v.null(), v.string())),
-  })
-    .index("name", ["name"])
-    .index("slug", ["slug"]),
-
-  member: defineTable({
-    organizationId: v.string(),
-    userId: v.string(),
-    role: v.string(),
-    createdAt: v.number(),
-  })
-    .index("organizationId_userId", ["organizationId", "userId"])
-    .index("userId", ["userId"])
-    .index("role", ["role"]),
-
-  invitation: defineTable({
-    organizationId: v.string(),
-    email: v.string(),
-    role: v.optional(v.union(v.null(), v.string())),
-    teamId: v.optional(v.union(v.null(), v.string())),
-    status: v.string(),
-    expiresAt: v.number(),
-    inviterId: v.string(),
-  })
-    .index("email_organizationId_status", ["email", "organizationId", "status"])
-    .index("organizationId_status", ["organizationId", "status"])
-    .index("role", ["role"])
-    .index("teamId", ["teamId"])
-    .index("status", ["status"])
-    .index("inviterId", ["inviterId"]),
-
-  ssoProvider: defineTable({
-    issuer: v.string(),
-    oidcConfig: v.optional(v.union(v.null(), v.string())),
-    samlConfig: v.optional(v.union(v.null(), v.string())),
-    userId: v.optional(v.union(v.null(), v.string())),
-    providerId: v.string(),
-    organizationId: v.optional(v.union(v.null(), v.string())),
-    domain: v.string(),
-  })
-    .index("organizationId", ["organizationId"])
-    .index("domain", ["domain"])
-    .index("userId", ["userId"])
-    .index("providerId", ["providerId"]),
-
   jwks: defineTable({
     publicKey: v.string(),
     privateKey: v.string(),
     createdAt: v.number(),
   }),
-
-  subscription: defineTable({
-    plan: v.string(),
-    referenceId: v.string(),
-    stripeCustomerId: v.optional(v.union(v.null(), v.string())),
-    stripeSubscriptionId: v.optional(v.union(v.null(), v.string())),
-    status: v.optional(v.union(v.null(), v.string())),
-    periodStart: v.optional(v.union(v.null(), v.number())),
-    periodEnd: v.optional(v.union(v.null(), v.number())),
-    trialStart: v.optional(v.union(v.null(), v.number())),
-    trialEnd: v.optional(v.union(v.null(), v.number())),
-    cancelAtPeriodEnd: v.optional(v.union(v.null(), v.boolean())),
-    seats: v.optional(v.union(v.null(), v.number())),
-  })
-    .index("stripeSubscriptionId", ["stripeSubscriptionId"])
-    .index("stripeCustomerId", ["stripeCustomerId"])
-    .index("referenceId", ["referenceId"]),
-
-  walletAddress: defineTable({
-    userId: v.string(),
-    address: v.string(),
-    chainId: v.number(),
-    isPrimary: v.optional(v.union(v.null(), v.boolean())),
-    createdAt: v.number(),
-  }).index("userId", ["userId"]),
-
   rateLimit: defineTable({
     key: v.optional(v.union(v.null(), v.string())),
     count: v.optional(v.union(v.null(), v.number())),
     lastRequest: v.optional(v.union(v.null(), v.number())),
-  }).index("key", ["key"]),
+  })
+    .index("key", ["key"]),
   ratelimit: defineTable({
     key: v.string(),
     count: v.number(),
     lastRequest: v.number(),
-  }).index("key", ["key"]),
+  })
+    .index("key", ["key"]),
 };
 
 const schema = defineSchema(tables);
 
 export default schema;
-
-export const specialFields = {
-  user: {
-    name: {
-      sortable: true,
-    },
-    email: {
-      sortable: true,
-      unique: true,
-    },
-    username: {
-      sortable: true,
-      unique: true,
-    },
-    phoneNumber: {
-      sortable: true,
-      unique: true,
-    },
-  },
-  session: {
-    token: {
-      unique: true,
-    },
-    userId: {
-      references: {
-        model: "user",
-        field: "id",
-        onDelete: "cascade",
-      },
-    },
-  },
-  account: {
-    userId: {
-      references: {
-        model: "user",
-        field: "id",
-        onDelete: "cascade",
-      },
-    },
-  },
-  twoFactor: {
-    userId: {
-      references: {
-        model: "user",
-        field: "id",
-      },
-    },
-  },
-  passkey: {
-    userId: {
-      references: {
-        model: "user",
-        field: "id",
-      },
-    },
-  },
-  oauthApplication: {
-    clientId: {
-      unique: true,
-    },
-    userId: {
-      references: {
-        model: "user",
-        field: "id",
-        onDelete: "cascade",
-      },
-    },
-  },
-  oauthAccessToken: {
-    accessToken: {
-      unique: true,
-    },
-    refreshToken: {
-      unique: true,
-    },
-    clientId: {
-      references: {
-        model: "oauthApplication",
-        field: "clientId",
-        onDelete: "cascade",
-      },
-    },
-    userId: {
-      references: {
-        model: "user",
-        field: "id",
-        onDelete: "cascade",
-      },
-    },
-  },
-  oauthConsent: {
-    clientId: {
-      references: {
-        model: "oauthApplication",
-        field: "clientId",
-        onDelete: "cascade",
-      },
-    },
-    userId: {
-      references: {
-        model: "user",
-        field: "id",
-        onDelete: "cascade",
-      },
-    },
-  },
-  ratelimit: {
-    key: {
-      unique: true,
-    },
-  },
-};

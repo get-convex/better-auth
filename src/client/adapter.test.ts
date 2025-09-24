@@ -42,47 +42,62 @@ export const getAdapter = (t: ReturnType<typeof convexTest>) => async () => {
     deleteMany: async (data) => {
       return t.mutation(api.adapterTest.deleteMany, data);
     },
+    transaction: false as any,
   } satisfies Adapter;
 };
 
 describe("Better Auth Adapter Tests", async () => {
   const _t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const activeTests = [
-    "CREATE_MODEL",
-    "CREATE_MODEL_SHOULD_ALWAYS_RETURN_AN_ID",
-    "FIND_MODEL",
-    "FIND_MODEL_WITHOUT_ID",
-    "FIND_MODEL_WITH_SELECT",
-    "FIND_MODEL_WITH_MODIFIED_FIELD_NAME",
-    "UPDATE_MODEL",
-    "SHOULD_FIND_MANY",
-    "SHOULD_FIND_MANY_WITH_WHERE",
-    "SHOULD_FIND_MANY_WITH_OPERATORS",
-    "SHOULD_WORK_WITH_REFERENCE_FIELDS",
-    "SHOULD_FIND_MANY_WITH_SORT_BY",
-    "SHOULD_FIND_MANY_WITH_LIMIT",
-    "SHOULD_UPDATE_WITH_MULTIPLE_WHERE",
-    "DELETE_MODEL",
-    "SHOULD_DELETE_MANY",
-    "SHOULD_NOT_THROW_ON_DELETE_RECORD_NOT_FOUND",
-    "SHOULD_NOT_THROW_ON_RECORD_NOT_FOUND",
-    "SHOULD_FIND_MANY_WITH_CONTAINS_OPERATOR",
-    "SHOULD_SEARCH_USERS_WITH_STARTS_WITH",
-    "SHOULD_SEARCH_USERS_WITH_ENDS_WITH",
-  ];
-  const inactiveTests = [
-    // not supported
-    "SHOULD_FIND_MANY_WITH_OFFSET",
-    "SHOULD_PREFER_GENERATE_ID_IF_PROVIDED",
-  ];
+  const status = {
+    active: "active",
+    only: "only",
+    notSupported: "not supported",
+  } as const;
+  const tests: Record<string, (typeof status)[keyof typeof status]> = {
+    CREATE_MODEL: status.active,
+    CREATE_MODEL_SHOULD_ALWAYS_RETURN_AN_ID: status.active,
+    FIND_MODEL: status.active,
+    FIND_MODEL_WITHOUT_ID: status.active,
+    FIND_MODEL_WITH_SELECT: status.active,
+    FIND_MODEL_WITH_MODIFIED_FIELD_NAME: status.active,
+    UPDATE_MODEL: status.active,
+    SHOULD_FIND_MANY: status.active,
+    SHOULD_FIND_MANY_WITH_WHERE: status.active,
+    SHOULD_FIND_MANY_WITH_OPERATORS: status.active,
+    SHOULD_WORK_WITH_REFERENCE_FIELDS: status.active,
+    SHOULD_FIND_MANY_WITH_NOT_IN_OPERATOR: status.active,
+    SHOULD_FIND_MANY_WITH_SORT_BY: status.active,
+    SHOULD_FIND_MANY_WITH_LIMIT: status.active,
+    SHOULD_UPDATE_WITH_MULTIPLE_WHERE: status.active,
+    DELETE_MODEL: status.active,
+    SHOULD_DELETE_MANY: status.active,
+    SHOULD_NOT_THROW_ON_DELETE_RECORD_NOT_FOUND: status.active,
+    SHOULD_NOT_THROW_ON_RECORD_NOT_FOUND: status.active,
+    SHOULD_FIND_MANY_WITH_CONTAINS_OPERATOR: status.active,
+    SHOULD_SEARCH_USERS_WITH_STARTS_WITH: status.active,
+    SHOULD_SEARCH_USERS_WITH_ENDS_WITH: status.active,
+    // Use local install and Convex paginated queries
+    SHOULD_FIND_MANY_WITH_OFFSET: status.notSupported,
+    // Convex generates ids on insert
+    SHOULD_PREFER_GENERATE_ID_IF_PROVIDED: status.notSupported,
+    // Transactions are inherent for auth.api and not possible for authClient
+    SHOULD_ROLLBACK_FAILING_TRANSACTION: status.notSupported,
+    SHOULD_RETURN_TRANSACTION_RESULT: status.notSupported,
+    SHOULD_FIND_MANY_WITH_CONNECTORS: status.active,
+  };
+
+  const disableTests = Object.fromEntries(
+    Object.entries(tests).map((entry, idx, arr) => {
+      if (arr.some((e) => e[1] === status.only)) {
+        return [entry[0], !(entry[1] === status.only)];
+      }
+      return [entry[0], !(entry[1] === status.active)];
+    })
+  );
 
   await runAdapterTest({
     getAdapter: getAdapter(_t),
-    disableTests: Object.fromEntries([
-      ...activeTests.map((test) => [test, false]),
-      ...inactiveTests.map((test) => [test, true]),
-    ]),
+    disableTests,
   });
 });
 
@@ -338,6 +353,51 @@ describe("Convex Adapter Tests", async () => {
       })
     ).toEqual(user);
   });
+  test("should handle OR where clauses with sortBy", async () => {
+    const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
+    const adapter = await getAdapter(t)();
+    const fooUser = await adapter.create({
+      model: "user",
+      data: {
+        name: "foo",
+        email: "foo@bar.com",
+      },
+    });
+    const barUser = await adapter.create({
+      model: "user",
+      data: {
+        name: "bar",
+        email: "bar@bar.com",
+      },
+    });
+    await adapter.create({
+      model: "user",
+      data: {
+        name: "baz",
+        email: "baz@bar.com",
+      },
+    });
+    expect(
+      await adapter.findMany({
+        model: "user",
+        where: [
+          { field: "name", value: "bar", connector: "OR" },
+          { field: "name", value: "foo", connector: "OR" },
+        ],
+        sortBy: { field: "name", direction: "asc" },
+      })
+    ).toEqual([barUser, fooUser]);
+    expect(
+      await adapter.findMany({
+        model: "user",
+        where: [
+          { field: "name", value: "bar", connector: "OR" },
+          { field: "name", value: "foo", connector: "OR" },
+        ],
+        sortBy: { field: "name", direction: "desc" },
+      })
+    ).toEqual([fooUser, barUser]);
+  });
   test("should handle count", async () => {
     const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
     const adapter = await getAdapter(t)();
@@ -387,7 +447,7 @@ describe("Convex Adapter Tests", async () => {
     ).toEqual(null);
   });
 
-  test("should handle compound operator on non-unique fieldwithout an index", async () => {
+  test("should handle compound operator on non-unique field without an index", async () => {
     const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
     const adapter = await getAdapter(t)();
     await adapter.create({
