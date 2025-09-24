@@ -57,3 +57,45 @@ export const updateUserPassword = mutation({
   },
 });
 ```
+
+## Using Convex ctx in Better Auth config
+
+The `ctx` param passed in to the `createAuth` function is the Convex context
+object. This can be used to access the Convex database or Convex functions in
+your Better Auth config. It can be a [query](https://docs.convex.dev/functions/query-functions#query-context),
+[mutation](https://docs.convex.dev/functions/mutation-functions#mutation-context),
+or [action](https://docs.convex.dev/functions/actions#action-context) context.
+
+A common use case is sending emails for verification or password resets with
+the [Resend component](https://www.convex.dev/components/resend).
+`resend.sendEmail` will produce a type error because the ctx object could be a
+query ctx. The component provides type guards for this.
+
+```ts
+import { requireRunMutationCtx } from "@convex-dev/better-auth/utils";
+import { Resend } from "@convex-dev/resend";
+import { components } from "./_generated/api";
+import { DataModel } from "./_generated/dataModel";
+import { GenericQueryCtx } from "convex/server";
+
+export const resend = new Resend(components.resend, {
+  testMode: false,
+});
+
+export const createAuth = (
+  ctx: GenericQueryCtx<DataModel>,
+  { optionsOnly } = { optionsOnly: false }
+) =>
+  betterAuth({
+    baseURL: siteUrl,
+    sendVerificationEmail: async ({ user, url }) => {
+      // We use the type guard to ensure we have a mutation ctx or throw
+      // an explicit error
+      await resend.sendEmail(requireRunMutationCtx(ctx), {
+        to: user.email,
+        subject: "Verify your email",
+        html: `<p>Click <a href="${url}">here</a> to verify your email</p>`,
+      });
+    },
+  });
+```
