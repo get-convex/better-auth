@@ -1,0 +1,48 @@
+---
+title: Type Utilities
+description: Type utilities for Better Auth
+---
+
+## `requireRunMutationCtx()`
+
+A type guard to ensure a given context object has a `runMutation` property.
+Requires a [mutation
+context](https://docs.convex.dev/functions/mutation-functions#mutation-context)
+or [action context](https://docs.convex.dev/functions/actions#action-context).
+Will error if a [query
+context](https://docs.convex.dev/functions/query-functions#query-context)
+is provided.
+
+## `requireActionCtx()`
+
+A type guard to ensure the ctx is an action ctx. Will error if the provided ctx
+is not an action ctx.
+
+## Example usage
+
+```ts
+import { requireActionCtx } from "@convex-dev/better-auth/utils";
+import { Resend } from "@convex-dev/resend";
+import { components } from "./_generated/api";
+import { type ActionCtx } from "./_generated/server";
+
+export const resend = new Resend(components.resend);
+
+export const createAuth = (
+  ctx: ActionCtx,
+  { optionsOnly } = { optionsOnly: false }
+) =>
+  betterAuth({
+    baseURL: siteUrl,
+    sendVerificationEmail: async ({ user, url }) => {
+      // This function only requires a `runMutation` property on the ctx object,
+      // but we'll make sure we have an action ctx because we know a network
+      // request is being made, which requires an action ctx.
+      await resend.sendEmail(requireActionCtx(ctx), {
+        to: user.email,
+        subject: "Verify your email",
+        html: `<p>Click <a href="${url}">here</a> to verify your email</p>`,
+      });
+    },
+  });
+```

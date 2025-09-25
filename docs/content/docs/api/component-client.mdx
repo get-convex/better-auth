@@ -1,0 +1,41 @@
+---
+title: Component Client
+description: Component client for Better Auth
+---
+
+The component client is returned from the `createClient` function, and provides
+helpful methods for using Better Auth in your Convex code.
+
+## `adapter()`
+
+Returns the Convex database adapter for use in Better Auth options.
+
+```ts
+import { createClient } from "@convex-dev/better-auth";
+import { components } from "./_generated/api";
+import { type GenericCtx } from "./_generated/server";
+import { DataModel } from "./_generated/dataModel";
+
+export const authComponent = createClient<DataModel>(components.betterAuth);
+
+export const createAuth = (ctx: GenericCtx<DataModel>) => {
+  return betterAuth({
+    database: authComponent.adapter(ctx),
+  });
+});
+```
+
+## `getHeaders()`
+
+Some Better Auth [API endpoints](https://www.better-auth.com/docs/concepts/api)
+require headers to be passed in. This method creates a `Headers` object with
+cookies for the current user session for this purpose.
+
+```ts
+import { createClient } from "@convex-dev/better-auth";
+import { components } from "./_generated/api";
+import { type GenericCtx } from "./_generated/server";
+import { DataModel } from "./_generated/dataModel";
+
+export const getSession = query;
+```
