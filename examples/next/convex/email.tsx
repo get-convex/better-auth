@@ -8,16 +8,13 @@ import ResetPasswordEmail from "./emails/resetPassword";
 import { components } from "./_generated/api";
 import { Resend } from "@convex-dev/resend";
 import { type ActionCtx } from "./_generated/server";
-import { requireRunMutationCtx } from "@convex-dev/better-auth/utils";
-import { GenericQueryCtx } from "convex/server";
-import { DataModel } from "./_generated/dataModel";
 
 export const resend = new Resend(components.resend, {
   testMode: false,
 });
 
 export const sendEmailVerification = async (
-  ctx: GenericQueryCtx<DataModel>,
+  ctx: ActionCtx,
   {
     to,
     url,
@@ -26,7 +23,7 @@ export const sendEmailVerification = async (
     url: string;
   },
 ) => {
-  await resend.sendEmail(requireRunMutationCtx(ctx), {
+  await resend.sendEmail(ctx, {
     from: "Test <onboarding@boboddy.business>",
     to,
     subject: "Verify your email address",

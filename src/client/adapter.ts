@@ -15,6 +15,7 @@ import { api as componentApi } from "../component/_generated/api";
 import { Where } from "better-auth/types";
 import { asyncMap } from "convex-helpers";
 import { prop, sortBy, unique } from "remeda";
+import { isRunMutationCtx } from "../utils";
 
 const handlePagination = async (
   next: ({
@@ -141,6 +142,9 @@ export const convexAdapter = <
       options.telemetry = { enabled: false };
       return {
         id: "convex",
+        options: {
+          isRunMutationCtx: isRunMutationCtx(ctx),
+        },
         createSchema: async ({ file, tables }) => {
           const { createSchema } = await import("./createSchema");
           return createSchema({ file, tables });
@@ -311,7 +315,7 @@ export const convexAdapter = <
         },
         updateMany: async (data) => {
           if (!("runMutation" in ctx)) {
-            throw new Error("ctx is not an action ctx");
+            throw new Error("ctx is not a mutation ctx");
           }
           const onUpdateHandle =
             config.authFunctions?.onUpdate &&

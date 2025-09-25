@@ -69,7 +69,7 @@ const whereValidator = (
       ...Object.keys(schema.tables[tableName].validator.fields).map((field) =>
         v.literal(field)
       ),
-      v.literal("id")
+      v.literal("_id")
     ),
     operator: v.optional(
       v.union(
@@ -464,7 +464,10 @@ export const createClient = <
   return {
     component,
     adapter: (ctx: GenericCtx<DataModel>) =>
-      convexAdapter<DataModel, typeof ctx, Schema>(ctx, component, config),
+      convexAdapter<DataModel, typeof ctx, Schema>(ctx, component, {
+        ...config,
+        debugLogs: config?.verbose,
+      }),
     getHeaders: async (ctx: GenericCtx<DataModel>) => {
       const identity = await ctx.auth.getUserIdentity();
       if (!identity) {

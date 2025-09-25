@@ -9,15 +9,7 @@ export const indexFields = {
   verification: ["expiresAt", "identifier"],
   user: [["email", "name"], "name", "userId"],
   passkey: ["credentialID"],
-  apikey: ["key"],
-  member: [["organizationId", "userId"]],
-  invitation: [
-    ["email", "organizationId", "status"],
-    ["organizationId", "status"],
-  ],
   oauthConsent: [["clientId", "userId"]],
-  ssoProvider: ["organizationId", "domain"],
-  subscription: ["stripeSubscriptionId", "stripeCustomerId", "referenceId"],
 };
 
 // Return map of unique, sortable, and reference fields

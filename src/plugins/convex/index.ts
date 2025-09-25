@@ -60,7 +60,29 @@ export const convex = (
       }
     },
     hooks: {
-      before: [...bearer.hooks.before],
+      before: [
+        ...bearer.hooks.before,
+        // Don't attempt to refresh the session with a query ctx
+        {
+          matcher: (ctx) => {
+            const result =
+              !ctx.context.adapter.options?.isRunMutationCtx &&
+              ctx.path === "/get-session";
+            console.log("matching result", result);
+            return result;
+          },
+          handler: createAuthMiddleware(async (ctx) => {
+            ctx.query = { ...ctx.query, disableRefresh: true };
+            console.log("ctx.query", ctx.query);
+            ctx.context.internalAdapter.deleteSession = async (
+              ..._args: any[]
+            ) => {
+              //skip
+            };
+            return { context: ctx };
+          }),
+        },
+      ],
       after: [
         ...oidcProvider.hooks.after,
         {

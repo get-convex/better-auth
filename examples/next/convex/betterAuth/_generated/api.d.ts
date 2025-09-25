@@ -133,7 +133,7 @@ export type Mounts = {
                   | "twoFactorEnabled"
                   | "userId"
                   | "foo"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -167,7 +167,7 @@ export type Mounts = {
                   | "ipAddress"
                   | "userAgent"
                   | "userId"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -206,7 +206,7 @@ export type Mounts = {
                   | "password"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -238,7 +238,7 @@ export type Mounts = {
                   | "expiresAt"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -264,7 +264,7 @@ export type Mounts = {
               model: "twoFactor";
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "secret" | "backupCodes" | "userId" | "id";
+                field: "secret" | "backupCodes" | "userId" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -290,7 +290,7 @@ export type Mounts = {
               model: "jwks";
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "publicKey" | "privateKey" | "createdAt" | "id";
+                field: "publicKey" | "privateKey" | "createdAt" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -346,7 +346,7 @@ export type Mounts = {
                   | "twoFactorEnabled"
                   | "userId"
                   | "foo"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -380,7 +380,7 @@ export type Mounts = {
                   | "ipAddress"
                   | "userAgent"
                   | "userId"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -419,7 +419,7 @@ export type Mounts = {
                   | "password"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -451,7 +451,7 @@ export type Mounts = {
                   | "expiresAt"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -477,7 +477,7 @@ export type Mounts = {
               model: "twoFactor";
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "secret" | "backupCodes" | "userId" | "id";
+                field: "secret" | "backupCodes" | "userId" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -503,7 +503,7 @@ export type Mounts = {
               model: "jwks";
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "publicKey" | "privateKey" | "createdAt" | "id";
+                field: "publicKey" | "privateKey" | "createdAt" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -651,7 +651,7 @@ export type Mounts = {
                   | "twoFactorEnabled"
                   | "userId"
                   | "foo"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -694,7 +694,7 @@ export type Mounts = {
                   | "ipAddress"
                   | "userAgent"
                   | "userId"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -747,7 +747,7 @@ export type Mounts = {
                   | "password"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -786,7 +786,7 @@ export type Mounts = {
                   | "expiresAt"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -817,7 +817,7 @@ export type Mounts = {
               };
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "secret" | "backupCodes" | "userId" | "id";
+                field: "secret" | "backupCodes" | "userId" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -848,7 +848,7 @@ export type Mounts = {
               };
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "publicKey" | "privateKey" | "createdAt" | "id";
+                field: "publicKey" | "privateKey" | "createdAt" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -918,7 +918,7 @@ export type Mounts = {
                   | "twoFactorEnabled"
                   | "userId"
                   | "foo"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -961,7 +961,7 @@ export type Mounts = {
                   | "ipAddress"
                   | "userAgent"
                   | "userId"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1014,7 +1014,7 @@ export type Mounts = {
                   | "password"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1053,7 +1053,7 @@ export type Mounts = {
                   | "expiresAt"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1084,7 +1084,7 @@ export type Mounts = {
               };
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "secret" | "backupCodes" | "userId" | "id";
+                field: "secret" | "backupCodes" | "userId" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1115,7 +1115,7 @@ export type Mounts = {
               };
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "publicKey" | "privateKey" | "createdAt" | "id";
+                field: "publicKey" | "privateKey" | "createdAt" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
