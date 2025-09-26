@@ -44,8 +44,8 @@ export const toggle = mutation({
     }
 
     const todo = await ctx.db.get(args.id);
-    if (!todo || todo.userId !== (identity.userId ?? identity.subject)) {
-      throw new Error("Todo not found or unauthorized");
+    if (!todo || todo.userId !== identity.subject) {
+      throw new Error("Todo not found");
     }
 
     await ctx.db.patch(args.id, {
@@ -64,8 +64,8 @@ export const remove = mutation({
     }
 
     const todo = await ctx.db.get(args.id);
-    if (!todo || todo.userId !== (identity.userId ?? identity.subject)) {
-      throw new Error("Todo not found or unauthorized");
+    if (!todo || todo.userId !== identity.subject) {
+      throw new Error("Todo not found");
     }
 
     await ctx.db.delete(args.id);

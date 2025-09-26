@@ -65,15 +65,13 @@ export const convex = (
         // Don't attempt to refresh the session with a query ctx
         {
           matcher: (ctx) => {
-            const result =
+            return (
               !ctx.context.adapter.options?.isRunMutationCtx &&
-              ctx.path === "/get-session";
-            console.log("matching result", result);
-            return result;
+              ctx.path === "/get-session"
+            );
           },
           handler: createAuthMiddleware(async (ctx) => {
             ctx.query = { ...ctx.query, disableRefresh: true };
-            console.log("ctx.query", ctx.query);
             ctx.context.internalAdapter.deleteSession = async (
               ..._args: any[]
             ) => {

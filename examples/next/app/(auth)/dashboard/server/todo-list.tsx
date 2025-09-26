@@ -33,10 +33,12 @@ export const TodoList = async () => {
 
   const toggleCompletedAction = async (formData: FormData) => {
     "use server";
+    const token = await getToken();
+    console.log("token toggleCompletedAction", token);
     await fetchMutation(
       api.todos.toggle,
       { id: formData.get("id") as Id<"todos"> },
-      { token: await getToken() },
+      { token },
     );
   };
 

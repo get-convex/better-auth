@@ -451,7 +451,7 @@ export const createClient = <
       model: "user",
       where: [
         {
-          field: "id",
+          field: "_id",
           value: identity.subject,
         },
       ],
@@ -477,7 +477,7 @@ export const createClient = <
         model: "session",
         where: [
           {
-            field: "id",
+            field: "_id",
             value: identity.sessionId as string,
           },
         ],
@@ -503,7 +503,7 @@ export const createClient = <
     getAnyUserById: async (ctx: GenericCtx<DataModel>, id: string) => {
       return (await ctx.runQuery(component.adapter.findOne, {
         model: "user",
-        where: [{ field: "id", value: id }],
+        where: [{ field: "_id", value: id }],
       })) as BetterAuthDataModel["user"]["document"] | null;
     },
 
@@ -517,7 +517,7 @@ export const createClient = <
       await ctx.runMutation(component.adapter.updateOne, {
         input: {
           model: "user",
-          where: [{ field: "id", value: authId }],
+          where: [{ field: "_id", value: authId }],
           update: { userId },
         },
       });

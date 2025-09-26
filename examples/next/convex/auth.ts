@@ -6,7 +6,6 @@ import { convex } from "@convex-dev/better-auth/plugins";
 import {
   anonymous,
   genericOAuth,
-  organization,
   twoFactor,
   username,
 } from "better-auth/plugins";
@@ -32,7 +31,7 @@ export const authComponent = createClient<DataModel, typeof authSchema>(
     local: {
       schema: authSchema,
     },
-    verbose: true,
+    verbose: false,
   },
 );
 
@@ -95,7 +94,6 @@ export const createAuth = (
       },
     },
     plugins: [
-      organization(),
       anonymous(),
       username(),
       magicLink({
@@ -143,9 +141,6 @@ export const getUser = async (ctx: QueryCtx) => {
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    const headers = await authComponent.getHeaders(ctx);
-    const session = await createAuth(ctx).api.getSession({ headers });
-    console.log("session", session);
     return safeGetUser(ctx);
   },
 });
