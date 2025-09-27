@@ -123,6 +123,16 @@ export const createApi = <
 ) => {
   const betterAuthSchema = getAuthTables(getStaticAuth(createAuth).options);
   return {
+    migrationRemoveUserId: mutationGeneric({
+      args: {
+        userId: v.string(),
+      },
+      handler: async (ctx, args) => {
+        await ctx.db.patch(args.userId as GenericId<"user">, {
+          userId: undefined,
+        });
+      },
+    }),
     create: mutationGeneric({
       args: {
         input: v.union(
@@ -508,7 +518,10 @@ export const createClient = <
     },
 
     // Replaces 0.7 behavior of returning a new user id from
-    // onCreateUser
+    // onCreateUser, deprecated in 0.9
+    /**
+     * @deprecated in 0.9
+     */
     setUserId: async (
       ctx: GenericMutationCtx<DataModel>,
       authId: string,
@@ -520,6 +533,26 @@ export const createClient = <
           where: [{ field: "_id", value: authId }],
           update: { userId },
         },
+      });
+    },
+
+    // Temporary method to simplify 0.9 migration, gets a user by `userId` field
+    migrationGetUser: async (
+      ctx: GenericMutationCtx<DataModel>,
+      userId: string
+    ) => {
+      return (await ctx.runQuery(component.adapter.findOne, {
+        model: "user",
+        where: [{ field: "userId", value: userId }],
+      })) as BetterAuthDataModel["user"]["document"] | null;
+    },
+
+    migrationRemoveUserId: async (
+      ctx: GenericMutationCtx<DataModel>,
+      userId: string
+    ) => {
+      await ctx.runMutation(component.adapter.migrationRemoveUserId, {
+        userId,
       });
     },
 

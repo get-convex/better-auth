@@ -229,7 +229,7 @@ export declare const components: {
                     | "phoneNumber"
                     | "phoneNumberVerified"
                     | "userId"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -263,7 +263,7 @@ export declare const components: {
                     | "ipAddress"
                     | "userAgent"
                     | "userId"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -302,7 +302,7 @@ export declare const components: {
                     | "password"
                     | "createdAt"
                     | "updatedAt"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -334,7 +334,7 @@ export declare const components: {
                     | "expiresAt"
                     | "createdAt"
                     | "updatedAt"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -360,7 +360,7 @@ export declare const components: {
                 model: "twoFactor";
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "secret" | "backupCodes" | "userId" | "id";
+                  field: "secret" | "backupCodes" | "userId" | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -397,7 +397,7 @@ export declare const components: {
                     | "transports"
                     | "createdAt"
                     | "aaguid"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -435,7 +435,7 @@ export declare const components: {
                     | "userId"
                     | "createdAt"
                     | "updatedAt"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -471,7 +471,7 @@ export declare const components: {
                     | "scopes"
                     | "createdAt"
                     | "updatedAt"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -504,7 +504,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "consentGiven"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -530,7 +530,7 @@ export declare const components: {
                 model: "jwks";
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "publicKey" | "privateKey" | "createdAt" | "id";
+                  field: "publicKey" | "privateKey" | "createdAt" | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -556,7 +556,7 @@ export declare const components: {
                 model: "rateLimit";
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "key" | "count" | "lastRequest" | "id";
+                  field: "key" | "count" | "lastRequest" | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -582,7 +582,7 @@ export declare const components: {
                 model: "ratelimit";
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "key" | "count" | "lastRequest" | "id";
+                  field: "key" | "count" | "lastRequest" | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -639,7 +639,7 @@ export declare const components: {
                     | "phoneNumber"
                     | "phoneNumberVerified"
                     | "userId"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -673,7 +673,7 @@ export declare const components: {
                     | "ipAddress"
                     | "userAgent"
                     | "userId"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -712,7 +712,7 @@ export declare const components: {
                     | "password"
                     | "createdAt"
                     | "updatedAt"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -744,7 +744,7 @@ export declare const components: {
                     | "expiresAt"
                     | "createdAt"
                     | "updatedAt"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -770,7 +770,7 @@ export declare const components: {
                 model: "twoFactor";
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "secret" | "backupCodes" | "userId" | "id";
+                  field: "secret" | "backupCodes" | "userId" | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -807,7 +807,7 @@ export declare const components: {
                     | "transports"
                     | "createdAt"
                     | "aaguid"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -845,7 +845,7 @@ export declare const components: {
                     | "userId"
                     | "createdAt"
                     | "updatedAt"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -881,7 +881,7 @@ export declare const components: {
                     | "scopes"
                     | "createdAt"
                     | "updatedAt"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -914,7 +914,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "consentGiven"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -940,7 +940,7 @@ export declare const components: {
                 model: "jwks";
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "publicKey" | "privateKey" | "createdAt" | "id";
+                  field: "publicKey" | "privateKey" | "createdAt" | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -966,7 +966,7 @@ export declare const components: {
                 model: "rateLimit";
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "key" | "count" | "lastRequest" | "id";
+                  field: "key" | "count" | "lastRequest" | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -992,7 +992,7 @@ export declare const components: {
                 model: "ratelimit";
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "key" | "count" | "lastRequest" | "id";
+                  field: "key" | "count" | "lastRequest" | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1116,6 +1116,12 @@ export declare const components: {
         },
         any
       >;
+      migrationRemoveUserId: FunctionReference<
+        "mutation",
+        "internal",
+        { userId: string },
+        any
+      >;
       updateMany: FunctionReference<
         "mutation",
         "internal",
@@ -1154,7 +1160,7 @@ export declare const components: {
                     | "phoneNumber"
                     | "phoneNumberVerified"
                     | "userId"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1197,7 +1203,7 @@ export declare const components: {
                     | "ipAddress"
                     | "userAgent"
                     | "userId"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1250,7 +1256,7 @@ export declare const components: {
                     | "password"
                     | "createdAt"
                     | "updatedAt"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1289,7 +1295,7 @@ export declare const components: {
                     | "expiresAt"
                     | "createdAt"
                     | "updatedAt"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1320,7 +1326,7 @@ export declare const components: {
                 };
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "secret" | "backupCodes" | "userId" | "id";
+                  field: "secret" | "backupCodes" | "userId" | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1369,7 +1375,7 @@ export declare const components: {
                     | "transports"
                     | "createdAt"
                     | "aaguid"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1420,7 +1426,7 @@ export declare const components: {
                     | "userId"
                     | "createdAt"
                     | "updatedAt"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1467,7 +1473,7 @@ export declare const components: {
                     | "scopes"
                     | "createdAt"
                     | "updatedAt"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1508,7 +1514,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "consentGiven"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1539,7 +1545,7 @@ export declare const components: {
                 };
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "publicKey" | "privateKey" | "createdAt" | "id";
+                  field: "publicKey" | "privateKey" | "createdAt" | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1570,7 +1576,7 @@ export declare const components: {
                 };
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "key" | "count" | "lastRequest" | "id";
+                  field: "key" | "count" | "lastRequest" | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1597,7 +1603,7 @@ export declare const components: {
                 update: { count?: number; key?: string; lastRequest?: number };
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "key" | "count" | "lastRequest" | "id";
+                  field: "key" | "count" | "lastRequest" | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1669,7 +1675,7 @@ export declare const components: {
                     | "phoneNumber"
                     | "phoneNumberVerified"
                     | "userId"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1712,7 +1718,7 @@ export declare const components: {
                     | "ipAddress"
                     | "userAgent"
                     | "userId"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1765,7 +1771,7 @@ export declare const components: {
                     | "password"
                     | "createdAt"
                     | "updatedAt"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1804,7 +1810,7 @@ export declare const components: {
                     | "expiresAt"
                     | "createdAt"
                     | "updatedAt"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1835,7 +1841,7 @@ export declare const components: {
                 };
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "secret" | "backupCodes" | "userId" | "id";
+                  field: "secret" | "backupCodes" | "userId" | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1884,7 +1890,7 @@ export declare const components: {
                     | "transports"
                     | "createdAt"
                     | "aaguid"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1935,7 +1941,7 @@ export declare const components: {
                     | "userId"
                     | "createdAt"
                     | "updatedAt"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1982,7 +1988,7 @@ export declare const components: {
                     | "scopes"
                     | "createdAt"
                     | "updatedAt"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -2023,7 +2029,7 @@ export declare const components: {
                     | "createdAt"
                     | "updatedAt"
                     | "consentGiven"
-                    | "id";
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -2054,7 +2060,7 @@ export declare const components: {
                 };
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "publicKey" | "privateKey" | "createdAt" | "id";
+                  field: "publicKey" | "privateKey" | "createdAt" | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -2085,7 +2091,7 @@ export declare const components: {
                 };
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "key" | "count" | "lastRequest" | "id";
+                  field: "key" | "count" | "lastRequest" | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -2112,7 +2118,7 @@ export declare const components: {
                 update: { count?: number; key?: string; lastRequest?: number };
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "key" | "count" | "lastRequest" | "id";
+                  field: "key" | "count" | "lastRequest" | "_id";
                   operator?:
                     | "lt"
                     | "lte"
