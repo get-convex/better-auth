@@ -1,0 +1,5 @@
+{
+  "title": "Migrations",
+  "pages": ["migrate-to-0-9", "migrate-userid", "migrate-to-0-8"],
+  "defaultOpen": true
+}
