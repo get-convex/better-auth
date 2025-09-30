@@ -108,7 +108,7 @@ npm install convex convex-svelte
 
     Register the Better Auth component in your Convex project.
 
-    ```ts title="convex/convex.config.ts"
+    ```ts title="src/convex/convex.config.ts"
     import { defineApp } from "convex/server";
     import betterAuth from "@convex-dev/better-auth/convex.config";
 
@@ -123,9 +123,9 @@ npm install convex convex-svelte
   <div className="fd-step">
     ### Add Convex auth config
 
-    Add a `convex/auth.config.ts` file to configure Better Auth as an authentication provider.
+    Add a `src/convex/auth.config.ts` file to configure Better Auth as an authentication provider.
 
-    ```ts title="convex/auth.config.ts"
+    ```ts title="src/convex/auth.config.ts"
     export default {
       providers: [
         {
@@ -309,6 +309,41 @@ npm install convex convex-svelte
     ```
 
   </div>
+
+  <div className="fd-step">
+    ### Set up authentication token for server-side code
+
+    To use Better Auth in server load functions, form actions, and other server-side code, you need to extract the authentication token from cookies and make it available throughout your server code.
+
+    Set up a SvelteKit hook to automatically extract the auth token on every request. This uses the `getToken` helper which reads the authentication cookie and validates it.
+
+    ```ts title="src/hooks.server.ts"
+    import type { Handle } from "@sveltejs/kit";
+    import { createAuth } from "$convex/auth.js";
+    import { getToken } from '@mmailaender/convex-better-auth-svelte/sveltekit';
+
+    export const handle: Handle = async ({ event, resolve }) => {
+      event.locals.token = await getToken(createAuth, event.cookies);
+
+      return resolve(event);
+    };
+    ```
+
+    Add the token type to your app's type definitions. This enables TypeScript support for `event.locals.token` in your server code.
+
+    ```ts title="src/app.d.ts"
+    declare global {
+      namespace App {
+        interface Locals {
+          token: string | undefined; // [!code ++]
+        }
+      }
+    }
+    ```
+
+    With this setup, `event.locals.token` is now available in all server load functions (`+page.server.ts`, `+layout.server.ts`) and form actions. This token can be passed to `createConvexHttpClient` to make authenticated requests to your Convex functions. See [Using Better Auth from the server](#using-better-auth-from-the-server) for examples.
+
+  </div>
 </div>
 
 ### You're done!
@@ -323,8 +358,8 @@ Note: To add SSR support (`data.currentUser`) also add the `src/routes/+page.ser
 
 ```svelte title="src/routes/+page.svelte"
 <script lang="ts">
-	import { authClient } from '$lib/auth-client.js';
-	import { api } from '$convex/_generated/api.js';
+	import { authClient } from '$lib/auth-client';
+	import { api } from '$convex/_generated/api';
 	import { useQuery } from 'convex-svelte';
 	import { useAuth } from '@mmailaender/convex-better-auth-svelte/svelte';
 
@@ -507,18 +542,14 @@ and call the function from your server code.
 Here's an example server action that calls the Convex function `getCurrentUser` from `src/convex/auth.ts`.
 
 ```ts title="src/routes/+page.server.ts"
-import type { PageServerLoad } from "./$types.ts";
-import { api } from "$convex/_generated/api.js";
+import type { PageServerLoad } from "./$types";
+import { api } from "$convex/_generated/api";
 import { createConvexHttpClient } from "@mmailaender/convex-better-auth-svelte/sveltekit";
 
-export const load: PageServerLoad = async ({ cookies }) => {
-  const client = createConvexHttpClient({ cookies });
+export const load: PageServerLoad = async ({ locals }) => {
+  const client = createConvexHttpClient({ token: locals.token });
 
-  try {
-    const currentUser = await client.query(api.auth.getCurrentUser, {});
-    return { currentUser };
-  } catch {
-    return { currentUser: null };
-  }
+  const currentUser = await client.query(api.auth.getCurrentUser, {});
+  return { currentUser };
 };
 ```
