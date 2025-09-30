@@ -417,7 +417,7 @@ const generateQuery = (
         )
       : query;
   const orderedQuery = args.sortBy
-    ? indexedQuery.order(args.sortBy.direction === "asc" ? "asc" : "desc")
+    ? indexedQuery.order(args.sortBy.direction === "desc" ? "desc" : "asc")
     : indexedQuery;
   const filteredQuery = orderedQuery.filterWith(async (doc) => {
     if (!index && indexFields?.length) {
