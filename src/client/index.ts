@@ -474,7 +474,7 @@ export const createClient = <
         model: "session",
         where: [
           {
-            field: "sessionId",
+            field: "id",
             value: identity.sessionId as string,
           },
         ],
