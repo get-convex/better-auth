@@ -7,7 +7,7 @@ import { tables } from "./generatedSchema";
 //
 // Or, for tables that aren't supported for schema extension, you can track
 // Better Auth tables with your own app tables using triggers:
-// <add link to triggers doc>
+// https://convex-better-auth.netlify.app/triggers
 const schema = defineSchema({
   ...tables,
   // Spread the generated schema and add a custom index
