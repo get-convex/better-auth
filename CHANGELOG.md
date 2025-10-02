@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.7
+
+- fix: use jwt session id for getHeaders state
+- fix: ensure jwt updates when session changes
+- feat: support using cross-domain plugin with expo web
+
 ## 0.8.6
 
 - fix(react-start): fix TanStack utility types
