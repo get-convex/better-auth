@@ -293,9 +293,23 @@ export const createAuth = (
 };
 ```
 
+Add `{ cors: true }` to the Better Auth route handlers:
+
+```ts title=convex/http.ts"
+import { httpRouter } from "convex/server";
+import { authComponent, createAuth } from "./auth";
+
+const http = httpRouter();
+
+// CORS handling is required for client side frameworks
+authComponent.registerRoutes(http, createAuth, { cors: true });  // [!code ++]
+
+export default http;
+```
+
 Finally, add the cross-domain client plugin to the Better Auth client instance. 
 
-<Callout>Note that `expoClient` and `crossDomainClient` cannot both be included at the same time.</Callout>
+<Callout>Note that the `expoClient` and `crossDomainClient` plugins cannot both be included in the client instance at the same time.</Callout>
 
 ```ts title="src/lib/auth-client.ts"
 import { expoClient } from "@better-auth/expo/client";
