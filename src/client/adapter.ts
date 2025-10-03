@@ -98,7 +98,13 @@ export const convexAdapter = <
   Schema extends SchemaDefinition<any, any> = typeof defaultSchema,
 >(
   ctx: Ctx,
-  api: UseApi<typeof componentApi>,
+  api: {
+    adapter: SetOptional<
+      UseApi<typeof componentApi>["adapter"],
+      "migrationRemoveUserId"
+    >;
+    adapterTest?: UseApi<typeof componentApi>["adapterTest"];
+  },
   config: {
     debugLogs?: AdapterDebugLogs;
     authFunctions?: AuthFunctions;

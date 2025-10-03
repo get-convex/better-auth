@@ -201,7 +201,7 @@ export type Mounts = {
                   | "phoneNumber"
                   | "phoneNumberVerified"
                   | "userId"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -235,7 +235,7 @@ export type Mounts = {
                   | "ipAddress"
                   | "userAgent"
                   | "userId"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -274,7 +274,7 @@ export type Mounts = {
                   | "password"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -306,7 +306,7 @@ export type Mounts = {
                   | "expiresAt"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -332,7 +332,7 @@ export type Mounts = {
               model: "twoFactor";
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "secret" | "backupCodes" | "userId" | "id";
+                field: "secret" | "backupCodes" | "userId" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -369,7 +369,7 @@ export type Mounts = {
                   | "transports"
                   | "createdAt"
                   | "aaguid"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -407,7 +407,7 @@ export type Mounts = {
                   | "userId"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -443,7 +443,7 @@ export type Mounts = {
                   | "scopes"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -476,7 +476,7 @@ export type Mounts = {
                   | "createdAt"
                   | "updatedAt"
                   | "consentGiven"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -502,7 +502,7 @@ export type Mounts = {
               model: "jwks";
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "publicKey" | "privateKey" | "createdAt" | "id";
+                field: "publicKey" | "privateKey" | "createdAt" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -528,7 +528,7 @@ export type Mounts = {
               model: "rateLimit";
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "key" | "count" | "lastRequest" | "id";
+                field: "key" | "count" | "lastRequest" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -554,7 +554,7 @@ export type Mounts = {
               model: "ratelimit";
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "key" | "count" | "lastRequest" | "id";
+                field: "key" | "count" | "lastRequest" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -611,7 +611,7 @@ export type Mounts = {
                   | "phoneNumber"
                   | "phoneNumberVerified"
                   | "userId"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -645,7 +645,7 @@ export type Mounts = {
                   | "ipAddress"
                   | "userAgent"
                   | "userId"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -684,7 +684,7 @@ export type Mounts = {
                   | "password"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -716,7 +716,7 @@ export type Mounts = {
                   | "expiresAt"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -742,7 +742,7 @@ export type Mounts = {
               model: "twoFactor";
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "secret" | "backupCodes" | "userId" | "id";
+                field: "secret" | "backupCodes" | "userId" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -779,7 +779,7 @@ export type Mounts = {
                   | "transports"
                   | "createdAt"
                   | "aaguid"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -817,7 +817,7 @@ export type Mounts = {
                   | "userId"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -853,7 +853,7 @@ export type Mounts = {
                   | "scopes"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -886,7 +886,7 @@ export type Mounts = {
                   | "createdAt"
                   | "updatedAt"
                   | "consentGiven"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -912,7 +912,7 @@ export type Mounts = {
               model: "jwks";
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "publicKey" | "privateKey" | "createdAt" | "id";
+                field: "publicKey" | "privateKey" | "createdAt" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -938,7 +938,7 @@ export type Mounts = {
               model: "rateLimit";
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "key" | "count" | "lastRequest" | "id";
+                field: "key" | "count" | "lastRequest" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -964,7 +964,7 @@ export type Mounts = {
               model: "ratelimit";
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "key" | "count" | "lastRequest" | "id";
+                field: "key" | "count" | "lastRequest" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1088,6 +1088,12 @@ export type Mounts = {
       },
       any
     >;
+    migrationRemoveUserId: FunctionReference<
+      "mutation",
+      "public",
+      { userId: string },
+      any
+    >;
     updateMany: FunctionReference<
       "mutation",
       "public",
@@ -1126,7 +1132,7 @@ export type Mounts = {
                   | "phoneNumber"
                   | "phoneNumberVerified"
                   | "userId"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1169,7 +1175,7 @@ export type Mounts = {
                   | "ipAddress"
                   | "userAgent"
                   | "userId"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1222,7 +1228,7 @@ export type Mounts = {
                   | "password"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1261,7 +1267,7 @@ export type Mounts = {
                   | "expiresAt"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1292,7 +1298,7 @@ export type Mounts = {
               };
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "secret" | "backupCodes" | "userId" | "id";
+                field: "secret" | "backupCodes" | "userId" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1341,7 +1347,7 @@ export type Mounts = {
                   | "transports"
                   | "createdAt"
                   | "aaguid"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1392,7 +1398,7 @@ export type Mounts = {
                   | "userId"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1439,7 +1445,7 @@ export type Mounts = {
                   | "scopes"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1480,7 +1486,7 @@ export type Mounts = {
                   | "createdAt"
                   | "updatedAt"
                   | "consentGiven"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1511,7 +1517,7 @@ export type Mounts = {
               };
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "publicKey" | "privateKey" | "createdAt" | "id";
+                field: "publicKey" | "privateKey" | "createdAt" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1542,7 +1548,7 @@ export type Mounts = {
               };
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "key" | "count" | "lastRequest" | "id";
+                field: "key" | "count" | "lastRequest" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1569,7 +1575,7 @@ export type Mounts = {
               update: { count?: number; key?: string; lastRequest?: number };
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "key" | "count" | "lastRequest" | "id";
+                field: "key" | "count" | "lastRequest" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1641,7 +1647,7 @@ export type Mounts = {
                   | "phoneNumber"
                   | "phoneNumberVerified"
                   | "userId"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1684,7 +1690,7 @@ export type Mounts = {
                   | "ipAddress"
                   | "userAgent"
                   | "userId"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1737,7 +1743,7 @@ export type Mounts = {
                   | "password"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1776,7 +1782,7 @@ export type Mounts = {
                   | "expiresAt"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1807,7 +1813,7 @@ export type Mounts = {
               };
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "secret" | "backupCodes" | "userId" | "id";
+                field: "secret" | "backupCodes" | "userId" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1856,7 +1862,7 @@ export type Mounts = {
                   | "transports"
                   | "createdAt"
                   | "aaguid"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1907,7 +1913,7 @@ export type Mounts = {
                   | "userId"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1954,7 +1960,7 @@ export type Mounts = {
                   | "scopes"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1995,7 +2001,7 @@ export type Mounts = {
                   | "createdAt"
                   | "updatedAt"
                   | "consentGiven"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -2026,7 +2032,7 @@ export type Mounts = {
               };
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "publicKey" | "privateKey" | "createdAt" | "id";
+                field: "publicKey" | "privateKey" | "createdAt" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -2057,7 +2063,7 @@ export type Mounts = {
               };
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "key" | "count" | "lastRequest" | "id";
+                field: "key" | "count" | "lastRequest" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -2084,7 +2090,7 @@ export type Mounts = {
               update: { count?: number; key?: string; lastRequest?: number };
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "key" | "count" | "lastRequest" | "id";
+                field: "key" | "count" | "lastRequest" | "_id";
                 operator?:
                   | "lt"
                   | "lte"

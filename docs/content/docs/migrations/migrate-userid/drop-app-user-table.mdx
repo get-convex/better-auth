@@ -3,6 +3,12 @@ title: Drop app user table
 description: Migrate user id reference from component to app table
 ---
 
+<Callout>
+  This guide shows one of three recommended strategies for migrating away from
+  maintaining a `user.userId` field in the Better Auth user table. Read [the
+  overview](/migrations/migrate-userid) for more information.
+</Callout>
+
 This guide is for migrating from tracking the app user id in the component to
 tracking the component user id in the app user table via an `authId` field.
 
@@ -45,12 +51,35 @@ export default app;
   </div>
 
   <div className="fd-step">
+
+### Update schema
+
+Update any references to your app user id in your schema from `v.id()` to `v.string()`.
+
+Id fields from components can only be validated as strings from outside of the
+component. Do not remove the user table from your schema yet.
+
+Note: this may cause type errors if the user id value is being validated as an
+id in any Convex functions - look for these and update them to string validation.
+
+```ts title="convex/schema.ts"
+export default defineSchema({
+  todos: defineTable({
+    title: v.string(),
+    userId: v.id("users"), // [!code --]
+    userId: v.string(), // [!code ++]
+  }),
+});
+```
+
+</div>
+
+  <div className="fd-step">
 ### Add migration functions
 
 Create a `convex/migrations.ts` file and add migration functions. Two functions
-are added - one for adding the `authId` field to the app users table, and one for
-removing the `userId` field from the related Better Auth user. We'll run them in
-later steps.
+are added - one for updating user id references in the app tables, and one for
+removing the app user table. We'll run them in later steps.
 
 ```ts title="convex/migrations.ts"
 import { Migrations } from "@convex-dev/migrations";
@@ -61,38 +90,115 @@ import { authComponent } from "./auth";
 export const migrations = new Migrations<DataModel>(components.migrations);
 
 // Define migration functions
-export const migrationAddAuthId = migrations.define({
+
+// This function may not be necessary if your tables don't reference the app user id.
+export const migrationUpdateUserIds = migrations.define({
   table: "users",
   migrateOne: async (ctx, user) => {
-    // For each user in the app users table, get the related Better Auth user id
-    // and set it to the `authId` field.
-    if (user.authId === undefined) {
-      const authUser = await authComponent.migrationGetUser(ctx, user._id);
-      if (!authUser) {
-        throw new Error(`Auth user not found for id ${user._id}`);
-      }
-      await ctx.db.patch(user._id, { authId: authUser._id });
+    // For each user in the app users table, update any references in the database
+    // to the `user._id` value to reference the Better Auth user id instead.
+    const authUser = await authComponent.migrationGetUser(ctx, user._id);
+    if (!authUser) {
+      throw new Error(`Auth user not found for id ${user._id}`);
+    }
+    // Example of updating user id references in a todos table, where each todo is
+    // related to a user. You can replace this with whatever queries and mutations
+    // necessary for your app. For larger amounts of data, scheduling functions to
+    // handle the migration may be necessary.
+    const todos = await ctx.db
+      .query("todos")
+      .withIndex("userId", (q) => q.eq("userId", user._id))
+      .collect();
+    for (const doc of todos) {
+      await ctx.db.patch(doc._id, { userId: authUser._id });
     }
   },
 });
 
-export const migrationRemoveUserId = migrations.define({
+export const migrationRemoveUser = migrations.define({
   table: "users",
   migrateOne: async (ctx, user) => {
     // For each user in the app users table, remove the `userId` value from the
-    // related Better Auth user
+    // related Better Auth user, and delete the app user record.
+    await ctx.db.delete(user._id);
     await authComponent.migrationRemoveUserId(ctx, user._id);
   },
 });
 
 // Export runnable migration functions
-export const addAuthId = migrations.runner(
-  internal.migrations.migrationAddAuthId
+export const migrateUserIds = migrations.runner(
+  internal.migrations.migrationUpdateUserIds
 );
 
-export const removeUserId = migrations.runner(
-  internal.migrations.migrationRemoveUserId
+export const removeUser = migrations.runner(
+  internal.migrations.migrationRemoveUser
 );
+```
+
+  </div>
+
+  <div className="fd-step">
+### Implement dual reads
+
+<Callout type="error" title="Alert">
+  When this migration runs in production, failure to implement dual reads
+  correctly can cause production errors for your application.
+</Callout>
+
+If you update your application logic to expect the Better Auth user id
+everywhere that the app user id was previously used, users will likely immediately get
+errors when you deploy to production. This is because changes have to be
+deployed before migrations can run, and migrations take time.
+
+During migrations, some data is in the original state and some is in the new
+state, so your application logic must handle both cases. This is generally
+referred to as a "dual read" strategy.
+
+```ts title="convex/todos.ts"
+// Example of implementing dual reads on a todos query. How dual reads should
+// actually be implemented is very application specific. Be sure to be thorough.
+// In this example scenario, we assume the user could have thousands of todos, so
+// the userId field could be the app user id for some and the Better Auth user id
+// for others, depending on migration progress.
+//
+// Dual reads here means first reading todos using the app user id, and then reading
+// todos using the Better Auth user id, and returning all of them. Again, this is just
+// an example scenario, your actual approach will need to be tailored to your
+// application.
+export const getTodos = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await authComponent.getAuthUser(ctx);
+
+    if (!user) {
+      return [];
+    }
+
+    // [!code --:4]
+    return ctx.db
+      .query("todos")
+      .withIndex("userId", (q) => q.eq("userId", user.userId))
+      .collect();
+
+    // [!code ++:11]
+    // In a real app you'll want to make sure the resulting order is correct
+    // in this scenario.
+    const todosWithBetterAuthUserId = await ctx.db
+      .query("todos")
+      .withIndex("userId", (q) => q.eq("userId", user._id))
+      .collect();
+
+    // We check for the userId field to be defined because it will be removed
+    // when the second migration runs.
+    const todosWithAppId = !user.userId
+      ? []
+      : await ctx.db
+          .query("todos")
+          .withIndex("userId", (q) => q.eq("userId", user.userId))
+          .collect();
+    return [...todosWithAppId, ...todosWithBetterAuthUserId];
+  },
+});
 ```
 
   </div>
@@ -117,32 +223,12 @@ export const {
 
   </div>
 
-  <div className="fd-step">
-
-### Add `authId` field to users table
-
-Add an `authId` field to your app users table. You can use any name you want,
-but keep in mind that this guide will refer to it as `authId`. The field should
-be optional for now, it can be changed to required later.
-
-```ts title="convex/schema.ts"
-export default defineSchema({
-  users: defineTable({
-    email: v.string(),
-    authId: v.optional(v.string()), // [!code ++]
-  })
-    .index("email", ["email"])
-    .index("authId", ["authId"]), // [!code ++]
-  // ...
-});
-```
-
-</div>
-
 <div className="fd-step">
-  ### Update user onCreate trigger
+  ### Update user triggers
 
-Add the Better Auth user id to the app user being created in the onCreate trigger.
+Update user triggers to no longer create/update/delete an app user or set the
+`userId` field on the Better Auth user. If no other operations are happening
+in the user triggers, the entire trigger can be removed.
 
 ```ts title="convex/auth.ts"
 export const authComponent = createClient<DataModel, typeof betterAuthSchema>(
@@ -151,14 +237,37 @@ export const authComponent = createClient<DataModel, typeof betterAuthSchema>(
     authFunctions,
     triggers: {
       user: {
+        // [!code --:14]
         onCreate: async (ctx, authUser) => {
           const userId = await ctx.db.insert("users", {
             email: authUser.email,
-            authId: authUser._id, // [!code ++]
           });
           await authComponent.setUserId(ctx, authUser._id, userId);
         },
-        // ...
+        onUpdate: async (ctx, newUser, oldUser) => {
+          if (oldUser.email === newUser.email) {
+            return;
+          }
+          await ctx.db.patch(newUser.userId as Id<"users">, {
+            email: newUser.email,
+          });
+        },
+        onDelete: async (ctx, authUser) => {
+          // [!code --:4]
+          const user = await ctx.db.get(authUser.userId as Id<"users">);
+          if (!user) {
+            return;
+          }
+          const todos = await ctx.db
+            .query("todos")
+            .withIndex("userId", (q) => q.eq("userId", user._id)) // [!code --]
+            .withIndex("userId", (q) => q.eq("userId", authUser._id)) // [!code ++]
+            .collect();
+          await asyncMap(todos, async (todo) => {
+            await ctx.db.delete(todo._id);
+          });
+          await ctx.db.delete(user._id); // [!code --]
+        },
       },
     },
   }
@@ -168,18 +277,17 @@ export const authComponent = createClient<DataModel, typeof betterAuthSchema>(
 </div>
 
 <div className="fd-step">
-  ### Run `addAuthId` migration
+  ### Run `migrateUserIds` migration
 
-At this point, with the convex dev server running, your code is still
-functioning as it did prior to starting this guide, but is now also defining
-`authId` on every new user, so all new users moving forward will have an
-`authId` value.
+At this point, with the convex dev server running, your code should still be
+functioning as it did prior to starting this guide.
 
-**This migration will backfill the `authId` field for previously existing
-users in your development deployment.**
+**This migration will update user id references throughout your application. If
+you did not need to implement a `migrationUpdateUserIds` function, you can skip
+this step.**
 
 ```npm
-npx convex run migrations:addAuthId
+npx convex run migrations:migrateUserIds
 ```
 
 </div>
@@ -189,12 +297,13 @@ npx convex run migrations:addAuthId
 
 <Callout type="warning">
   Before proceeding, make sure the migration was successful in your development
-  deployment by running your application locally. Also confirm that the `authId`
-  field on all users in your development deployment app user table is set.
+  deployment by running your application locally. Also confirm that any user id
+  references in your application tables have been updated to user ids from the
+  Better Auth user table.
 </Callout>
 
-The changes made so far, which are strictly additive and not destructive, should
-be deployed to production. The first migration will need to run there as well.
+The code changes made so far should now be deployed to production. The first
+migration will need to run there as well.
 
 Deployment steps depend on how you deploy your app. Most apps deploy through
 Netlify or Vercel by merging changes to the main branch of their project repo.
@@ -202,87 +311,51 @@ Netlify or Vercel by merging changes to the main branch of their project repo.
 </div>
 
 <div className="fd-step">
-  ### Run `addAuthId` migration in production
+  ### Run `migrateUserIds` migration in production
 
-With production successfully deployed, the migration can be run against the
-production deployment. This can happen through the production deployment
+With production successfully deployed, the first migration should be run against
+the production deployment. This can happen through the production deployment
 dashboard, or through the cli using the `--prod` flag.
 
 ```npm
-npx convex run migrations:addAuthId --prod
+npx convex run migrations:migrateUserIds --prod
 ```
+
+**Confirm that this migration completes successfully before proceeding.**
 
 </div>
 
 <div className="fd-step">
-### Make `authId` required
+### Remove dual reads
 
-Now that all `authId` values are set, make the `authId` field required in the
-app user table. If the convex dev server errors after this change, you probably
-have one or more users in the app user table that don't have an `authId` value.
-This should only be possible for users that do not have a related Better Auth user.
+Now that all user id references have been updated, dual read logic can be
+removed.
 
-```ts title="convex/schema.ts"
-export default defineSchema({
-  users: defineTable({
-    email: v.string(),
-    authId: v.optional(v.string()), // [!code --]
-    authId: v.string(), // [!code ++]
-  }).index("email", ["email"]),
-});
-```
-
-</div>
-
-<div className="fd-step">
-### Remove `userId` writes
-
-Update the user onCreate trigger to stop setting the `userId` field on the Better Auth user.
-
-```ts title="convex/auth.ts"
-export const authComponent = createClient<DataModel>(components.betterAuth, {
-  authFunctions,
-  triggers: {
-    user: {
-      onCreate: async (ctx, authUser) => {
-        await ctx.db.insert("users", {
-          email: authUser.email,
-          authId: authUser._id,
-        });
-        await authComponent.setUserId(ctx, authUser._id, userId); // [!code --]
-      },
-    },
-  },
-});
-```
-
-</div>
-
-<div className="fd-step">
-  ### Update `userId` references
-
-Any references in your codebase to the `userId` field from the Better Auth user
-should be updated to reference the `authId` field in the app user table. Your
-app may not have any such references.
-
-```ts title="convex/auth.ts"
-export const getCurrentUser = query({
+```ts title="convex/todos.ts"
+export const getTodos = query({
   args: {},
   handler: async (ctx) => {
-    const authUser = await authComponent.safeGetAuthUser(ctx);
-    if (!authUser) {
-      return;
-    }
-    const user = await ctx.db.get(authUser.userId as Id<"users">); // [!code --]
-    // [!code ++:4]
-    const user = await ctx.db
-      .query("users")
-      .withIndex("authId", (q) => q.eq("authId", authUser._id))
-      .unique();
+    const user = await authComponent.getAuthUser(ctx);
     if (!user) {
-      return;
+      return [];
     }
-    return { ...user, ...withoutSystemFields(authUser) };
+    // [!code --:9]
+    const todosWithBetterAuthUserId = await ctx.db
+      .query("todos")
+      .withIndex("userId", (q) => q.eq("userId", user._id))
+      .collect();
+    const todosWithAppId = !user.userId
+      ? []
+      : await ctx.db
+          .query("todos")
+          .withIndex("userId", (q) => q.eq("userId", user.userId))
+          .collect();
+    return [...todosWithAppId, ...todosWithBetterAuthUserId];
+    // [!code ++:4]
+    return await ctx.db
+      .query("todos")
+      .withIndex("userId", (q) => q.eq("userId", user._id))
+      .collect();
   },
 });
 ```
@@ -290,15 +363,12 @@ export const getCurrentUser = query({
 </div>
 
 <div className="fd-step">
-  ### Run `removeUserId` migration
+  ### Run `removeUser` migration
 
-The migration is now functionally complete, all that remains are unused
-`userId` values in the Better Auth user table.
-
-Run the `removeUserId` migration to clear the unused values.
+Run the `removeUser` migration to remove the app user table.
 
 ```npm
-npx convex run migrations:removeUserId
+npx convex run migrations:removeUser
 ```
 
 </div>
@@ -306,19 +376,18 @@ npx convex run migrations:removeUserId
 <div className="fd-step">
   ### Deploy to production
 
-After ensuring your application works after these changes, and that the
-`userId` field is no longer being set on the Better Auth user table, changes
+After ensuring your application works after these changes, changes
 should be deployed to production.
 
 </div>
 
 <div className="fd-step">
-  ### Run `removeUserId` migration in production
+  ### Run `removeUser` migration in production
 
-Once deployed, as we did previously, the second migration should also be run in production.
+Once deployed, as we did previously, the second migration should be run in production.
 
 ```npm
-npx convex run migrations:removeUserId --prod
+npx convex run migrations:removeUser --prod
 ```
 
 </div>
@@ -326,15 +395,15 @@ npx convex run migrations:removeUserId --prod
 <div className="fd-step">
   ### Remove migration code
 
-Remove the migration dependencies and code added in steps 2 - 4 of this guide.
+Remove the migration dependencies and code added in steps 2, 4, and 6 of this guide.
 
 </div>
 
 <div className="fd-step">
   ### Migration complete 🎉
 
-You've successfully migrated your user table foreign key from Better Auth into
-your app user table.
+You've successfully migrated your application to use the Better Auth user table
+for user data.
 
 </div>
 

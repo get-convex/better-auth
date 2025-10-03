@@ -1,7 +1,6 @@
 {
   "pages": [
     "index",
-    "migrations",
     "framework-guides",
     "basic-usage",
     "authorization",
@@ -10,6 +9,7 @@
     "supported-plugins",
     "debugging",
     "integrations",
-    "api"
+    "api",
+    "migrations"
   ]
 }

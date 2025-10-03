@@ -36,6 +36,7 @@ import semver from "semver";
 import defaultSchema from "../component/schema";
 import { getAuthTables } from "better-auth/db";
 import { api } from "../component/_generated/api";
+import { SetOptional } from "type-fest";
 
 export { convexAdapter };
 
@@ -439,7 +440,13 @@ export const createClient = <
   DataModel extends GenericDataModel,
   Schema extends SchemaDefinition<GenericSchema, true> = typeof defaultSchema,
 >(
-  component: UseApi<typeof api>,
+  component: {
+    adapter: SetOptional<
+      UseApi<typeof api>["adapter"],
+      "migrationRemoveUserId"
+    >;
+    adapterTest?: UseApi<typeof api>["adapterTest"];
+  },
   config?: {
     local?: {
       schema?: Schema;
@@ -551,6 +558,9 @@ export const createClient = <
       ctx: GenericMutationCtx<DataModel>,
       userId: string
     ) => {
+      if (!component.adapter.migrationRemoveUserId) {
+        throw new Error("migrationRemoveUserId not found");
+      }
       await ctx.runMutation(component.adapter.migrationRemoveUserId, {
         userId,
       });

@@ -3,6 +3,12 @@ title: App user id in component table
 description: Configure Better Auth to continue tracking app user id in component table
 ---
 
+<Callout>
+  This guide shows one of three recommended strategies for migrating away from
+  maintaining a `user.userId` field in the Better Auth user table. Read [the
+  overview](/migrations/migrate-userid) for more information.
+</Callout>
+
 This guide is for configuring Better Auth to continue the existing behavior of
 tracking the app user id in the component table.
 
@@ -52,6 +58,18 @@ export const createAuth = (
     },
   });
 };
+```
+
+</div>
+
+<div className="fd-step">
+
+### Regenerate schema
+
+Regenerate the Better Auth schema to include the new `userId` field.
+
+```npm
+cd convex/betterAuth && npx @better-auth/cli generate -y
 ```
 
 </div>

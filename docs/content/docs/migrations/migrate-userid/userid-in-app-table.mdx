@@ -3,6 +3,12 @@ title: Component user id in app table
 description: Migrate user id reference from component to app table
 ---
 
+<Callout>
+  This guide shows one of three recommended strategies for migrating away from
+  maintaining a `user.userId` field in the Better Auth user table. Read [the
+  overview](/migrations/migrate-userid) for more information.
+</Callout>
+
 This guide is for migrating from tracking the app user id in the component to
 tracking the component user id in the app user table via an `authId` field.
 
@@ -43,6 +49,28 @@ export default app;
 ```
 
   </div>
+
+  <div className="fd-step">
+
+### Add `authId` field to users table
+
+Add an `authId` field to your app users table. You can use any name you want,
+but keep in mind that this guide will refer to it as `authId`. The field should
+be optional for now, it can be changed to required later.
+
+```ts title="convex/schema.ts"
+export default defineSchema({
+  users: defineTable({
+    email: v.string(),
+    authId: v.optional(v.string()), // [!code ++]
+  })
+    .index("email", ["email"])
+    .index("authId", ["authId"]), // [!code ++]
+  // ...
+});
+```
+
+</div>
 
   <div className="fd-step">
 ### Add migration functions
@@ -116,28 +144,6 @@ export const {
 ```
 
   </div>
-
-  <div className="fd-step">
-
-### Add `authId` field to users table
-
-Add an `authId` field to your app users table. You can use any name you want,
-but keep in mind that this guide will refer to it as `authId`. The field should
-be optional for now, it can be changed to required later.
-
-```ts title="convex/schema.ts"
-export default defineSchema({
-  users: defineTable({
-    email: v.string(),
-    authId: v.optional(v.string()), // [!code ++]
-  })
-    .index("email", ["email"])
-    .index("authId", ["authId"]), // [!code ++]
-  // ...
-});
-```
-
-</div>
 
 <div className="fd-step">
   ### Update user onCreate trigger
