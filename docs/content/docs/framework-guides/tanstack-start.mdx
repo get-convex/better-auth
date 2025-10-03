@@ -16,14 +16,13 @@ description: Install and configure Convex + Better Auth for TanStack Start.
   <div className="fd-step">
     ### Install packages
 
-    Install the component, a pinned version of Better Auth, and ensure the latest version
+    Install the component, Better Auth, and ensure the latest version
     of Convex.
 
     <Callout>This component requires Convex `1.25.0` or later.</Callout>
 
     ```npm
-    npm install better-auth@1.3.8 --save-exact
-    npm install convex@latest @convex-dev/better-auth
+    npm install convex@latest @convex-dev/better-auth better-auth@~1.3.24
     ```
 
   </div>
@@ -406,10 +405,8 @@ import { createAuth } from "convex/auth";
 import { setupFetchClient } from "@convex-dev/better-auth/react-start";
 import { getCookie } from "@tanstack/react-start/server";
 
-export const { fetchQuery, fetchMutation, fetchAction } = await setupFetchClient(
-  createAuth,
-  getCookie
-);
+export const { fetchQuery, fetchMutation, fetchAction } =
+  await setupFetchClient(createAuth, getCookie);
 ```
 
 Here's an example Convex function that uses Better Auth's server methods, and

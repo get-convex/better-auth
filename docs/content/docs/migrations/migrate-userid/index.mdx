@@ -75,30 +75,4 @@ A data migration is required to backfill the `authId` field.
 
 </div>
 
-<div className="fd-step">
-
-### Drop app user table
-
-**If having only one user table is the most important thing for you, this is
-the way to go.**
-
-The app user table can be removed entirely, leaving just the Better Auth user
-table to track user data. With Local Install, the user table schema can be
-configured and customized. Without Local Install, the user table schema that
-ships with the component would have to be used as is. A data migration is
-required to drop the `userId` field from the Better Auth user table, and to
-update your application logic and data in any places where the app user id is
-used or referenced.
-
-<Cards>
-  <Card
-    title="Migration guide"
-    href="/migrations/migrate-userid/drop-app-user-table"
-  >
-    Drop app user table
-  </Card>
-</Cards>
-
-</div>
-
 </div>
