@@ -202,14 +202,18 @@ description: Install and configure Convex + Better Auth for TanStack Start.
 
     ```ts title="src/routes/api/auth/$.ts"
     import { reactStartHandler } from '@convex-dev/better-auth/react-start'
-    import { createServerFileRoute } from '@tanstack/react-start/server'
+    import { createFileRoute } from '@tanstack/react-start/server'
 
-    export const ServerRoute = createServerFileRoute('/api/auth/$').methods({
-      GET: ({ request }) => {
-        return reactStartHandler(request)
-      },
-      POST: ({ request }) => {
-        return reactStartHandler(request)
+    export const ServerRoute = createFileRoute('/api/auth/$').methods({
+      server: {
+        handlers: {
+          GET: ({ request }) => {
+            return reactStartHandler(request)
+          },
+          POST: ({ request }) => {
+            return reactStartHandler(request)
+          },
+        },
       },
     })
     ```
@@ -222,15 +226,16 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     Wrap your application root with `ConvexBetterAuthProvider` and make auth available in loaders.
 
     ```ts title="src/routes/__root.tsx"
+    /// <reference types="vite/client" />
     import * as React from 'react'
     import {
       Outlet,
       createRootRouteWithContext,
+      HeadContent,
+      Scripts,
       useRouteContext, // [!code ++]
     } from '@tanstack/react-router'
     import {
-      Meta,
-      Scripts,
       createServerFn, // [!code ++]
     } from '@tanstack/react-start'
     import { QueryClient } from '@tanstack/react-query' // [!code ++]
@@ -238,7 +243,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     // [!code ++:6]
     import { ConvexQueryClient } from '@convex-dev/react-query'
     import { ConvexReactClient } from 'convex/react'
-    import { getCookie, getWebRequest } from '@tanstack/react-start/server'
+    import { getCookie, getRequest } from '@tanstack/react-start/server'
     import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
     import { fetchSession, getCookieName } from '@convex-dev/better-auth/react-start'
     import { authClient } from "@/lib/auth-client";
@@ -247,7 +252,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     // Get auth information for SSR using available cookies
     const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
       const { createAuth } = await import('../../convex/auth')
-      const { session } = await fetchSession(getWebRequest())
+      const { session } = await fetchSession(getRequest())
       const sessionCookieName = getCookieName(createAuth)
       const token = getCookie(sessionCookieName)
       return {
@@ -312,7 +317,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
       return (
         <html lang="en" className="dark">
           <head>
-            <Meta />
+            <HeadContent />
           </head>
           <body className="bg-neutral-950 text-neutral-50">
             {children}
@@ -330,14 +335,14 @@ description: Install and configure Convex + Better Auth for TanStack Start.
 
     Provide context from Convex to your routes.
     ```ts title="src/routes/router.tsx"
-    import { createRouter as createTanStackRouter } from '@tanstack/react-router'
+    import { createRouter } from '@tanstack/react-router'
     import { routeTree } from './routeTree.gen'
     import { routerWithQueryClient } from '@tanstack/react-router-with-query'
     import { ConvexProvider, ConvexReactClient } from 'convex/react'
     import { ConvexQueryClient } from '@convex-dev/react-query'
     import { QueryClient } from '@tanstack/react-query'
 
-    export function createRouter() {
+    export function getRouter() {
       const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!
       if (!CONVEX_URL) {
         throw new Error('missing VITE_CONVEX_URL envar')
@@ -359,7 +364,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
       convexQueryClient.connect(queryClient)
 
       const router = routerWithQueryClient(
-        createTanStackRouter({
+        createRouter({
           routeTree,
           defaultPreload: 'intent',
           scrollRestoration: true,
@@ -374,12 +379,6 @@ description: Install and configure Convex + Better Auth for TanStack Start.
       )
 
       return router
-    }
-
-    declare module '@tanstack/react-router' {
-      interface Register {
-        router: ReturnType<typeof createRouter>
-      }
     }
     ```
 

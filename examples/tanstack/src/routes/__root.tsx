@@ -1,10 +1,12 @@
+/// <reference types="vite/client" />
 import {
   Outlet,
   createRootRouteWithContext,
   useRouteContext,
+  HeadContent,
+  Scripts,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-import { Meta, Scripts, createServerFn } from '@tanstack/react-start'
 import { QueryClient } from '@tanstack/react-query'
 import * as React from 'react'
 import appCss from '@/styles/app.css?url'
@@ -14,14 +16,15 @@ import {
   fetchSession,
   getCookieName,
 } from '@convex-dev/better-auth/react-start'
-import { getCookie, getWebRequest } from '@tanstack/react-start/server'
+import { getCookie, getRequest } from '@tanstack/react-start/server'
 import { seo } from '@/utils/seo'
 import { ConvexQueryClient } from '@convex-dev/react-query'
+import { createServerFn } from '@tanstack/react-start'
 
 // Get auth information for SSR using available cookies
 const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
   const { createAuth } = await import('@convex/auth')
-  const { session } = await fetchSession(getWebRequest())
+  const { session } = await fetchSession(getRequest())
   const sessionCookieName = getCookieName(createAuth)
   const token = getCookie(sessionCookieName)
   return {
@@ -88,7 +91,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
       <head>
-        <Meta />
+        <HeadContent />
       </head>
       <body className="bg-neutral-950 text-neutral-50">
         {children}

@@ -17,7 +17,7 @@ import { fetchMutation } from '@/lib/auth-server'
 
 // Handle form data
 export const toggleCompletedTodo = createServerFn({ method: 'POST' })
-  .validator((data) => {
+  .inputValidator((data) => {
     if (!(data instanceof FormData)) {
       throw new Error('Invalid form data')
     }
@@ -36,7 +36,7 @@ export const toggleCompletedTodo = createServerFn({ method: 'POST' })
   })
 
 export const removeTodo = createServerFn({ method: 'POST' })
-  .validator((data: { id: string }) => {
+  .inputValidator((data: { id: string }) => {
     if (!data.id) {
       throw new Error('Todo id is required')
     }
@@ -49,7 +49,7 @@ export const removeTodo = createServerFn({ method: 'POST' })
   })
 
 export const addTodo = createServerFn({ method: 'POST' })
-  .validator((data) => {
+  .inputValidator((data) => {
     if (!(data instanceof FormData)) {
       throw new Error('Invalid form data')
     }

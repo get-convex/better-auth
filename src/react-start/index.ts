@@ -120,6 +120,14 @@ export const reactStartHandler = (
     throw new Error("VITE_CONVEX_SITE_URL is not set");
   }
   const nextUrl = `${convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
-  request.headers.set("accept-encoding", "application/json");
-  return fetch(nextUrl, new Request(request, { redirect: "manual" }));
+  const headers = new Headers(request.headers);
+  headers.set("accept-encoding", "application/json");
+  return fetch(nextUrl, {
+    method: request.method,
+    headers,
+    redirect: "manual",
+    body: request.body,
+    // @ts-expect-error - duplex is required for streaming request bodies in modern fetch
+    duplex: "half",
+  });
 };
