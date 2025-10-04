@@ -248,3 +248,93 @@ description: Install and configure Convex + Better Auth for Expo.
 ### You're done!
 
 You're now ready to start using Better Auth with Convex.
+
+### Better Auth with Expo Web
+
+To use Expo Web, follow [step 4 of the React guide](https://convex-better-auth.netlify.app/framework-guides/react#set-environment-variables) to add your Expo Web site URL as the `SITE_URL` environment variable.
+
+You will also need to add the site URL and the cross-domain plugin to the Better Auth instance:
+
+```ts title="convex/auth.ts"
+import { createClient, type GenericCtx } from "@convex-dev/better-auth";
+import { convex } from "@convex-dev/better-auth/plugins";
+import { betterAuth } from "better-auth";
+import { expo } from '@better-auth/expo'
+import { components } from "./_generated/api";
+import { DataModel } from "./_generated/dataModel";
+import { query } from "./_generated/server";
+
+// The component client has methods needed for integrating Convex with Better Auth,
+// as well as helper methods for general use.
+export const authComponent = createClient<DataModel>(components.betterAuth);
+
+const siteUrl = process.env.SITE_URL!;  // [!code ++]
+
+export const createAuth = (
+  ctx: GenericCtx<DataModel>,
+  { optionsOnly } = { optionsOnly: false },
+) => {
+  return betterAuth({
+    logger: {
+      disabled: optionsOnly,
+    },
+    trustedOrigins: [siteUrl, "your-scheme://"],  // [!code ++]
+    database: authComponent.adapter(ctx),
+    emailAndPassword: {
+      enabled: true,
+      requireEmailVerification: false,
+    },
+    plugins: [
+      expo(),
+      convex(),
+      crossDomain({ siteUrl })  // [!code ++]
+    ],
+  });
+};
+```
+
+Add `{ cors: true }` to the Better Auth route handlers:
+
+```ts title=convex/http.ts"
+import { httpRouter } from "convex/server";
+import { authComponent, createAuth } from "./auth";
+
+const http = httpRouter();
+
+// CORS handling is required for client side frameworks
+authComponent.registerRoutes(http, createAuth, { cors: true });  // [!code ++]
+
+export default http;
+```
+
+Finally, add the cross-domain client plugin to the Better Auth client instance. 
+
+<Callout>Note that the `expoClient` and `crossDomainClient` plugins cannot both be included in the client instance at the same time.</Callout>
+
+```ts title="src/lib/auth-client.ts"
+import { expoClient } from "@better-auth/expo/client";
+import {
+  convexClient,
+  crossDomainClient,
+} from "@convex-dev/better-auth/client/plugins";
+import { createAuthClient } from "better-auth/react";
+import Constants from "expo-constants";
+import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
+
+export const authClient = createAuthClient({
+  baseURL: process.env.EXPO_PUBLIC_CONVEX_SITE_URL,
+  plugins: [
+    convexClient(),
+    ...(Platform.OS === "web"
+      ? [crossDomainClient()]
+      : [
+          expoClient({
+            scheme: Constants.expoConfig?.scheme as string,
+            storagePrefix: Constants.expoConfig?.scheme as string,
+            storage: SecureStore,
+          }),
+        ]),
+  ],
+});
+```
