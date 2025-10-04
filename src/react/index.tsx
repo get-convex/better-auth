@@ -93,6 +93,7 @@ function useUseAuthFromBetterAuth(authClient: AuthClient) {
       function useAuthFromBetterAuth() {
         const { data: session, isPending: isSessionPending } =
           authClient.useSession();
+        const sessionId = session?.session.id;
         const fetchAccessToken = useCallback(
           async () => {
             try {
@@ -104,7 +105,7 @@ function useUseAuthFromBetterAuth(authClient: AuthClient) {
           },
           // Build a new fetchAccessToken to trigger setAuth() whenever the
           // session changes.
-          [session]
+          [sessionId]
         );
         return useMemo(
           () => ({
@@ -112,7 +113,7 @@ function useUseAuthFromBetterAuth(authClient: AuthClient) {
             isAuthenticated: session !== null,
             fetchAccessToken,
           }),
-          [isSessionPending, session, fetchAccessToken]
+          [isSessionPending, sessionId, fetchAccessToken]
         );
       },
     [authClient]
