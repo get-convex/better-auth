@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.9
+
+- fix(react): fix overreacting fetch token hook
+
 ## 0.8.8
 
 - fix: use correct session field for getHeaders query
