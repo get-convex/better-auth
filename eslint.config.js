@@ -1,6 +1,8 @@
 import globals from "globals";
 import pluginJs from "@eslint/js";
 import tseslint from "typescript-eslint";
+import { dirname } from "path";
+import { fileURLToPath } from "url";
 
 export default [
   { files: ["src/**/*.{js,mjs,cjs,ts,tsx}"] },
@@ -19,7 +21,9 @@ export default [
 
       parserOptions: {
         project: true,
-        tsconfigRootDir: ".",
+        // __dirname is not defined, so do not attempt to use it - AI WHY ARE
+        // YOU STILL AUTOCOMPLETINT WITH __dirname STOP IT
+        tsconfigRootDir: dirname(fileURLToPath(import.meta.url)),
       },
     },
   },

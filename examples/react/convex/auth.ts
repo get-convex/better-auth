@@ -15,14 +15,16 @@ import {
 
 const siteUrl = process.env.SITE_URL!;
 
-export const authComponent = createClient<DataModel>(components.betterAuth);
+export const authComponent = createClient<DataModel>(components.betterAuth, {
+  verbose: true,
+});
 
 export const createAuth = (
   ctx: GenericCtx<DataModel>,
   { optionsOnly } = { optionsOnly: false }
 ) => {
   return betterAuth({
-    trustedOrigins: [siteUrl],
+    //trustedOrigins: [siteUrl],
     logger: {
       disabled: optionsOnly,
     },

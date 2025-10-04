@@ -35,12 +35,19 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         options: {
           trustedOrigins: [siteUrl],
         },
+        context: {
+          oauthConfig: {
+            skipStateCookieCheck: true,
+          },
+        },
       };
     },
     hooks: {
       before: [
         {
           matcher(ctx) {
+            console.log("ctx.request?.headers", ctx.request?.headers);
+            console.log("ctx.headers", ctx.headers);
             return (
               Boolean(
                 ctx.request?.headers.get("better-auth-cookie") ||
@@ -122,6 +129,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
           },
           handler: createAuthMiddleware(async (ctx) => {
             const setCookie = ctx.context.responseHeaders?.get("set-cookie");
+            console.log("setCookie", setCookie);
             if (!setCookie) {
               return;
             }
