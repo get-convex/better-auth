@@ -1,4 +1,7 @@
-import { AdapterDebugLogs, createAdapterFactory } from "better-auth/adapters";
+import {
+  createAdapterFactory,
+  DBAdapterDebugLogOption,
+} from "better-auth/adapters";
 import {
   createFunctionHandle,
   FunctionHandle,
@@ -106,7 +109,7 @@ export const convexAdapter = <
     adapterTest?: UseApi<typeof componentApi>["adapterTest"];
   },
   config: {
-    debugLogs?: AdapterDebugLogs;
+    debugLogs?: DBAdapterDebugLogOption;
     authFunctions?: AuthFunctions;
     triggers?: Triggers<DataModel, Schema>;
   } = {}
