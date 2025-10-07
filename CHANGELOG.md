@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.9.0
+
+- feat: add getAuth component method
+- chore: support Better Auth 1.3.27
+- feat: update helpers, docs, and examples for latest TanStack RC
+- docs: add migration guides for dropping user.userId field
+- fix: reference session by token from jwt in getHeaders
+- docs: add api docs for a few of the more often used methods
+- fix: block stale session delete for get-session client calls
+- feat: add requireRunMutationCtx and requireActionCtx type utils
+- fix: swap old and new doc params in onUpdate trigger
+
+  This was just a mistake in design - you often will not need the
+  old doc in an update trigger, so it should be a trailing param
+
+  BREAKING CHANGE: 2nd and 3rd params in onUpdate trigger are swapped
+
 ## 0.8.9
 
 - fix(react): fix overreacting fetch token hook
