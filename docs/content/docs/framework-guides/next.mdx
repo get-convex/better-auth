@@ -275,12 +275,13 @@ export const updateUserPassword = mutation({
     newPassword: v.string(),
   },
   handler: async (ctx, args) => {
-    await createAuth(ctx).api.changePassword({
+    const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
+    await auth.api.changePassword({
       body: {
         currentPassword: args.currentPassword,
         newPassword: args.newPassword,
       },
-      headers: await authComponent.getHeaders(ctx),
+      headers,
     });
   },
 });

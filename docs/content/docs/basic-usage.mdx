@@ -46,13 +46,15 @@ export const updateUserPassword = mutation({
   handler: async (ctx, args) => {
     // Many Better Auth server methods require a currently authenticated
     // user, so request headers have to be passed in so session cookies
-    // can be parsed and validated. The `headers` utility can be used here.
-    await createAuth(ctx).api.changePassword({
+    // can be parsed and validated. The `getAuth` method provides both the
+    // auth object and headers for convenience.
+    const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
+    await auth.api.changePassword({
       body: {
         currentPassword: args.currentPassword,
         newPassword: args.newPassword,
       },
-      headers: await authComponent.getHeaders(ctx),
+      headers,
     });
   },
 });

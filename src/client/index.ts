@@ -478,6 +478,29 @@ export const createClient = <
     }
     return doc;
   };
+
+  const getHeaders = async (ctx: GenericCtx<DataModel>) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return new Headers();
+    }
+    const session = await ctx.runQuery(component.adapter.findOne, {
+      model: "session",
+      where: [
+        {
+          field: "_id",
+          value: identity.sessionId as string,
+        },
+      ],
+    });
+    return new Headers({
+      ...(session?.token ? { authorization: `Bearer ${session.token}` } : {}),
+      ...(session?.ipAddress
+        ? { "x-forwarded-for": session.ipAddress as string }
+        : {}),
+    });
+  };
+
   return {
     component,
     adapter: (ctx: GenericCtx<DataModel>) =>
@@ -485,30 +508,29 @@ export const createClient = <
         ...config,
         debugLogs: config?.verbose,
       }),
-    getHeaders: async (ctx: GenericCtx<DataModel>) => {
-      const identity = await ctx.auth.getUserIdentity();
-      if (!identity) {
-        return new Headers();
-      }
-      const session = await ctx.runQuery(component.adapter.findOne, {
-        model: "session",
-        where: [
-          {
-            field: "_id",
-            value: identity.sessionId as string,
-          },
-        ],
-      });
-      return new Headers({
-        ...(session?.token ? { authorization: `Bearer ${session.token}` } : {}),
-        ...(session?.ipAddress
-          ? { "x-forwarded-for": session.ipAddress as string }
-          : {}),
-      });
-    },
 
+    getAuth: async <T extends CreateAuth<DataModel>>(
+      createAuth: T,
+      ctx: GenericCtx<DataModel>
+    ) => ({
+      auth: createAuth(ctx) as ReturnType<T>,
+      headers: await getHeaders(ctx),
+    }),
+
+    getHeaders,
+
+    /**
+     * Returns the current user or null if the user is not found
+     * @param ctx - The Convex context
+     * @returns The user or null if the user is not found
+     */
     safeGetAuthUser,
 
+    /**
+     * Returns the current user.
+     * @param ctx - The Convex context
+     * @returns The user or throws an error if the user is not found
+     */
     getAuthUser: async (ctx: GenericCtx<DataModel>) => {
       const user = await safeGetAuthUser(ctx);
       if (!user) {
@@ -517,6 +539,12 @@ export const createClient = <
       return user;
     },
 
+    /**
+     * Returns a user by their Better Auth user id.
+     * @param ctx - The Convex context
+     * @param id - The Better Auth user id
+     * @returns The user or null if the user is not found
+     */
     getAnyUserById: async (ctx: GenericCtx<DataModel>, id: string) => {
       return (await ctx.runQuery(component.adapter.findOne, {
         model: "user",
@@ -527,6 +555,11 @@ export const createClient = <
     // Replaces 0.7 behavior of returning a new user id from
     // onCreateUser, deprecated in 0.9
     /**
+     * Replaces 0.7 behavior of returning a new user id from
+     * onCreateUser
+     * @param ctx - The Convex context
+     * @param authId - The Better Auth user id
+     * @param userId - The app user id
      * @deprecated in 0.9
      */
     setUserId: async (
@@ -543,7 +576,12 @@ export const createClient = <
       });
     },
 
-    // Temporary method to simplify 0.9 migration, gets a user by `userId` field
+    /**
+     * Temporary method to simplify 0.9 migration, gets a user by `userId` field
+     * @param ctx - The Convex context
+     * @param userId - The app user id
+     * @returns The user or null if the user is not found
+     */
     migrationGetUser: async (
       ctx: GenericMutationCtx<DataModel>,
       userId: string
@@ -554,6 +592,12 @@ export const createClient = <
       })) as BetterAuthDataModel["user"]["document"] | null;
     },
 
+    /**
+     * Temporary method to simplify 0.9 migration, removes the `userId` field
+     * from the Better Auth user record
+     * @param ctx - The Convex context
+     * @param userId - The app user id
+     */
     migrationRemoveUserId: async (
       ctx: GenericMutationCtx<DataModel>,
       userId: string
