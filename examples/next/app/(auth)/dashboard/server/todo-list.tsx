@@ -22,7 +22,6 @@ export const TodoList = async () => {
   async function addTodo(formData: FormData) {
     "use server";
     const token = await getToken();
-    console.log("token addTodo", token);
     await fetchMutation(
       api.todos.create,
       { text: formData.get("text") as string },
