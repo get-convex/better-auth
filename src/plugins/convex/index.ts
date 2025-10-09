@@ -47,6 +47,17 @@ export const convex = (
     } as const,
     ...jwt.schema,
   };
+
+  const parseSetCookie = (setCookieHeader: string) => {
+    return setCookieHeader
+      .split(", ")
+      .map((cookie) => {
+        const semiIdx = cookie.indexOf(";");
+        const endIdx = semiIdx === -1 ? cookie.length + 1 : semiIdx;
+        return cookie.slice(0, endIdx);
+      })
+      .join("; ");
+  };
   return {
     id: "convex",
     init: ({ logger, options }) => {
@@ -85,6 +96,7 @@ export const convex = (
         ...oidcProvider.hooks.after,
         {
           matcher: (ctx) => {
+            console.log("ctx.path", ctx.path);
             return (
               ctx.path.startsWith("/sign-in") ||
               ctx.path.startsWith("/sign-up") ||
@@ -96,9 +108,10 @@ export const convex = (
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
-            // Set jwt cookie at login for ssa
-            const cookie = ctx.context.responseHeaders?.get("set-cookie") ?? "";
-            if (!cookie) {
+            // Set jwt cookie at login for ssa using set-cookie header
+            const setCookie =
+              ctx.context.responseHeaders?.get("set-cookie") ?? "";
+            if (!setCookie) {
               return;
             }
             try {
@@ -106,7 +119,7 @@ export const convex = (
                 ...ctx,
                 method: "GET",
                 headers: {
-                  cookie,
+                  cookie: parseSetCookie(setCookie),
                 },
                 returnHeaders: false,
               });
