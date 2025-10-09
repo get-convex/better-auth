@@ -7,7 +7,7 @@ export const get = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      return [];
+      throw new Error("Not authenticated");
     }
     return await ctx.db
       .query("todos")
