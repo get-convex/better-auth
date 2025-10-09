@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.1
+
+- fix(convex-plugin): correctly parse cookie for ssa jwt token
+
 ## 0.9.0
 
 - feat: add getAuth component method
