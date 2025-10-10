@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.2
+
+- feat(convex-plugin): set token cookie on siwe verify response
+
 ## 0.9.1
 
 - fix(convex-plugin): correctly parse cookie for ssa jwt token
