@@ -201,10 +201,10 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     Set up route handlers to proxy auth requests from TanStack Start to your Convex deployment.
 
     ```ts title="src/routes/api/auth/$.ts"
-    import { reactStartHandler } from '@convex-dev/better-auth/react-start'
     import { createFileRoute } from '@tanstack/react-router'
+    import { reactStartHandler } from '@convex-dev/better-auth/react-start'
 
-    export const ServerRoute = createFileRoute('/api/auth/$').methods({
+    export const Route = createFileRoute('/api/auth/$')({
       server: {
         handlers: {
           GET: ({ request }) => {
@@ -228,6 +228,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     ```ts title="src/routes/__root.tsx"
     /// <reference types="vite/client" />
     import * as React from 'react'
+    import appCss from '@/styles/app.css?url'
     import {
       Outlet,
       createRootRouteWithContext,
@@ -235,12 +236,9 @@ description: Install and configure Convex + Better Auth for TanStack Start.
       Scripts,
       useRouteContext, // [!code ++]
     } from '@tanstack/react-router'
-    import {
-      createServerFn, // [!code ++]
-    } from '@tanstack/react-start'
-    import { QueryClient } from '@tanstack/react-query' // [!code ++]
-    import appCss from '@/styles/app.css?url'
-    // [!code ++:6]
+    // [!code ++:8]
+    import { createServerFn } from '@tanstack/react-start'
+    import { QueryClient } from '@tanstack/react-query'
     import { ConvexQueryClient } from '@convex-dev/react-query'
     import { ConvexReactClient } from 'convex/react'
     import { getCookie, getRequest } from '@tanstack/react-start/server'
