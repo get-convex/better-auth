@@ -159,6 +159,9 @@ export const {
 Update user triggers to set the user `authId` field on creation, and use it to
 get the app user on update and delete.
 
+Depending on how you're using Better Auth, you may or may not be using all of
+these triggers.
+
 ```ts title="convex/auth.ts"
 export const authComponent = createClient<DataModel, typeof betterAuthSchema>(
   components.betterAuth,
@@ -173,27 +176,35 @@ export const authComponent = createClient<DataModel, typeof betterAuthSchema>(
           });
           await authComponent.setUserId(ctx, authUser._id, userId);
         },
-      onUpdate: async (ctx, newUser, oldUser) => {
-        if (oldUser.email !== newUser.email) {
-          // [!code ++:4]
-          const user = await db.user.ADMIN_getByAuthId(ctx, newUser._id)
+      onUpdate: async (ctx, authUser, prevAuthUser) => {
+        // Example trigger logic for syncing email address, your logic
+        // and details may differ
+        if (authUser.email !== prevAuthUser.email) {
+          // [!code ++:6]
+          const user = await ctx.db.query("users")
+            .withIndex("authId", (q) => q.eq("authId", authUser._id))
+            .unique();
           if (!user) {
             throw new ConvexError('User not found')
           }
-          await ctx.db.patch(newUser.userId as Id<'users'>, { // [!code --]
+          await ctx.db.patch(authUser.authId as Id<'users'>, { // [!code --]
           await ctx.db.patch(user._id, { // [!code ++]
-            email: newUser.email,
+            email: authUser.email,
           })
         }
       },
       onDelete: async (ctx, authUser) => {
+        // Example logic, your logic and details may differ
         await ctx.db.delete(authUser.userId as Id<'users'>) // [!code --]
-        // [!code ++:5]
-        const user = await ctx.db.get(authUser._id)
+        // [!code ++:6]
+        const user = await ctx.db.query("users")
+          .withIndex("authId", (q) => q.eq("authId", authUser._id))
+          .unique();
         if (!user) {
           throw new ConvexError('User not found')
         }
-        await ctx.db.delete(authUser._id)
+        await ctx.db.delete(authUser.userId as Id<'users'>) // [!code --]
+        await ctx.db.delete(user._id) // [!code ++]
       },
         // ...
       },
