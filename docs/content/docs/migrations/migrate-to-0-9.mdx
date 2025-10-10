@@ -26,6 +26,19 @@ description: Migrate to @convex-dev/better-auth@0.9
 
   <div className="fd-step">
 
+### Regenerate schema (Local Install only)
+
+Whenever updating Better Auth w/ Local Install, regenerate the schema.
+
+```npm
+cd convex/betterAuth
+npx @better-auth/cli generate -y
+```
+
+</div>
+
+  <div className="fd-step">
+
 ### Update `onUpdate` triggers
 
 <Callout title="Breaking change!" type="warning" />
