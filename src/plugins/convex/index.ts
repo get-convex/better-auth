@@ -96,7 +96,6 @@ export const convex = (
         ...oidcProvider.hooks.after,
         {
           matcher: (ctx) => {
-            console.log("ctx.path", ctx.path);
             return (
               ctx.path.startsWith("/sign-in") ||
               ctx.path.startsWith("/sign-up") ||
