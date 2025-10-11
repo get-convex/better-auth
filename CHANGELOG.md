@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.3
+
+- fix: allow authorization header for cors by default
+
 ## 0.9.2
 
 - feat(convex-plugin): set token cookie on siwe verify response
