@@ -730,9 +730,11 @@ export const createClient = <
             .concat(corsOpts.allowedOrigins ?? []);
         },
         allowCredentials: true,
-        allowedHeaders: ["Content-Type", "Better-Auth-Cookie"].concat(
-          corsOpts.allowedHeaders ?? []
-        ),
+        allowedHeaders: [
+          "Content-Type",
+          "Better-Auth-Cookie",
+          "Authorization",
+        ].concat(corsOpts.allowedHeaders ?? []),
         exposedHeaders: ["Set-Better-Auth-Cookie"].concat(
           corsOpts.exposedHeaders ?? []
         ),
