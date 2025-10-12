@@ -1,4 +1,4 @@
-import { BetterAuthDbSchema, type FieldAttribute } from "better-auth/db";
+import { BetterAuthDBSchema, type DBFieldAttribute } from "better-auth/db";
 
 // Manually add fields to index on for schema generation,
 // all fields in the schema specialFields are automatically indexed
@@ -13,7 +13,7 @@ export const indexFields = {
 };
 
 // Return map of unique, sortable, and reference fields
-const specialFields = (tables: BetterAuthDbSchema) =>
+const specialFields = (tables: BetterAuthDBSchema) =>
   Object.fromEntries(
     Object.entries(tables)
       .map(([key, table]) => {
@@ -38,7 +38,7 @@ const specialFields = (tables: BetterAuthDbSchema) =>
       )
   );
 
-const mergedIndexFields = (tables: BetterAuthDbSchema) =>
+const mergedIndexFields = (tables: BetterAuthDBSchema) =>
   Object.fromEntries(
     Object.entries(tables).map(([key]) => {
       const manualIndexes = indexFields[key as keyof typeof indexFields] || [];
@@ -59,7 +59,7 @@ export const createSchema = async ({
   file,
   tables,
 }: {
-  tables: BetterAuthDbSchema;
+  tables: BetterAuthDBSchema;
   file?: string;
 }) => {
   // stop convex esbuild from throwing over this import, only runs
@@ -94,7 +94,7 @@ export const tables = {
       Object.entries(table.fields).filter(([key]) => key !== "id")
     );
 
-    function getType(name: string, field: FieldAttribute) {
+    function getType(name: string, field: DBFieldAttribute) {
       const type = field.type as
         | "string"
         | "number"
@@ -126,7 +126,7 @@ export const tables = {
 ${Object.keys(fields)
   .map((field) => {
     const attr = fields[field]!;
-    const type = getType(field, attr as FieldAttribute);
+    const type = getType(field, attr as DBFieldAttribute);
     const optional = (fieldSchema: string) =>
       attr.required
         ? fieldSchema
