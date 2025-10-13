@@ -16,7 +16,7 @@ import {
 const siteUrl = process.env.SITE_URL!;
 
 export const authComponent = createClient<DataModel>(components.betterAuth, {
-  verbose: true,
+  verbose: false,
 });
 
 export const createAuth = (
