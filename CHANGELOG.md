@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.4
+
+- fix: move semver dependency to dependencies'
+
 ## 0.9.3
 
 - fix: allow authorization header for cors by default
