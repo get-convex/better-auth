@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.5
+
+- fix(cross-domain): remove extra logs
+
 ## 0.9.4
 
 - fix: move semver dependency to dependencies'
