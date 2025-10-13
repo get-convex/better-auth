@@ -175,7 +175,6 @@
     "globals": "^15.9.0",
     "next": "^15.1.8",
     "prettier": "3.2.5",
-    "semver": "^7.7.2",
     "tsc-alias": "^1.8.16",
     "typescript": "5.8.3",
     "typescript-eslint": "^8.4.0",
@@ -188,6 +187,7 @@
     "common-tags": "^1.8.2",
     "convex-helpers": "^0.1.95",
     "remeda": "^2.32.0",
+    "semver": "^7.7.3",
     "type-fest": "^4.39.1",
     "zod": "^3.24.4"
   }
