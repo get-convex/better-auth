@@ -9,8 +9,9 @@ import {
 import type { auth } from "@/convex/betterAuth/auth";
 import { convexClient } from "@convex-dev/better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
+import { ClientOptions } from "better-auth";
 
-export const authClient = createAuthClient({
+export const clientOptions = {
   plugins: [
     inferAdditionalFields<typeof auth>(),
     anonymousClient(),
@@ -20,4 +21,6 @@ export const authClient = createAuthClient({
     genericOAuthClient(),
     convexClient(),
   ],
-});
+} satisfies ClientOptions;
+
+export const authClient = createAuthClient(clientOptions);

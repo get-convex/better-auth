@@ -12,9 +12,15 @@ import {
   TodoEmptyState,
 } from "@/components/server";
 import { getToken } from "@/lib/auth-server";
+import { redirect } from "next/navigation";
 
 export const TodoList = async () => {
+  console.log("TodoList");
   const token = await getToken();
+  console.log("token TodoList", token);
+  if (!token) {
+    redirect("/sign-in");
+  }
   const preloadedTodosQuery = await preloadQuery(api.todos.get, {}, { token });
   const todos = preloadedQueryResult(preloadedTodosQuery);
 

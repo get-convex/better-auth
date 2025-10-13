@@ -1,9 +1,16 @@
 "use client";
 
 import SignIn from "@/app/(unauth)/sign-in/SignIn";
+import { useConvexAuth } from "convex/react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export default function SignInPage() {
+  const { isAuthenticated } = useConvexAuth();
+  if (isAuthenticated) {
+    console.log("redirecting to dashboard/server");
+    redirect("/dashboard/server");
+  }
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4">
       <div className="w-full max-w-md">
