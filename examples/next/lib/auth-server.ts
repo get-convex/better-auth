@@ -1,6 +1,17 @@
-import { createAuth } from "@/convex/auth";
-import { getToken as getTokenNextjs } from "@convex-dev/better-auth/nextjs";
+import { clientOptions } from "@/lib/auth-client";
+import { createAuthClient } from "better-auth/client";
+import { headers } from "next/headers";
 
-export const getToken = () => {
-  return getTokenNextjs(createAuth);
+export const serverAuthClient = createAuthClient({
+  ...clientOptions,
+  baseURL: process.env.SITE_URL,
+});
+
+export const getToken = async () => {
+  const { data } = await serverAuthClient.convex.token({
+    fetchOptions: {
+      headers: await headers(),
+    },
+  });
+  return data?.token;
 };

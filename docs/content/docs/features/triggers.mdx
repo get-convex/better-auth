@@ -40,7 +40,7 @@ export const authComponent = createClient<DataModel>(components.betterAuth, {
       onCreate: async (ctx, doc) => {
         await ctx.db.insert("posts", {
           title: "Hello, world!",
-          userId: doc._id,
+          authId: doc._id,
         });
       },
       onUpdate: async (ctx, newDoc, oldDoc) => {
