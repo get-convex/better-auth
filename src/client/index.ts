@@ -417,11 +417,11 @@ export type Triggers<
     ) => Promise<void>;
     onUpdate?: <Ctx extends GenericMutationCtx<DataModel>>(
       ctx: Ctx,
-      oldDoc: Infer<Schema["tables"][K]["validator"]> & {
+      newDoc: Infer<Schema["tables"][K]["validator"]> & {
         _id: string;
         _creationTime: number;
       },
-      newDoc: Infer<Schema["tables"][K]["validator"]> & {
+      oldDoc: Infer<Schema["tables"][K]["validator"]> & {
         _id: string;
         _creationTime: number;
       }
