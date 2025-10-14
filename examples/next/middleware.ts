@@ -21,7 +21,7 @@ const getSession = async (request: NextRequest) => {
 };
 */
 
-const signInRoutes = ["/sign-in", "/sign-up", "/verify-2fa"];
+const signInRoutes = ["/sign-in", "/sign-up", "/verify-2fa", "/reset-password"];
 
 // Just check cookie, recommended approach
 export default async function middleware(request: NextRequest) {
