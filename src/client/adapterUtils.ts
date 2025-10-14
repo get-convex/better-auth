@@ -12,7 +12,7 @@ import {
 import { stream } from "convex-helpers/server/stream";
 import { mergedStream } from "convex-helpers/server/stream";
 import { stripIndent } from "common-tags";
-import { BetterAuthDbSchema } from "better-auth/db";
+import { BetterAuthDBSchema } from "better-auth/db";
 
 export const adapterWhereValidator = v.object({
   field: v.string(),
@@ -57,7 +57,7 @@ export const adapterArgsValidator = v.object({
 });
 
 const isUniqueField = (
-  betterAuthSchema: BetterAuthDbSchema,
+  betterAuthSchema: BetterAuthDBSchema,
   model: string,
   field: string
 ) => {
@@ -72,7 +72,7 @@ const isUniqueField = (
     .includes(field);
 };
 export const hasUniqueFields = (
-  betterAuthSchema: BetterAuthDbSchema,
+  betterAuthSchema: BetterAuthDBSchema,
   model: string,
   input: Record<string, any>
 ) => {
@@ -241,7 +241,7 @@ export const checkUniqueFields = async <
 >(
   ctx: GenericQueryCtx<GenericDataModel>,
   schema: Schema,
-  betterAuthSchema: BetterAuthDbSchema,
+  betterAuthSchema: BetterAuthDBSchema,
   table: string,
   input: Record<string, any>,
   doc?: Record<string, any>
@@ -466,7 +466,7 @@ export const paginate = async <
 >(
   ctx: GenericQueryCtx<GenericDataModel>,
   schema: SchemaDefinition<any, any>,
-  betterAuthSchema: BetterAuthDbSchema,
+  betterAuthSchema: BetterAuthDBSchema,
   args: Infer<typeof adapterArgsValidator> & {
     paginationOpts: PaginationOptions;
   }
@@ -623,7 +623,7 @@ export const listOne = async <
 >(
   ctx: GenericQueryCtx<GenericDataModel>,
   schema: SchemaDefinition<any, any>,
-  betterAuthSchema: BetterAuthDbSchema,
+  betterAuthSchema: BetterAuthDBSchema,
   args: Infer<typeof adapterArgsValidator>
 ): Promise<Doc | null> => {
   return (
