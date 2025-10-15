@@ -88,6 +88,10 @@ export const createAuth = (
           type: "string",
           required: false,
         },
+        test: {
+          type: "json",
+          required: false,
+        },
       },
       deleteUser: {
         enabled: true,

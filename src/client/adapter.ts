@@ -122,6 +122,7 @@ export const convexAdapter = <
       disableIdGeneration: true,
       transaction: false,
       supportsNumericIds: false,
+      supportsJSON: false,
       usePlural: false,
       mapKeysTransformInput: {
         id: "_id",
