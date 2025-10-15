@@ -94,10 +94,6 @@ export const tables = {
     const table = tables[tableKey]!;
     const modelName = table.modelName;
 
-    if (modelName === "users") {
-      console.log(table);
-    }
-
     // No id fields in Convex schema
     const fields = Object.fromEntries(
       Object.entries(table.fields).filter(([key]) => key !== "id")
@@ -126,7 +122,7 @@ export const tables = {
 
     const indexes =
       mergedIndexFields(tables)[
-        modelName as keyof typeof mergedIndexFields
+        tableKey as keyof typeof mergedIndexFields
       ]?.map((index) => {
         const indexArray = Array.isArray(index) ? index.sort() : [index];
         const indexName = indexArray.join("_");

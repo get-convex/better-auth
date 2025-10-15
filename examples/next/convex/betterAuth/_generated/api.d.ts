@@ -48,6 +48,7 @@ export type Mounts = {
                 image?: null | string;
                 isAnonymous?: null | boolean;
                 name: string;
+                test?: null | string;
                 twoFactorEnabled?: null | boolean;
                 updatedAt: number;
                 userId?: null | string;
@@ -133,6 +134,7 @@ export type Mounts = {
                   | "twoFactorEnabled"
                   | "userId"
                   | "foo"
+                  | "test"
                   | "_id";
                 operator?:
                   | "lt"
@@ -346,6 +348,7 @@ export type Mounts = {
                   | "twoFactorEnabled"
                   | "userId"
                   | "foo"
+                  | "test"
                   | "_id";
                 operator?:
                   | "lt"
@@ -631,6 +634,7 @@ export type Mounts = {
                 image?: null | string;
                 isAnonymous?: null | boolean;
                 name?: string;
+                test?: null | string;
                 twoFactorEnabled?: null | boolean;
                 updatedAt?: number;
                 userId?: null | string;
@@ -651,6 +655,7 @@ export type Mounts = {
                   | "twoFactorEnabled"
                   | "userId"
                   | "foo"
+                  | "test"
                   | "_id";
                 operator?:
                   | "lt"
@@ -898,6 +903,7 @@ export type Mounts = {
                 image?: null | string;
                 isAnonymous?: null | boolean;
                 name?: string;
+                test?: null | string;
                 twoFactorEnabled?: null | boolean;
                 updatedAt?: number;
                 userId?: null | string;
@@ -918,6 +924,7 @@ export type Mounts = {
                   | "twoFactorEnabled"
                   | "userId"
                   | "foo"
+                  | "test"
                   | "_id";
                 operator?:
                   | "lt"
@@ -1158,6 +1165,7 @@ export type Mounts = {
         image?: null | string;
         isAnonymous?: null | boolean;
         name: string;
+        test?: null | string;
         twoFactorEnabled?: null | boolean;
         updatedAt: number;
         userId?: null | string;
