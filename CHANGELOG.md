@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.6
+
+- fix: swap oldDoc/newDoc onUpdate in types
+- fix(adapter): add json field schema support
+- fix(adapter: support custom field names in schema generation
+- fix(adapter): support custom table names in schema generation
+
 ## 0.9.5
 
 - fix(cross-domain): remove extra logs
