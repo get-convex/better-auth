@@ -20,7 +20,7 @@ const specialFields = (tables: BetterAuthDBSchema) =>
         const fields = Object.fromEntries(
           Object.entries(table.fields)
             .map(([fieldKey, field]) => [
-              fieldKey,
+              field.fieldName ?? fieldKey,
               {
                 ...(field.sortable ? { sortable: true } : {}),
                 ...(field.unique ? { unique: true } : {}),
@@ -40,8 +40,13 @@ const specialFields = (tables: BetterAuthDBSchema) =>
 
 const mergedIndexFields = (tables: BetterAuthDBSchema) =>
   Object.fromEntries(
-    Object.entries(tables).map(([key]) => {
-      const manualIndexes = indexFields[key as keyof typeof indexFields] || [];
+    Object.entries(tables).map(([key, table]) => {
+      const manualIndexes =
+        indexFields[key as keyof typeof indexFields]?.map((index) => {
+          return typeof index === "string"
+            ? table.fields[index]?.fieldName ?? index
+            : index.map((i) => table.fields[i]?.fieldName ?? i);
+        }) || [];
       const specialFieldIndexes = Object.keys(
         specialFields(tables)[key as keyof ReturnType<typeof specialFields>] ||
           {}
@@ -89,6 +94,10 @@ export const tables = {
     const table = tables[tableKey]!;
     const modelName = table.modelName;
 
+    if (modelName === "users") {
+      console.log(table);
+    }
+
     // No id fields in Convex schema
     const fields = Object.fromEntries(
       Object.entries(table.fields).filter(([key]) => key !== "id")
@@ -133,7 +142,7 @@ ${Object.keys(fields)
       attr.required
         ? fieldSchema
         : `v.optional(v.union(v.null(), ${fieldSchema}))`;
-    return `    ${field}: ${optional(type)},`;
+    return `    ${attr.fieldName ?? field}: ${optional(type)},`;
   })
   .join("\n")}
   })${indexes.length > 0 ? `\n    ${indexes.join("\n    ")}` : ""},\n`;
