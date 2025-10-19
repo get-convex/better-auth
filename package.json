@@ -125,6 +125,18 @@
         "default": "./dist/commonjs/react-start/index.js"
       }
     },
+    "./astro": {
+      "import": {
+        "@convex-dev/component-source": "./src/astro/index.ts",
+        "types": "./dist/esm/astro/index.d.ts",
+        "default": "./dist/esm/astro/index.js"
+      },
+      "require": {
+        "@convex-dev/component-source": "./src/astro/index.ts",
+        "types": "./dist/commonjs/astro/index.d.ts",
+        "default": "./dist/commonjs/astro/index.js"
+      }
+    },
     "./utils": {
       "import": {
         "@convex-dev/component-source": "./src/utils/index.ts",
@@ -168,6 +180,7 @@
     "@types/react": "19.1.6",
     "@types/react-dom": "19.1.6",
     "@types/semver": "^7.7.0",
+    "astro": "^5.14.5",
     "chokidar-cli": "^3.0.0",
     "concurrently": "^9.2.0",
     "convex-test": "^0.0.33",
