@@ -1150,10 +1150,10 @@ export type Mounts = {
     >;
   };
   auth: {
-    getCurrentUser: FunctionReference<
+    getUser: FunctionReference<
       "query",
       "public",
-      {},
+      { userId: string },
       null | {
         _creationTime: number;
         _id: string;

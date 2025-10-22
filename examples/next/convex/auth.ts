@@ -1,5 +1,5 @@
 import { components } from "./_generated/api";
-import { query, QueryCtx } from "./_generated/server";
+import { query } from "./_generated/server";
 import authSchema from "./betterAuth/schema";
 import { createClient, GenericCtx } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
@@ -20,6 +20,7 @@ import { magicLink } from "better-auth/plugins";
 import { betterAuth, BetterAuthOptions } from "better-auth";
 import { requireActionCtx } from "@convex-dev/better-auth/utils";
 import { DataModel } from "./_generated/dataModel";
+import { v } from "convex/values";
 
 // This implementation uses Local Install as it would be in a new project.
 
@@ -132,19 +133,22 @@ export const createAuth = (
     ],
   } satisfies BetterAuthOptions);
 
-// Below are example helpers and functions for getting the current user
-// Feel free to edit, omit, etc.
-export const safeGetUser = async (ctx: QueryCtx) => {
-  return authComponent.safeGetAuthUser(ctx);
-};
+// Example functions, feel free to edit, omit, etc.
 
-export const getUser = async (ctx: QueryCtx) => {
-  return authComponent.getAuthUser(ctx);
-};
-
+// Get the current user
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    return safeGetUser(ctx);
+    return authComponent.getAuthUser(ctx);
+  },
+});
+
+// Get a user by their Better Auth user id with Local Install
+export const getUserById = query({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    return ctx.runQuery(components.betterAuth.auth.getUser, {
+      userId: args.userId,
+    });
   },
 });

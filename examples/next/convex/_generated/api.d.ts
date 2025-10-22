@@ -1184,10 +1184,10 @@ export declare const components: {
       >;
     };
     auth: {
-      getCurrentUser: FunctionReference<
+      getUser: FunctionReference<
         "query",
         "internal",
-        {},
+        { userId: string },
         null | {
           _creationTime: number;
           _id: string;

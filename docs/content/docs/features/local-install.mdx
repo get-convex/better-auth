@@ -222,19 +222,29 @@ component cannot be internal. While normally public functions are exposed to the
 internet, **Convex functions exported by a component are never exposed to the
 internet, even if they are public**.
 
+<Callout>
+  If a function in a component is called from outside the component, the return
+  type won't be inferred unless a return validator is provided.
+</Callout>
+
 ```ts title="convex/betterAuth/someFile.ts"
 import { query, mutation } from "./_generated/server";
+import { doc } from "convex-helpers/validators";
+import schema from "./schema";
 import { v } from "convex/values";
 
 // This is accessible from outside the component
 export const someFunction = query({
   args: { sessionId: v.id("session") },
+  // Add a return validator so the return value is typed when
+  // called from outside the component.
+  returns: v.union(v.null(), doc(schema, "session")),
   handler: async (ctx, args) => {
     return await ctx.db.get(args.sessionId);
   },
 });
 
-// This is not accessible from outside the component
+// This is not accessible from outside the component.
 export const someInternalFunction = internalQuery({
   args: { sessionId: v.id("session") },
   handler: async (ctx, args) => {
