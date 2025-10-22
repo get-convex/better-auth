@@ -35,7 +35,7 @@ export const authComponent = createClient<DataModel, typeof betterAuthSchema>(
     local: {
       schema: betterAuthSchema,
     },
-    verbose: true,
+    verbose: false,
     triggers: {
       user: {
         onCreate: async (ctx, authUser) => {
