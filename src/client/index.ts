@@ -410,34 +410,34 @@ export type Triggers<
   DataModel extends GenericDataModel,
   Schema extends SchemaDefinition<any, any>,
 > = {
-    [K in keyof Schema["tables"]]?: {
-      onCreate?: <Ctx extends GenericMutationCtx<DataModel>>(
-        ctx: Ctx,
-        doc: Infer<Schema["tables"][K]["validator"]> & {
-          _id: string;
-          _creationTime: number;
-        }
-      ) => Promise<void>;
-      onUpdate?: <Ctx extends GenericMutationCtx<DataModel>>(
-        ctx: Ctx,
-        newDoc: Infer<Schema["tables"][K]["validator"]> & {
-          _id: string;
-          _creationTime: number;
-        },
-        oldDoc: Infer<Schema["tables"][K]["validator"]> & {
-          _id: string;
-          _creationTime: number;
-        }
-      ) => Promise<void>;
-      onDelete?: <Ctx extends GenericMutationCtx<DataModel>>(
-        ctx: Ctx,
-        doc: Infer<Schema["tables"][K]["validator"]> & {
-          _id: string;
-          _creationTime: number;
-        }
-      ) => Promise<void>;
-    };
+  [K in keyof Schema["tables"]]?: {
+    onCreate?: <Ctx extends GenericMutationCtx<DataModel>>(
+      ctx: Ctx,
+      doc: Infer<Schema["tables"][K]["validator"]> & {
+        _id: string;
+        _creationTime: number;
+      }
+    ) => Promise<void>;
+    onUpdate?: <Ctx extends GenericMutationCtx<DataModel>>(
+      ctx: Ctx,
+      newDoc: Infer<Schema["tables"][K]["validator"]> & {
+        _id: string;
+        _creationTime: number;
+      },
+      oldDoc: Infer<Schema["tables"][K]["validator"]> & {
+        _id: string;
+        _creationTime: number;
+      }
+    ) => Promise<void>;
+    onDelete?: <Ctx extends GenericMutationCtx<DataModel>>(
+      ctx: Ctx,
+      doc: Infer<Schema["tables"][K]["validator"]> & {
+        _id: string;
+        _creationTime: number;
+      }
+    ) => Promise<void>;
   };
+};
 
 export const createClient = <
   DataModel extends GenericDataModel,
@@ -653,13 +653,13 @@ export const createClient = <
       createAuth: CreateAuth<DataModel>,
       opts: {
         cors?:
-        | boolean
-        | {
-          // These values are appended to the default values
-          allowedOrigins?: string[];
-          allowedHeaders?: string[];
-          exposedHeaders?: string[];
-        };
+          | boolean
+          | {
+              // These values are appended to the default values
+              allowedOrigins?: string[];
+              allowedHeaders?: string[];
+              exposedHeaders?: string[];
+            };
       } = {}
     ) => {
       const staticAuth = getStaticAuth(createAuth);
@@ -764,14 +764,14 @@ export const createClient = <
 
 export type OpaqueIds<T> =
   T extends GenericId<infer _T>
-  ? string
-  : T extends (infer U)[]
-  ? OpaqueIds<U>[]
-  : T extends ArrayBuffer
-  ? ArrayBuffer
-  : T extends object
-  ? { [K in keyof T]: OpaqueIds<T[K]> }
-  : T;
+    ? string
+    : T extends (infer U)[]
+      ? OpaqueIds<U>[]
+      : T extends ArrayBuffer
+        ? ArrayBuffer
+        : T extends object
+          ? { [K in keyof T]: OpaqueIds<T[K]> }
+          : T;
 
 export type UseApi<API> = Expand<{
   [mod in keyof API]: API[mod] extends FunctionReference<
@@ -781,12 +781,12 @@ export type UseApi<API> = Expand<{
     infer FReturnType,
     infer FComponentPath
   >
-  ? FunctionReference<
-    FType,
-    "internal",
-    OpaqueIds<FArgs>,
-    OpaqueIds<FReturnType>,
-    FComponentPath
-  >
-  : UseApi<API[mod]>;
+    ? FunctionReference<
+        FType,
+        "internal",
+        OpaqueIds<FArgs>,
+        OpaqueIds<FReturnType>,
+        FComponentPath
+      >
+    : UseApi<API[mod]>;
 }>;
