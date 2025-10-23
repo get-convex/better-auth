@@ -102,7 +102,7 @@ description: Migrate to @convex-dev/better-auth@0.8
               // This helper method exists solely to facilitate this migration.
               await authComponent.setUserId(ctx, authUser._id, userId)
             },
-            onUpdate: async (ctx, newUser, oldUser) => {
+            onUpdate: async (ctx, oldUser, newUser) => {
               // Any `onUpdateUser` logic should be moved here
             },
             onDelete: async (ctx, authUser) => {
