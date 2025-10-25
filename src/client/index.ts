@@ -451,10 +451,14 @@ export const createClient = <
     local?: {
       schema?: Schema;
     };
-    authFunctions?: AuthFunctions;
     verbose?: boolean;
-    triggers?: Triggers<DataModel, Schema>;
-  }
+  } & (
+    | {
+        triggers: Triggers<DataModel, Schema>;
+        authFunctions: AuthFunctions;
+      }
+    | { triggers?: undefined }
+  )
 ) => {
   type BetterAuthDataModel = DataModelFromSchemaDefinition<Schema>;
 
