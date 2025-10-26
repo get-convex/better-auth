@@ -26,13 +26,16 @@ Throwing an error in a trigger will stop the original operation from committing.
 </Callout>
 
 ```ts title="convex/auth.ts"
-import { createClient } from "@convex-dev/better-auth";
-import { components, internal } from "./_generated/api";
-import { AuthFunctions } from "@convex-dev/better-auth";
 import { DataModel } from "./_generated/dataModel";
+import { components } from "./_generated/api"; // [!code --]
+import { components, internal } from "./_generated/api"; // [!code ++]
+import { createClient } from "@convex-dev/better-auth"; // [!code --]
+import { createClient, type AuthFunctions } from "@convex-dev/better-auth"; // [!code ++]
 
-const authFunctions: AuthFunctions = internal.auth;
+const authFunctions: AuthFunctions = internal.auth; // [!code ++]
 
+export const authComponent = createClient<DataModel>(components.betterAuth); // [!code --]
+// [!code ++:20]
 export const authComponent = createClient<DataModel>(components.betterAuth, {
   authFunctions,
   triggers: {
@@ -54,5 +57,5 @@ export const authComponent = createClient<DataModel>(components.betterAuth, {
   },
 });
 
-export const { onCreate, onUpdate, onDelete } = authComponent.triggersApi();
+export const { onCreate, onUpdate, onDelete } = authComponent.triggersApi(); // [!code ++]
 ```
