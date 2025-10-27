@@ -45,8 +45,8 @@ export default function SignUp() {
         name: `${firstName} ${lastName}`,
         image: image ? await convertImageToBase64(image) : "",
         // custom field configured via user.additionalFields in
-        // lib/auth.ts
-        foo: "baz",
+        // convex/auth.ts
+        foo: "bar",
       },
       {
         onRequest: () => {

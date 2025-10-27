@@ -19,7 +19,7 @@ import {
 } from "convex/server";
 import { type GenericId, Infer, v } from "convex/values";
 import { convexAdapter } from "./adapter";
-import { AdapterInstance, betterAuth } from "better-auth";
+import { AdapterInstance, Auth, betterAuth } from "better-auth";
 import { asyncMap } from "convex-helpers";
 import { partial } from "convex-helpers/validators";
 import {
@@ -44,16 +44,19 @@ export type CreateAdapter = <Ctx extends GenericCtx<GenericDataModel>>(
   ctx: Ctx
 ) => AdapterInstance;
 
-export type CreateAuth<DataModel extends GenericDataModel> =
-  | ((ctx: GenericCtx<DataModel>) => ReturnType<typeof betterAuth>)
-  | ((
-      ctx: GenericCtx<DataModel>,
-      opts?: { optionsOnly?: boolean }
-    ) => ReturnType<typeof betterAuth>);
+export type CreateAuth<
+  DataModel extends GenericDataModel,
+  A extends ReturnType<typeof betterAuth> = Auth,
+> =
+  | ((ctx: GenericCtx<DataModel>) => A)
+  | ((ctx: GenericCtx<DataModel>, opts?: { optionsOnly?: boolean }) => A);
 
-export const getStaticAuth = <DataModel extends GenericDataModel>(
-  createAuth: CreateAuth<DataModel>
-) => {
+export const getStaticAuth = <
+  DataModel extends GenericDataModel,
+  Auth extends ReturnType<typeof betterAuth>,
+>(
+  createAuth: CreateAuth<DataModel, Auth>
+): Auth => {
   return createAuth({} as any, { optionsOnly: true });
 };
 
