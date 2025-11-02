@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.7-alpha.0
+
+- fix: add type error for triggers without authFunctions
+- fix: support Better Auth options inference through getStaticAuth
+- fix(tanstack): add improved tanstack integration methods
+
 ## 0.9.6
 
 - fix: swap oldDoc/newDoc onUpdate in types
