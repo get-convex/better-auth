@@ -1,7 +1,7 @@
 import { createCookieGetter } from "better-auth/cookies";
+import type { GenericDataModel } from "convex/server";
+import { type CreateAuth, getStaticAuth } from "../client";
 import { JWT_COOKIE_NAME } from "../plugins/convex";
-import { CreateAuth, getStaticAuth } from "../client";
-import { GenericDataModel } from "convex/server";
 
 export const getToken = async <DataModel extends GenericDataModel>(
   createAuth: CreateAuth<DataModel>
@@ -44,9 +44,24 @@ const handler = (request: Request, opts?: { convexSiteUrl?: string }) => {
     throw new Error("NEXT_PUBLIC_CONVEX_SITE_URL is not set");
   }
   const nextUrl = `${convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
-  const newRequest = new Request(nextUrl, request);
-  newRequest.headers.set("accept-encoding", "application/json");
-  return fetch(newRequest, { method: request.method, redirect: "manual" });
+
+  const headers = new Headers(request.headers);
+  headers.set("accept-encoding", "application/json");
+  // Delete `host` header that points to Next.js application address
+  // Bun TLS cert validation is more strict that Node.js and it
+  // detects mismatch between `host` header and the target URL causing `ERR_TLS_CERT_ALTNAME_INVALID`
+  headers.delete("host");
+
+  const method = request.method;
+  const hasBody = request.method !== "GET" && request.method !== "HEAD";
+
+  const newRequest = new Request(nextUrl, {
+    method,
+    headers,
+    body: hasBody ? request.body : undefined,
+    redirect: "manual",
+  });
+  return fetch(newRequest);
 };
 
 export const nextJsHandler = (opts?: { convexSiteUrl?: string }) => ({
