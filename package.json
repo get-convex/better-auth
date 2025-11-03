@@ -6,7 +6,7 @@
   "bugs": {
     "url": "https://github.com/get-convex/better-auth/issues"
   },
-  "version": "0.9.7-alpha.1",
+  "version": "0.9.7",
   "license": "Apache-2.0",
   "keywords": [
     "convex",
