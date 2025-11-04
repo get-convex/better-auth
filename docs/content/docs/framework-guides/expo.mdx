@@ -300,7 +300,10 @@ Add the site URL and the cross-domain plugin to the Better Auth instance.
 
 ```ts title="convex/auth.ts"
 import { createClient, type GenericCtx } from "@convex-dev/better-auth";
-import { convex } from "@convex-dev/better-auth/plugins";
+import { 
+  convex,
+  crossDomain // [!code ++]
+} from "@convex-dev/better-auth/plugins";
 import { betterAuth } from "better-auth";
 import { expo } from "@better-auth/expo";
 import { components } from "./_generated/api";
