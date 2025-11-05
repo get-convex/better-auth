@@ -25,6 +25,7 @@
     "build:cjs:generatePackageJson": "echo '{\\n  \"type\": \"commonjs\"\\n}' > dist/commonjs/package.json",
     "build:watch": "chokidar 'tsconfig*.json' 'src/**/*.{ts,tsx}' -c 'npm run build' --initial",
     "typecheck": "tsc --noEmit",
+    "prepare": "npm run build",
     "prepack": "node node10stubs.mjs",
     "prepublishOnly": "npm run build",
     "postpack": "node node10stubs.mjs --cleanup",
