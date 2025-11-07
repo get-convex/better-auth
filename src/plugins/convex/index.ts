@@ -97,7 +97,8 @@ export const convex = (
         {
           matcher: (ctx) => {
             return (
-              ctx.path.startsWith("/sign-in") ||
+              (ctx.path.startsWith("/sign-in") &&
+                !ctx.path.startsWith("/sign-in/anonymous")) ||
               ctx.path.startsWith("/sign-up") ||
               ctx.path.startsWith("/callback") ||
               ctx.path.startsWith("/oauth2/callback") ||
