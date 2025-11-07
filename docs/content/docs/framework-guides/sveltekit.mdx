@@ -296,7 +296,13 @@ npm install convex convex-svelte
       import { createSvelteAuthClient } from '@mmailaender/convex-better-auth-svelte/svelte'; // [!code ++]
       import { authClient } from '$lib/auth-client'; // [!code ++]
 
-      createSvelteAuthClient({ authClient }); // [!code ++]
+      createSvelteAuthClient({ // [!code ++]
+        authClient, // [!code ++]
+        // Optionally, pause queries until the user is authenticated // [!code ++]
+        options: { // [!code ++]
+          expectAuth: true // [!code ++]
+        } // [!code ++]
+      }); // [!code ++]
 
       let { children } = $props();
     </script>
