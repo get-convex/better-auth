@@ -1,7 +1,6 @@
 import {
-  AdapterDebugLogs,
-  CleanedWhere,
-  createAdapter,
+  createAdapterFactory,
+  DBAdapterDebugLogOption,
 } from "better-auth/adapters";
 import {
   createFunctionHandle,
@@ -13,10 +12,13 @@ import {
   SchemaDefinition,
 } from "convex/server";
 import { SetOptional } from "type-fest";
-import { createSchema } from "./createSchema";
 import { AuthFunctions, GenericCtx, Triggers, UseApi } from ".";
 import defaultSchema from "../component/schema";
 import { api as componentApi } from "../component/_generated/api";
+import { Where } from "better-auth/types";
+import { asyncMap } from "convex-helpers";
+import { prop, sortBy, unique } from "remeda";
+import { isRunMutationCtx } from "../utils";
 
 const handlePagination = async (
   next: ({
@@ -77,11 +79,11 @@ const handlePagination = async (
   return state;
 };
 
-type ConvexCleanedWhere = CleanedWhere & {
+type ConvexCleanedWhere = Where & {
   value: string | number | boolean | string[] | number[] | null;
 };
 
-const parseWhere = (where?: CleanedWhere[]): ConvexCleanedWhere[] => {
+const parseWhere = (where?: Where[]): ConvexCleanedWhere[] => {
   return where?.map((where) => {
     if (where.value instanceof Date) {
       return {
@@ -99,21 +101,32 @@ export const convexAdapter = <
   Schema extends SchemaDefinition<any, any> = typeof defaultSchema,
 >(
   ctx: Ctx,
-  api: UseApi<typeof componentApi>,
+  api: {
+    adapter: SetOptional<
+      UseApi<typeof componentApi>["adapter"],
+      "migrationRemoveUserId"
+    >;
+    adapterTest?: UseApi<typeof componentApi>["adapterTest"];
+  },
   config: {
-    debugLogs?: AdapterDebugLogs;
+    debugLogs?: DBAdapterDebugLogOption;
     authFunctions?: AuthFunctions;
     triggers?: Triggers<DataModel, Schema>;
   } = {}
 ) => {
-  return createAdapter({
+  return createAdapterFactory({
     config: {
       adapterId: "convex",
       adapterName: "Convex Adapter",
       debugLogs: config.debugLogs || false,
       disableIdGeneration: true,
+      transaction: false,
       supportsNumericIds: false,
+      supportsJSON: false,
       usePlural: false,
+      mapKeysTransformInput: {
+        id: "_id",
+      },
       mapKeysTransformOutput: {
         _id: "id",
       },
@@ -135,10 +148,17 @@ export const convexAdapter = <
       },
     },
     adapter: ({ options }) => {
+      // Disable telemetry in all cases because it requires Node
       options.telemetry = { enabled: false };
       return {
         id: "convex",
-        createSchema,
+        options: {
+          isRunMutationCtx: isRunMutationCtx(ctx),
+        },
+        createSchema: async ({ file, tables }) => {
+          const { createSchema } = await import("./createSchema");
+          return createSchema({ file, tables });
+        },
         create: async ({ model, data, select }): Promise<any> => {
           if (!("runMutation" in ctx)) {
             throw new Error("ctx is not a mutation ctx");
@@ -177,8 +197,30 @@ export const convexAdapter = <
             throw new Error("offset not supported");
           }
           if (data.where?.some((w) => w.connector === "OR")) {
-            throw new Error("OR connector not supported in findMany");
+            const results = await asyncMap(data.where, async (w) =>
+              handlePagination(
+                async ({ paginationOpts }) => {
+                  return await ctx.runQuery(api.adapter.findMany, {
+                    ...data,
+                    where: parseWhere([w]),
+                    paginationOpts,
+                  });
+                },
+                { limit: data.limit }
+              )
+            );
+            const docs = unique(results.flatMap((r) => r.docs));
+            if (data.sortBy) {
+              const result = sortBy(docs, [
+                prop(data.sortBy.field),
+                data.sortBy.direction,
+              ]);
+              console.log(result);
+              return result;
+            }
+            return docs;
           }
+
           const result = await handlePagination(
             async ({ paginationOpts }) => {
               return await ctx.runQuery(api.adapter.findMany, {
@@ -194,8 +236,19 @@ export const convexAdapter = <
         count: async (data) => {
           // Yes, count is just findMany returning a number.
           if (data.where?.some((w) => w.connector === "OR")) {
-            throw new Error("OR connector not supported in findMany");
+            const results = await asyncMap(data.where, async (w) =>
+              handlePagination(async ({ paginationOpts }) => {
+                return await ctx.runQuery(api.adapter.findMany, {
+                  ...data,
+                  where: parseWhere([w]),
+                  paginationOpts,
+                });
+              })
+            );
+            const docs = unique(results.flatMap((r) => r.docs));
+            return docs.length;
           }
+
           const result = await handlePagination(async ({ paginationOpts }) => {
             return await ctx.runQuery(api.adapter.findMany, {
               ...data,
@@ -203,7 +256,7 @@ export const convexAdapter = <
               paginationOpts,
             });
           });
-          return result.docs?.length ?? 0;
+          return result.docs.length;
         },
         update: async (data): Promise<any> => {
           if (!("runMutation" in ctx)) {
@@ -272,7 +325,7 @@ export const convexAdapter = <
         },
         updateMany: async (data) => {
           if (!("runMutation" in ctx)) {
-            throw new Error("ctx is not an action ctx");
+            throw new Error("ctx is not a mutation ctx");
           }
           const onUpdateHandle =
             config.authFunctions?.onUpdate &&

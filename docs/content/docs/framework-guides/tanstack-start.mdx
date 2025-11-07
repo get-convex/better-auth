@@ -22,8 +22,8 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     <Callout>This component requires Convex `1.25.0` or later.</Callout>
 
     ```npm
-    npm install better-auth@1.3.8 --save-exact
     npm install convex@latest @convex-dev/better-auth
+    npm install better-auth@1.3.27 --save-exact
     ```
 
   </div>
@@ -201,15 +201,19 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     Set up route handlers to proxy auth requests from TanStack Start to your Convex deployment.
 
     ```ts title="src/routes/api/auth/$.ts"
+    import { createFileRoute } from '@tanstack/react-router'
     import { reactStartHandler } from '@convex-dev/better-auth/react-start'
-    import { createServerFileRoute } from '@tanstack/react-start/server'
 
-    export const ServerRoute = createServerFileRoute('/api/auth/$').methods({
-      GET: ({ request }) => {
-        return reactStartHandler(request)
-      },
-      POST: ({ request }) => {
-        return reactStartHandler(request)
+    export const Route = createFileRoute('/api/auth/$')({
+      server: {
+        handlers: {
+          GET: ({ request }) => {
+            return reactStartHandler(request)
+          },
+          POST: ({ request }) => {
+            return reactStartHandler(request)
+          },
+        },
       },
     })
     ```
@@ -222,23 +226,22 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     Wrap your application root with `ConvexBetterAuthProvider` and make auth available in loaders.
 
     ```ts title="src/routes/__root.tsx"
+    /// <reference types="vite/client" />
     import * as React from 'react'
+    import appCss from '@/styles/app.css?url'
     import {
       Outlet,
       createRootRouteWithContext,
+      HeadContent,
+      Scripts,
       useRouteContext, // [!code ++]
     } from '@tanstack/react-router'
-    import {
-      Meta,
-      Scripts,
-      createServerFn, // [!code ++]
-    } from '@tanstack/react-start'
-    import { QueryClient } from '@tanstack/react-query' // [!code ++]
-    import appCss from '@/styles/app.css?url'
-    // [!code ++:6]
+    // [!code ++:8]
+    import { createServerFn } from '@tanstack/react-start'
+    import { QueryClient } from '@tanstack/react-query'
     import { ConvexQueryClient } from '@convex-dev/react-query'
     import { ConvexReactClient } from 'convex/react'
-    import { getCookie, getWebRequest } from '@tanstack/react-start/server'
+    import { getCookie, getRequest } from '@tanstack/react-start/server'
     import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
     import { fetchSession, getCookieName } from '@convex-dev/better-auth/react-start'
     import { authClient } from "@/lib/auth-client";
@@ -247,7 +250,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     // Get auth information for SSR using available cookies
     const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
       const { createAuth } = await import('../../convex/auth')
-      const { session } = await fetchSession(getWebRequest())
+      const { session } = await fetchSession(getRequest())
       const sessionCookieName = getCookieName(createAuth)
       const token = getCookie(sessionCookieName)
       return {
@@ -312,7 +315,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
       return (
         <html lang="en" className="dark">
           <head>
-            <Meta />
+            <HeadContent />
           </head>
           <body className="bg-neutral-950 text-neutral-50">
             {children}
@@ -330,14 +333,14 @@ description: Install and configure Convex + Better Auth for TanStack Start.
 
     Provide context from Convex to your routes.
     ```ts title="src/routes/router.tsx"
-    import { createRouter as createTanStackRouter } from '@tanstack/react-router'
+    import { createRouter } from '@tanstack/react-router'
     import { routeTree } from './routeTree.gen'
     import { routerWithQueryClient } from '@tanstack/react-router-with-query'
     import { ConvexProvider, ConvexReactClient } from 'convex/react'
     import { ConvexQueryClient } from '@convex-dev/react-query'
     import { QueryClient } from '@tanstack/react-query'
 
-    export function createRouter() {
+    export function getRouter() {
       const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!
       if (!CONVEX_URL) {
         throw new Error('missing VITE_CONVEX_URL envar')
@@ -359,7 +362,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
       convexQueryClient.connect(queryClient)
 
       const router = routerWithQueryClient(
-        createTanStackRouter({
+        createRouter({
           routeTree,
           defaultPreload: 'intent',
           scrollRestoration: true,
@@ -375,12 +378,6 @@ description: Install and configure Convex + Better Auth for TanStack Start.
 
       return router
     }
-
-    declare module '@tanstack/react-router' {
-      interface Register {
-        router: ReturnType<typeof createRouter>
-      }
-    }
     ```
 
   </div>
@@ -391,6 +388,9 @@ description: Install and configure Convex + Better Auth for TanStack Start.
 You're now ready to start using Better Auth with Convex.
 
 ## Usage
+
+Check out the [Basic Usage](/basic-usage) guide for more information on general
+usage. Below are usage notes specific to TanStack Start.
 
 ### Using Better Auth from the server
 
@@ -406,10 +406,8 @@ import { createAuth } from "convex/auth";
 import { setupFetchClient } from "@convex-dev/better-auth/react-start";
 import { getCookie } from "@tanstack/react-start/server";
 
-export const { fetchQuery, fetchMutation, fetchAction } = await setupFetchClient(
-  createAuth,
-  getCookie
-);
+export const { fetchQuery, fetchMutation, fetchAction } =
+  await setupFetchClient(createAuth, getCookie);
 ```
 
 Here's an example Convex function that uses Better Auth's server methods, and
@@ -426,12 +424,13 @@ export const updateUserPassword = mutation({
     newPassword: v.string(),
   },
   handler: async (ctx, args) => {
-    await createAuth(ctx).api.changePassword({
+    const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
+    await auth.api.changePassword({
       body: {
         currentPassword: args.currentPassword,
         newPassword: args.newPassword,
       },
-      headers: await authComponent.getHeaders(ctx),
+      headers,
     });
   },
 });

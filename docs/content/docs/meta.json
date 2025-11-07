@@ -3,12 +3,11 @@
     "index",
     "framework-guides",
     "basic-usage",
-    "authorization",
-    "local-install",
-    "triggers",
+    "features",
     "supported-plugins",
-    "migrate-to-0-8",
     "debugging",
-    "integrations"
+    "integrations",
+    "api",
+    "migrations"
   ]
 }

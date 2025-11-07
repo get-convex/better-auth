@@ -15,14 +15,16 @@ import {
 
 const siteUrl = process.env.SITE_URL!;
 
-export const authComponent = createClient<DataModel>(components.betterAuth);
+export const authComponent = createClient<DataModel>(components.betterAuth, {
+  verbose: false,
+});
 
 export const createAuth = (
   ctx: GenericCtx<DataModel>,
   { optionsOnly } = { optionsOnly: false }
 ) => {
   return betterAuth({
-    trustedOrigins: [siteUrl],
+    //trustedOrigins: [siteUrl],
     logger: {
       disabled: optionsOnly,
     },
@@ -49,6 +51,10 @@ export const createAuth = (
       github: {
         clientId: process.env.GITHUB_CLIENT_ID as string,
         clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+      },
+      google: {
+        clientId: process.env.GOOGLE_CLIENT_ID as string,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
       },
     },
     user: {

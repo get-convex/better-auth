@@ -1,0 +1,74 @@
+---
+title: Component Client
+description: Component client for Better Auth
+---
+
+The component client is returned from the `createClient` function, and provides
+helpful methods for using Better Auth in your Convex code.
+
+## `adapter()`
+
+Returns the Convex database adapter for use in Better Auth options.
+
+```ts
+import { createClient } from "@convex-dev/better-auth";
+import { components } from "./_generated/api";
+import { type GenericCtx } from "./_generated/server";
+import { DataModel } from "./_generated/dataModel";
+
+export const authComponent = createClient<DataModel>(components.betterAuth);
+
+export const createAuth = (ctx: GenericCtx<DataModel>) => {
+  return betterAuth({
+    database: authComponent.adapter(ctx),
+  });
+});
+```
+
+## `getAuth()`
+
+Better Auth [API
+endpoints](https://www.better-auth.com/docs/concepts/api)
+can be called directly from the server, and many require headers to be passed in
+containing a session token for the current user. This method provides both the
+auth object and headers for convenience.
+
+```ts
+import { mutation } from "./_generated/server";
+import { v } from "convex/values";
+import { createAuth, authComponent } from "./auth";
+
+export const changePassword = mutation({
+  args: {
+    newPassword: v.string(),
+    currentPassword: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
+    await auth.api.changePassword({
+      body: {
+        newPassword: args.newPassword,
+        currentPassword: args.currentPassword,
+      },
+      headers,
+    });
+  },
+});
+```
+
+## `getAnyUserById()`
+
+Returns a user by their Better Auth user id.
+
+```ts
+import { query } from "./_generated/server";
+import { v } from "convex/values";
+import { authComponent } from "./auth";
+
+export const getUser = query({
+  args: { id: v.id("user") },
+  handler: async (ctx, args) => {
+    return authComponent.getAnyUserById(ctx, args.id);
+  },
+});
+```

@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { createCookieGetter } from "better-auth/cookies";
 import { betterFetch } from "@better-fetch/fetch";
+import * as jose from "jose";
 import {
   FunctionReference,
   FunctionReturnType,
@@ -17,6 +18,16 @@ export const getCookieName = <DataModel extends GenericDataModel>(
   const createCookie = createCookieGetter(getStaticAuth(createAuth).options);
   const cookie = createCookie(JWT_COOKIE_NAME);
   return cookie.name;
+};
+
+export const getCookieNames = <DataModel extends GenericDataModel>(
+  createAuth: CreateAuth<DataModel>
+) => {
+  const createCookie = createCookieGetter(getStaticAuth(createAuth).options);
+  return {
+    convexJwt: createCookie(JWT_COOKIE_NAME).name,
+    sessionToken: createCookie("session_token").name,
+  };
 };
 
 export const setupFetchClient = async <DataModel extends GenericDataModel>(
@@ -95,6 +106,56 @@ export const fetchSession = async <
   };
 };
 
+export const fetchAuth = async (
+  request: Request,
+  opts?: {
+    convexSiteUrl?: string;
+    verbose?: boolean;
+  }
+) => {
+  if (!request) {
+    throw new Error("No request found");
+  }
+  const convexSiteUrl = opts?.convexSiteUrl ?? process.env.VITE_CONVEX_SITE_URL;
+  if (!convexSiteUrl) {
+    throw new Error("VITE_CONVEX_SITE_URL is not set");
+  }
+  const { data } = await betterFetch<{ token: string }>(
+    "/api/auth/convex/token",
+    {
+      baseURL: convexSiteUrl,
+      headers: {
+        cookie: request.headers.get("cookie") ?? "",
+      },
+    }
+  );
+  if (!data?.token) {
+    return;
+  }
+  const claims = jose.decodeJwt(data.token);
+  return {
+    token: data.token,
+    userId: claims.sub,
+  };
+};
+
+export const getAuthFromCookie = (
+  cookie?: string,
+  { tolerance = 10 }: { tolerance?: number } = {}
+) => {
+  if (!cookie) {
+    return;
+  }
+  const claims = jose.decodeJwt(cookie);
+  const exp = claims?.exp;
+  const now = Math.floor(new Date().getTime() / 1000);
+  const isExpired = exp ? now > exp + tolerance : true;
+  if (isExpired) {
+    return;
+  }
+  return { userId: claims?.sub, token: cookie };
+};
+
 export const getAuth = async <DataModel extends GenericDataModel>(
   request: Request,
   getCookie: (name: string) => string | undefined,
@@ -120,6 +181,14 @@ export const reactStartHandler = (
     throw new Error("VITE_CONVEX_SITE_URL is not set");
   }
   const nextUrl = `${convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
-  request.headers.set("accept-encoding", "application/json");
-  return fetch(nextUrl, new Request(request, { redirect: "manual" }));
+  const headers = new Headers(request.headers);
+  headers.set("accept-encoding", "application/json");
+  return fetch(nextUrl, {
+    method: request.method,
+    headers,
+    redirect: "manual",
+    body: request.body,
+    // @ts-expect-error - duplex is required for streaming request bodies in modern fetch
+    duplex: "half",
+  });
 };

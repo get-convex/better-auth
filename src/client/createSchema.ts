@@ -1,4 +1,4 @@
-import { BetterAuthDbSchema, type FieldAttribute } from "better-auth/db";
+import type { BetterAuthDBSchema, DBFieldAttribute } from "better-auth/db";
 
 // Manually add fields to index on for schema generation,
 // all fields in the schema specialFields are automatically indexed
@@ -9,26 +9,18 @@ export const indexFields = {
   verification: ["expiresAt", "identifier"],
   user: [["email", "name"], "name", "userId"],
   passkey: ["credentialID"],
-  apikey: ["key"],
-  member: [["organizationId", "userId"]],
-  invitation: [
-    ["email", "organizationId", "status"],
-    ["organizationId", "status"],
-  ],
   oauthConsent: [["clientId", "userId"]],
-  ssoProvider: ["organizationId", "domain"],
-  subscription: ["stripeSubscriptionId", "stripeCustomerId", "referenceId"],
 };
 
 // Return map of unique, sortable, and reference fields
-const specialFields = (tables: BetterAuthDbSchema) =>
+const specialFields = (tables: BetterAuthDBSchema) =>
   Object.fromEntries(
     Object.entries(tables)
       .map(([key, table]) => {
         const fields = Object.fromEntries(
           Object.entries(table.fields)
             .map(([fieldKey, field]) => [
-              fieldKey,
+              field.fieldName ?? fieldKey,
               {
                 ...(field.sortable ? { sortable: true } : {}),
                 ...(field.unique ? { unique: true } : {}),
@@ -46,10 +38,15 @@ const specialFields = (tables: BetterAuthDbSchema) =>
       )
   );
 
-const mergedIndexFields = (tables: BetterAuthDbSchema) =>
+const mergedIndexFields = (tables: BetterAuthDBSchema) =>
   Object.fromEntries(
-    Object.entries(tables).map(([key]) => {
-      const manualIndexes = indexFields[key as keyof typeof indexFields] || [];
+    Object.entries(tables).map(([key, table]) => {
+      const manualIndexes =
+        indexFields[key as keyof typeof indexFields]?.map((index) => {
+          return typeof index === "string"
+            ? table.fields[index]?.fieldName ?? index
+            : index.map((i) => table.fields[i]?.fieldName ?? i);
+        }) || [];
       const specialFieldIndexes = Object.keys(
         specialFields(tables)[key as keyof ReturnType<typeof specialFields>] ||
           {}
@@ -67,7 +64,7 @@ export const createSchema = async ({
   file,
   tables,
 }: {
-  tables: BetterAuthDbSchema;
+  tables: BetterAuthDBSchema;
   file?: string;
 }) => {
   // stop convex esbuild from throwing over this import, only runs
@@ -102,12 +99,13 @@ export const tables = {
       Object.entries(table.fields).filter(([key]) => key !== "id")
     );
 
-    function getType(name: string, field: FieldAttribute) {
+    function getType(name: string, field: DBFieldAttribute) {
       const type = field.type as
         | "string"
         | "number"
         | "boolean"
         | "date"
+        | "json"
         | `${"string" | "number"}[]`;
 
       const typeMap: Record<typeof type, string> = {
@@ -115,6 +113,7 @@ export const tables = {
         boolean: `v.boolean()`,
         number: `v.number()`,
         date: `v.number()`,
+        json: `v.string()`,
         "number[]": `v.array(v.number())`,
         "string[]": `v.array(v.string())`,
       } as const;
@@ -123,7 +122,7 @@ export const tables = {
 
     const indexes =
       mergedIndexFields(tables)[
-        modelName as keyof typeof mergedIndexFields
+        tableKey as keyof typeof mergedIndexFields
       ]?.map((index) => {
         const indexArray = Array.isArray(index) ? index.sort() : [index];
         const indexName = indexArray.join("_");
@@ -134,12 +133,12 @@ export const tables = {
 ${Object.keys(fields)
   .map((field) => {
     const attr = fields[field]!;
-    const type = getType(field, attr as FieldAttribute);
+    const type = getType(field, attr as DBFieldAttribute);
     const optional = (fieldSchema: string) =>
       attr.required
         ? fieldSchema
         : `v.optional(v.union(v.null(), ${fieldSchema}))`;
-    return `    ${field}: ${optional(type)},`;
+    return `    ${attr.fieldName ?? field}: ${optional(type)},`;
   })
   .join("\n")}
   })${indexes.length > 0 ? `\n    ${indexes.join("\n    ")}` : ""},\n`;

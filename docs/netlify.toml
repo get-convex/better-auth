@@ -1,0 +1,14 @@
+[[redirects]]
+  from = "/local-install"
+  to = "/features/local-install"
+  status = 301
+
+[[redirects]]
+  from = "/authorization"
+  to = "/basic-usage/authorization"
+  status = 301
+
+[[redirects]]
+  from = "/triggers"
+  to = "/features/triggers"
+  status = 301

@@ -19,9 +19,8 @@ import {
 } from "convex/server";
 import { type GenericId, Infer, v } from "convex/values";
 import { convexAdapter } from "./adapter";
-import { AdapterInstance, betterAuth } from "better-auth";
+import { AdapterInstance, Auth, betterAuth } from "better-auth";
 import { asyncMap } from "convex-helpers";
-import { requireEnv } from "../utils";
 import { partial } from "convex-helpers/validators";
 import {
   adapterWhereValidator,
@@ -37,6 +36,7 @@ import semver from "semver";
 import defaultSchema from "../component/schema";
 import { getAuthTables } from "better-auth/db";
 import { api } from "../component/_generated/api";
+import { SetOptional } from "type-fest";
 
 export { convexAdapter };
 
@@ -44,16 +44,19 @@ export type CreateAdapter = <Ctx extends GenericCtx<GenericDataModel>>(
   ctx: Ctx
 ) => AdapterInstance;
 
-export type CreateAuth<DataModel extends GenericDataModel> =
-  | ((ctx: GenericCtx<DataModel>) => ReturnType<typeof betterAuth>)
-  | ((
-      ctx: GenericCtx<DataModel>,
-      opts?: { optionsOnly?: boolean }
-    ) => ReturnType<typeof betterAuth>);
+export type CreateAuth<
+  DataModel extends GenericDataModel,
+  A extends ReturnType<typeof betterAuth> = Auth,
+> =
+  | ((ctx: GenericCtx<DataModel>) => A)
+  | ((ctx: GenericCtx<DataModel>, opts?: { optionsOnly?: boolean }) => A);
 
-export const getStaticAuth = <DataModel extends GenericDataModel>(
-  createAuth: CreateAuth<DataModel>
-) => {
+export const getStaticAuth = <
+  DataModel extends GenericDataModel,
+  Auth extends ReturnType<typeof betterAuth>,
+>(
+  createAuth: CreateAuth<DataModel, Auth>
+): Auth => {
   return createAuth({} as any, { optionsOnly: true });
 };
 
@@ -70,7 +73,7 @@ const whereValidator = (
       ...Object.keys(schema.tables[tableName].validator.fields).map((field) =>
         v.literal(field)
       ),
-      v.literal("id")
+      v.literal("_id")
     ),
     operator: v.optional(
       v.union(
@@ -80,6 +83,7 @@ const whereValidator = (
         v.literal("gte"),
         v.literal("eq"),
         v.literal("in"),
+        v.literal("not_in"),
         v.literal("ne"),
         v.literal("contains"),
         v.literal("starts_with"),
@@ -123,6 +127,16 @@ export const createApi = <
 ) => {
   const betterAuthSchema = getAuthTables(getStaticAuth(createAuth).options);
   return {
+    migrationRemoveUserId: mutationGeneric({
+      args: {
+        userId: v.string(),
+      },
+      handler: async (ctx, args) => {
+        await ctx.db.patch(args.userId as GenericId<"user">, {
+          userId: undefined,
+        });
+      },
+    }),
     create: mutationGeneric({
       args: {
         input: v.union(
@@ -239,8 +253,8 @@ export const createApi = <
             args.onUpdateHandle as FunctionHandle<"mutation">,
             {
               model: args.input.model,
-              oldDoc: doc,
               newDoc: updatedDoc,
+              oldDoc: doc,
             }
           );
         }
@@ -306,8 +320,8 @@ export const createApi = <
                 args.onUpdateHandle as FunctionHandle<"mutation">,
                 {
                   model: args.input.model,
-                  oldDoc: doc,
                   newDoc: await ctx.db.get(doc._id as GenericId<string>),
+                  oldDoc: doc,
                 }
               );
             }
@@ -406,11 +420,11 @@ export type Triggers<
     ) => Promise<void>;
     onUpdate?: <Ctx extends GenericMutationCtx<DataModel>>(
       ctx: Ctx,
-      oldDoc: Infer<Schema["tables"][K]["validator"]> & {
+      newDoc: Infer<Schema["tables"][K]["validator"]> & {
         _id: string;
         _creationTime: number;
       },
-      newDoc: Infer<Schema["tables"][K]["validator"]> & {
+      oldDoc: Infer<Schema["tables"][K]["validator"]> & {
         _id: string;
         _creationTime: number;
       }
@@ -429,15 +443,25 @@ export const createClient = <
   DataModel extends GenericDataModel,
   Schema extends SchemaDefinition<GenericSchema, true> = typeof defaultSchema,
 >(
-  component: UseApi<typeof api>,
+  component: {
+    adapter: SetOptional<
+      UseApi<typeof api>["adapter"],
+      "migrationRemoveUserId"
+    >;
+    adapterTest?: UseApi<typeof api>["adapterTest"];
+  },
   config?: {
     local?: {
       schema?: Schema;
     };
-    authFunctions?: AuthFunctions;
     verbose?: boolean;
-    triggers?: Triggers<DataModel, Schema>;
-  }
+  } & (
+    | {
+        triggers: Triggers<DataModel, Schema>;
+        authFunctions: AuthFunctions;
+      }
+    | { triggers?: undefined }
+  )
 ) => {
   type BetterAuthDataModel = DataModelFromSchemaDefinition<Schema>;
 
@@ -451,7 +475,7 @@ export const createClient = <
       model: "user",
       where: [
         {
-          field: "id",
+          field: "_id",
           value: identity.subject,
         },
       ],
@@ -461,34 +485,59 @@ export const createClient = <
     }
     return doc;
   };
+
+  const getHeaders = async (ctx: GenericCtx<DataModel>) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return new Headers();
+    }
+    const session = await ctx.runQuery(component.adapter.findOne, {
+      model: "session",
+      where: [
+        {
+          field: "_id",
+          value: identity.sessionId as string,
+        },
+      ],
+    });
+    return new Headers({
+      ...(session?.token ? { authorization: `Bearer ${session.token}` } : {}),
+      ...(session?.ipAddress
+        ? { "x-forwarded-for": session.ipAddress as string }
+        : {}),
+    });
+  };
+
   return {
     component,
     adapter: (ctx: GenericCtx<DataModel>) =>
-      convexAdapter<DataModel, typeof ctx, Schema>(ctx, component, config),
-    getHeaders: async (ctx: GenericQueryCtx<DataModel>) => {
-      const identity = await ctx.auth.getUserIdentity();
-      if (!identity) {
-        return new Headers();
-      }
-      const session = await ctx.runQuery(component.adapter.findOne, {
-        model: "session",
-        where: [
-          {
-            field: "id",
-            value: identity.sessionId as string,
-          },
-        ],
-      });
-      return new Headers({
-        ...(session?.token ? { authorization: `Bearer ${session.token}` } : {}),
-        ...(session?.ipAddress
-          ? { "x-forwarded-for": session.ipAddress as string }
-          : {}),
-      });
-    },
+      convexAdapter<DataModel, typeof ctx, Schema>(ctx, component, {
+        ...config,
+        debugLogs: config?.verbose,
+      }),
 
+    getAuth: async <T extends CreateAuth<DataModel>>(
+      createAuth: T,
+      ctx: GenericCtx<DataModel>
+    ) => ({
+      auth: createAuth(ctx) as ReturnType<T>,
+      headers: await getHeaders(ctx),
+    }),
+
+    getHeaders,
+
+    /**
+     * Returns the current user or null if the user is not found
+     * @param ctx - The Convex context
+     * @returns The user or null if the user is not found
+     */
     safeGetAuthUser,
 
+    /**
+     * Returns the current user.
+     * @param ctx - The Convex context
+     * @returns The user or throws an error if the user is not found
+     */
     getAuthUser: async (ctx: GenericCtx<DataModel>) => {
       const user = await safeGetAuthUser(ctx);
       if (!user) {
@@ -497,15 +546,29 @@ export const createClient = <
       return user;
     },
 
+    /**
+     * Returns a user by their Better Auth user id.
+     * @param ctx - The Convex context
+     * @param id - The Better Auth user id
+     * @returns The user or null if the user is not found
+     */
     getAnyUserById: async (ctx: GenericCtx<DataModel>, id: string) => {
       return (await ctx.runQuery(component.adapter.findOne, {
         model: "user",
-        where: [{ field: "id", value: id }],
+        where: [{ field: "_id", value: id }],
       })) as BetterAuthDataModel["user"]["document"] | null;
     },
 
     // Replaces 0.7 behavior of returning a new user id from
-    // onCreateUser
+    // onCreateUser, deprecated in 0.9
+    /**
+     * Replaces 0.7 behavior of returning a new user id from
+     * onCreateUser
+     * @param ctx - The Convex context
+     * @param authId - The Better Auth user id
+     * @param userId - The app user id
+     * @deprecated in 0.9
+     */
     setUserId: async (
       ctx: GenericMutationCtx<DataModel>,
       authId: string,
@@ -514,9 +577,43 @@ export const createClient = <
       await ctx.runMutation(component.adapter.updateOne, {
         input: {
           model: "user",
-          where: [{ field: "id", value: authId }],
+          where: [{ field: "_id", value: authId }],
           update: { userId },
         },
+      });
+    },
+
+    /**
+     * Temporary method to simplify 0.9 migration, gets a user by `userId` field
+     * @param ctx - The Convex context
+     * @param userId - The app user id
+     * @returns The user or null if the user is not found
+     */
+    migrationGetUser: async (
+      ctx: GenericMutationCtx<DataModel>,
+      userId: string
+    ) => {
+      return (await ctx.runQuery(component.adapter.findOne, {
+        model: "user",
+        where: [{ field: "userId", value: userId }],
+      })) as BetterAuthDataModel["user"]["document"] | null;
+    },
+
+    /**
+     * Temporary method to simplify 0.9 migration, removes the `userId` field
+     * from the Better Auth user record
+     * @param ctx - The Convex context
+     * @param userId - The app user id
+     */
+    migrationRemoveUserId: async (
+      ctx: GenericMutationCtx<DataModel>,
+      userId: string
+    ) => {
+      if (!component.adapter.migrationRemoveUserId) {
+        throw new Error("migrationRemoveUserId not found");
+      }
+      await ctx.runMutation(component.adapter.migrationRemoveUserId, {
+        userId,
       });
     },
 
@@ -539,8 +636,8 @@ export const createClient = <
         handler: async (ctx, args) => {
           await config?.triggers?.[args.model]?.onUpdate?.(
             ctx,
-            args.oldDoc,
-            args.newDoc
+            args.newDoc,
+            args.oldDoc
           );
         },
       }),
@@ -592,7 +689,7 @@ export const createClient = <
           path: "/.well-known/openid-configuration",
           method: "GET",
           handler: httpActionGeneric(async () => {
-            const url = `${requireEnv("CONVEX_SITE_URL")}${path}/convex/.well-known/openid-configuration`;
+            const url = `${process.env.CONVEX_SITE_URL}${path}/convex/.well-known/openid-configuration`;
             return Response.redirect(url);
           }),
         });
@@ -640,9 +737,11 @@ export const createClient = <
             .concat(corsOpts.allowedOrigins ?? []);
         },
         allowCredentials: true,
-        allowedHeaders: ["Content-Type", "Better-Auth-Cookie"].concat(
-          corsOpts.allowedHeaders ?? []
-        ),
+        allowedHeaders: [
+          "Content-Type",
+          "Better-Auth-Cookie",
+          "Authorization",
+        ].concat(corsOpts.allowedHeaders ?? []),
         exposedHeaders: ["Set-Better-Auth-Cookie"].concat(
           corsOpts.exposedHeaders ?? []
         ),
@@ -666,35 +765,6 @@ export const createClient = <
 };
 
 /* Type utils follow */
-
-/**
- * @deprecated Use `QueryCtx` from _generated/server instead
- */
-export type RunQueryCtx = {
-  runQuery: GenericQueryCtx<GenericDataModel>["runQuery"];
-};
-
-/**
- * @deprecated Use `MutationCtx` from _generated/server instead
- */
-export type RunMutationCtx = {
-  runQuery: GenericQueryCtx<GenericDataModel>["runQuery"];
-  runMutation: GenericMutationCtx<GenericDataModel>["runMutation"];
-};
-
-/**
- * @deprecated Use `ActionCtx` from _generated/server instead
- */
-export type RunActionCtx = {
-  runQuery: GenericQueryCtx<GenericDataModel>["runQuery"];
-  runMutation: GenericMutationCtx<GenericDataModel>["runMutation"];
-  runAction: GenericActionCtx<GenericDataModel>["runAction"];
-};
-
-/**
- * @deprecated
- */
-export type RunCtx = RunQueryCtx | RunMutationCtx | RunActionCtx;
 
 export type OpaqueIds<T> =
   T extends GenericId<infer _T>

@@ -1,5 +1,55 @@
 # Changelog
 
+## 0.9.7-alpha.0
+
+- fix: add type error for triggers without authFunctions
+- fix: support Better Auth options inference through getStaticAuth
+- fix(tanstack): add improved tanstack integration methods
+
+## 0.9.6
+
+- fix: swap oldDoc/newDoc onUpdate in types
+- fix(adapter): add json field schema support
+- fix(adapter: support custom field names in schema generation
+- fix(adapter): support custom table names in schema generation
+
+## 0.9.5
+
+- fix(cross-domain): remove extra logs
+
+## 0.9.4
+
+- fix: move semver dependency to dependencies'
+
+## 0.9.3
+
+- fix: allow authorization header for cors by default
+
+## 0.9.2
+
+- feat(convex-plugin): set token cookie on siwe verify response
+
+## 0.9.1
+
+- fix(convex-plugin): correctly parse cookie for ssa jwt token
+
+## 0.9.0
+
+- feat: add getAuth component method
+- chore: support Better Auth 1.3.27
+- feat: update helpers, docs, and examples for latest TanStack RC
+- docs: add migration guides for dropping user.userId field
+- fix: reference session by token from jwt in getHeaders
+- docs: add api docs for a few of the more often used methods
+- fix: block stale session delete for get-session client calls
+- feat: add requireRunMutationCtx and requireActionCtx type utils
+- fix: swap old and new doc params in onUpdate trigger
+
+  This was just a mistake in design - you often will not need the
+  old doc in an update trigger, so it should be a trailing param
+
+  BREAKING CHANGE: 2nd and 3rd params in onUpdate trigger are swapped
+
 ## 0.8.9
 
 - fix(react): fix overreacting fetch token hook

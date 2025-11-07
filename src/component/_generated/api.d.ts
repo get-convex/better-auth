@@ -156,96 +156,10 @@ export type Mounts = {
           | {
               data: {
                 createdAt: number;
-                name: string;
-                organizationId: string;
-                updatedAt?: null | number;
-              };
-              model: "team";
-            }
-          | {
-              data: {
-                createdAt?: null | number;
-                teamId: string;
-                userId: string;
-              };
-              model: "teamMember";
-            }
-          | {
-              data: {
-                createdAt: number;
-                logo?: null | string;
-                metadata?: null | string;
-                name: string;
-                slug?: null | string;
-              };
-              model: "organization";
-            }
-          | {
-              data: {
-                createdAt: number;
-                organizationId: string;
-                role: string;
-                userId: string;
-              };
-              model: "member";
-            }
-          | {
-              data: {
-                email: string;
-                expiresAt: number;
-                inviterId: string;
-                organizationId: string;
-                role?: null | string;
-                status: string;
-                teamId?: null | string;
-              };
-              model: "invitation";
-            }
-          | {
-              data: {
-                domain: string;
-                issuer: string;
-                oidcConfig?: null | string;
-                organizationId?: null | string;
-                providerId: string;
-                samlConfig?: null | string;
-                userId?: null | string;
-              };
-              model: "ssoProvider";
-            }
-          | {
-              data: {
-                createdAt: number;
                 privateKey: string;
                 publicKey: string;
               };
               model: "jwks";
-            }
-          | {
-              data: {
-                cancelAtPeriodEnd?: null | boolean;
-                periodEnd?: null | number;
-                periodStart?: null | number;
-                plan: string;
-                referenceId: string;
-                seats?: null | number;
-                status?: null | string;
-                stripeCustomerId?: null | string;
-                stripeSubscriptionId?: null | string;
-                trialEnd?: null | number;
-                trialStart?: null | number;
-              };
-              model: "subscription";
-            }
-          | {
-              data: {
-                address: string;
-                chainId: number;
-                createdAt: number;
-                isPrimary?: null | boolean;
-                userId: string;
-              };
-              model: "walletAddress";
             }
           | {
               data: {
@@ -287,7 +201,7 @@ export type Mounts = {
                   | "phoneNumber"
                   | "phoneNumberVerified"
                   | "userId"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -295,6 +209,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -320,7 +235,7 @@ export type Mounts = {
                   | "ipAddress"
                   | "userAgent"
                   | "userId"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -328,6 +243,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -358,7 +274,7 @@ export type Mounts = {
                   | "password"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -366,6 +282,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -389,7 +306,7 @@ export type Mounts = {
                   | "expiresAt"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -397,6 +314,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -414,7 +332,7 @@ export type Mounts = {
               model: "twoFactor";
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "secret" | "backupCodes" | "userId" | "id";
+                field: "secret" | "backupCodes" | "userId" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -422,6 +340,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -450,7 +369,7 @@ export type Mounts = {
                   | "transports"
                   | "createdAt"
                   | "aaguid"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -458,6 +377,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -487,7 +407,7 @@ export type Mounts = {
                   | "userId"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -495,6 +415,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -522,7 +443,7 @@ export type Mounts = {
                   | "scopes"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -530,6 +451,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -554,7 +476,7 @@ export type Mounts = {
                   | "createdAt"
                   | "updatedAt"
                   | "consentGiven"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -562,188 +484,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "team";
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "name"
-                  | "organizationId"
-                  | "createdAt"
-                  | "updatedAt"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "teamMember";
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field: "teamId" | "userId" | "createdAt" | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "organization";
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "name"
-                  | "slug"
-                  | "logo"
-                  | "createdAt"
-                  | "metadata"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "member";
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "organizationId"
-                  | "userId"
-                  | "role"
-                  | "createdAt"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "invitation";
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "organizationId"
-                  | "email"
-                  | "role"
-                  | "teamId"
-                  | "status"
-                  | "expiresAt"
-                  | "inviterId"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "ssoProvider";
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "issuer"
-                  | "oidcConfig"
-                  | "samlConfig"
-                  | "userId"
-                  | "providerId"
-                  | "organizationId"
-                  | "domain"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -761,7 +502,7 @@ export type Mounts = {
               model: "jwks";
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "publicKey" | "privateKey" | "createdAt" | "id";
+                field: "publicKey" | "privateKey" | "createdAt" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -769,74 +510,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "subscription";
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "plan"
-                  | "referenceId"
-                  | "stripeCustomerId"
-                  | "stripeSubscriptionId"
-                  | "status"
-                  | "periodStart"
-                  | "periodEnd"
-                  | "trialStart"
-                  | "trialEnd"
-                  | "cancelAtPeriodEnd"
-                  | "seats"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "walletAddress";
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "userId"
-                  | "address"
-                  | "chainId"
-                  | "isPrimary"
-                  | "createdAt"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -854,7 +528,7 @@ export type Mounts = {
               model: "rateLimit";
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "key" | "count" | "lastRequest" | "id";
+                field: "key" | "count" | "lastRequest" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -862,6 +536,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -879,7 +554,7 @@ export type Mounts = {
               model: "ratelimit";
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "key" | "count" | "lastRequest" | "id";
+                field: "key" | "count" | "lastRequest" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -887,6 +562,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -935,7 +611,7 @@ export type Mounts = {
                   | "phoneNumber"
                   | "phoneNumberVerified"
                   | "userId"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -943,6 +619,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -968,7 +645,7 @@ export type Mounts = {
                   | "ipAddress"
                   | "userAgent"
                   | "userId"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -976,6 +653,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -1006,7 +684,7 @@ export type Mounts = {
                   | "password"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1014,6 +692,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -1037,7 +716,7 @@ export type Mounts = {
                   | "expiresAt"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1045,6 +724,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -1062,7 +742,7 @@ export type Mounts = {
               model: "twoFactor";
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "secret" | "backupCodes" | "userId" | "id";
+                field: "secret" | "backupCodes" | "userId" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1070,6 +750,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -1098,7 +779,7 @@ export type Mounts = {
                   | "transports"
                   | "createdAt"
                   | "aaguid"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1106,6 +787,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -1135,7 +817,7 @@ export type Mounts = {
                   | "userId"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1143,6 +825,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -1170,7 +853,7 @@ export type Mounts = {
                   | "scopes"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1178,6 +861,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -1202,7 +886,7 @@ export type Mounts = {
                   | "createdAt"
                   | "updatedAt"
                   | "consentGiven"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1210,188 +894,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "team";
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "name"
-                  | "organizationId"
-                  | "createdAt"
-                  | "updatedAt"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "teamMember";
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field: "teamId" | "userId" | "createdAt" | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "organization";
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "name"
-                  | "slug"
-                  | "logo"
-                  | "createdAt"
-                  | "metadata"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "member";
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "organizationId"
-                  | "userId"
-                  | "role"
-                  | "createdAt"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "invitation";
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "organizationId"
-                  | "email"
-                  | "role"
-                  | "teamId"
-                  | "status"
-                  | "expiresAt"
-                  | "inviterId"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "ssoProvider";
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "issuer"
-                  | "oidcConfig"
-                  | "samlConfig"
-                  | "userId"
-                  | "providerId"
-                  | "organizationId"
-                  | "domain"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -1409,7 +912,7 @@ export type Mounts = {
               model: "jwks";
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "publicKey" | "privateKey" | "createdAt" | "id";
+                field: "publicKey" | "privateKey" | "createdAt" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1417,74 +920,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "subscription";
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "plan"
-                  | "referenceId"
-                  | "stripeCustomerId"
-                  | "stripeSubscriptionId"
-                  | "status"
-                  | "periodStart"
-                  | "periodEnd"
-                  | "trialStart"
-                  | "trialEnd"
-                  | "cancelAtPeriodEnd"
-                  | "seats"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "walletAddress";
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "userId"
-                  | "address"
-                  | "chainId"
-                  | "isPrimary"
-                  | "createdAt"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -1502,7 +938,7 @@ export type Mounts = {
               model: "rateLimit";
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "key" | "count" | "lastRequest" | "id";
+                field: "key" | "count" | "lastRequest" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1510,6 +946,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -1527,7 +964,7 @@ export type Mounts = {
               model: "ratelimit";
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "key" | "count" | "lastRequest" | "id";
+                field: "key" | "count" | "lastRequest" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1535,6 +972,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -1567,15 +1005,7 @@ export type Mounts = {
           | "oauthApplication"
           | "oauthAccessToken"
           | "oauthConsent"
-          | "team"
-          | "teamMember"
-          | "organization"
-          | "member"
-          | "invitation"
-          | "ssoProvider"
           | "jwks"
-          | "subscription"
-          | "walletAddress"
           | "rateLimit"
           | "ratelimit";
         offset?: number;
@@ -1598,6 +1028,7 @@ export type Mounts = {
             | "gte"
             | "eq"
             | "in"
+            | "not_in"
             | "ne"
             | "contains"
             | "starts_with"
@@ -1627,15 +1058,7 @@ export type Mounts = {
           | "oauthApplication"
           | "oauthAccessToken"
           | "oauthConsent"
-          | "team"
-          | "teamMember"
-          | "organization"
-          | "member"
-          | "invitation"
-          | "ssoProvider"
           | "jwks"
-          | "subscription"
-          | "walletAddress"
           | "rateLimit"
           | "ratelimit";
         select?: Array<string>;
@@ -1649,6 +1072,7 @@ export type Mounts = {
             | "gte"
             | "eq"
             | "in"
+            | "not_in"
             | "ne"
             | "contains"
             | "starts_with"
@@ -1662,6 +1086,12 @@ export type Mounts = {
             | null;
         }>;
       },
+      any
+    >;
+    migrationRemoveUserId: FunctionReference<
+      "mutation",
+      "public",
+      { userId: string },
       any
     >;
     updateMany: FunctionReference<
@@ -1702,7 +1132,7 @@ export type Mounts = {
                   | "phoneNumber"
                   | "phoneNumberVerified"
                   | "userId"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1710,6 +1140,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -1744,7 +1175,7 @@ export type Mounts = {
                   | "ipAddress"
                   | "userAgent"
                   | "userId"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1752,6 +1183,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -1796,7 +1228,7 @@ export type Mounts = {
                   | "password"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1804,6 +1236,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -1834,7 +1267,7 @@ export type Mounts = {
                   | "expiresAt"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1842,6 +1275,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -1864,7 +1298,7 @@ export type Mounts = {
               };
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "secret" | "backupCodes" | "userId" | "id";
+                field: "secret" | "backupCodes" | "userId" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1872,6 +1306,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -1912,7 +1347,7 @@ export type Mounts = {
                   | "transports"
                   | "createdAt"
                   | "aaguid"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1920,6 +1355,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -1962,7 +1398,7 @@ export type Mounts = {
                   | "userId"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -1970,6 +1406,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -2008,7 +1445,7 @@ export type Mounts = {
                   | "scopes"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -2016,6 +1453,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -2048,7 +1486,7 @@ export type Mounts = {
                   | "createdAt"
                   | "updatedAt"
                   | "consentGiven"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -2056,230 +1494,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "team";
-              update: {
-                createdAt?: number;
-                name?: string;
-                organizationId?: string;
-                updatedAt?: null | number;
-              };
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "name"
-                  | "organizationId"
-                  | "createdAt"
-                  | "updatedAt"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "teamMember";
-              update: {
-                createdAt?: null | number;
-                teamId?: string;
-                userId?: string;
-              };
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field: "teamId" | "userId" | "createdAt" | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "organization";
-              update: {
-                createdAt?: number;
-                logo?: null | string;
-                metadata?: null | string;
-                name?: string;
-                slug?: null | string;
-              };
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "name"
-                  | "slug"
-                  | "logo"
-                  | "createdAt"
-                  | "metadata"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "member";
-              update: {
-                createdAt?: number;
-                organizationId?: string;
-                role?: string;
-                userId?: string;
-              };
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "organizationId"
-                  | "userId"
-                  | "role"
-                  | "createdAt"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "invitation";
-              update: {
-                email?: string;
-                expiresAt?: number;
-                inviterId?: string;
-                organizationId?: string;
-                role?: null | string;
-                status?: string;
-                teamId?: null | string;
-              };
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "organizationId"
-                  | "email"
-                  | "role"
-                  | "teamId"
-                  | "status"
-                  | "expiresAt"
-                  | "inviterId"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "ssoProvider";
-              update: {
-                domain?: string;
-                issuer?: string;
-                oidcConfig?: null | string;
-                organizationId?: null | string;
-                providerId?: string;
-                samlConfig?: null | string;
-                userId?: null | string;
-              };
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "issuer"
-                  | "oidcConfig"
-                  | "samlConfig"
-                  | "userId"
-                  | "providerId"
-                  | "organizationId"
-                  | "domain"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -2302,7 +1517,7 @@ export type Mounts = {
               };
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "publicKey" | "privateKey" | "createdAt" | "id";
+                field: "publicKey" | "privateKey" | "createdAt" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -2310,94 +1525,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "subscription";
-              update: {
-                cancelAtPeriodEnd?: null | boolean;
-                periodEnd?: null | number;
-                periodStart?: null | number;
-                plan?: string;
-                referenceId?: string;
-                seats?: null | number;
-                status?: null | string;
-                stripeCustomerId?: null | string;
-                stripeSubscriptionId?: null | string;
-                trialEnd?: null | number;
-                trialStart?: null | number;
-              };
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "plan"
-                  | "referenceId"
-                  | "stripeCustomerId"
-                  | "stripeSubscriptionId"
-                  | "status"
-                  | "periodStart"
-                  | "periodEnd"
-                  | "trialStart"
-                  | "trialEnd"
-                  | "cancelAtPeriodEnd"
-                  | "seats"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "walletAddress";
-              update: {
-                address?: string;
-                chainId?: number;
-                createdAt?: number;
-                isPrimary?: null | boolean;
-                userId?: string;
-              };
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "userId"
-                  | "address"
-                  | "chainId"
-                  | "isPrimary"
-                  | "createdAt"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -2420,7 +1548,7 @@ export type Mounts = {
               };
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "key" | "count" | "lastRequest" | "id";
+                field: "key" | "count" | "lastRequest" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -2428,6 +1556,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -2446,7 +1575,7 @@ export type Mounts = {
               update: { count?: number; key?: string; lastRequest?: number };
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "key" | "count" | "lastRequest" | "id";
+                field: "key" | "count" | "lastRequest" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -2454,6 +1583,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -2517,7 +1647,7 @@ export type Mounts = {
                   | "phoneNumber"
                   | "phoneNumberVerified"
                   | "userId"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -2525,6 +1655,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -2559,7 +1690,7 @@ export type Mounts = {
                   | "ipAddress"
                   | "userAgent"
                   | "userId"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -2567,6 +1698,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -2611,7 +1743,7 @@ export type Mounts = {
                   | "password"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -2619,6 +1751,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -2649,7 +1782,7 @@ export type Mounts = {
                   | "expiresAt"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -2657,6 +1790,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -2679,7 +1813,7 @@ export type Mounts = {
               };
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "secret" | "backupCodes" | "userId" | "id";
+                field: "secret" | "backupCodes" | "userId" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -2687,6 +1821,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -2727,7 +1862,7 @@ export type Mounts = {
                   | "transports"
                   | "createdAt"
                   | "aaguid"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -2735,6 +1870,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -2777,7 +1913,7 @@ export type Mounts = {
                   | "userId"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -2785,6 +1921,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -2823,7 +1960,7 @@ export type Mounts = {
                   | "scopes"
                   | "createdAt"
                   | "updatedAt"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -2831,6 +1968,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -2863,7 +2001,7 @@ export type Mounts = {
                   | "createdAt"
                   | "updatedAt"
                   | "consentGiven"
-                  | "id";
+                  | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -2871,230 +2009,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "team";
-              update: {
-                createdAt?: number;
-                name?: string;
-                organizationId?: string;
-                updatedAt?: null | number;
-              };
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "name"
-                  | "organizationId"
-                  | "createdAt"
-                  | "updatedAt"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "teamMember";
-              update: {
-                createdAt?: null | number;
-                teamId?: string;
-                userId?: string;
-              };
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field: "teamId" | "userId" | "createdAt" | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "organization";
-              update: {
-                createdAt?: number;
-                logo?: null | string;
-                metadata?: null | string;
-                name?: string;
-                slug?: null | string;
-              };
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "name"
-                  | "slug"
-                  | "logo"
-                  | "createdAt"
-                  | "metadata"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "member";
-              update: {
-                createdAt?: number;
-                organizationId?: string;
-                role?: string;
-                userId?: string;
-              };
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "organizationId"
-                  | "userId"
-                  | "role"
-                  | "createdAt"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "invitation";
-              update: {
-                email?: string;
-                expiresAt?: number;
-                inviterId?: string;
-                organizationId?: string;
-                role?: null | string;
-                status?: string;
-                teamId?: null | string;
-              };
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "organizationId"
-                  | "email"
-                  | "role"
-                  | "teamId"
-                  | "status"
-                  | "expiresAt"
-                  | "inviterId"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "ssoProvider";
-              update: {
-                domain?: string;
-                issuer?: string;
-                oidcConfig?: null | string;
-                organizationId?: null | string;
-                providerId?: string;
-                samlConfig?: null | string;
-                userId?: null | string;
-              };
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "issuer"
-                  | "oidcConfig"
-                  | "samlConfig"
-                  | "userId"
-                  | "providerId"
-                  | "organizationId"
-                  | "domain"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -3117,7 +2032,7 @@ export type Mounts = {
               };
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "publicKey" | "privateKey" | "createdAt" | "id";
+                field: "publicKey" | "privateKey" | "createdAt" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -3125,94 +2040,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "subscription";
-              update: {
-                cancelAtPeriodEnd?: null | boolean;
-                periodEnd?: null | number;
-                periodStart?: null | number;
-                plan?: string;
-                referenceId?: string;
-                seats?: null | number;
-                status?: null | string;
-                stripeCustomerId?: null | string;
-                stripeSubscriptionId?: null | string;
-                trialEnd?: null | number;
-                trialStart?: null | number;
-              };
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "plan"
-                  | "referenceId"
-                  | "stripeCustomerId"
-                  | "stripeSubscriptionId"
-                  | "status"
-                  | "periodStart"
-                  | "periodEnd"
-                  | "trialStart"
-                  | "trialEnd"
-                  | "cancelAtPeriodEnd"
-                  | "seats"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
-                  | "ne"
-                  | "contains"
-                  | "starts_with"
-                  | "ends_with";
-                value:
-                  | string
-                  | number
-                  | boolean
-                  | Array<string>
-                  | Array<number>
-                  | null;
-              }>;
-            }
-          | {
-              model: "walletAddress";
-              update: {
-                address?: string;
-                chainId?: number;
-                createdAt?: number;
-                isPrimary?: null | boolean;
-                userId?: string;
-              };
-              where?: Array<{
-                connector?: "AND" | "OR";
-                field:
-                  | "userId"
-                  | "address"
-                  | "chainId"
-                  | "isPrimary"
-                  | "createdAt"
-                  | "id";
-                operator?:
-                  | "lt"
-                  | "lte"
-                  | "gt"
-                  | "gte"
-                  | "eq"
-                  | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -3235,7 +2063,7 @@ export type Mounts = {
               };
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "key" | "count" | "lastRequest" | "id";
+                field: "key" | "count" | "lastRequest" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -3243,6 +2071,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"
@@ -3261,7 +2090,7 @@ export type Mounts = {
               update: { count?: number; key?: string; lastRequest?: number };
               where?: Array<{
                 connector?: "AND" | "OR";
-                field: "key" | "count" | "lastRequest" | "id";
+                field: "key" | "count" | "lastRequest" | "_id";
                 operator?:
                   | "lt"
                   | "lte"
@@ -3269,6 +2098,7 @@ export type Mounts = {
                   | "gte"
                   | "eq"
                   | "in"
+                  | "not_in"
                   | "ne"
                   | "contains"
                   | "starts_with"

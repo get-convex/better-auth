@@ -5,7 +5,8 @@ description: Own your auth.
 
 Local install gives you full control over your Better Auth schema, allows schema
 related configuration to work, and makes it possible to use plugins beyond those
-[supported](/supported-plugins) for Convex + Better Auth.
+[supported](/supported-plugins) for Convex + Better Auth. It also allows you to
+write Convex functions that directly access Better Auth component tables.
 
 With this approach, the Better Auth plugin is defined in it's own Convex
 subdirectory. Installation is a bit different from the default approach, and
@@ -208,3 +209,63 @@ custom indexes aren't overwritten when the schema is regenerated.
 
   </div>
 </div>
+
+### Accessing component data
+
+Convex functions within your Better Auth component directory can access the
+component's tables directly, and can then be run from outside the component via
+`ctx.runQuery`, `ctx.runMutation`, or `ctx.runAction`.
+
+Note that if an internal function is defined in a component, it will not be
+accessible from outside the component, so functions that need to run outside the
+component cannot be internal. While normally public functions are exposed to the
+internet, **Convex functions exported by a component are never exposed to the
+internet, even if they are public**.
+
+<Callout title="Return validators">
+  If a function in a component is called from outside the component, the return
+  type won't be inferred unless a return validator is provided.
+</Callout>
+
+```ts title="convex/betterAuth/someFile.ts"
+import { query, mutation } from "./_generated/server";
+import { doc } from "convex-helpers/validators";
+import schema from "./schema";
+import { v } from "convex/values";
+
+// This is accessible from outside the component
+export const someFunction = query({
+  args: { sessionId: v.id("session") },
+  // Add a return validator so the return value is typed when
+  // called from outside the component.
+  returns: v.union(v.null(), doc(schema, "session")),
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.sessionId);
+  },
+});
+
+// This is not accessible from outside the component.
+export const someInternalFunction = internalQuery({
+  args: { sessionId: v.id("session") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.sessionId);
+  },
+});
+```
+
+These functions can now be called from a parent component (or app).
+
+```ts title="convex/someFile.ts"
+import { query } from "./_generated/server";
+import { components } from "./_generated/api";
+import { v } from "convex/values";
+
+export const someFunction = query({
+  args: { sessionId: v.id("session") },
+  handler: async (ctx, args) => {
+    return await ctx.runQuery(components.betterAuth.someFile.someFunction, {
+      sessionId: args.sessionId,
+    });
+  },
+});
+```

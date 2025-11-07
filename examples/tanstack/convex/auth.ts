@@ -35,7 +35,7 @@ export const authComponent = createClient<DataModel, typeof betterAuthSchema>(
     local: {
       schema: betterAuthSchema,
     },
-    verbose: false,
+    verbose: true,
     triggers: {
       user: {
         onCreate: async (ctx, authUser) => {
@@ -44,7 +44,7 @@ export const authComponent = createClient<DataModel, typeof betterAuthSchema>(
           })
           await authComponent.setUserId(ctx, authUser._id, userId)
         },
-        onUpdate: async (ctx, oldUser, newUser) => {
+        onUpdate: async (ctx, newUser, oldUser) => {
           if (oldUser.email === newUser.email) {
             return
           }

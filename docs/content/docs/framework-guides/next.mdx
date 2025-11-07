@@ -21,8 +21,8 @@ description: Install and configure Convex + Better Auth for Next.js.
     <Callout>This component requires Convex `1.25.0` or later.</Callout>
 
     ```npm
-    npm install better-auth@1.3.8 --save-exact
     npm install convex@latest @convex-dev/better-auth
+    npm install better-auth@1.3.27 --save-exact
     ```
 
   </div>
@@ -243,6 +243,9 @@ You're now ready to start using Better Auth with Convex.
 
 ## Usage
 
+Check out the [Basic Usage](/basic-usage) guide for more information on general
+usage. Below are usage notes specific to Next.js.
+
 ### Using Better Auth from the server
 
 To use Better Auth's [server
@@ -275,12 +278,13 @@ export const updateUserPassword = mutation({
     newPassword: v.string(),
   },
   handler: async (ctx, args) => {
-    await createAuth(ctx).api.changePassword({
+    const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
+    await auth.api.changePassword({
       body: {
         currentPassword: args.currentPassword,
         newPassword: args.newPassword,
       },
-      headers: await authComponent.getHeaders(ctx),
+      headers,
     });
   },
 });

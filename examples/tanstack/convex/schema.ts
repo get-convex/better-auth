@@ -8,6 +8,7 @@ import { v } from 'convex/values'
 export default defineSchema({
   users: defineTable({
     email: v.string(),
+    authId: v.optional(v.string()),
   }).index('email', ['email']),
 
   todos: defineTable({

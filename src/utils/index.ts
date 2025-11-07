@@ -6,16 +6,11 @@ import {
 } from "convex/server";
 import { GenericCtx } from "../client";
 
-/**
- * @deprecated Just reference variables direct, the component will
- * use other ways to make sure the appropriate variables are available
- */
-export const requireEnv = (name: string) => {
-  const value = process.env[name];
-  if (value === undefined) {
-    throw new Error(`Missing environment variable \`${name}\``);
-  }
-  return value;
+export type RunMutationCtx<DataModel extends GenericDataModel> = (
+  | GenericMutationCtx<DataModel>
+  | GenericActionCtx<DataModel>
+) & {
+  runMutation: GenericMutationCtx<DataModel>["runMutation"];
 };
 
 export const isQueryCtx = <DataModel extends GenericDataModel>(
@@ -34,6 +29,12 @@ export const isActionCtx = <DataModel extends GenericDataModel>(
   ctx: GenericCtx<DataModel>
 ): ctx is GenericActionCtx<DataModel> => {
   return "runAction" in ctx;
+};
+
+export const isRunMutationCtx = <DataModel extends GenericDataModel>(
+  ctx: GenericCtx<DataModel>
+): ctx is RunMutationCtx<DataModel> => {
+  return "runMutation" in ctx;
 };
 
 export const requireQueryCtx = <DataModel extends GenericDataModel>(
@@ -59,6 +60,15 @@ export const requireActionCtx = <DataModel extends GenericDataModel>(
 ): GenericActionCtx<DataModel> => {
   if (!isActionCtx(ctx)) {
     throw new Error("Action context required");
+  }
+  return ctx;
+};
+
+export const requireRunMutationCtx = <DataModel extends GenericDataModel>(
+  ctx: GenericCtx<DataModel>
+): RunMutationCtx<DataModel> => {
+  if (!isRunMutationCtx(ctx)) {
+    throw new Error("Mutation or action context required");
   }
   return ctx;
 };

@@ -47,6 +47,17 @@ export const convex = (
     } as const,
     ...jwt.schema,
   };
+
+  const parseSetCookie = (setCookieHeader: string) => {
+    return setCookieHeader
+      .split(", ")
+      .map((cookie) => {
+        const semiIdx = cookie.indexOf(";");
+        const endIdx = semiIdx === -1 ? cookie.length + 1 : semiIdx;
+        return cookie.slice(0, endIdx);
+      })
+      .join("; ");
+  };
   return {
     id: "convex",
     init: ({ logger, options }) => {
@@ -60,7 +71,27 @@ export const convex = (
       }
     },
     hooks: {
-      before: [...bearer.hooks.before],
+      before: [
+        ...bearer.hooks.before,
+        // Don't attempt to refresh the session with a query ctx
+        {
+          matcher: (ctx) => {
+            return (
+              !ctx.context.adapter.options?.isRunMutationCtx &&
+              ctx.path === "/get-session"
+            );
+          },
+          handler: createAuthMiddleware(async (ctx) => {
+            ctx.query = { ...ctx.query, disableRefresh: true };
+            ctx.context.internalAdapter.deleteSession = async (
+              ..._args: any[]
+            ) => {
+              //skip
+            };
+            return { context: ctx };
+          }),
+        },
+      ],
       after: [
         ...oidcProvider.hooks.after,
         {
@@ -72,13 +103,15 @@ export const convex = (
               ctx.path.startsWith("/oauth2/callback") ||
               ctx.path.startsWith("/magic-link/verify") ||
               ctx.path.startsWith("/email-otp/verify-email") ||
-              ctx.path.startsWith("/phone-number/verify")
+              ctx.path.startsWith("/phone-number/verify") ||
+              ctx.path.startsWith("/siwe/verify")
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
-            // Set jwt cookie at login for ssa
-            const cookie = ctx.context.responseHeaders?.get("set-cookie") ?? "";
-            if (!cookie) {
+            // Set jwt cookie at login for ssa using set-cookie header
+            const setCookie =
+              ctx.context.responseHeaders?.get("set-cookie") ?? "";
+            if (!setCookie) {
               return;
             }
             try {
@@ -86,7 +119,7 @@ export const convex = (
                 ...ctx,
                 method: "GET",
                 headers: {
-                  cookie,
+                  cookie: parseSetCookie(setCookie),
                 },
                 returnHeaders: false,
               });

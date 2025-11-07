@@ -46,14 +46,56 @@ export const updateUserPassword = mutation({
   handler: async (ctx, args) => {
     // Many Better Auth server methods require a currently authenticated
     // user, so request headers have to be passed in so session cookies
-    // can be parsed and validated. The `headers` utility can be used here.
-    await createAuth(ctx).api.changePassword({
+    // can be parsed and validated. The `getAuth` method provides both the
+    // auth object and headers for convenience.
+    const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
+    await auth.api.changePassword({
       body: {
         currentPassword: args.currentPassword,
         newPassword: args.newPassword,
       },
-      headers: await authComponent.getHeaders(ctx),
+      headers,
     });
   },
 });
+```
+
+## Using Convex ctx in Better Auth config
+
+The `ctx` param passed in to the `createAuth` function is the Convex context
+object. This can be used to access the Convex database or Convex functions in
+your Better Auth config. It can be a [query](https://docs.convex.dev/functions/query-functions#query-context),
+[mutation](https://docs.convex.dev/functions/mutation-functions#mutation-context),
+or [action](https://docs.convex.dev/functions/actions#action-context) context.
+
+A common use case is sending emails for verification or password resets with
+the [Resend component](https://www.convex.dev/components/resend).
+`resend.sendEmail` will produce a type error because the ctx object could be a
+query ctx. The component provides type guards for this.
+
+```ts
+import { requireActionCtx } from "@convex-dev/better-auth/utils";
+import { Resend } from "@convex-dev/resend";
+import { components } from "./_generated/api";
+import { type ActionCtx } from "./_generated/server";
+
+export const resend = new Resend(components.resend);
+
+export const createAuth = (
+  ctx: ActionCtx,
+  { optionsOnly } = { optionsOnly: false }
+) =>
+  betterAuth({
+    baseURL: siteUrl,
+    sendVerificationEmail: async ({ user, url }) => {
+      // This function only requires a `runMutation` property on the ctx object,
+      // but we'll make sure we have an action ctx because we know a network
+      // request is being made, which requires an action ctx.
+      await resend.sendEmail(requireActionCtx(ctx), {
+        to: user.email,
+        subject: "Verify your email",
+        html: `<p>Click <a href="${url}">here</a> to verify your email</p>`,
+      });
+    },
+  });
 ```

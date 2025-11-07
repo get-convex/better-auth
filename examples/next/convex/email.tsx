@@ -9,7 +9,7 @@ import { components } from "./_generated/api";
 import { Resend } from "@convex-dev/resend";
 import { type ActionCtx } from "./_generated/server";
 
-export const resend: Resend = new Resend(components.resend, {
+export const resend = new Resend(components.resend, {
   testMode: false,
 });
 

@@ -35,6 +35,11 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         options: {
           trustedOrigins: [siteUrl],
         },
+        context: {
+          oauthConfig: {
+            skipStateCookieCheck: true,
+          },
+        },
       };
     },
     hooks: {
