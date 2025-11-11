@@ -73,6 +73,13 @@
       "types": "./dist/utils/index.d.ts",
       "default": "./dist/utils/index.js"
     },
+    "./_generated/component.js": {
+      "types": "./dist/component/_generated/component.d.ts"
+    },
+    "./convex.config.js": {
+      "types": "./dist/component/convex.config.d.ts",
+      "default": "./dist/component/convex.config.js"
+    },
     "./convex.config": {
       "types": "./dist/component/convex.config.d.ts",
       "default": "./dist/component/convex.config.js"
@@ -108,6 +115,7 @@
     "eslint": "^9.9.1",
     "globals": "^15.9.0",
     "next": "^15.1.8",
+    "npm-run-all2": "8.0.4",
     "prettier": "3.2.5",
     "tsc-alias": "^1.8.16",
     "typescript": "5.8.3",
