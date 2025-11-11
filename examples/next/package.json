@@ -7,7 +7,7 @@
     "dev": "npm-run-all --parallel dev:frontend dev:backend",
     "dev:backend": "convex dev --typecheck-components",
     "dev:frontend": "next dev --experimental-https",
-    "generate": "convex dev --once --typecheck-components",
+    "generate": "convex dev --once",
     "lint": "next lint && tsc -p convex && eslint convex"
   },
   "dependencies": {
