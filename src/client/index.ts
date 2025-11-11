@@ -37,6 +37,7 @@ import defaultSchema from "../component/schema";
 import { getAuthTables } from "better-auth/db";
 import { api } from "../component/_generated/api";
 import { SetOptional } from "type-fest";
+import { TableNames } from "../component/_generated/dataModel";
 
 export { convexAdapter };
 
@@ -66,7 +67,7 @@ if (semver.lt(convexVersion, "1.25.0")) {
 
 const whereValidator = (
   schema: SchemaDefinition<any, any>,
-  tableName: string
+  tableName: TableNames
 ) =>
   v.object({
     field: v.union(
@@ -215,7 +216,8 @@ export const createApi = <
       args: {
         input: v.union(
           ...Object.entries(schema.tables).map(
-            ([tableName, table]: [string, Schema["tables"][string]]) => {
+            ([name, table]: [string, Schema["tables"][string]]) => {
+              const tableName = name as TableNames;
               const fields = partial(table.validator.fields);
               return v.object({
                 model: v.literal(tableName),
@@ -265,7 +267,8 @@ export const createApi = <
       args: {
         input: v.union(
           ...Object.entries(schema.tables).map(
-            ([tableName, table]: [string, Schema["tables"][string]]) => {
+            ([name, table]: [string, Schema["tables"][string]]) => {
+              const tableName = name as TableNames;
               const fields = partial(table.validator.fields);
               return v.object({
                 model: v.literal(tableName),
@@ -337,7 +340,8 @@ export const createApi = <
     deleteOne: mutationGeneric({
       args: {
         input: v.union(
-          ...Object.keys(schema.tables).map((tableName: string) => {
+          ...Object.keys(schema.tables).map((name: string) => {
+            const tableName = name as TableNames;
             return v.object({
               model: v.literal(tableName),
               where: v.optional(v.array(whereValidator(schema, tableName))),
@@ -364,7 +368,8 @@ export const createApi = <
     deleteMany: mutationGeneric({
       args: {
         input: v.union(
-          ...Object.keys(schema.tables).map((tableName: string) => {
+          ...Object.keys(schema.tables).map((name: string) => {
+            const tableName = name as TableNames;
             return v.object({
               model: v.literal(tableName),
               where: v.optional(v.array(whereValidator(schema, tableName))),

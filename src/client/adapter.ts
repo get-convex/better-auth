@@ -19,6 +19,7 @@ import { Where } from "better-auth/types";
 import { asyncMap } from "convex-helpers";
 import { prop, sortBy, unique } from "remeda";
 import { isRunMutationCtx } from "../utils";
+import { TableNames } from "../component/_generated/dataModel";
 
 const handlePagination = async (
   next: ({
@@ -272,7 +273,7 @@ export const convexAdapter = <
                 : undefined;
             return ctx.runMutation(api.adapter.updateOne, {
               input: {
-                model: data.model,
+                model: data.model as TableNames,
                 where: parseWhere(data.where),
                 update: data.update as any,
               },
@@ -294,7 +295,7 @@ export const convexAdapter = <
               : undefined;
           await ctx.runMutation(api.adapter.deleteOne, {
             input: {
-              model: data.model,
+              model: data.model as TableNames,
               where: parseWhere(data.where),
             },
             onDeleteHandle: onDeleteHandle,
@@ -306,7 +307,7 @@ export const convexAdapter = <
           }
           const onDeleteHandle =
             config.authFunctions?.onDelete &&
-            config.triggers?.[data.model]?.onDelete
+            config.triggers?.[data.model as TableNames]?.onDelete
               ? ((await createFunctionHandle(
                   config.authFunctions.onDelete
                 )) as FunctionHandle<"mutation">)
@@ -315,6 +316,7 @@ export const convexAdapter = <
             return await ctx.runMutation(api.adapter.deleteMany, {
               input: {
                 ...data,
+                model: data.model as TableNames,
                 where: parseWhere(data.where),
               },
               paginationOpts,
@@ -338,6 +340,7 @@ export const convexAdapter = <
             return await ctx.runMutation(api.adapter.updateMany, {
               input: {
                 ...data,
+                model: data.model as TableNames,
                 where: parseWhere(data.where),
               },
               paginationOpts,
