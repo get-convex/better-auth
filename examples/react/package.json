@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "npm-run-all --parallel dev:frontend dev:backend",
     "dev:frontend": "vite",
-    "dev:backend": "convex dev --typecheck-components --live-component-sources",
+    "dev:backend": "convex dev --typecheck-components",
     "generate": "convex dev --once",
     "logs": "convex logs",
     "lint": "tsc -p convex && eslint convex"

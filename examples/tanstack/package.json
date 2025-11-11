@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "concurrently -r npm:dev:web npm:dev:db",
     "dev:web": "vite dev --port 3000",
-    "dev:db": "npx convex dev",
+    "dev:db": "convex dev --typecheck-components",
     "build": "vite build",
     "generate": "convex dev --once",
     "start": "node .output/server/index.mjs",
