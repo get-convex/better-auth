@@ -10,6 +10,7 @@ import {
   PaginationOptions,
   PaginationResult,
   SchemaDefinition,
+  WithoutSystemFields,
 } from "convex/server";
 import { SetOptional } from "type-fest";
 import { AuthFunctions, GenericCtx, Triggers } from ".";
@@ -18,7 +19,7 @@ import { Where } from "better-auth/types";
 import { asyncMap } from "convex-helpers";
 import { prop, sortBy, unique } from "remeda";
 import { isRunMutationCtx } from "../utils";
-import { TableNames } from "../component/_generated/dataModel";
+import { Doc, TableNames } from "../component/_generated/dataModel.js";
 import { ComponentApi } from "../component/_generated/component.js";
 
 const handlePagination = async (
@@ -80,8 +81,9 @@ const handlePagination = async (
   return state;
 };
 
-type ConvexCleanedWhere = Where & {
+type ConvexCleanedWhere<TableName extends TableNames = TableNames> = Where & {
   value: string | number | boolean | string[] | number[] | null;
+  field: keyof WithoutSystemFields<Doc<TableName>> & string;
 };
 
 const parseWhere = (where?: Where[]): ConvexCleanedWhere[] => {
@@ -168,7 +170,7 @@ export const convexAdapter = <
                 )) as FunctionHandle<"mutation">)
               : undefined;
           return ctx.runMutation(api.adapter.create, {
-            input: { model, data },
+            input: { model: model as any, data },
             select,
             onCreateHandle: onCreateHandle,
           });
@@ -178,6 +180,7 @@ export const convexAdapter = <
             for (const w of data.where) {
               const result = await ctx.runQuery(api.adapter.findOne, {
                 ...data,
+                model: data.model as TableNames,
                 where: parseWhere([w]),
               });
               if (result) {
@@ -187,6 +190,7 @@ export const convexAdapter = <
           }
           return await ctx.runQuery(api.adapter.findOne, {
             ...data,
+            model: data.model as TableNames,
             where: parseWhere(data.where),
           });
         },
@@ -200,6 +204,7 @@ export const convexAdapter = <
                 async ({ paginationOpts }) => {
                   return await ctx.runQuery(api.adapter.findMany, {
                     ...data,
+                    model: data.model as TableNames,
                     where: parseWhere([w]),
                     paginationOpts,
                   });
@@ -223,6 +228,7 @@ export const convexAdapter = <
             async ({ paginationOpts }) => {
               return await ctx.runQuery(api.adapter.findMany, {
                 ...data,
+                model: data.model as TableNames,
                 where: parseWhere(data.where),
                 paginationOpts,
               });
@@ -238,6 +244,7 @@ export const convexAdapter = <
               handlePagination(async ({ paginationOpts }) => {
                 return await ctx.runQuery(api.adapter.findMany, {
                   ...data,
+                  model: data.model as TableNames,
                   where: parseWhere([w]),
                   paginationOpts,
                 });
@@ -250,6 +257,7 @@ export const convexAdapter = <
           const result = await handlePagination(async ({ paginationOpts }) => {
             return await ctx.runQuery(api.adapter.findMany, {
               ...data,
+              model: data.model as TableNames,
               where: parseWhere(data.where),
               paginationOpts,
             });
