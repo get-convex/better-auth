@@ -1,7 +1,6 @@
 import {
   DataModelFromSchemaDefinition,
   type DefaultFunctionArgs,
-  type Expand,
   FunctionHandle,
   type FunctionReference,
   GenericActionCtx,
@@ -35,9 +34,9 @@ import { version as convexVersion } from "convex";
 import semver from "semver";
 import defaultSchema from "../component/schema";
 import { getAuthTables } from "better-auth/db";
-import { api } from "../component/_generated/api";
 import { SetOptional } from "type-fest";
-import { TableNames } from "../component/_generated/dataModel";
+import { ComponentApi } from "../component/_generated/component.js";
+import { TableNames } from "../component/_generated/dataModel.js";
 
 export { convexAdapter };
 
@@ -449,11 +448,8 @@ export const createClient = <
   Schema extends SchemaDefinition<GenericSchema, true> = typeof defaultSchema,
 >(
   component: {
-    adapter: SetOptional<
-      UseApi<typeof api>["adapter"],
-      "migrationRemoveUserId"
-    >;
-    adapterTest?: UseApi<typeof api>["adapterTest"];
+    adapter: SetOptional<ComponentApi["adapter"], "migrationRemoveUserId">;
+    adapterTest?: ComponentApi["adapterTest"];
   },
   config?: {
     local?: {
@@ -768,34 +764,3 @@ export const createClient = <
     },
   };
 };
-
-/* Type utils follow */
-
-export type OpaqueIds<T> =
-  T extends GenericId<infer _T>
-    ? string
-    : T extends (infer U)[]
-      ? OpaqueIds<U>[]
-      : T extends ArrayBuffer
-        ? ArrayBuffer
-        : T extends object
-          ? { [K in keyof T]: OpaqueIds<T[K]> }
-          : T;
-
-export type UseApi<API> = Expand<{
-  [mod in keyof API]: API[mod] extends FunctionReference<
-    infer FType,
-    "public",
-    infer FArgs,
-    infer FReturnType,
-    infer FComponentPath
-  >
-    ? FunctionReference<
-        FType,
-        "internal",
-        OpaqueIds<FArgs>,
-        OpaqueIds<FReturnType>,
-        FComponentPath
-      >
-    : UseApi<API[mod]>;
-}>;

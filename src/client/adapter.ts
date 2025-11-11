@@ -12,14 +12,14 @@ import {
   SchemaDefinition,
 } from "convex/server";
 import { SetOptional } from "type-fest";
-import { AuthFunctions, GenericCtx, Triggers, UseApi } from ".";
+import { AuthFunctions, GenericCtx, Triggers } from ".";
 import defaultSchema from "../component/schema";
-import { api as componentApi } from "../component/_generated/api";
 import { Where } from "better-auth/types";
 import { asyncMap } from "convex-helpers";
 import { prop, sortBy, unique } from "remeda";
 import { isRunMutationCtx } from "../utils";
 import { TableNames } from "../component/_generated/dataModel";
+import { ComponentApi } from "../component/_generated/component.js";
 
 const handlePagination = async (
   next: ({
@@ -103,11 +103,8 @@ export const convexAdapter = <
 >(
   ctx: Ctx,
   api: {
-    adapter: SetOptional<
-      UseApi<typeof componentApi>["adapter"],
-      "migrationRemoveUserId"
-    >;
-    adapterTest?: UseApi<typeof componentApi>["adapterTest"];
+    adapter: SetOptional<ComponentApi["adapter"], "migrationRemoveUserId">;
+    adapterTest?: ComponentApi["adapterTest"];
   },
   config: {
     debugLogs?: DBAdapterDebugLogOption;
