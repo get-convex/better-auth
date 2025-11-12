@@ -114,6 +114,8 @@
     "convex": "1.29.0",
     "convex-test": "^0.0.33",
     "eslint": "^9.9.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^15.9.0",
     "next": "^15.1.8",
     "npm-run-all2": "8.0.4",

@@ -53,7 +53,6 @@ export function ConvexBetterAuthProvider({
   const useBetterAuth = useUseAuthFromBetterAuth(authClient);
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
       const url = new URL(window.location?.href);
       const token = url.searchParams.get("ott");
@@ -105,6 +104,7 @@ function useUseAuthFromBetterAuth(authClient: AuthClient) {
           },
           // Build a new fetchAccessToken to trigger setAuth() whenever the
           // session changes.
+          // eslint-disable-next-line react-hooks/exhaustive-deps
           [sessionId]
         );
         return useMemo(
@@ -113,6 +113,7 @@ function useUseAuthFromBetterAuth(authClient: AuthClient) {
             isAuthenticated: session !== null,
             fetchAccessToken,
           }),
+          // eslint-disable-next-line react-hooks/exhaustive-deps
           [isSessionPending, sessionId, fetchAccessToken]
         );
       },
