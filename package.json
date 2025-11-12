@@ -22,6 +22,7 @@
     "clean": "rm -rf dist *.tsbuildinfo",
     "dev": "run-p -r 'dev:*'",
     "dev:backend": "convex dev --typecheck-components",
+    "dev:frontend": "cd examples/react && npm run dev:frontend",
     "dev:build": "chokidar 'tsconfig*.json' 'src/**/*.ts' -i '**/*.test.ts' -c 'convex codegen --component-dir ./src/component && npm run build' --initial",
     "predev": "npm run dev:backend -- --until-success",
     "typecheck": "tsc --noEmit && tsc -p examples/next && tsc -p examples/react && tsc -p examples/tanstack",
