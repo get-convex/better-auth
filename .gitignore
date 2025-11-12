@@ -12,6 +12,9 @@ node_modules
 # components are libraries!
 package-lock.json
 
+# generate convex.json
+convex.json
+
 !examples/**/package-lock.json
 
 # npm pack output

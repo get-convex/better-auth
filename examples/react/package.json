@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "run-p -r 'dev:*'",
     "dev:frontend": "vite",
-    "dev:backend": "cd ../../ && npm run dev:backend",
-    "generate": "npx convex dev --once",
+    "dev:backend": "cd ../../ && npx tsx scripts/generate-convex-json.mts react && npm run dev:backend --example=react",
+    "predev:backend": "path-exists .env.local || npx convex dev --until-success",
     "logs": "npx convex logs",
     "lint": "tsc -p convex && eslint convex"
   },

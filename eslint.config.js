@@ -5,7 +5,13 @@ import tseslint from "typescript-eslint";
 export default [
   { files: ["src/**/*.{ts,tsx}"] },
   {
-    ignores: ["dist/**", "**/_generated/", "**/*.{mjs,cjs,js}"],
+    ignores: [
+      "dist/**",
+      "**/_generated/",
+      "**/*.{mjs,cjs,js}",
+      "**/.next/**",
+      "**/.source/**",
+    ],
   },
   {
     languageOptions: {
