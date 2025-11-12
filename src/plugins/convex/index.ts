@@ -127,6 +127,7 @@ export const convex = (
                 maxAge: jwtExpirationSeconds,
               });
               ctx.setCookie(jwtCookie.name, token, jwtCookie.attributes);
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (_err) {
               // no-op, some sign-in calls (eg., when redirecting to 2fa)
               // 401 here

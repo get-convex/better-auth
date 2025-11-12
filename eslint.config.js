@@ -9,8 +9,8 @@ export default [
       "dist/**",
       "**/_generated/",
       "**/*.{mjs,cjs,js}",
-      "**/.next/**",
-      "**/.source/**",
+      "examples/**",
+      "docs/**",
     ],
   },
   {
