@@ -4,11 +4,11 @@
   "type": "module",
   "version": "0.0.0",
   "scripts": {
-    "dev": "npm-run-all --parallel dev:frontend dev:backend",
+    "dev": "run-p -r 'dev:*'",
     "dev:frontend": "vite",
-    "dev:backend": "convex dev --typecheck-components",
-    "generate": "convex dev --once",
-    "logs": "convex logs",
+    "dev:backend": "cd ../../ && npm run dev:backend",
+    "generate": "npx convex dev --once",
+    "logs": "npx convex logs",
     "lint": "tsc -p convex && eslint convex"
   },
   "dependencies": {
