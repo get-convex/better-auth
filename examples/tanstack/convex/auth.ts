@@ -175,6 +175,6 @@ export const getUser = async (ctx: QueryCtx) => {
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    return safeGetUser(ctx)
+    return await safeGetUser(ctx)
   },
 })
