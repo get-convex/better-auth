@@ -39,7 +39,7 @@ export default function EnableTwoFactor() {
       const accounts = await authClient.listAccounts();
       if ("data" in accounts && accounts.data) {
         const hasCredential = accounts.data.some(
-          (account) => account.provider === "credential",
+          (account) => account.providerId === "credential",
         );
         setStep(hasCredential ? "password" : "need-password");
       }

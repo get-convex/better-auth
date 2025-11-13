@@ -16,8 +16,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    },
-    "customConditions": ["@convex-dev/component-source"]
+    }
   },
   "include": ["./src", "vite.config.ts"]
 }

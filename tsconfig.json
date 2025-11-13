@@ -19,8 +19,5 @@
     "outDir": "./dist",
     "skipLibCheck": true
   },
-  "tsc-alias": {
-    "resolveFullPaths": true
-  },
-  "include": ["./src/**/*", "./generate-schema.ts", "./vitest.config.mts"]
+  "include": ["./src/**/*", "./vitest.config.mts"]
 }

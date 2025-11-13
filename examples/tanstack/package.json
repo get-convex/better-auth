@@ -5,12 +5,10 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently -r npm:dev:web npm:dev:db",
-    "dev:web": "vite dev --port 3000",
-    "dev:db": "npx convex dev",
-    "build": "vite build",
-    "generate": "convex dev --once",
-    "start": "node .output/server/index.mjs",
+    "dev": "run-p -r 'dev:*'",
+    "dev:frontend": "vite dev --port 3000",
+    "dev:backend": "npx convex dev --typecheck-components",
+    "dev:build": "chokidar '../../tsconfig*.json' '../../src/**/*.ts' -i '**/*.test.ts' -c 'npx convex codegen --component-dir ../../src/component && cd ../../ && npm run build' --initial",
     "lint": "prettier --check '**/*' --ignore-unknown && eslint --ext .ts,.tsx ./app",
     "format": "prettier --write '**/*' --ignore-unknown"
   },

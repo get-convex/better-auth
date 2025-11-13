@@ -35,7 +35,7 @@ export default function SignIn() {
         onRequest: () => {
           setOtpLoading(true);
         },
-        onSuccess: (ctx) => {
+        onSuccess: (_ctx) => {
           setOtpLoading(false);
         },
         onError: (ctx) => {
@@ -177,9 +177,9 @@ export default function SignIn() {
           onSubmit={(e) => {
             e.preventDefault();
             if (signInMethod === "password") {
-              handleSignIn();
+              void handleSignIn();
             } else if (otpSent) {
-              handleOtpSignIn();
+              void handleOtpSignIn();
             }
           }}
           className="grid gap-4"

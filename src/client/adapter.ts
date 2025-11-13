@@ -10,15 +10,17 @@ import {
   PaginationOptions,
   PaginationResult,
   SchemaDefinition,
+  WithoutSystemFields,
 } from "convex/server";
 import { SetOptional } from "type-fest";
-import { AuthFunctions, GenericCtx, Triggers, UseApi } from ".";
+import { AuthFunctions, GenericCtx, Triggers } from ".";
 import defaultSchema from "../component/schema";
-import { api as componentApi } from "../component/_generated/api";
 import { Where } from "better-auth/types";
 import { asyncMap } from "convex-helpers";
 import { prop, sortBy, unique } from "remeda";
 import { isRunMutationCtx } from "../utils";
+import { Doc, TableNames } from "../component/_generated/dataModel.js";
+import { ComponentApi } from "../component/_generated/component.js";
 
 const handlePagination = async (
   next: ({
@@ -79,8 +81,9 @@ const handlePagination = async (
   return state;
 };
 
-type ConvexCleanedWhere = Where & {
+type ConvexCleanedWhere<TableName extends TableNames = TableNames> = Where & {
   value: string | number | boolean | string[] | number[] | null;
+  field: keyof WithoutSystemFields<Doc<TableName>> & string;
 };
 
 const parseWhere = (where?: Where[]): ConvexCleanedWhere[] => {
@@ -102,11 +105,8 @@ export const convexAdapter = <
 >(
   ctx: Ctx,
   api: {
-    adapter: SetOptional<
-      UseApi<typeof componentApi>["adapter"],
-      "migrationRemoveUserId"
-    >;
-    adapterTest?: UseApi<typeof componentApi>["adapterTest"];
+    adapter: SetOptional<ComponentApi["adapter"], "migrationRemoveUserId">;
+    adapterTest?: ComponentApi["adapterTest"];
   },
   config: {
     debugLogs?: DBAdapterDebugLogOption;
@@ -170,7 +170,7 @@ export const convexAdapter = <
                 )) as FunctionHandle<"mutation">)
               : undefined;
           return ctx.runMutation(api.adapter.create, {
-            input: { model, data },
+            input: { model: model as any, data },
             select,
             onCreateHandle: onCreateHandle,
           });
@@ -180,6 +180,7 @@ export const convexAdapter = <
             for (const w of data.where) {
               const result = await ctx.runQuery(api.adapter.findOne, {
                 ...data,
+                model: data.model as TableNames,
                 where: parseWhere([w]),
               });
               if (result) {
@@ -189,6 +190,7 @@ export const convexAdapter = <
           }
           return await ctx.runQuery(api.adapter.findOne, {
             ...data,
+            model: data.model as TableNames,
             where: parseWhere(data.where),
           });
         },
@@ -202,6 +204,7 @@ export const convexAdapter = <
                 async ({ paginationOpts }) => {
                   return await ctx.runQuery(api.adapter.findMany, {
                     ...data,
+                    model: data.model as TableNames,
                     where: parseWhere([w]),
                     paginationOpts,
                   });
@@ -225,6 +228,7 @@ export const convexAdapter = <
             async ({ paginationOpts }) => {
               return await ctx.runQuery(api.adapter.findMany, {
                 ...data,
+                model: data.model as TableNames,
                 where: parseWhere(data.where),
                 paginationOpts,
               });
@@ -240,6 +244,7 @@ export const convexAdapter = <
               handlePagination(async ({ paginationOpts }) => {
                 return await ctx.runQuery(api.adapter.findMany, {
                   ...data,
+                  model: data.model as TableNames,
                   where: parseWhere([w]),
                   paginationOpts,
                 });
@@ -252,6 +257,7 @@ export const convexAdapter = <
           const result = await handlePagination(async ({ paginationOpts }) => {
             return await ctx.runQuery(api.adapter.findMany, {
               ...data,
+              model: data.model as TableNames,
               where: parseWhere(data.where),
               paginationOpts,
             });
@@ -272,7 +278,7 @@ export const convexAdapter = <
                 : undefined;
             return ctx.runMutation(api.adapter.updateOne, {
               input: {
-                model: data.model,
+                model: data.model as TableNames,
                 where: parseWhere(data.where),
                 update: data.update as any,
               },
@@ -294,7 +300,7 @@ export const convexAdapter = <
               : undefined;
           await ctx.runMutation(api.adapter.deleteOne, {
             input: {
-              model: data.model,
+              model: data.model as TableNames,
               where: parseWhere(data.where),
             },
             onDeleteHandle: onDeleteHandle,
@@ -306,7 +312,7 @@ export const convexAdapter = <
           }
           const onDeleteHandle =
             config.authFunctions?.onDelete &&
-            config.triggers?.[data.model]?.onDelete
+            config.triggers?.[data.model as TableNames]?.onDelete
               ? ((await createFunctionHandle(
                   config.authFunctions.onDelete
                 )) as FunctionHandle<"mutation">)
@@ -315,6 +321,7 @@ export const convexAdapter = <
             return await ctx.runMutation(api.adapter.deleteMany, {
               input: {
                 ...data,
+                model: data.model as TableNames,
                 where: parseWhere(data.where),
               },
               paginationOpts,
@@ -338,6 +345,7 @@ export const convexAdapter = <
             return await ctx.runMutation(api.adapter.updateMany, {
               input: {
                 ...data,
+                model: data.model as TableNames,
                 where: parseWhere(data.where),
               },
               paginationOpts,

@@ -4,10 +4,10 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "npm-run-all --parallel dev:frontend dev:backend",
-    "dev:backend": "convex dev --typecheck-components --live-component-sources",
+    "dev": "run-p -r 'dev:*'",
     "dev:frontend": "next dev --experimental-https",
-    "generate": "convex dev --once --typecheck-components",
+    "dev:backend": "npx convex dev --typecheck-components",
+    "dev:build": "chokidar '../../tsconfig*.json' '../../src/**/*.ts' -i '**/*.test.ts' -c 'npx convex codegen --component-dir ../../src/component && cd ../../ && npm run build' --initial",
     "lint": "next lint && tsc -p convex && eslint convex"
   },
   "dependencies": {

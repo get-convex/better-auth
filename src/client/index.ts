@@ -1,7 +1,6 @@
 import {
   DataModelFromSchemaDefinition,
   type DefaultFunctionArgs,
-  type Expand,
   FunctionHandle,
   type FunctionReference,
   GenericActionCtx,
@@ -35,8 +34,9 @@ import { version as convexVersion } from "convex";
 import semver from "semver";
 import defaultSchema from "../component/schema";
 import { getAuthTables } from "better-auth/db";
-import { api } from "../component/_generated/api";
 import { SetOptional } from "type-fest";
+import { ComponentApi } from "../component/_generated/component.js";
+import { TableNames } from "../component/_generated/dataModel.js";
 
 export { convexAdapter };
 
@@ -66,7 +66,7 @@ if (semver.lt(convexVersion, "1.25.0")) {
 
 const whereValidator = (
   schema: SchemaDefinition<any, any>,
-  tableName: string
+  tableName: TableNames
 ) =>
   v.object({
     field: v.union(
@@ -215,7 +215,8 @@ export const createApi = <
       args: {
         input: v.union(
           ...Object.entries(schema.tables).map(
-            ([tableName, table]: [string, Schema["tables"][string]]) => {
+            ([name, table]: [string, Schema["tables"][string]]) => {
+              const tableName = name as TableNames;
               const fields = partial(table.validator.fields);
               return v.object({
                 model: v.literal(tableName),
@@ -265,7 +266,8 @@ export const createApi = <
       args: {
         input: v.union(
           ...Object.entries(schema.tables).map(
-            ([tableName, table]: [string, Schema["tables"][string]]) => {
+            ([name, table]: [string, Schema["tables"][string]]) => {
+              const tableName = name as TableNames;
               const fields = partial(table.validator.fields);
               return v.object({
                 model: v.literal(tableName),
@@ -337,7 +339,8 @@ export const createApi = <
     deleteOne: mutationGeneric({
       args: {
         input: v.union(
-          ...Object.keys(schema.tables).map((tableName: string) => {
+          ...Object.keys(schema.tables).map((name: string) => {
+            const tableName = name as TableNames;
             return v.object({
               model: v.literal(tableName),
               where: v.optional(v.array(whereValidator(schema, tableName))),
@@ -364,7 +367,8 @@ export const createApi = <
     deleteMany: mutationGeneric({
       args: {
         input: v.union(
-          ...Object.keys(schema.tables).map((tableName: string) => {
+          ...Object.keys(schema.tables).map((name: string) => {
+            const tableName = name as TableNames;
             return v.object({
               model: v.literal(tableName),
               where: v.optional(v.array(whereValidator(schema, tableName))),
@@ -444,11 +448,8 @@ export const createClient = <
   Schema extends SchemaDefinition<GenericSchema, true> = typeof defaultSchema,
 >(
   component: {
-    adapter: SetOptional<
-      UseApi<typeof api>["adapter"],
-      "migrationRemoveUserId"
-    >;
-    adapterTest?: UseApi<typeof api>["adapterTest"];
+    adapter: SetOptional<ComponentApi["adapter"], "migrationRemoveUserId">;
+    adapterTest?: ComponentApi["adapterTest"];
   },
   config?: {
     local?: {
@@ -763,34 +764,3 @@ export const createClient = <
     },
   };
 };
-
-/* Type utils follow */
-
-export type OpaqueIds<T> =
-  T extends GenericId<infer _T>
-    ? string
-    : T extends (infer U)[]
-      ? OpaqueIds<U>[]
-      : T extends ArrayBuffer
-        ? ArrayBuffer
-        : T extends object
-          ? { [K in keyof T]: OpaqueIds<T[K]> }
-          : T;
-
-export type UseApi<API> = Expand<{
-  [mod in keyof API]: API[mod] extends FunctionReference<
-    infer FType,
-    "public",
-    infer FArgs,
-    infer FReturnType,
-    infer FComponentPath
-  >
-    ? FunctionReference<
-        FType,
-        "internal",
-        OpaqueIds<FArgs>,
-        OpaqueIds<FReturnType>,
-        FComponentPath
-      >
-    : UseApi<API[mod]>;
-}>;

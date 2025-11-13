@@ -24,7 +24,7 @@ export const createAuth = (
   { optionsOnly } = { optionsOnly: false }
 ) => {
   return betterAuth({
-    //trustedOrigins: [siteUrl],
+    trustedOrigins: [siteUrl],
     logger: {
       disabled: optionsOnly,
     },
