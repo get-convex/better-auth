@@ -24,7 +24,6 @@
     "typecheck": "tsc --noEmit && tsc -p examples/next && tsc -p examples/react && tsc -p examples/tanstack",
     "lint": "eslint .",
     "prepare": "npm run build",
-    "generate": "concurrently \"cd examples/next && npm run generate\" \"cd examples/react && npm run generate\" \"cd examples/tanstack && npm run generate\"",
     "test": "vitest run --typecheck",
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "test:coverage": "vitest run --coverage --coverage.reporter=text",
