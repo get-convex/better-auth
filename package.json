@@ -18,7 +18,7 @@
   ],
   "type": "module",
   "scripts": {
-    "build": "tsc --project ./tsconfig.build.json && tsc-alias -p ./tsconfig.build.json",
+    "build": "tsc --project ./tsconfig.build.json",
     "clean": "rm -rf dist *.tsbuildinfo",
     "dev": "cd examples/react && npm run dev",
     "typecheck": "tsc --noEmit && tsc -p examples/next && tsc -p examples/react && tsc -p examples/tanstack",
@@ -114,7 +114,6 @@
     "next": "^15.1.8",
     "npm-run-all2": "8.0.4",
     "prettier": "3.2.5",
-    "tsc-alias": "^1.8.16",
     "typescript": "5.8.3",
     "typescript-eslint": "^8.4.0",
     "vitest": "^3.2.2"
