@@ -373,7 +373,7 @@ Note: To add SSR support (`data.currentUser`) also add the `src/routes/+page.ser
 	const isLoading = $derived(auth.isLoading && !data.currentUser);
 	const isAuthenticated = $derived(auth.isAuthenticated || !!data.currentUser);
 
-	const currentUserResponse = useQuery(api.auth.getCurrentUser, {});
+	const currentUserResponse = useQuery(api.auth.getCurrentUser, () => (isAuthenticated ? {} : 'skip'));
 	let user = $derived(currentUserResponse.data ?? data.currentUser);
 
 	// Sign in/up form state
