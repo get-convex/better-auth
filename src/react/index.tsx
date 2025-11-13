@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { ReactNode, useCallback, useMemo } from "react";
 import { AuthTokenFetcher } from "convex/browser";
 import { ConvexProviderWithAuth } from "convex/react";
-import { BetterAuthClientPlugin, ClientOptions } from "better-auth";
+import { type BetterAuthClientPlugin } from "better-auth";
 import { createAuthClient } from "better-auth/react";
 import { convexClient, crossDomainClient } from "../client/plugins";
 
@@ -19,7 +19,7 @@ type AuthClientWithPlugins<
   Plugins extends PluginsWithCrossDomain | PluginsWithoutCrossDomain,
 > = ReturnType<
   typeof createAuthClient<
-    ClientOptions & {
+    BetterAuthClientPlugin & {
       plugins: Plugins;
     }
   >

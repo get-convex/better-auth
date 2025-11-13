@@ -1,6 +1,6 @@
+import { type BetterAuthPlugin } from "better-auth";
 import { createAuthMiddleware, sessionMiddleware } from "better-auth/api";
 import {
-  BetterAuthPlugin,
   createAuthEndpoint,
   jwt as jwtPlugin,
   bearer as bearerPlugin,
