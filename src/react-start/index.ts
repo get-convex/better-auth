@@ -183,6 +183,7 @@ export const reactStartHandler = (
   const nextUrl = `${convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
   const headers = new Headers(request.headers);
   headers.set("accept-encoding", "application/json");
+  headers.set("host", convexSiteUrl);
   return fetch(nextUrl, {
     method: request.method,
     headers,
