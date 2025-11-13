@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "run-p -r 'dev:*'",
     "dev:frontend": "vite",
-    "dev:backend": "cd ../../ && npx tsx scripts/generate-convex-json.mts react && npm run dev:backend --example=react",
-    "predev:backend": "path-exists .env.local || npx convex dev --until-success",
+    "dev:backend": "npx convex dev --typecheck-components",
+    "dev:build": "chokidar '../../tsconfig*.json' '../../src/**/*.ts' -i '**/*.test.ts' -c 'npx convex codegen --component-dir ../../src/component && cd ../../ && npm run build' --initial",
+    "predev": "npm run dev:backend -- --until-success",
     "logs": "npx convex logs",
     "lint": "tsc -p convex && eslint convex"
   },

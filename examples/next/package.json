@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "run-p -r 'dev:*'",
     "dev:frontend": "next dev --experimental-https",
-    "dev:backend": "cd ../../ && npx tsx scripts/generate-convex-json.mts next && npm run dev:backend --example=next",
+    "dev:backend": "npx convex dev --typecheck-components",
+    "dev:build": "chokidar '../../tsconfig*.json' '../../src/**/*.ts' -i '**/*.test.ts' -c 'npx convex codegen --component-dir ../../src/component && cd ../../ && npm run build' --initial",
     "lint": "next lint && tsc -p convex && eslint convex"
   },
   "dependencies": {
