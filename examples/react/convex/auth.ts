@@ -108,7 +108,6 @@ export const getUser = async (ctx: QueryCtx) => {
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    console.log("identity", await ctx.auth.getUserIdentity());
-    return safeGetUser(ctx);
+    return await safeGetUser(ctx);
   },
 });
