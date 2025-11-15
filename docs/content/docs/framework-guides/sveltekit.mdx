@@ -556,3 +556,52 @@ export const load: PageServerLoad = async ({ locals }) => {
   return { currentUser };
 };
 ```
+
+### Authenticated requests
+
+There are two common ways to make authenticated Convex requests from Svelte components.
+
+#### Option 1: Conditionally run queries with `useQuery` and `auth.isAuthenticated`
+
+Use this when your app has a mix of public and members-only content.  
+You can read the auth state from `useAuth` and return `"skip"` for queries that should only run once the user is authenticated.
+
+```ts title="src/routes/+page.svelte"
+import { api } from '$convex/_generated/api';
+import { useQuery } from 'convex-svelte';
+import { useAuth } from '@mmailaender/convex-better-auth-svelte/svelte';
+
+const auth = useAuth();
+
+// Only fetch once the user is authenticated
+const memberOnlyPosts = useQuery(
+  api.posts.getMemberOnlyPosts,
+  () => (auth.isAuthenticated ? {} : 'skip')
+);
+
+// Always fetched, regardless of auth state
+const publicPosts = useQuery(api.posts.getPublicPosts, {});
+````
+
+#### Option 2: Make all requests authenticated with `expectAuth`
+
+Use this when your app is essentially “members-only” and almost all data requires authentication.
+
+By enabling `expectAuth`, all Convex queries and mutations created through `createSvelteAuthClient` will:
+
+* automatically include the auth token, and
+* not run until the user is authenticated.
+
+Unauthenticated users won’t trigger any Convex requests until they sign in.
+
+```ts title="src/routes/+layout.svelte"
+import { createSvelteAuthClient } from '@mmailaender/convex-better-auth-svelte/svelte';
+import { authClient } from '$lib/auth-client';
+
+createSvelteAuthClient({
+  authClient,
+  options: {
+    expectAuth: true
+  }
+});
+```
