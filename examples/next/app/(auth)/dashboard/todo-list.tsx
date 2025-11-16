@@ -5,7 +5,7 @@ import {
   preloadQuery,
 } from "convex/nextjs";
 import { Id } from "@/convex/_generated/dataModel";
-import { TodoItems } from "@/app/(auth)/dashboard/server/todo-items";
+import { TodoItems } from "@/app/(auth)/dashboard/todo-items";
 import {
   AddTodoForm,
   TodoListContainer,
@@ -15,9 +15,7 @@ import { getToken } from "@/lib/auth-server";
 import { redirect } from "next/navigation";
 
 export const TodoList = async () => {
-  console.log("TodoList");
   const token = await getToken();
-  console.log("token TodoList", token);
   if (!token) {
     redirect("/sign-in");
   }
@@ -39,7 +37,6 @@ export const TodoList = async () => {
   const toggleCompletedAction = async (formData: FormData) => {
     "use server";
     const token = await getToken();
-    console.log("token toggleCompletedAction", token);
     await fetchMutation(
       api.todos.toggle,
       { id: formData.get("id") as Id<"todos"> },

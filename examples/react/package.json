@@ -8,9 +8,9 @@
     "dev:frontend": "vite --clearScreen false",
     "dev:backend": "convex dev --typecheck-components",
     "dev:build": "chokidar '../../tsconfig*.json' '../../src/**/*.ts' '../../src/**/*.tsx' -i '**/*.test.ts' -c 'npx convex codegen --component-dir ./src/component && npm run build' --initial",
-    "build": "npx convex codegen --component-dir ../../src/component && cd ../../ && npm run build",
+    "build": "convex codegen --component-dir ../../src/component && cd ../../ && npm run build",
     "predev": "convex dev --skip-push && mkdir -p dist",
-    "logs": "npx convex logs",
+    "logs": "convex logs",
     "lint": "tsc -p convex && eslint convex"
   },
   "dependencies": {

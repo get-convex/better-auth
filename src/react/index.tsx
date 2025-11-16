@@ -94,7 +94,10 @@ function useUseAuthFromBetterAuth(authClient: AuthClient) {
           authClient.useSession();
         const sessionId = session?.session?.id;
         const fetchAccessToken = useCallback(
-          async () => {
+          async ({
+            forceRefreshToken = false,
+          }: { forceRefreshToken?: boolean } = {}) => {
+            console.log("fetching access token", { forceRefreshToken });
             try {
               const { data } = await authClient.convex.token();
               return data?.token || null;

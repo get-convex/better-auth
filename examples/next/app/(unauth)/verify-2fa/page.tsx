@@ -1,5 +1,3 @@
-"use client";
-
 import TwoFactorVerification from "@/app/(unauth)/verify-2fa/TwoFactorVerification";
 
 export default function VerifyTwoFactorPage() {

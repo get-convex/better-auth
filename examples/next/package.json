@@ -5,9 +5,10 @@
   "private": true,
   "scripts": {
     "dev": "run-p -r 'dev:*'",
-    "dev:frontend": "next dev --experimental-https",
+    "dev:frontend": "next dev --webpack --experimental-https",
     "dev:backend": "npx convex dev --typecheck-components",
-    "dev:build": "chokidar '../../tsconfig*.json' '../../src/**/*.ts' -i '**/*.test.ts' -c 'npx convex codegen --component-dir ../../src/component && cd ../../ && npm run build' --initial",
+    "dev:build": "chokidar '../../tsconfig*.json' '../../src/**/*.ts' '../../src/**/*.tsx' -i '**/*.test.ts' -c 'npm run build-component' --initial",
+    "build-component": "npx convex codegen --component-dir ../../src/component && cd ../../ && npm run build",
     "lint": "next lint && tsc -p convex && eslint convex"
   },
   "dependencies": {
@@ -25,7 +26,7 @@
     "convex-helpers": "^0.1.87",
     "http-proxy-middleware": "^3.0.5",
     "lucide-react": "^0.486.0",
-    "next": "^15.4.1",
+    "next": "^16.0.3",
     "postcss": "^8.5.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

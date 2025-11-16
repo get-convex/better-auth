@@ -10,8 +10,8 @@ export default async function Layout({ children }: PropsWithChildren) {
     {},
     { token: await getToken() },
   );
-  if (!isAuthenticated) {
-    redirect("/sign-in");
+  if (isAuthenticated) {
+    redirect("/dashboard");
   }
   return <>{children}</>;
 }

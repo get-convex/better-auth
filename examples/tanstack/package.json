@@ -8,7 +8,8 @@
     "dev": "run-p -r 'dev:*'",
     "dev:frontend": "vite dev --port 3000",
     "dev:backend": "npx convex dev --typecheck-components",
-    "dev:build": "chokidar '../../tsconfig*.json' '../../src/**/*.ts' -i '**/*.test.ts' -c 'npx convex codegen --component-dir ../../src/component && cd ../../ && npm run build' --initial",
+    "dev:build": "chokidar '../../tsconfig*.json' '../../src/**/*.ts' '../../src/**/*.tsx' -i '**/*.test.ts' -c 'npm run build-component' --initial",
+    "build-component": "npx convex codegen --component-dir ../../src/component && cd ../../ && npm run build",
     "lint": "prettier --check '**/*' --ignore-unknown && eslint --ext .ts,.tsx ./app",
     "format": "prettier --write '**/*' --ignore-unknown"
   },

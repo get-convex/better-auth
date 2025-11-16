@@ -13,23 +13,24 @@ import appCss from '@/styles/app.css?url'
 import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
 import { authClient } from '@/lib/auth-client'
 import {
-  fetchSession,
-  getCookieName,
+  getCookieNames,
+  fetchAuth,
+  getAuthFromCookie,
 } from '@convex-dev/better-auth/react-start'
 import { getCookie, getRequest } from '@tanstack/react-start/server'
 import { seo } from '@/utils/seo'
 import { ConvexQueryClient } from '@convex-dev/react-query'
 import { createServerFn } from '@tanstack/react-start'
 
-// Get auth information for SSR using available cookies
-const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
-  const { createAuth } = await import('@convex/auth')
-  const { session } = await fetchSession(getRequest())
-  const sessionCookieName = getCookieName(createAuth)
-  const token = getCookie(sessionCookieName)
-  return {
-    userId: session?.user.id,
-    token,
+const getAuth = createServerFn({ method: 'GET' }).handler(async () => {
+  const { createAuth } = await import('../../convex/auth')
+  const cookieNames = getCookieNames(createAuth)
+  const cookieAuth = getAuthFromCookie(getCookie(cookieNames.convexJwt))
+  if (cookieAuth) {
+    return cookieAuth
+  }
+  if (getCookie(cookieNames.sessionToken)) {
+    return await fetchAuth(getRequest())
   }
 })
 
@@ -57,17 +58,19 @@ export const Route = createRootRouteWithContext<{
     ],
   }),
   beforeLoad: async (ctx) => {
-    const { userId, token } = await fetchAuth()
+    const authData = await getAuth()
 
-    // During SSR only (the only time serverHttpClient exists),
-    // set the auth token to make HTTP queries with.
-    if (token) {
-      ctx.context.convexQueryClient.serverHttpClient?.setAuth(token)
+    // all queries, mutations and actions through TanStack Query will be
+    // authenticated during SSR if we have a valid token
+    if (authData?.token) {
+      // During SSR only (the only time serverHttpClient exists),
+      // set the auth token to make HTTP queries with.
+      ctx.context.convexQueryClient.serverHttpClient?.setAuth(authData.token)
     }
 
     return {
-      userId,
-      token,
+      userId: authData?.userId,
+      token: authData?.token,
     }
   },
   component: RootComponent,
