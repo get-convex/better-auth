@@ -1,6 +1,5 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { authComponent, createAuth } from "./auth";
 
 export const get = query({
   args: {},
@@ -20,25 +19,14 @@ export const get = query({
 export const create = mutation({
   args: { text: v.string() },
   handler: async (ctx, args) => {
-    // Using getSession and headers here is unecessarily complex, we do this as
-    // a general usage example and to make it easy to test.
-    const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
-
-    const data = await auth.api.getSession({
-      headers,
-    });
-
-    if (!data?.user) {
-      return [];
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
     }
-
-    const now = Date.now();
     await ctx.db.insert("todos", {
       text: args.text,
       completed: false,
-      userId: data.user.id,
-      createdAt: now,
-      updatedAt: now,
+      userId: identity.subject,
     });
   },
 });
@@ -58,7 +46,6 @@ export const toggle = mutation({
 
     await ctx.db.patch(args.id, {
       completed: !todo.completed,
-      updatedAt: Date.now(),
     });
   },
 });

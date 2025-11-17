@@ -1,9 +1,7 @@
 "use client";
 
-import { Toaster } from "sonner";
 import Link from "next/link";
 import { api } from "@/convex/_generated/api";
-import { TodoList } from "./todo-list";
 import { Button } from "@/components/ui/button";
 import { LogOut, Settings } from "lucide-react";
 import { Preloaded, useConvexAuth, usePreloadedQuery } from "convex/react";
@@ -59,26 +57,22 @@ export const Header = ({
     router.push("/sign-in");
   };
   return (
-    <div className="min-h-screen w-full p-4 space-y-8">
-      <header className="flex items-center justify-between max-w-2xl mx-auto">
-        <UserProfile preloadedUserQuery={preloadedUserQuery} />
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/settings">
-              <div className="flex items-center gap-2">
-                <Settings size={16} />
-                Settings
-              </div>
-            </Link>
-          </Button>
-          <Button variant="ghost" size="sm" onClick={handleSignOut}>
-            <LogOut size={16} className="mr-2" />
-            Sign out
-          </Button>
-        </div>
-      </header>
-      <TodoList />
-      <Toaster />
-    </div>
+    <header className="flex items-center justify-between max-w-2xl mx-auto">
+      <UserProfile preloadedUserQuery={preloadedUserQuery} />
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/settings">
+            <div className="flex items-center gap-2">
+              <Settings size={16} />
+              Settings
+            </div>
+          </Link>
+        </Button>
+        <Button variant="ghost" size="sm" onClick={handleSignOut}>
+          <LogOut size={16} className="mr-2" />
+          Sign out
+        </Button>
+      </div>
+    </header>
   );
 };

@@ -1,58 +1,191 @@
+"use client";
+
 import { api } from "@/convex/_generated/api";
 import {
-  fetchMutation,
-  preloadedQueryResult,
-  preloadQuery,
-} from "convex/nextjs";
-import { Id } from "@/convex/_generated/dataModel";
-import { TodoItems } from "@/app/(auth)/dashboard/todo-items";
-import {
-  AddTodoForm,
-  TodoListContainer,
-  TodoEmptyState,
-} from "@/components/server";
-import { getToken } from "@/lib/auth-server";
-import { redirect } from "next/navigation";
+  Preloaded,
+  useConvexAuth,
+  useMutation,
+  usePreloadedQuery,
+} from "convex/react";
+import { useEffect, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Check, Trash2, X } from "lucide-react";
+import { Doc, Id } from "@/convex/_generated/dataModel";
 
-export const TodoList = async () => {
-  const token = await getToken();
-  if (!token) {
-    redirect("/sign-in");
-  }
-  const preloadedTodosQuery = await preloadQuery(api.todos.get, {}, { token });
-  const todos = preloadedQueryResult(preloadedTodosQuery);
+const useCreateTodo = () =>
+  useMutation(api.todos.create).withOptimisticUpdate((localStore, args) => {
+    const todos = localStore.getQuery(api.todos.get);
+    if (!todos) {
+      return;
+    }
+    const user = localStore.getQuery(api.auth.getCurrentUser);
+    if (!user) {
+      return;
+    }
+    localStore.setQuery(api.todos.get, {}, [
+      {
+        _id: crypto.randomUUID() as Id<"todos">,
+        _creationTime: Date.now(),
+        text: args.text,
+        completed: false,
+        userId: user._id,
+      },
+      ...todos,
+    ]);
+  });
 
-  // Authenticated inline server actions
-  async function addTodo(formData: FormData) {
-    "use server";
-    const token = await getToken();
-    await fetchMutation(
-      api.todos.create,
-      { text: formData.get("text") as string },
-      // Outer token could expire, get a fresh one for the action
-      { token },
+const useToggleCompleted = () =>
+  useMutation(api.todos.toggle).withOptimisticUpdate((localStore, args) => {
+    const todos = localStore.getQuery(api.todos.get);
+    if (!todos) {
+      return;
+    }
+    const index = todos.findIndex((todo) => todo._id === args.id);
+    const todo = todos[index];
+    if (!todo) {
+      return;
+    }
+    localStore.setQuery(
+      api.todos.get,
+      {},
+      todos.toSpliced(index, 1, {
+        ...todo,
+        completed: !todo.completed,
+      }),
     );
-  }
+  });
 
-  const toggleCompletedAction = async (formData: FormData) => {
-    "use server";
-    const token = await getToken();
-    await fetchMutation(
-      api.todos.toggle,
-      { id: formData.get("id") as Id<"todos"> },
-      { token },
-    );
+const useRemoveTodo = () =>
+  useMutation(api.todos.remove).withOptimisticUpdate((localStore, args) => {
+    const todos = localStore.getQuery(api.todos.get);
+    if (!todos) {
+      return;
+    }
+    const index = todos.findIndex((todo) => todo._id === args.id);
+    localStore.setQuery(api.todos.get, {}, todos.toSpliced(index, 1));
+  });
+
+const CreateTodoForm = () => {
+  const [newTodo, setNewTodo] = useState("");
+  const createTodo = useCreateTodo();
+  const handleCreateTodo = async () => {
+    const todoText = newTodo.trim();
+    if (!todoText) {
+      return;
+    }
+    await createTodo({ text: todoText });
+    setNewTodo("");
   };
+  return (
+    <form
+      className="flex gap-2"
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleCreateTodo();
+      }}
+    >
+      <Input
+        name="text"
+        placeholder="Add a new todo..."
+        value={newTodo}
+        onChange={(e) => setNewTodo(e.target.value)}
+        required
+      />
+      <Button type="submit" variant="secondary" className="cursor-pointer">
+        Add
+      </Button>
+    </form>
+  );
+};
+
+const TodoItem = ({
+  todo,
+  onToggleCompleted,
+  onRemove,
+}: {
+  todo: Doc<"todos">;
+  onToggleCompleted: ({ id }: { id: Id<"todos"> }) => void;
+  onRemove: ({ id }: { id: Id<"todos"> }) => void;
+}) => {
+  return (
+    <li
+      className="flex items-center gap-3 p-3 bg-neutral-900/50 border border-neutral-800 rounded-lg group hover:bg-neutral-900 transition-colors"
+      key={todo._id}
+    >
+      <Button
+        variant="ghost"
+        size="icon"
+        className="text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800 cursor-pointer"
+        onClick={() => onToggleCompleted({ id: todo._id })}
+      >
+        {todo.completed ? (
+          <Check size={16} className="text-green-500" />
+        ) : (
+          <X size={16} />
+        )}
+      </Button>
+
+      <span
+        className={
+          todo.completed
+            ? "flex-1 line-through text-neutral-500"
+            : "flex-1 text-neutral-100"
+        }
+      >
+        {todo.text}
+      </span>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => onRemove({ id: todo._id })}
+        className="text-neutral-500 hover:text-red-400 hover:bg-neutral-800 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+      >
+        <Trash2 size={16} />
+      </Button>
+    </li>
+  );
+};
+
+export const TodoList = ({
+  preloadedTodosQuery,
+}: {
+  preloadedTodosQuery: Preloaded<typeof api.todos.get>;
+}) => {
+  const { isLoading } = useConvexAuth();
+  const toggleCompleted = useToggleCompleted();
+  const removeTodo = useRemoveTodo();
+  const preloadedTodos = usePreloadedQuery(preloadedTodosQuery);
+  const [todos, setTodos] = useState(preloadedTodos);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setTodos(preloadedTodos);
+    }
+  }, [preloadedTodos, isLoading]);
 
   return (
-    <TodoListContainer>
-      <AddTodoForm action={addTodo} />
-      <TodoItems
-        preloadedTodosQuery={preloadedTodosQuery}
-        toggleCompletedAction={toggleCompletedAction}
-      />
+    <main>
+      <div className="max-w-2xl mx-auto space-y-6">
+        <CreateTodoForm />
 
-      {todos.length === 0 && <TodoEmptyState />}
-    </TodoListContainer>
+        <ul className="space-y-3">
+          {todos.map((todo) => (
+            <TodoItem
+              key={todo._id}
+              todo={todo}
+              onToggleCompleted={toggleCompleted}
+              onRemove={removeTodo}
+            />
+          ))}
+        </ul>
+
+        {todos.length === 0 && (
+          <p className="text-center text-neutral-500 py-8">
+            No todos yet. Add one above!
+          </p>
+        )}
+      </div>
+    </main>
   );
 };
