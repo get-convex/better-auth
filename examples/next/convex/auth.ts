@@ -137,7 +137,7 @@ export const createAuth = (
           },
         ],
       }),
-      convex({ jwtExpirationSeconds: 10 }),
+      convex({ jwtExpirationSeconds: 60 * 15 }),
     ],
   } satisfies BetterAuthOptions);
 

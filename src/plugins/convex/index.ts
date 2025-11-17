@@ -36,6 +36,11 @@ export const convex = (
         iat: Math.floor(new Date().getTime() / 1000),
       }),
     },
+    jwks: {
+      keyPairConfig: {
+        alg: "RS256",
+      },
+    },
   });
   // Bearer plugin converts the session token to a cookie
   // for cross domain social login after code verification,

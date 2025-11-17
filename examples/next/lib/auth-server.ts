@@ -8,6 +8,7 @@ export const serverAuthClient = createAuthClient({
 });
 
 export const getToken = async () => {
+  console.log("getToken from server");
   const { data } = await serverAuthClient.convex.token({
     fetchOptions: {
       headers: await headers(),
