@@ -1,18 +1,7 @@
-import { clientOptions } from "@/lib/auth-client";
-import { createAuthClient } from "better-auth/client";
-import { headers } from "next/headers";
+import { convexBetterAuthNextJs } from "@convex-dev/better-auth/nextjs";
 
-export const serverAuthClient = createAuthClient({
-  ...clientOptions,
-  baseURL: process.env.SITE_URL,
+export const { handler, getToken } = convexBetterAuthNextJs({
+  jwtCache: {
+    enabled: true,
+  },
 });
-
-export const getToken = async () => {
-  console.log("getToken from server");
-  const { data } = await serverAuthClient.convex.token({
-    fetchOptions: {
-      headers: await headers(),
-    },
-  });
-  return data?.token;
-};

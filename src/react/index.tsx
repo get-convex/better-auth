@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 import { type ReactNode, useCallback, useMemo } from "react";
 import { type AuthTokenFetcher } from "convex/browser";
@@ -45,12 +45,14 @@ export function ConvexBetterAuthProvider({
   children,
   client,
   authClient,
+  initialToken,
 }: {
   children: ReactNode;
   client: IConvexReactClient;
   authClient: AuthClient;
+  initialToken?: string | null;
 }) {
-  const useBetterAuth = useUseAuthFromBetterAuth(authClient);
+  const useBetterAuth = useUseAuthFromBetterAuth(authClient, initialToken);
 
   useEffect(() => {
     (async () => {
@@ -86,7 +88,13 @@ export function ConvexBetterAuthProvider({
   );
 }
 
-function useUseAuthFromBetterAuth(authClient: AuthClient) {
+function useUseAuthFromBetterAuth(
+  authClient: AuthClient,
+  initialToken?: string | null
+) {
+  const [cachedToken, setCachedToken] = useState<string | null>(
+    initialToken ?? null
+  );
   return useMemo(
     () =>
       function useAuthFromBetterAuth() {
@@ -97,11 +105,16 @@ function useUseAuthFromBetterAuth(authClient: AuthClient) {
           async ({
             forceRefreshToken = false,
           }: { forceRefreshToken?: boolean } = {}) => {
-            console.log("fetching access token", { forceRefreshToken });
+            if (cachedToken && !forceRefreshToken) {
+              return cachedToken;
+            }
             try {
               const { data } = await authClient.convex.token();
-              return data?.token || null;
+              const token = data?.token || null;
+              setCachedToken(token);
+              return token;
             } catch {
+              setCachedToken(null);
               return null;
             }
           },

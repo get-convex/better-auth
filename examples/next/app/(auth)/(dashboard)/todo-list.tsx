@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Check, Trash2, X } from "lucide-react";
 import { Doc, Id } from "@/convex/_generated/dataModel";
 
+// Mutations w/ optimistic updates
 const useCreateTodo = () =>
   useMutation(api.todos.create).withOptimisticUpdate((localStore, args) => {
     const todos = localStore.getQuery(api.todos.get);

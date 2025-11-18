@@ -4,7 +4,7 @@ import { PropsWithChildren } from "react";
 
 export default async function Layout({ children }: PropsWithChildren) {
   if (await getToken()) {
-    redirect("/dashboard");
+    redirect("/");
   }
   return <>{children}</>;
 }

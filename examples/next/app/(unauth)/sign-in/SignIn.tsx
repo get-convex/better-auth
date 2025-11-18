@@ -121,6 +121,9 @@ export default function SignIn() {
           setOtpLoading(true);
         },
         onResponse: () => setOtpLoading(false),
+        onSuccess: () => {
+          router.push("/");
+        },
         onError: (ctx) => {
           alert(ctx.error.message);
         },
@@ -201,7 +204,7 @@ export default function SignIn() {
           },
           onSuccess: () => {
             setOtpLoading(false);
-            router.push("/dashboard/client-only");
+            router.push("/");
           },
           onError: (ctx) => {
             setOtpLoading(false);
