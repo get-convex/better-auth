@@ -1,5 +1,6 @@
 import { type BetterAuthPlugin } from "better-auth";
 import { createAuthMiddleware, sessionMiddleware } from "better-auth/api";
+import { getSessionCookie } from "better-auth/cookies";
 import {
   createAuthEndpoint,
   jwt as jwtPlugin,
@@ -146,6 +147,7 @@ export const convex = (
             return (
               ctx.path?.startsWith("/sign-out") ||
               ctx.path?.startsWith("/delete-user")
+              //(ctx.path?.startsWith("/get-session") && !ctx.context.session)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {

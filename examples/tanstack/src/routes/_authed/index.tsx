@@ -12,6 +12,14 @@ import { Settings } from 'lucide-react'
 
 export const Route = createFileRoute('/_authed/')({
   component: App,
+  loader: async ({ context }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData(
+        convexQuery(api.auth.getCurrentUser, {}),
+      ),
+      context.queryClient.ensureQueryData(convexQuery(api.todos.get, {})),
+    ])
+  },
 })
 
 function App() {

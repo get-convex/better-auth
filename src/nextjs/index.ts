@@ -25,55 +25,17 @@ const getConvexSiteUrl = (url?: string) => {
   return convexSiteUrl;
 };
 
-type GetTokenOptions = {
-  cookiePrefix?: string;
-  jwtCache?: {
-    enabled?: boolean;
-    expirationToleranceSeconds?: number;
-  };
-};
-
-export const getToken = async (
-  opts: GetTokenOptions & { convexSiteUrl?: string } = {}
-) => {
+export const getToken = async (opts: { convexSiteUrl?: string } = {}) => {
   const convexSiteUrl = getConvexSiteUrl(opts.convexSiteUrl);
   const headers = await (await import("next/headers.js")).headers();
-  const fetchToken = async () => {
-    const { data } = await betterFetch<{ token: string }>(
-      "/api/auth/convex/token",
-      {
-        baseURL: convexSiteUrl,
-        headers,
-      }
-    );
-    return data?.token;
-  };
-  if (!opts.jwtCache?.enabled) {
-    return await fetchToken();
-  }
-  const token = getSessionCookie(new Headers(headers), {
-    cookieName: JWT_COOKIE_NAME,
-    cookiePrefix: opts.cookiePrefix,
-  });
-
-  if (!token) {
-    return await fetchToken();
-  }
-
-  try {
-    const claims = jose.decodeJwt(token);
-    const exp = claims?.exp;
-    const now = Math.floor(new Date().getTime() / 1000);
-    const isExpired = exp
-      ? now > exp + (opts.jwtCache?.expirationToleranceSeconds ?? 60)
-      : true;
-    if (!isExpired) {
-      return token;
+  const { data } = await betterFetch<{ token: string }>(
+    "/api/auth/convex/token",
+    {
+      baseURL: convexSiteUrl,
+      headers,
     }
-  } catch (error) {
-    console.error("Error decoding JWT", error);
-  }
-  return await fetchToken();
+  );
+  return data?.token;
 };
 
 const handler = (request: Request, opts?: { convexSiteUrl?: string }) => {
@@ -91,12 +53,7 @@ export const nextJsHandler = (opts?: { convexSiteUrl?: string }) => ({
   POST: (request: Request) => handler(request, opts),
 });
 
-type ConvexBetterAuthNextJsOptions = GetTokenOptions & {
-  convexSiteUrl?: string;
-};
-export const convexBetterAuthNextJs = (
-  opts?: ConvexBetterAuthNextJsOptions
-) => {
+export const convexBetterAuthNextJs = (opts?: { convexSiteUrl?: string }) => {
   const convexSiteUrl = getConvexSiteUrl(opts?.convexSiteUrl);
   return {
     getToken: async () => getToken({ ...opts, convexSiteUrl }),
