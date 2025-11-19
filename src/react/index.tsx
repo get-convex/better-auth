@@ -87,13 +87,20 @@ export function ConvexBetterAuthProvider({
   );
 }
 
+let initialTokenUsed = false;
+
 function useUseAuthFromBetterAuth(
   authClient: AuthClient,
   initialToken?: string | null
 ) {
   const [cachedToken, setCachedToken] = useState<string | null>(
-    initialToken ?? null
+    initialTokenUsed ? initialToken ?? null : null
   );
+  useEffect(() => {
+    if (!initialTokenUsed) {
+      initialTokenUsed = true;
+    }
+  }, []);
 
   return useMemo(
     () =>
