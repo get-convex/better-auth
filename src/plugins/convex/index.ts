@@ -5,6 +5,7 @@ import {
   jwt as jwtPlugin,
   bearer as bearerPlugin,
   oidcProvider as oidcProviderPlugin,
+  JwtOptions,
 } from "better-auth/plugins";
 
 export const JWT_COOKIE_NAME = "convex_jwt";
@@ -13,6 +14,7 @@ export const convex = (
   opts: {
     jwtExpirationSeconds?: number;
     deleteExpiredSessionsOnLogin?: boolean;
+    jwksAlg?: "RS256" | "EdDSA";
     options?: { basePath?: string };
   } = {}
 ) => {
@@ -38,7 +40,7 @@ export const convex = (
     },
     jwks: {
       keyPairConfig: {
-        alg: "RS256",
+        alg: opts.jwksAlg ?? "EdDSA",
       },
     },
   });
