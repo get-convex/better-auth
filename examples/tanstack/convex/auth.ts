@@ -146,7 +146,7 @@ export const createAuth = (
       }),
       twoFactor(),
       anonymous(),
-      convex(),
+      convex({ jwksAlg: 'RS256' }),
     ],
   })
 

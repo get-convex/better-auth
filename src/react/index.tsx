@@ -53,7 +53,6 @@ export function ConvexBetterAuthProvider({
   initialToken?: string | null;
 }) {
   const useBetterAuth = useUseAuthFromBetterAuth(authClient, initialToken);
-
   useEffect(() => {
     (async () => {
       const url = new URL(window.location?.href);
@@ -95,6 +94,7 @@ function useUseAuthFromBetterAuth(
   const [cachedToken, setCachedToken] = useState<string | null>(
     initialToken ?? null
   );
+
   return useMemo(
     () =>
       function useAuthFromBetterAuth() {
