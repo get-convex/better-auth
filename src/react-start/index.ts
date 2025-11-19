@@ -1,3 +1,5 @@
+import { getSessionCookie } from "better-auth/cookies";
+import { stripIndent } from "common-tags";
 import { betterAuth } from "better-auth";
 import { createCookieGetter } from "better-auth/cookies";
 import { betterFetch } from "@better-fetch/fetch";
@@ -192,4 +194,105 @@ export const reactStartHandler = (
     // @ts-expect-error - duplex is required for streaming request bodies in modern fetch
     duplex: "half",
   });
+};
+
+const getConvexSiteUrl = (url?: string) => {
+  const convexSiteUrl =
+    url ?? process.env.VITE_CONVEX_SITE_URL ?? process.env.CONVEX_SITE_URL;
+  if (!convexSiteUrl) {
+    throw new Error(stripIndent`
+      CONVEX_SITE_URL is not set.
+      This is automatically set in the Convex backend, but must be set in the TanStack Start environment.
+      For local development, this can be set in the .env.local file.
+    `);
+  }
+  if (convexSiteUrl.endsWith(".convex.cloud")) {
+    throw new Error(stripIndent`
+      CONVEX_SITE_URL should be set to your Convex Site URL, which ends in .convex.site.
+      Currently set to ${convexSiteUrl}.
+    `);
+  }
+  return convexSiteUrl;
+};
+
+type GetTokenOptions = {
+  cookiePrefix?: string;
+  jwtCache?: {
+    enabled?: boolean;
+    expirationToleranceSeconds?: number;
+  };
+};
+
+export const getToken = async (
+  headers: Headers,
+  opts: GetTokenOptions & { convexSiteUrl?: string } = {}
+) => {
+  const convexSiteUrl = getConvexSiteUrl(opts.convexSiteUrl);
+  const fetchToken = async () => {
+    const { data } = await betterFetch<{ token: string }>(
+      "/api/auth/convex/token",
+      {
+        baseURL: convexSiteUrl,
+        headers,
+      }
+    );
+    return data?.token;
+  };
+  if (!opts.jwtCache?.enabled) {
+    return await fetchToken();
+  }
+  const token = getSessionCookie(new Headers(headers), {
+    cookieName: JWT_COOKIE_NAME,
+    cookiePrefix: opts.cookiePrefix,
+  });
+
+  if (!token) {
+    return await fetchToken();
+  }
+
+  try {
+    const claims = jose.decodeJwt(token);
+    const exp = claims?.exp;
+    const now = Math.floor(new Date().getTime() / 1000);
+    const isExpired = exp
+      ? now > exp + (opts.jwtCache?.expirationToleranceSeconds ?? 60)
+      : true;
+    if (!isExpired) {
+      return token;
+    }
+  } catch (error) {
+    console.error("Error decoding JWT", error);
+  }
+  return await fetchToken();
+};
+
+const handler = (request: Request, opts?: { convexSiteUrl?: string }) => {
+  const requestUrl = new URL(request.url);
+  const convexSiteUrl = getConvexSiteUrl(opts?.convexSiteUrl);
+  const nextUrl = `${convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
+  const headers = new Headers(request.headers);
+  headers.set("accept-encoding", "application/json");
+  headers.set("host", convexSiteUrl);
+  return fetch(nextUrl, {
+    method: request.method,
+    headers,
+    redirect: "manual",
+    body: request.body,
+    // @ts-expect-error - duplex is required for streaming request bodies in modern fetch
+    duplex: "half",
+  });
+};
+
+type ConvexBetterAuthReactStartOptions = GetTokenOptions & {
+  convexSiteUrl?: string;
+};
+export const convexBetterAuthReactStart = (
+  opts?: ConvexBetterAuthReactStartOptions
+) => {
+  const convexSiteUrl = getConvexSiteUrl(opts?.convexSiteUrl);
+  return {
+    getToken: async (headers: Headers) =>
+      getToken(headers, { ...opts, convexSiteUrl }),
+    handler: (request: Request) => handler(request, { ...opts, convexSiteUrl }),
+  };
 };

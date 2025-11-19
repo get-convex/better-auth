@@ -15,7 +15,5 @@ export default defineSchema({
     text: v.string(),
     completed: v.boolean(),
     userId: v.id('users'),
-    createdAt: v.number(),
-    updatedAt: v.number(),
   }).index('userId', ['userId']),
 })

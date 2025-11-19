@@ -21,13 +21,10 @@ export const create = mutation({
   args: { text: v.string() },
   handler: async (ctx, args) => {
     const user = await getUser(ctx)
-    const now = Date.now()
     await ctx.db.insert('todos', {
       text: args.text,
       completed: false,
       userId: user._id,
-      createdAt: now,
-      updatedAt: now,
     })
   },
 })
@@ -44,7 +41,6 @@ export const toggle = mutation({
 
     await ctx.db.patch(args.id, {
       completed: !todo.completed,
-      updatedAt: Date.now(),
     })
   },
 })

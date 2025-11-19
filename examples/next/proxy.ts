@@ -7,7 +7,6 @@ const unauthRoutes = ["/sign-in", "/sign-up", "/verify-2fa", "/reset-password"];
 // This is the recommended approach to optimistically redirect users
 // We recommend handling auth checks in each page/route
 export default async function middleware(request: NextRequest) {
-  console.log("middleware", request.url);
   const sessionCookie = getSessionCookie(request);
   const isUnauthRoute = unauthRoutes.includes(request.nextUrl.pathname);
 
