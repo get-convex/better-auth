@@ -1,200 +1,5 @@
-import { getSessionCookie } from "better-auth/cookies";
 import { stripIndent } from "common-tags";
-import { betterAuth } from "better-auth";
-import { createCookieGetter } from "better-auth/cookies";
 import { betterFetch } from "@better-fetch/fetch";
-import * as jose from "jose";
-import {
-  type FunctionReference,
-  type FunctionReturnType,
-  type GenericActionCtx,
-  type GenericDataModel,
-} from "convex/server";
-import { JWT_COOKIE_NAME } from "../plugins/convex/index.js";
-import { ConvexHttpClient } from "convex/browser";
-import { type CreateAuth, getStaticAuth } from "../client/index.js";
-
-export const getCookieName = <DataModel extends GenericDataModel>(
-  createAuth: CreateAuth<DataModel>
-) => {
-  const createCookie = createCookieGetter(getStaticAuth(createAuth).options);
-  const cookie = createCookie(JWT_COOKIE_NAME);
-  return cookie.name;
-};
-
-export const getCookieNames = <DataModel extends GenericDataModel>(
-  createAuth: CreateAuth<DataModel>
-) => {
-  const createCookie = createCookieGetter(getStaticAuth(createAuth).options);
-  return {
-    convexJwt: createCookie(JWT_COOKIE_NAME).name,
-    sessionToken: createCookie("session_token").name,
-  };
-};
-
-export const setupFetchClient = async <DataModel extends GenericDataModel>(
-  createAuth: CreateAuth<DataModel>,
-  getCookie: (name: string) => string | undefined
-) => {
-  const createClient = () => {
-    const sessionCookieName = getCookieName(createAuth);
-    const token = getCookie(sessionCookieName);
-    const client = new ConvexHttpClient(process.env.VITE_CONVEX_URL!);
-    if (token) {
-      client.setAuth(token);
-    }
-    return client;
-  };
-  return {
-    fetchQuery<
-      Query extends FunctionReference<"query">,
-      FuncRef extends FunctionReference<any, any>,
-    >(
-      query: Query,
-      args: FuncRef["_args"]
-    ): Promise<FunctionReturnType<Query>> {
-      return createClient().query(query, args);
-    },
-    fetchMutation<
-      Mutation extends FunctionReference<"mutation">,
-      FuncRef extends FunctionReference<any, any>,
-    >(
-      mutation: Mutation,
-      args: FuncRef["_args"]
-    ): Promise<FunctionReturnType<Mutation>> {
-      return createClient().mutation(mutation, args);
-    },
-    fetchAction<
-      Action extends FunctionReference<"action">,
-      FuncRef extends FunctionReference<any, any>,
-    >(
-      action: Action,
-      args: FuncRef["_args"]
-    ): Promise<FunctionReturnType<Action>> {
-      return createClient().action(action, args);
-    },
-  };
-};
-
-export const fetchSession = async <
-  T extends (ctx: GenericActionCtx<any>) => ReturnType<typeof betterAuth>,
->(
-  request: Request,
-  opts?: {
-    convexSiteUrl?: string;
-    verbose?: boolean;
-  }
-) => {
-  type Session = ReturnType<T>["$Infer"]["Session"];
-
-  if (!request) {
-    throw new Error("No request found");
-  }
-  const convexSiteUrl = opts?.convexSiteUrl ?? process.env.VITE_CONVEX_SITE_URL;
-  if (!convexSiteUrl) {
-    throw new Error("VITE_CONVEX_SITE_URL is not set");
-  }
-  const { data: session } = await betterFetch<Session>(
-    "/api/auth/get-session",
-    {
-      baseURL: convexSiteUrl,
-      headers: {
-        cookie: request.headers.get("cookie") ?? "",
-      },
-    }
-  );
-  return {
-    session,
-  };
-};
-
-export const fetchAuth = async (
-  request: Request,
-  opts?: {
-    convexSiteUrl?: string;
-    verbose?: boolean;
-  }
-) => {
-  if (!request) {
-    throw new Error("No request found");
-  }
-  const convexSiteUrl = opts?.convexSiteUrl ?? process.env.VITE_CONVEX_SITE_URL;
-  if (!convexSiteUrl) {
-    throw new Error("VITE_CONVEX_SITE_URL is not set");
-  }
-  const { data } = await betterFetch<{ token: string }>(
-    "/api/auth/convex/token",
-    {
-      baseURL: convexSiteUrl,
-      headers: {
-        cookie: request.headers.get("cookie") ?? "",
-      },
-    }
-  );
-  if (!data?.token) {
-    return;
-  }
-  const claims = jose.decodeJwt(data.token);
-  return {
-    token: data.token,
-    userId: claims.sub,
-  };
-};
-
-export const getAuthFromCookie = (
-  cookie?: string,
-  { tolerance = 10 }: { tolerance?: number } = {}
-) => {
-  if (!cookie) {
-    return;
-  }
-  const claims = jose.decodeJwt(cookie);
-  const exp = claims?.exp;
-  const now = Math.floor(new Date().getTime() / 1000);
-  const isExpired = exp ? now > exp + tolerance : true;
-  if (isExpired) {
-    return;
-  }
-  return { userId: claims?.sub, token: cookie };
-};
-
-export const getAuth = async <DataModel extends GenericDataModel>(
-  request: Request,
-  getCookie: (name: string) => string | undefined,
-  createAuth: CreateAuth<DataModel>,
-  opts?: { convexSiteUrl?: string }
-) => {
-  const sessionCookieName = getCookieName(createAuth);
-  const token = getCookie(sessionCookieName);
-  const { session } = await fetchSession(request, opts);
-  return {
-    userId: session?.user.id,
-    token,
-  };
-};
-
-export const reactStartHandler = (
-  request: Request,
-  opts?: { convexSiteUrl?: string; verbose?: boolean }
-) => {
-  const requestUrl = new URL(request.url);
-  const convexSiteUrl = opts?.convexSiteUrl ?? process.env.VITE_CONVEX_SITE_URL;
-  if (!convexSiteUrl) {
-    throw new Error("VITE_CONVEX_SITE_URL is not set");
-  }
-  const nextUrl = `${convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
-  const headers = new Headers(request.headers);
-  headers.set("accept-encoding", "application/json");
-  headers.set("host", convexSiteUrl);
-  return fetch(nextUrl, {
-    method: request.method,
-    headers,
-    redirect: "manual",
-    body: request.body,
-    // @ts-expect-error - duplex is required for streaming request bodies in modern fetch
-    duplex: "half",
-  });
-};
 
 const getConvexSiteUrl = (url?: string) => {
   const convexSiteUrl =
@@ -215,28 +20,23 @@ const getConvexSiteUrl = (url?: string) => {
   return convexSiteUrl;
 };
 
-export const getToken = async (
-  headers: Headers,
-  opts: { convexSiteUrl?: string } = {}
-) => {
-  const convexSiteUrl = getConvexSiteUrl(opts.convexSiteUrl);
+const getToken = async (headers: Headers, opts: { convexSiteUrl: string }) => {
   const { data } = await betterFetch<{ token: string }>(
     "/api/auth/convex/token",
     {
-      baseURL: convexSiteUrl,
+      baseURL: opts.convexSiteUrl,
       headers,
     }
   );
   return data?.token;
 };
 
-const handler = (request: Request, opts?: { convexSiteUrl?: string }) => {
+const handler = (request: Request, opts: { convexSiteUrl: string }) => {
   const requestUrl = new URL(request.url);
-  const convexSiteUrl = getConvexSiteUrl(opts?.convexSiteUrl);
-  const nextUrl = `${convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
+  const nextUrl = `${opts.convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
   const headers = new Headers(request.headers);
   headers.set("accept-encoding", "application/json");
-  headers.set("host", convexSiteUrl);
+  headers.set("host", opts.convexSiteUrl);
   return fetch(nextUrl, {
     method: request.method,
     headers,

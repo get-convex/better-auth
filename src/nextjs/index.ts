@@ -1,8 +1,5 @@
-import { getSessionCookie } from "better-auth/cookies";
-import { JWT_COOKIE_NAME } from "../plugins/convex/index.js";
 import { betterFetch } from "@better-fetch/fetch";
 import { stripIndent } from "common-tags";
-import * as jose from "jose";
 
 const getConvexSiteUrl = (url?: string) => {
   const convexSiteUrl =
@@ -25,30 +22,28 @@ const getConvexSiteUrl = (url?: string) => {
   return convexSiteUrl;
 };
 
-export const getToken = async (opts: { convexSiteUrl?: string } = {}) => {
-  const convexSiteUrl = getConvexSiteUrl(opts.convexSiteUrl);
+const getToken = async (opts: { convexSiteUrl: string }) => {
   const headers = await (await import("next/headers.js")).headers();
   const { data } = await betterFetch<{ token: string }>(
     "/api/auth/convex/token",
     {
-      baseURL: convexSiteUrl,
+      baseURL: opts.convexSiteUrl,
       headers,
     }
   );
   return data?.token;
 };
 
-const handler = (request: Request, opts?: { convexSiteUrl?: string }) => {
+const handler = (request: Request, opts: { convexSiteUrl: string }) => {
   const requestUrl = new URL(request.url);
-  const convexSiteUrl = getConvexSiteUrl(opts?.convexSiteUrl);
-  const nextUrl = `${convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
+  const nextUrl = `${opts.convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
   const newRequest = new Request(nextUrl, request);
   newRequest.headers.set("accept-encoding", "application/json");
-  newRequest.headers.set("host", convexSiteUrl);
+  newRequest.headers.set("host", opts.convexSiteUrl);
   return fetch(newRequest, { method: request.method, redirect: "manual" });
 };
 
-export const nextJsHandler = (opts?: { convexSiteUrl?: string }) => ({
+const nextJsHandler = (opts: { convexSiteUrl: string }) => ({
   GET: (request: Request) => handler(request, opts),
   POST: (request: Request) => handler(request, opts),
 });
@@ -56,7 +51,7 @@ export const nextJsHandler = (opts?: { convexSiteUrl?: string }) => ({
 export const convexBetterAuthNextJs = (opts?: { convexSiteUrl?: string }) => {
   const convexSiteUrl = getConvexSiteUrl(opts?.convexSiteUrl);
   return {
-    getToken: async () => getToken({ ...opts, convexSiteUrl }),
+    getToken: async () => getToken({ convexSiteUrl }),
     handler: nextJsHandler({ convexSiteUrl }),
   };
 };
