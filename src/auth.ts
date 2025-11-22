@@ -14,7 +14,7 @@ import {
   username,
 } from "better-auth/plugins";
 import { convex } from "./plugins";
-import { passkey } from "better-auth/plugins/passkey";
+import { passkey } from "@better-auth/passkey";
 import { convexAdapter } from "./client";
 
 // This is the config used to generate the schema
