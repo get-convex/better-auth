@@ -4,7 +4,7 @@
 
 ```sh
 npm i
-cd example
+cd examples
 npm i
 npx convex dev
 ```
@@ -15,7 +15,7 @@ npx convex dev
 rm -rf dist/ && npm run build
 npm run typecheck
 npm run test
-cd example
+cd examples
 npm run lint
 cd ..
 ```
