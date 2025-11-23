@@ -4,24 +4,17 @@ import Link from "next/link";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { LogOut, Settings } from "lucide-react";
-import { Preloaded, useConvexAuth, usePreloadedQuery } from "convex/react";
-import { useEffect, useState } from "react";
+import { Preloaded } from "convex/react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { usePreloadedQuery } from "@convex-dev/better-auth/nextjs/client";
 
 const UserProfile = ({
   preloadedUserQuery,
 }: {
   preloadedUserQuery: Preloaded<typeof api.auth.getCurrentUser>;
 }) => {
-  const { isLoading } = useConvexAuth();
-  const preloadedUser = usePreloadedQuery(preloadedUserQuery);
-  const [user, setUser] = useState(preloadedUser);
-  useEffect(() => {
-    if (!isLoading) {
-      setUser(preloadedUser);
-    }
-  }, [preloadedUser, isLoading]);
+  const user = usePreloadedQuery(preloadedUserQuery);
   return (
     <div className="flex items-center space-x-2">
       {user?.image ? (

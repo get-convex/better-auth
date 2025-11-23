@@ -67,6 +67,10 @@
       "types": "./dist/nextjs/index.d.ts",
       "default": "./dist/nextjs/index.js"
     },
+    "./nextjs/client": {
+      "types": "./dist/nextjs/client.d.ts",
+      "default": "./dist/nextjs/client.js"
+    },
     "./plugins": {
       "types": "./dist/plugins/index.d.ts",
       "default": "./dist/plugins/index.js"
