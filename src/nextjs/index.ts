@@ -1,6 +1,5 @@
 import { betterFetch } from "@better-fetch/fetch";
 import { stripIndent } from "common-tags";
-import { cache } from "react";
 
 const getConvexSiteUrl = (url?: string) => {
   const convexSiteUrl =
@@ -23,7 +22,7 @@ const getConvexSiteUrl = (url?: string) => {
   return convexSiteUrl;
 };
 
-const getToken = cache(async (opts: { convexSiteUrl: string }) => {
+const getToken = async (opts: { convexSiteUrl: string }) => {
   const headers = await (await import("next/headers.js")).headers();
   const { data } = await betterFetch<{ token: string }>(
     "/api/auth/convex/token",
@@ -33,7 +32,7 @@ const getToken = cache(async (opts: { convexSiteUrl: string }) => {
     }
   );
   return data?.token;
-});
+};
 
 const handler = (request: Request, opts: { convexSiteUrl: string }) => {
   const requestUrl = new URL(request.url);

@@ -1,4 +1,4 @@
-import { useMutation } from 'convex/react'
+import { useConvexAuth, useMutation } from 'convex/react'
 import { api } from '@convex/_generated/api'
 import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
@@ -104,7 +104,10 @@ export const AddTodoForm = () => {
 }
 
 export const TodoList = () => {
-  const { data: todos } = useSuspenseQuery(convexQuery(api.todos.get, {}))
+  const { isLoading } = useConvexAuth()
+  const { data: todos } = useSuspenseQuery(
+    convexQuery(api.todos.get, isLoading ? 'skip' : {}),
+  )
   const toggle = useToggleCompleted()
   const remove = useRemoveTodo()
 
