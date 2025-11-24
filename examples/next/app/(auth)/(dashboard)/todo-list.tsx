@@ -22,7 +22,7 @@ export const TodoList = ({
         <TodoForm />
 
         <ul className="space-y-3">
-          {todos.map((todo) => (
+          {todos?.map((todo) => (
             <TodoItem
               key={todo._id}
               todo={todo}
@@ -32,7 +32,7 @@ export const TodoList = ({
           ))}
         </ul>
 
-        {todos.length === 0 && (
+        {todos?.length === 0 && (
           <p className="text-center text-neutral-500 py-8">
             No todos yet. Add one above!
           </p>

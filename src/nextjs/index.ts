@@ -1,5 +1,11 @@
 import { betterFetch } from "@better-fetch/fetch";
 import { stripIndent } from "common-tags";
+import { fetchQuery, type NextjsOptions } from "convex/nextjs";
+import { type Preloaded } from "convex/react";
+import { type ArgsAndOptions, getFunctionName } from "convex/server";
+import { type FunctionReference } from "convex/server";
+import { convexToJson } from "convex/values";
+import { cache } from "react";
 
 const getConvexSiteUrl = (url?: string) => {
   const convexSiteUrl =
@@ -48,10 +54,40 @@ const nextJsHandler = (opts: { convexSiteUrl: string }) => ({
   POST: (request: Request) => handler(request, opts),
 });
 
+export async function preloadQuery<Query extends FunctionReference<"query">>(
+  query: Query,
+  ...args: ArgsAndOptions<Query, NextjsOptions & { requireToken?: boolean }>
+): Promise<Preloaded<Query>> {
+  const token = args[1]?.token;
+  const requireToken = args[1]?.requireToken ?? true;
+  const value =
+    !requireToken || token ? await fetchQuery(query, ...args) : null;
+  const preloaded = {
+    _name: getFunctionName(query),
+    _argsJSON: convexToJson(args[0] ?? {}),
+    _valueJSON: convexToJson(value),
+  };
+  return preloaded as any;
+}
+
 export const convexBetterAuthNextJs = (opts?: { convexSiteUrl?: string }) => {
   const convexSiteUrl = getConvexSiteUrl(opts?.convexSiteUrl);
+  const cachedGetToken = cache(async () => getToken({ convexSiteUrl }));
   return {
-    getToken: async () => getToken({ convexSiteUrl }),
+    getToken: cachedGetToken,
     handler: nextJsHandler({ convexSiteUrl }),
+    isAuthenticated: async () => {
+      const token = await cachedGetToken();
+      return !!token;
+    },
+    preloadQuery: async <Query extends FunctionReference<"query">>(
+      query: Query,
+      ...args: ArgsAndOptions<Query, NextjsOptions & { requireToken?: boolean }>
+    ): Promise<Preloaded<Query>> => {
+      const token = await cachedGetToken();
+      const requireToken = args[1]?.requireToken ?? true;
+      args[1] = { token, requireToken, ...args[1] };
+      return preloadQuery(query, ...args);
+    },
   };
 };

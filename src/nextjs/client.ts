@@ -41,7 +41,7 @@ export function useConvexPreloadedQuery<
 
 export const usePreloadedQuery = <Query extends FunctionReference<"query">>(
   preloadedQuery: Preloaded<Query>
-): Query["_returnType"] => {
+): Query["_returnType"] | null => {
   const { isLoading } = useConvexAuth();
   const latestData = useConvexPreloadedQuery(preloadedQuery);
   const [data, setData] = useState(latestData);
