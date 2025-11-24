@@ -7,6 +7,7 @@ import {
   bearer as bearerPlugin,
   oidcProvider as oidcProviderPlugin,
   JwtOptions,
+  Jwk,
 } from "better-auth/plugins";
 
 export const JWT_COOKIE_NAME = "convex_jwt";
@@ -16,6 +17,7 @@ export const convex = (
     jwtExpirationSeconds?: number;
     deleteExpiredSessionsOnLogin?: boolean;
     jwksAlg?: "RS256" | "EdDSA";
+    jwks?: string;
     options?: { basePath?: string };
   } = {}
 ) => {
@@ -27,6 +29,9 @@ export const convex = (
       jwks_uri: `${process.env.CONVEX_SITE_URL}${opts.options?.basePath ?? "/api/auth"}/convex/jwks`,
     },
   });
+  const staticJwks = opts.jwks
+    ? (JSON.parse(opts.jwks) as { keys: Jwk[] })
+    : undefined;
   const jwt = jwtPlugin({
     jwt: {
       issuer: `${process.env.CONVEX_SITE_URL}`,
@@ -44,6 +49,9 @@ export const convex = (
         alg: opts.jwksAlg ?? "EdDSA",
       },
     },
+    ...(staticJwks
+      ? { adapter: { getJwks: async () => staticJwks.keys } }
+      : {}),
   });
   // Bearer plugin converts the session token to a cookie
   // for cross domain social login after code verification,

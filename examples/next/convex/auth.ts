@@ -137,7 +137,10 @@ export const createAuth = (
           },
         ],
       }),
-      convex({ jwtExpirationSeconds: 60 * 15, jwksAlg: "RS256" }),
+      convex({
+        jwtExpirationSeconds: 60 * 15,
+        jwksAlg: "RS256",
+      }),
     ],
   } satisfies BetterAuthOptions);
 

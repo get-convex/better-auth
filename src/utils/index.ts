@@ -1,10 +1,39 @@
+import { type Auth, betterAuth } from "better-auth";
 import {
+  type DefaultFunctionArgs,
+  type FunctionReference,
   type GenericActionCtx,
   type GenericDataModel,
   type GenericMutationCtx,
   type GenericQueryCtx,
 } from "convex/server";
-import { type GenericCtx } from "../client/index.js";
+
+export type CreateAuth<
+  DataModel extends GenericDataModel,
+  A extends ReturnType<typeof betterAuth> = Auth,
+> =
+  | ((ctx: GenericCtx<DataModel>) => A)
+  | ((ctx: GenericCtx<DataModel>, opts?: { optionsOnly?: boolean }) => A);
+
+export const getStaticAuth = <
+  DataModel extends GenericDataModel,
+  Auth extends ReturnType<typeof betterAuth>,
+>(
+  createAuth: CreateAuth<DataModel, Auth>
+): Auth => {
+  return createAuth({} as any, { optionsOnly: true });
+};
+
+export type EventFunction<T extends DefaultFunctionArgs> = FunctionReference<
+  "mutation",
+  "internal" | "public",
+  T
+>;
+
+export type GenericCtx<DataModel extends GenericDataModel = GenericDataModel> =
+  | GenericQueryCtx<DataModel>
+  | GenericMutationCtx<DataModel>
+  | GenericActionCtx<DataModel>;
 
 export type RunMutationCtx<DataModel extends GenericDataModel> = (
   | GenericMutationCtx<DataModel>
