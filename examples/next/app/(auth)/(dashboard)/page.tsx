@@ -6,8 +6,8 @@ import { preloadQuery } from "@/lib/auth-server";
 
 const Page = async () => {
   // Preload queries for SSR
-  const preloadedUserQuery = await preloadQuery(api.auth.getCurrentUser, {});
-  const preloadedTodosQuery = await preloadQuery(api.todos.get, {});
+  const preloadedUserQuery = await preloadQuery(api.auth.getCurrentUser);
+  const preloadedTodosQuery = await preloadQuery(api.todos.get);
 
   return (
     <div className="min-h-screen w-full p-4 space-y-8">

@@ -5,8 +5,8 @@ import { UserProfile } from '@/components/UserProfile'
 import { SignOutButton } from '@/components/client'
 import { api } from '@convex/_generated/api'
 import { convexQuery } from '@convex-dev/react-query'
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { authClient } from '@/lib/auth-client'
+import { useAuthSuspenseQuery } from '@convex-dev/better-auth/react-start/client'
 import { Button } from '@/components/ui/button'
 import { Settings } from 'lucide-react'
 
@@ -23,7 +23,7 @@ export const Route = createFileRoute('/_authed/')({
 })
 
 function App() {
-  const user = useSuspenseQuery(convexQuery(api.auth.getCurrentUser, {}))
+  const user = useAuthSuspenseQuery(convexQuery(api.auth.getCurrentUser, {}))
   const navigate = useNavigate()
 
   const handleSignOut = async () => {

@@ -83,6 +83,10 @@
       "types": "./dist/react-start/index.d.ts",
       "default": "./dist/react-start/index.js"
     },
+    "./react-start/client": {
+      "types": "./dist/react-start/client.d.ts",
+      "default": "./dist/react-start/client.js"
+    },
     "./test": "./src/test.ts",
     "./utils": {
       "types": "./dist/utils/index.d.ts",
@@ -107,6 +111,8 @@
     "@edge-runtime/vm": "5.0.0",
     "@eslint/eslintrc": "3.3.1",
     "@eslint/js": "9.39.1",
+    "@tanstack/query-core": "^5.90.10",
+    "@tanstack/react-query": "^5.90.10",
     "@tanstack/react-start": "^1.132.37",
     "@types/common-tags": "^1.8.4",
     "@types/node": "20.19.24",

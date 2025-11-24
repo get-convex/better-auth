@@ -26,7 +26,7 @@
     "@react-email/components": "0.5.3",
     "@tailwindcss/postcss": "^4.1.8",
     "@tanstack/react-form": "^1.25.0",
-    "@tanstack/react-query": "^5.90.2",
+    "@tanstack/react-query": "file:../../node_modules/@tanstack/react-query",
     "@tanstack/react-query-devtools": "^5.90.2",
     "@tanstack/react-router": "^1.132.33",
     "@tanstack/react-router-devtools": "^1.132.33",
