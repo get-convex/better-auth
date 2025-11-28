@@ -122,18 +122,21 @@ description: Install and configure Convex + Better Auth for Expo.
     // The component client has methods needed for integrating Convex with Better Auth,
     // as well as helper methods for general use.
     export const authComponent = createClient<DataModel>(components.betterAuth);
+    // This is important: retrieve the HTTP actions url from environment variables
+    const siteUrl = process.env.CONVEX_SITE_URL || "";
 
     export const createAuth = (
       ctx: GenericCtx<DataModel>,
       { optionsOnly } = { optionsOnly: false },
     ) => {
       return betterAuth({
+        baseUrl: siteUrl,
         // disable logging when createAuth is called just to generate options.
         // this is not required, but there's a lot of noise in logs without it.
         logger: {
           disabled: optionsOnly,
         },
-        trustedOrigins: ["your-scheme://"],
+        trustedOrigins: ["your-scheme://", siteUrl],
         database: authComponent.adapter(ctx),
         // Configure simple, non-verified email/password to get started
         emailAndPassword: {
