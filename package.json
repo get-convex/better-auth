@@ -20,7 +20,7 @@
   "scripts": {
     "dev": "cd examples/react && npm run dev",
     "clean": "rm -rf dist *.tsbuildinfo",
-    "build": "tsc --project ./tsconfig.build.json",
+    "build": "tsc",
     "typecheck": "tsc --noEmit && tsc -p examples/next && tsc -p examples/next/convex && tsc -p examples/react && tsc -p examples/react/convex && tsc -p examples/tanstack && tsc -p examples/tanstack/convex",
     "lint": "eslint .",
     "all": "run-p -r 'dev' 'test:watch'",

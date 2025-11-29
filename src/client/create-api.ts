@@ -16,10 +16,10 @@ import {
   listOne,
   paginate,
   selectFields,
-} from "./adapter-utils";
+} from "./adapter-utils.js";
 import { getAuthTables } from "better-auth/db";
 import { type TableNames } from "../component/_generated/dataModel.js";
-import { type CreateAuth, getStaticAuth } from ".";
+import { type CreateAuth, getStaticAuth } from "./index.js";
 
 const whereValidator = (
   schema: SchemaDefinition<any, any>,

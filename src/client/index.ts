@@ -1,6 +1,6 @@
 import { convexAdapter } from "./adapter.js";
 import { version as convexVersion } from "convex";
-import semverLt from "semver/functions/lt";
+import semverLt from "semver/functions/lt.js";
 import {
   type AuthFunctions,
   createClient,

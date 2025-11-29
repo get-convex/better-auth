@@ -156,7 +156,7 @@ export const convexAdapter = <
           isRunMutationCtx: isRunMutationCtx(ctx),
         },
         createSchema: async ({ file, tables }) => {
-          const { createSchema } = await import("./create-schema");
+          const { createSchema } = await import("./create-schema.js");
           return createSchema({ file, tables });
         },
         create: async ({ model, data, select }): Promise<any> => {

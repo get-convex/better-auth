@@ -10,12 +10,12 @@ import {
   internalMutationGeneric,
 } from "convex/server";
 import { type Infer, v } from "convex/values";
-import { convexAdapter } from "./adapter";
+import { convexAdapter } from "./adapter.js";
 import { corsRouter } from "convex-helpers/server/cors";
-import defaultSchema from "../component/schema";
-import { type SetOptional } from "type-fest";
+import defaultSchema from "../component/schema.js";
+import type { SetOptional } from "type-fest";
 import { type ComponentApi } from "../component/_generated/component.js";
-import { type CreateAuth, type GenericCtx, getStaticAuth } from ".";
+import { type CreateAuth, type GenericCtx, getStaticAuth } from "./index.js";
 
 export type AuthFunctions = {
   onCreate?: FunctionReference<"mutation", "internal", { [key: string]: any }>;
