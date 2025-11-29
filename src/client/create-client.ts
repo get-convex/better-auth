@@ -96,6 +96,24 @@ export const createClient = <
     if (!identity) {
       return;
     }
+    const session = (await ctx.runQuery(component.adapter.findOne, {
+      model: "session",
+      where: [
+        {
+          field: "_id",
+          value: identity.sessionId as string,
+        },
+        {
+          field: "expiresAt",
+          operator: "gt",
+          value: new Date().getTime(),
+        },
+      ],
+    })) as BetterAuthDataModel["session"]["document"] | null;
+
+    if (!session) {
+      return;
+    }
 
     const doc = (await ctx.runQuery(component.adapter.findOne, {
       model: "user",
@@ -117,6 +135,7 @@ export const createClient = <
     if (!identity) {
       return new Headers();
     }
+    // Don't validate the session here, let Better Auth handle that
     const session = await ctx.runQuery(component.adapter.findOne, {
       model: "session",
       where: [

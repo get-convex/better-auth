@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { type ReactNode, useCallback, useMemo } from "react";
 import { type AuthTokenFetcher } from "convex/browser";
@@ -6,6 +6,7 @@ import { ConvexProviderWithAuth } from "convex/react";
 import { type BetterAuthClientPlugin } from "better-auth";
 import { createAuthClient } from "better-auth/react";
 import { convexClient, crossDomainClient } from "../client/plugins/index.js";
+import React from "react";
 
 type CrossDomainClient = ReturnType<typeof crossDomainClient>;
 type ConvexClient = ReturnType<typeof convexClient>;
@@ -35,6 +36,25 @@ type IConvexReactClient = {
   clearAuth(): void;
 };
 
+class ErrorBoundary extends React.Component<{
+  children: React.ReactNode;
+  authClient: AuthClient;
+}> {
+  async componentDidCatch(error: Error) {
+    if (error.message.match(/auth|user/i)) {
+      try {
+        await this.props.authClient.convex.unsetToken();
+        window.location.reload();
+      } catch {
+        // noop
+        console.log("Error unsetting token", error);
+      }
+    }
+  }
+  render() {
+    return this.props.children;
+  }
+}
 /**
  * A wrapper React component which provides a {@link react.ConvexReactClient}
  * authenticated with Better Auth.
@@ -81,9 +101,11 @@ export function ConvexBetterAuthProvider({
     })();
   }, [authClient]);
   return (
-    <ConvexProviderWithAuth client={client} useAuth={useBetterAuth}>
-      {children}
-    </ConvexProviderWithAuth>
+    <ErrorBoundary authClient={authClient}>
+      <ConvexProviderWithAuth client={client} useAuth={useBetterAuth}>
+        {children}
+      </ConvexProviderWithAuth>
+    </ErrorBoundary>
   );
 }
 
@@ -94,7 +116,7 @@ function useUseAuthFromBetterAuth(
   initialToken?: string | null
 ) {
   const [cachedToken, setCachedToken] = useState<string | null>(
-    initialTokenUsed ? initialToken ?? null : null
+    initialTokenUsed ? (initialToken ?? null) : null
   );
   useEffect(() => {
     if (!initialTokenUsed) {

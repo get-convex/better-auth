@@ -1,4 +1,4 @@
-import { type BetterAuthPlugin } from "better-auth";
+import { HookEndpointContext, type BetterAuthPlugin } from "better-auth";
 import { createAuthMiddleware, sessionMiddleware } from "better-auth/api";
 import { getSessionCookie } from "better-auth/cookies";
 import {
@@ -11,6 +11,17 @@ import {
 } from "better-auth/plugins";
 
 export const JWT_COOKIE_NAME = "convex_jwt";
+
+const setTokenCookie = (
+  ctx: HookEndpointContext,
+  token: string,
+  maxAge: number
+) => {
+  const jwtCookie = ctx.context.createAuthCookie(JWT_COOKIE_NAME, {
+    maxAge,
+  });
+  ctx.setCookie(jwtCookie.name, token, jwtCookie.attributes);
+};
 
 export const convex = (
   opts: {
@@ -112,15 +123,16 @@ export const convex = (
         ...oidcProvider.hooks.after,
         {
           matcher: (ctx) => {
-            return (
+            return Boolean(
               ctx.path.startsWith("/sign-in") ||
-              ctx.path.startsWith("/sign-up") ||
-              ctx.path.startsWith("/callback") ||
-              ctx.path.startsWith("/oauth2/callback") ||
-              ctx.path.startsWith("/magic-link/verify") ||
-              ctx.path.startsWith("/email-otp/verify-email") ||
-              ctx.path.startsWith("/phone-number/verify") ||
-              ctx.path.startsWith("/siwe/verify")
+                ctx.path.startsWith("/sign-up") ||
+                ctx.path.startsWith("/callback") ||
+                ctx.path.startsWith("/oauth2/callback") ||
+                ctx.path.startsWith("/magic-link/verify") ||
+                ctx.path.startsWith("/email-otp/verify-email") ||
+                ctx.path.startsWith("/phone-number/verify") ||
+                ctx.path.startsWith("/siwe/verify") ||
+                (ctx.path.startsWith("/get-session") && ctx.context.session)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
@@ -154,8 +166,8 @@ export const convex = (
           matcher: (ctx) => {
             return (
               ctx.path?.startsWith("/sign-out") ||
-              ctx.path?.startsWith("/delete-user")
-              //(ctx.path?.startsWith("/get-session") && !ctx.context.session)
+              ctx.path?.startsWith("/delete-user") ||
+              (ctx.path?.startsWith("/get-session") && !ctx.context.session)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
@@ -318,6 +330,38 @@ export const convex = (
           });
           ctx.setCookie(jwtCookie.name, response.token, jwtCookie.attributes);
           return response;
+        }
+      ),
+      unsetToken: createAuthEndpoint(
+        "/convex/unset-token",
+        {
+          method: "GET",
+          requireHeaders: true,
+          use: [sessionMiddleware],
+          metadata: {
+            openapi: {
+              description: "Unset the JWT token cookie",
+              responses: {
+                200: {
+                  description: "Success",
+                  content: {
+                    "text/plain": {
+                      schema: {
+                        type: "string",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        async (ctx) => {
+          const jwtCookie = ctx.context.createAuthCookie(JWT_COOKIE_NAME, {
+            maxAge: 0,
+          });
+          ctx.setCookie(jwtCookie.name, "", jwtCookie.attributes);
+          return { status: 200, body: "OK" };
         }
       ),
     },

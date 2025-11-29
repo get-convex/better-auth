@@ -17,6 +17,7 @@ import { convexToJson } from "convex/values";
 import { cache } from "react";
 import * as jose from "jose";
 import { JWT_COOKIE_NAME } from "../plugins/convex/index.js";
+import { headers } from "next/headers.js";
 
 const parseConvexSiteUrl = (url: string) => {
   if (!url) {
@@ -36,6 +37,7 @@ const parseConvexSiteUrl = (url: string) => {
 };
 
 type GetTokenOptions = {
+  forceRefresh?: boolean;
   cookiePrefix?: string;
   jwtCache?: {
     enabled: boolean;
@@ -43,7 +45,10 @@ type GetTokenOptions = {
   };
 };
 
-const getToken = async (siteUrl: string, opts?: GetTokenOptions) => {
+const getToken = async (
+  siteUrl: string,
+  opts?: GetTokenOptions
+): Promise<{ token?: string; isFresh: boolean }> => {
   const headers = await (await import("next/headers.js")).headers();
   const fetchToken = async () => {
     const { data } = await betterFetch<{ token: string }>(
@@ -53,9 +58,9 @@ const getToken = async (siteUrl: string, opts?: GetTokenOptions) => {
         headers,
       }
     );
-    return data?.token;
+    return { isFresh: true, token: data?.token };
   };
-  if (!opts?.jwtCache?.enabled) {
+  if (!opts?.jwtCache?.enabled || opts.forceRefresh) {
     return await fetchToken();
   }
   const token = getSessionCookie(new Headers(headers), {
@@ -73,11 +78,13 @@ const getToken = async (siteUrl: string, opts?: GetTokenOptions) => {
       ? now > exp + (opts?.jwtCache?.expirationToleranceSeconds ?? 60)
       : true;
     if (!isExpired) {
-      return token;
+      console.log("returning cached token");
+      return { isFresh: false, token };
     }
   } catch (error) {
     console.error("Error decoding JWT", error);
   }
+  console.log("jwt expired or invalid, fetching new token");
   return await fetchToken();
 };
 
@@ -116,37 +123,80 @@ export const convexBetterAuthNextJs = (
   opts?: GetTokenOptions & NextjsOptions
 ) => {
   const siteUrl = parseConvexSiteUrl(convexSiteUrl);
-  const cachedGetToken = cache(() => getToken(siteUrl, opts));
+  const cachedGetToken = cache(
+    ({ forceRefresh }: { forceRefresh?: boolean } = {}) =>
+      getToken(siteUrl, { ...opts, forceRefresh })
+  );
   return {
-    getToken: cachedGetToken,
+    getToken: async () => {
+      const result = await cachedGetToken();
+      return result.token;
+    },
     handler: nextJsHandler(siteUrl),
     isAuthenticated: async () => {
       const token = await cachedGetToken();
-      return !!token;
+      return !!token.token;
     },
     preloadQuery: async <Query extends FunctionReference<"query">>(
       query: Query,
       ...args: ArgsAndOptions<Query, NextjsOptions & { requireToken?: boolean }>
     ): Promise<Preloaded<Query>> => {
-      const token = await cachedGetToken();
+      console.log("cookies", (await headers()).get("cookie"));
+      const result = (await cachedGetToken()) ?? {};
       const requireToken = args[1]?.requireToken ?? true;
-      args[1] = { token, requireToken, ...args[1] };
-      return preloadQuery(query, ...args);
+      args[1] = { token: result.token, requireToken, ...args[1] };
+      try {
+        return preloadQuery(query, ...args);
+      } catch (error) {
+        if (result.isFresh) {
+          throw error;
+        }
+        const newResult = await cachedGetToken();
+        args[1] = { token: newResult.token, requireToken, ...args[1] };
+        return preloadQuery(query, ...args);
+      }
     },
     fetchQuery: async (...args: Parameters<typeof fetchQuery>) => {
-      const token = await cachedGetToken();
-      args[2] = { token, ...args[2] };
-      return fetchQuery(args[0], args[1], { ...opts, ...args[2] });
+      const result = (await cachedGetToken()) ?? {};
+      args[2] = { token: result.token, ...args[2] };
+      try {
+        return fetchQuery(args[0], args[1], { ...opts, ...args[2] });
+      } catch (error) {
+        if (result.isFresh) {
+          throw error;
+        }
+        const newResult = await cachedGetToken();
+        args[2] = { token: newResult.token, ...args[2] };
+        return fetchQuery(args[0], args[1], { ...opts, ...args[2] });
+      }
     },
     fetchMutation: async (...args: Parameters<typeof fetchMutation>) => {
-      const token = await cachedGetToken();
-      args[2] = { token, ...args[2] };
-      return fetchMutation(args[0], args[1], { ...opts, ...args[2] });
+      const result = (await cachedGetToken()) ?? {};
+      args[2] = { token: result.token, ...args[2] };
+      try {
+        return fetchMutation(args[0], args[1], { ...opts, ...args[2] });
+      } catch (error) {
+        if (result.isFresh) {
+          throw error;
+        }
+        const newResult = await cachedGetToken();
+        args[2] = { token: newResult.token, ...args[2] };
+        return fetchMutation(args[0], args[1], { ...opts, ...args[2] });
+      }
     },
     fetchAction: async (...args: Parameters<typeof fetchAction>) => {
-      const token = await cachedGetToken();
-      args[2] = { token, ...args[2] };
-      return fetchAction(args[0], args[1], { ...opts, ...args[2] });
+      const result = (await cachedGetToken()) ?? {};
+      args[2] = { token: result.token, ...args[2] };
+      try {
+        return fetchAction(args[0], args[1], { ...opts, ...args[2] });
+      } catch (error) {
+        if (result.isFresh) {
+          throw error;
+        }
+        const newResult = await cachedGetToken();
+        args[2] = { token: newResult.token, ...args[2] };
+        return fetchAction(args[0], args[1], { ...opts, ...args[2] });
+      }
     },
   };
 };
