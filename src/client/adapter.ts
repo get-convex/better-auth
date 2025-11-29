@@ -1,26 +1,26 @@
 import {
   createAdapterFactory,
-  DBAdapterDebugLogOption,
+  type DBAdapterDebugLogOption,
 } from "better-auth/adapters";
 import {
   createFunctionHandle,
-  FunctionHandle,
-  GenericActionCtx,
-  GenericDataModel,
-  PaginationOptions,
-  PaginationResult,
-  SchemaDefinition,
-  WithoutSystemFields,
+  type FunctionHandle,
+  type GenericActionCtx,
+  type GenericDataModel,
+  type PaginationOptions,
+  type PaginationResult,
+  type SchemaDefinition,
+  type WithoutSystemFields,
 } from "convex/server";
-import { SetOptional } from "type-fest";
-import { AuthFunctions, GenericCtx, Triggers } from ".";
+import type { SetOptional } from "type-fest";
 import defaultSchema from "../component/schema";
-import { Where } from "better-auth/types";
+import type { Where } from "better-auth/types";
 import { asyncMap } from "convex-helpers";
 import { prop, sortBy, unique } from "remeda";
 import { isRunMutationCtx } from "../utils";
-import { Doc, TableNames } from "../component/_generated/dataModel.js";
-import { ComponentApi } from "../component/_generated/component.js";
+import type { Doc, TableNames } from "../component/_generated/dataModel";
+import type { ComponentApi } from "../component/_generated/component";
+import type { AuthFunctions, GenericCtx, Triggers } from ".";
 
 const handlePagination = async (
   next: ({
@@ -49,7 +49,7 @@ const handlePagination = async (
     state.cursor =
       result.pageStatus === "SplitRecommended" ||
       result.pageStatus === "SplitRequired"
-        ? result.splitCursor ?? result.continueCursor
+        ? (result.splitCursor ?? result.continueCursor)
         : result.continueCursor;
     if (result.page) {
       state.docs.push(...result.page);
@@ -156,7 +156,7 @@ export const convexAdapter = <
           isRunMutationCtx: isRunMutationCtx(ctx),
         },
         createSchema: async ({ file, tables }) => {
-          const { createSchema } = await import("./createSchema");
+          const { createSchema } = await import("./createSchema.js");
           return createSchema({ file, tables });
         },
         create: async ({ model, data, select }): Promise<any> => {

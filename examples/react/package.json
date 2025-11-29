@@ -5,11 +5,11 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "run-p -r 'dev:*'",
-    "dev:frontend": "vite",
-    "dev:backend": "npx convex dev --typecheck-components",
-    "dev:build": "chokidar '../../tsconfig*.json' '../../src/**/*.ts' '../../src/**/*.tsx' -i '**/*.test.ts' -c 'npm run build' --initial",
+    "dev:frontend": "vite --clearScreen false",
+    "dev:backend": "convex dev --typecheck-components",
+    "dev:build": "chokidar '../../tsconfig*.json' '../../src/**/*.ts' '../../src/**/*.tsx' -i '**/*.test.ts' -c 'npx convex codegen --component-dir ./src/component && npm run build' --initial",
     "build": "npx convex codegen --component-dir ../../src/component && cd ../../ && npm run build",
-    "predev": "npm run dev:backend -- --until-success",
+    "predev": "convex dev --skip-push && mkdir -p dist",
     "logs": "npx convex logs",
     "lint": "tsc -p convex && eslint convex"
   },

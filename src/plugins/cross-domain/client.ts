@@ -1,5 +1,5 @@
-import type { BetterAuthClientPlugin, Store } from "better-auth";
-import { BetterFetchOption } from "@better-fetch/fetch";
+import type { BetterAuthClientPlugin, ClientStore } from "better-auth";
+import type { BetterFetchOption } from "@better-fetch/fetch";
 import { crossDomain } from ".";
 
 interface CookieAttributes {
@@ -96,7 +96,7 @@ export const crossDomainClient = (
     disableCache?: boolean;
   } = {}
 ) => {
-  let store: Store | null = null;
+  let store: ClientStore | null = null;
   const cookieName = `${opts?.storagePrefix || "better-auth"}_cookie`;
   const localCacheName = `${opts?.storagePrefix || "better-auth"}_session_data`;
   const storage =

@@ -1,0 +1,7 @@
+{
+  "$schema": "./node_modules/convex/schemas/convex.schema.json",
+  "functions": "example/convex",
+  "codegen": {
+    "legacyComponentApi": false
+  }
+}

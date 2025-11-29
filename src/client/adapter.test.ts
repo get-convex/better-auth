@@ -6,7 +6,7 @@ import { convexTest } from "convex-test";
 import { api } from "../component/_generated/api";
 import schema from "../component/schema";
 import { serialize } from "../component/adapterTest";
-import { Adapter } from "better-auth";
+import type { DBAdapter } from "better-auth/adapters";
 
 export const getAdapter = (t: ReturnType<typeof convexTest>) => async () => {
   return {
@@ -43,7 +43,7 @@ export const getAdapter = (t: ReturnType<typeof convexTest>) => async () => {
       return t.mutation(api.adapterTest.deleteMany, data);
     },
     transaction: false as any,
-  } satisfies Adapter;
+  } satisfies DBAdapter;
 };
 
 describe("Better Auth Adapter Tests", async () => {

@@ -12,12 +12,15 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
 
+    "composite": true,
     "isolatedModules": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "rootDir": "./src",
     "outDir": "./dist",
+    "verbatimModuleSyntax": true,
     "skipLibCheck": true
   },
-  "include": ["./src/**/*", "./vitest.config.mts"]
+  "include": ["./src/**/*"]
 }

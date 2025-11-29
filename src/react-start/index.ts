@@ -3,14 +3,14 @@ import { createCookieGetter } from "better-auth/cookies";
 import { betterFetch } from "@better-fetch/fetch";
 import * as jose from "jose";
 import {
-  FunctionReference,
-  FunctionReturnType,
-  GenericActionCtx,
-  GenericDataModel,
+  type FunctionReference,
+  type FunctionReturnType,
+  type GenericActionCtx,
+  type GenericDataModel,
 } from "convex/server";
 import { JWT_COOKIE_NAME } from "../plugins/convex";
 import { ConvexHttpClient } from "convex/browser";
-import { CreateAuth, getStaticAuth } from "../client";
+import { type CreateAuth, getStaticAuth } from "../client";
 
 export const getCookieName = <DataModel extends GenericDataModel>(
   createAuth: CreateAuth<DataModel>

@@ -1,18 +1,18 @@
 import { asyncMap } from "convex-helpers";
-import { GenericId, Infer, v } from "convex/values";
+import { type GenericId, type Infer, v } from "convex/values";
 import {
-  DocumentByName,
-  GenericDataModel,
-  GenericQueryCtx,
-  PaginationOptions,
-  PaginationResult,
-  SchemaDefinition,
-  TableNamesInDataModel,
+  type DocumentByName,
+  type GenericDataModel,
+  type GenericQueryCtx,
+  type PaginationOptions,
+  type PaginationResult,
+  type SchemaDefinition,
+  type TableNamesInDataModel,
 } from "convex/server";
 import { stream } from "convex-helpers/server/stream";
 import { mergedStream } from "convex-helpers/server/stream";
 import { stripIndent } from "common-tags";
-import { BetterAuthDBSchema } from "better-auth/db";
+import type { BetterAuthDBSchema } from "better-auth/db";
 
 export const adapterWhereValidator = v.object({
   field: v.string(),

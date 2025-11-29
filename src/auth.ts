@@ -1,4 +1,4 @@
-import { betterAuth, BetterAuthOptions } from "better-auth";
+import { betterAuth, type BetterAuthOptions } from "better-auth";
 import {
   anonymous,
   bearer,
@@ -13,9 +13,9 @@ import {
   twoFactor,
   username,
 } from "better-auth/plugins";
-import { convex } from "./plugins";
+import { convex } from "./plugins/convex";
 import { passkey } from "better-auth/plugins/passkey";
-import { convexAdapter } from "./client";
+import { convexAdapter } from "./client/adapter";
 
 // This is the config used to generate the schema
 const options = {

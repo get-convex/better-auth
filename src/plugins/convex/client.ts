@@ -1,4 +1,4 @@
-import { BetterAuthClientPlugin } from "better-auth/client";
+import type { BetterAuthClientPlugin } from "better-auth/client";
 import { convex } from ".";
 
 export const convexClient = () => {

@@ -1,24 +1,25 @@
 import {
-  DataModelFromSchemaDefinition,
+  type DataModelFromSchemaDefinition,
   type DefaultFunctionArgs,
-  FunctionHandle,
+  type FunctionHandle,
   type FunctionReference,
-  GenericActionCtx,
+  type GenericActionCtx,
   type GenericDataModel,
-  GenericMutationCtx,
+  type GenericMutationCtx,
   type GenericQueryCtx,
-  GenericSchema,
+  type GenericSchema,
   type HttpRouter,
-  SchemaDefinition,
+  type SchemaDefinition,
   httpActionGeneric,
   internalMutationGeneric,
   mutationGeneric,
   paginationOptsValidator,
   queryGeneric,
 } from "convex/server";
-import { type GenericId, Infer, v } from "convex/values";
+import { type GenericId, type Infer, v } from "convex/values";
 import { convexAdapter } from "./adapter";
-import { AdapterInstance, Auth, betterAuth } from "better-auth";
+import { type Auth, betterAuth } from "better-auth";
+import type { DBAdapterInstance } from "better-auth/adapters";
 import { asyncMap } from "convex-helpers";
 import { partial } from "convex-helpers/validators";
 import {
@@ -34,15 +35,15 @@ import { version as convexVersion } from "convex";
 import semver from "semver";
 import defaultSchema from "../component/schema";
 import { getAuthTables } from "better-auth/db";
-import { SetOptional } from "type-fest";
-import { ComponentApi } from "../component/_generated/component.js";
-import { TableNames } from "../component/_generated/dataModel.js";
+import type { SetOptional } from "type-fest";
+import type { ComponentApi } from "../component/_generated/component";
+import type { TableNames } from "../component/_generated/dataModel";
 
 export { convexAdapter };
 
 export type CreateAdapter = <Ctx extends GenericCtx<GenericDataModel>>(
   ctx: Ctx
-) => AdapterInstance;
+) => DBAdapterInstance;
 
 export type CreateAuth<
   DataModel extends GenericDataModel,

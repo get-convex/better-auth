@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
-import { ReactNode, useCallback, useMemo } from "react";
-import { AuthTokenFetcher } from "convex/browser";
+import { type ReactNode, useCallback, useMemo } from "react";
+import { type AuthTokenFetcher } from "convex/browser";
 import { ConvexProviderWithAuth } from "convex/react";
 import { type BetterAuthClientPlugin } from "better-auth";
 import { createAuthClient } from "better-auth/react";
