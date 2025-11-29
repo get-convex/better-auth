@@ -1,7 +1,7 @@
 import {
-  FunctionHandle,
+  type FunctionHandle,
   type GenericDataModel,
-  SchemaDefinition,
+  type SchemaDefinition,
   mutationGeneric,
   paginationOptsValidator,
   queryGeneric,
@@ -18,8 +18,8 @@ import {
   selectFields,
 } from "./adapter-utils";
 import { getAuthTables } from "better-auth/db";
-import { TableNames } from "../component/_generated/dataModel.js";
-import { CreateAuth, getStaticAuth } from ".";
+import { type TableNames } from "../component/_generated/dataModel.js";
+import { type CreateAuth, getStaticAuth } from ".";
 
 const whereValidator = (
   schema: SchemaDefinition<any, any>,

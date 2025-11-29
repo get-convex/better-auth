@@ -1,8 +1,12 @@
-import { DefaultError, QueryClient, QueryKey } from "@tanstack/query-core";
+import {
+  type DefaultError,
+  type QueryClient,
+  type QueryKey,
+} from "@tanstack/query-core";
 import {
   useSuspenseQuery,
-  UseSuspenseQueryOptions,
-  UseSuspenseQueryResult,
+  type UseSuspenseQueryOptions,
+  type UseSuspenseQueryResult,
 } from "@tanstack/react-query";
 import { useConvexAuth } from "convex/react";
 import { useEffect, useState } from "react";

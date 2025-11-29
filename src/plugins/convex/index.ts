@@ -1,27 +1,14 @@
-import { HookEndpointContext, type BetterAuthPlugin } from "better-auth";
+import { type BetterAuthPlugin } from "better-auth";
 import { createAuthMiddleware, sessionMiddleware } from "better-auth/api";
-import { getSessionCookie } from "better-auth/cookies";
 import {
   createAuthEndpoint,
   jwt as jwtPlugin,
   bearer as bearerPlugin,
   oidcProvider as oidcProviderPlugin,
-  JwtOptions,
-  Jwk,
+  type Jwk,
 } from "better-auth/plugins";
 
 export const JWT_COOKIE_NAME = "convex_jwt";
-
-const setTokenCookie = (
-  ctx: HookEndpointContext,
-  token: string,
-  maxAge: number
-) => {
-  const jwtCookie = ctx.context.createAuthCookie(JWT_COOKIE_NAME, {
-    maxAge,
-  });
-  ctx.setCookie(jwtCookie.name, token, jwtCookie.attributes);
-};
 
 export const convex = (
   opts: {

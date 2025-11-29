@@ -1,21 +1,21 @@
 import {
-  DataModelFromSchemaDefinition,
+  type DataModelFromSchemaDefinition,
   type FunctionReference,
   type GenericDataModel,
-  GenericMutationCtx,
-  GenericSchema,
+  type GenericMutationCtx,
+  type GenericSchema,
   type HttpRouter,
-  SchemaDefinition,
+  type SchemaDefinition,
   httpActionGeneric,
   internalMutationGeneric,
 } from "convex/server";
-import { Infer, v } from "convex/values";
+import { type Infer, v } from "convex/values";
 import { convexAdapter } from "./adapter";
 import { corsRouter } from "convex-helpers/server/cors";
 import defaultSchema from "../component/schema";
-import { SetOptional } from "type-fest";
-import { ComponentApi } from "../component/_generated/component.js";
-import { CreateAuth, GenericCtx, getStaticAuth } from ".";
+import { type SetOptional } from "type-fest";
+import { type ComponentApi } from "../component/_generated/component.js";
+import { type CreateAuth, type GenericCtx, getStaticAuth } from ".";
 
 export type AuthFunctions = {
   onCreate?: FunctionReference<"mutation", "internal", { [key: string]: any }>;
