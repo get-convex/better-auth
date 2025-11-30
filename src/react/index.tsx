@@ -113,9 +113,7 @@ function useUseAuthFromBetterAuth(
           async ({
             forceRefreshToken = false,
           }: { forceRefreshToken?: boolean } = {}) => {
-            console.log("cachedToken", cachedToken);
             if (cachedToken && !forceRefreshToken) {
-              console.log("returning cachedToken", cachedToken);
               return cachedToken;
             }
             try {

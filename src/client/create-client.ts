@@ -8,8 +8,9 @@ import {
   type SchemaDefinition,
   httpActionGeneric,
   internalMutationGeneric,
+  queryGeneric,
 } from "convex/server";
-import { type Infer, v } from "convex/values";
+import { ConvexError, type Infer, v } from "convex/values";
 import { convexAdapter } from "./adapter.js";
 import { corsRouter } from "convex-helpers/server/cors";
 import defaultSchema from "../component/schema.js";
@@ -261,6 +262,19 @@ export const createClient = <
         userId,
       });
     },
+
+    clientApi: () => ({
+      getAuthUser: queryGeneric({
+        args: {},
+        handler: async (ctx: GenericCtx<DataModel>) => {
+          const user = await safeGetAuthUser(ctx);
+          if (!user) {
+            throw new ConvexError("Unauthenticated");
+          }
+          return user;
+        },
+      }),
+    }),
 
     triggersApi: () => ({
       onCreate: internalMutationGeneric({

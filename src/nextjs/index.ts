@@ -66,7 +66,6 @@ const getToken = async (
     cookieName: JWT_COOKIE_NAME,
     cookiePrefix: opts?.cookiePrefix,
   });
-  console.log("getToken cookie", token);
   if (!token) {
     return await fetchToken();
   }
@@ -78,7 +77,6 @@ const getToken = async (
       ? now > exp + (opts?.jwtCache?.expirationToleranceSeconds ?? 60)
       : true;
     if (!isExpired) {
-      console.log("returning cached token");
       return { isFresh: false, token };
     }
   } catch (error) {

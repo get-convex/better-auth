@@ -146,11 +146,18 @@ export const createAuth = (
 
 // Example functions, feel free to edit, omit, etc.
 
+// Create a function that uses safeGetAuthUser to get the user verified with
+// session, we can get it in the ClientAuthCheck by having the dev pass in the
+// api.auth object and we'll type the arg as { getAuthUser: (ctx: QueryCtx) =>
+// Promise<User> } or something
+// This is Tanstack, we need to move it to nextjs first
+export const { getAuthUser } = authComponent.clientApi();
+
 // Get the current user
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    return authComponent.getAuthUser(ctx);
+    return authComponent.safeGetAuthUser(ctx);
   },
 });
 

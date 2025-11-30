@@ -73,12 +73,6 @@ export const authComponent = createClient<DataModel, typeof betterAuthSchema>(
 
 export const { onCreate, onUpdate, onDelete } = authComponent.triggersApi()
 
-// Create a function that uses safeGetAuthUser to get the user verified with
-// session, we can get it in the ClientAuthCheck by having the dev pass in the
-// api.auth object and we'll type the arg as { getAuthUser: (ctx: QueryCtx) =>
-// Promise<User> } or something
-export const { getAuthUser } = authComponent.authApi()
-
 export const createAuth = (
   ctx: GenericCtx<DataModel>,
   { optionsOnly } = { optionsOnly: false },
