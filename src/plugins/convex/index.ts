@@ -324,7 +324,6 @@ export const convex = (
         {
           method: "GET",
           requireHeaders: true,
-          use: [sessionMiddleware],
           metadata: {
             openapi: {
               description: "Unset the JWT token cookie",

@@ -1,4 +1,4 @@
-import { AuthCheck } from "@/app/(auth)/auth-check";
+import { ClientAuthCheck } from "@/app/(auth)/client-auth-check";
 import { isAuthenticated } from "@/lib/auth-server";
 import { redirect } from "next/navigation";
 import { PropsWithChildren } from "react";
@@ -8,9 +8,6 @@ export default async function Layout({ children }: PropsWithChildren) {
     redirect("/sign-in");
   }
   return (
-    <>
-      <AuthCheck />
-      {children}
-    </>
+    <ClientAuthCheck unauthRedirectTo="/sign-in">{children}</ClientAuthCheck>
   );
 }

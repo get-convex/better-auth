@@ -314,7 +314,6 @@ export const createClient = <
       const staticAuth = getStaticAuth(createAuth);
       const path = staticAuth.options.basePath ?? "/api/auth";
       const authRequestHandler = httpActionGeneric(async (ctx, request) => {
-        console.log(request.url);
         if (config?.verbose) {
           console.log("options.baseURL", staticAuth.options.baseURL);
           console.log("request headers", request.headers);

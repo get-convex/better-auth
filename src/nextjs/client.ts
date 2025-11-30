@@ -1,7 +1,7 @@
 import { type Preloaded, useConvexAuth, useQuery } from "convex/react";
 import { type FunctionReference, makeFunctionReference } from "convex/server";
 import { jsonToConvex } from "convex/values";
-import { useEffect, useMemo, useState } from "react";
+import { Component, useEffect, useMemo, useState } from "react";
 
 export function useConvexPreloadedQuery<
   Query extends FunctionReference<"query">,
@@ -51,4 +51,56 @@ export const usePreloadedQuery = <Query extends FunctionReference<"query">>(
     }
   }, [latestData, isLoading]);
   return data;
+};
+
+export class ErrorBoundary extends Component<{
+  children: React.ReactNode;
+  isAuthError?: (error: Error) => boolean;
+  onUnauth?: () => void | Promise<void>
+}> {
+  async componentDidCatch(error: Error) {
+    const isAuthError =
+      this.props.isAuthError ?? ((error) => error.message.match(/auth/i));
+    if (isAuthError(error)) {
+      await authClient.getSession();
+      if (this.props.unauthRedirectTo) {
+        redirect(this.props.unauthRedirectTo);
+      }
+    }
+  }
+  render() {
+    return this.props.children;
+  }
+}
+
+export const ClientAuthCheck = ({
+  children,
+  isAuthError,
+  unauthRedirectTo = "/",
+  userQuery,
+}: PropsWithChildren<{
+  isAuthError?: (error: Error) => boolean;
+  unauthRedirectTo?: string;
+  userQuery?: FunctionReference<"query">;
+}>) => {
+  const { isAuthenticated, isLoading } = useConvexAuth();
+  const user = useQuery(userQuery);
+  useEffect(() => {
+    (async () => {
+      if (!isLoading && !isAuthenticated) {
+        await authClient.getSession();
+        if (unauthRedirectTo) {
+          redirect(unauthRedirectTo);
+        }
+      }
+    })();
+  }, [isLoading, isAuthenticated]);
+  return (
+    <ErrorBoundary
+      isAuthError={isAuthError}
+      unauthRedirectTo={unauthRedirectTo}
+    >
+      {children}
+    </ErrorBoundary>
+  );
 };

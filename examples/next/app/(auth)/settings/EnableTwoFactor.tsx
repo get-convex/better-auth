@@ -26,6 +26,7 @@ type SetupStep =
 
 export default function EnableTwoFactor() {
   const user = useQuery(api.auth.getCurrentUser);
+  console.log("user", user);
   const [step, setStep] = useState<SetupStep>("loading");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");

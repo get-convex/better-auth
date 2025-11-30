@@ -6,10 +6,10 @@
   "scripts": {
     "dev": "run-p -r 'dev:*'",
     "dev:frontend": "next dev --webpack --experimental-https",
-    "dev:backend": "npx convex dev --typecheck-components",
-    "dev:build": "chokidar '../../tsconfig*.json' '../../src/**/*.ts' '../../src/**/*.tsx' -i '**/*.test.ts' -c 'npm run build-component' --initial",
-    "predev": "path-exists .env.local || npm run dev:backend -- --until-success",
-    "build-component": "npx convex codegen --component-dir ../../src/component && cd ../../ && npm run build",
+    "dev:backend": "convex dev --typecheck-components",
+    "dev:build": "chokidar '../../tsconfig*.json' '../../src/**/*.ts' '../../src/**/*.tsx' -i '**/*.test.ts' -c 'npm run build' --initial",
+    "predev": "convex dev --skip-push && mkdir -p dist",
+    "build": "convex codegen --component-dir ../../src/component && cd ../../ && npm run build",
     "lint": "next lint && tsc -p convex && eslint convex"
   },
   "dependencies": {
@@ -28,7 +28,7 @@
     "http-proxy-middleware": "^3.0.5",
     "jose": "^6.1.2",
     "lucide-react": "^0.486.0",
-    "next": "^16.0.3",
+    "next": "^16.0.5",
     "postcss": "^8.5.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

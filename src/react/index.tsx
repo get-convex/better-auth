@@ -36,25 +36,6 @@ type IConvexReactClient = {
   clearAuth(): void;
 };
 
-class ErrorBoundary extends React.Component<{
-  children: React.ReactNode;
-  authClient: AuthClient;
-}> {
-  async componentDidCatch(error: Error) {
-    if (error.message.match(/auth|user/i)) {
-      try {
-        await this.props.authClient.convex.unsetToken();
-        window.location.reload();
-      } catch {
-        // noop
-        console.log("Error unsetting token", error);
-      }
-    }
-  }
-  render() {
-    return this.props.children;
-  }
-}
 /**
  * A wrapper React component which provides a {@link react.ConvexReactClient}
  * authenticated with Better Auth.
@@ -101,11 +82,9 @@ export function ConvexBetterAuthProvider({
     })();
   }, [authClient]);
   return (
-    <ErrorBoundary authClient={authClient}>
-      <ConvexProviderWithAuth client={client} useAuth={useBetterAuth}>
-        {children}
-      </ConvexProviderWithAuth>
-    </ErrorBoundary>
+    <ConvexProviderWithAuth client={client} useAuth={useBetterAuth}>
+      {children}
+    </ConvexProviderWithAuth>
   );
 }
 
@@ -134,7 +113,9 @@ function useUseAuthFromBetterAuth(
           async ({
             forceRefreshToken = false,
           }: { forceRefreshToken?: boolean } = {}) => {
+            console.log("cachedToken", cachedToken);
             if (cachedToken && !forceRefreshToken) {
+              console.log("returning cachedToken", cachedToken);
               return cachedToken;
             }
             try {

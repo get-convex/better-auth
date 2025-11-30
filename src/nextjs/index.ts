@@ -7,17 +7,16 @@ import {
   fetchQuery,
   type NextjsOptions,
 } from "convex/nextjs";
-import { type Preloaded } from "convex/react";
+import type { Preloaded } from "convex/react";
 import {
-  getFunctionName,
   type ArgsAndOptions,
+  getFunctionName,
   type FunctionReference,
 } from "convex/server";
 import { convexToJson } from "convex/values";
 import { cache } from "react";
 import * as jose from "jose";
 import { JWT_COOKIE_NAME } from "../plugins/convex/index.js";
-import { headers } from "next/headers.js";
 
 const parseConvexSiteUrl = (url: string) => {
   if (!url) {
@@ -67,6 +66,7 @@ const getToken = async (
     cookieName: JWT_COOKIE_NAME,
     cookiePrefix: opts?.cookiePrefix,
   });
+  console.log("getToken cookie", token);
   if (!token) {
     return await fetchToken();
   }
@@ -84,7 +84,6 @@ const getToken = async (
   } catch (error) {
     console.error("Error decoding JWT", error);
   }
-  console.log("jwt expired or invalid, fetching new token");
   return await fetchToken();
 };
 
@@ -141,7 +140,6 @@ export const convexBetterAuthNextJs = (
       query: Query,
       ...args: ArgsAndOptions<Query, NextjsOptions & { requireToken?: boolean }>
     ): Promise<Preloaded<Query>> => {
-      console.log("cookies", (await headers()).get("cookie"));
       const result = (await cachedGetToken()) ?? {};
       const requireToken = args[1]?.requireToken ?? true;
       args[1] = { token: result.token, requireToken, ...args[1] };
