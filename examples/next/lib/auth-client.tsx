@@ -15,6 +15,7 @@ import { PropsWithChildren } from "react";
 import { redirect } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import { AuthCheck } from "@convex-dev/better-auth/nextjs/client";
+import { isAuthError } from "@/lib/utils";
 
 export const authClient = createAuthClient({
   plugins: [
@@ -34,6 +35,7 @@ export const ClientAuthCheck = ({ children }: PropsWithChildren) => {
       authClient={authClient}
       onUnauth={() => redirect("/sign-in")}
       getAuthUserFn={api.auth.getAuthUser}
+      isAuthError={isAuthError}
     >
       {children}
     </AuthCheck>

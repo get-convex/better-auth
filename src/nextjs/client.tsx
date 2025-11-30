@@ -5,7 +5,7 @@ import {
   useQuery,
 } from "convex/react";
 import { type FunctionReference, makeFunctionReference } from "convex/server";
-import { ConvexError, jsonToConvex } from "convex/values";
+import { jsonToConvex } from "convex/values";
 import {
   Component,
   useCallback,
@@ -66,39 +66,34 @@ export const usePreloadedQuery = <Query extends FunctionReference<"query">>(
   return data;
 };
 
-const isAuthError = (error: Error) => {
-  return error instanceof ConvexError && error.data === "Unauthenticated";
-};
-
 interface ErrorBoundaryProps {
   children: React.ReactNode;
   onUnauth: () => void | Promise<void>;
   renderFallback?: () => React.ReactNode;
+  isAuthError: (error: unknown) => boolean;
 }
 interface ErrorBoundaryState {
-  hasAuthError: boolean;
+  error?: unknown;
 }
 
 class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasAuthError: false };
+    this.state = {};
   }
   static defaultProps: Partial<ErrorBoundaryProps> = {
     renderFallback: () => null,
   };
   static getDerivedStateFromError(error: Error) {
-    return { isAuthError: isAuthError(error) };
+    return { error };
   }
   async componentDidCatch(error: Error) {
-    if (isAuthError(error)) {
-      console.log("AUTH ERROR");
+    if (this.props.isAuthError(error)) {
       await this.props.onUnauth();
-      this.setState({ hasAuthError: true });
     }
   }
   render() {
-    if (this.state.hasAuthError) {
+    if (this.state.error && this.props.isAuthError(this.state.error)) {
       return this.props.renderFallback?.();
     }
     return this.props.children;
@@ -122,11 +117,13 @@ export const AuthCheck = ({
   authClient,
   renderFallback,
   getAuthUserFn,
+  isAuthError,
 }: PropsWithChildren<{
   onUnauth: () => void | Promise<void>;
   authClient: AuthClient;
   renderFallback?: () => React.ReactNode;
   getAuthUserFn: FunctionReference<"query">;
+  isAuthError: (error: unknown) => boolean;
 }>) => {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const handleUnauth = useCallback(async () => {
@@ -143,7 +140,11 @@ export const AuthCheck = ({
   }, [isLoading, isAuthenticated]);
 
   return (
-    <ErrorBoundary onUnauth={handleUnauth} renderFallback={renderFallback}>
+    <ErrorBoundary
+      onUnauth={handleUnauth}
+      isAuthError={isAuthError}
+      renderFallback={renderFallback}
+    >
       <Authenticated>
         <UserSubscription getAuthUserFn={getAuthUserFn} />
       </Authenticated>

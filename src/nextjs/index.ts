@@ -5,15 +5,15 @@ import {
   fetchAction,
   fetchMutation,
   fetchQuery,
+  preloadQuery,
   type NextjsOptions,
 } from "convex/nextjs";
 import type { Preloaded } from "convex/react";
 import {
   type ArgsAndOptions,
-  getFunctionName,
   type FunctionReference,
+  type FunctionReturnType,
 } from "convex/server";
-import { convexToJson } from "convex/values";
 import { cache } from "react";
 import * as jose from "jose";
 import { JWT_COOKIE_NAME } from "../plugins/convex/index.js";
@@ -41,6 +41,7 @@ type GetTokenOptions = {
   jwtCache?: {
     enabled: boolean;
     expirationToleranceSeconds?: number;
+    isAuthError: (error: unknown) => boolean;
   };
 };
 
@@ -99,35 +100,61 @@ const nextJsHandler = (siteUrl: string) => ({
   POST: (request: Request) => handler(request, siteUrl),
 });
 
-export async function preloadQuery<Query extends FunctionReference<"query">>(
-  query: Query,
-  ...args: ArgsAndOptions<Query, NextjsOptions & { requireToken?: boolean }>
-): Promise<Preloaded<Query>> {
-  const token = args[1]?.token;
-  const requireToken = args[1]?.requireToken ?? true;
-  const value =
-    !requireToken || token ? await fetchQuery(query, ...args) : null;
-  const preloaded = {
-    _name: getFunctionName(query),
-    _argsJSON: convexToJson(args[0] ?? {}),
-    _valueJSON: convexToJson(value),
-  };
-  return preloaded as any;
-}
-
 export const convexBetterAuthNextJs = (
   convexSiteUrl: string,
   opts?: GetTokenOptions & NextjsOptions
 ) => {
   const siteUrl = parseConvexSiteUrl(convexSiteUrl);
+
   const cachedGetToken = cache(
     ({ forceRefresh }: { forceRefresh?: boolean } = {}) =>
       getToken(siteUrl, { ...opts, forceRefresh })
   );
+
+  const argsWithToken = <
+    FnType extends "query" | "mutation" | "action",
+    Fn extends FunctionReference<FnType>,
+  >(
+    args: ArgsAndOptions<Fn, NextjsOptions>,
+    token?: string
+  ) => {
+    args[1] = { ...args[1], token };
+    return args;
+  };
+
+  const callWithToken = async <
+    FnType extends "query" | "mutation" | "action",
+    Fn extends FunctionReference<FnType>,
+  >(
+    fn: (
+      args: ArgsAndOptions<Fn, NextjsOptions>
+    ) => Promise<FunctionReturnType<Fn>>,
+    args: ArgsAndOptions<Fn, NextjsOptions>
+  ): Promise<FunctionReturnType<Fn>> => {
+    const tokenFromArgs = args[1]?.token;
+    if (tokenFromArgs) {
+      return fn(args);
+    }
+    const token = (await cachedGetToken()) ?? {};
+    try {
+      return await fn(argsWithToken(args, token?.token));
+    } catch (error) {
+      if (
+        !opts?.jwtCache?.enabled ||
+        token.isFresh ||
+        opts.jwtCache.isAuthError(error)
+      ) {
+        throw error;
+      }
+      const newToken = await cachedGetToken({ forceRefresh: true });
+      return await fn(argsWithToken(args, newToken.token));
+    }
+  };
+
   return {
     getToken: async () => {
-      const result = await cachedGetToken();
-      return result.token;
+      const token = await cachedGetToken();
+      return token.token;
     },
     handler: nextJsHandler(siteUrl),
     isAuthenticated: async () => {
@@ -136,63 +163,34 @@ export const convexBetterAuthNextJs = (
     },
     preloadQuery: async <Query extends FunctionReference<"query">>(
       query: Query,
-      ...args: ArgsAndOptions<Query, NextjsOptions & { requireToken?: boolean }>
-    ): Promise<Preloaded<Query>> => {
-      const result = (await cachedGetToken()) ?? {};
-      const requireToken = args[1]?.requireToken ?? true;
-      args[1] = { token: result.token, requireToken, ...args[1] };
-      try {
-        return preloadQuery(query, ...args);
-      } catch (error) {
-        if (result.isFresh) {
-          throw error;
-        }
-        const newResult = await cachedGetToken();
-        args[1] = { token: newResult.token, requireToken, ...args[1] };
-        return preloadQuery(query, ...args);
-      }
-    },
-    fetchQuery: async (...args: Parameters<typeof fetchQuery>) => {
-      const result = (await cachedGetToken()) ?? {};
-      args[2] = { token: result.token, ...args[2] };
-      try {
-        return fetchQuery(args[0], args[1], { ...opts, ...args[2] });
-      } catch (error) {
-        if (result.isFresh) {
-          throw error;
-        }
-        const newResult = await cachedGetToken();
-        args[2] = { token: newResult.token, ...args[2] };
-        return fetchQuery(args[0], args[1], { ...opts, ...args[2] });
-      }
-    },
-    fetchMutation: async (...args: Parameters<typeof fetchMutation>) => {
-      const result = (await cachedGetToken()) ?? {};
-      args[2] = { token: result.token, ...args[2] };
-      try {
-        return fetchMutation(args[0], args[1], { ...opts, ...args[2] });
-      } catch (error) {
-        if (result.isFresh) {
-          throw error;
-        }
-        const newResult = await cachedGetToken();
-        args[2] = { token: newResult.token, ...args[2] };
-        return fetchMutation(args[0], args[1], { ...opts, ...args[2] });
-      }
-    },
-    fetchAction: async (...args: Parameters<typeof fetchAction>) => {
-      const result = (await cachedGetToken()) ?? {};
-      args[2] = { token: result.token, ...args[2] };
-      try {
-        return fetchAction(args[0], args[1], { ...opts, ...args[2] });
-      } catch (error) {
-        if (result.isFresh) {
-          throw error;
-        }
-        const newResult = await cachedGetToken();
-        args[2] = { token: newResult.token, ...args[2] };
-        return fetchAction(args[0], args[1], { ...opts, ...args[2] });
-      }
-    },
+      ...args: ArgsAndOptions<Query, NextjsOptions>
+    ): Promise<Preloaded<Query>> =>
+      callWithToken((argsWithToken: ArgsAndOptions<Query, NextjsOptions>) => {
+        return preloadQuery(query, ...argsWithToken);
+      }, args),
+    fetchQuery: async <Query extends FunctionReference<"query">>(
+      query: Query,
+      ...args: ArgsAndOptions<Query, NextjsOptions>
+    ): Promise<FunctionReturnType<Query>> =>
+      callWithToken((argsWithToken: ArgsAndOptions<Query, NextjsOptions>) => {
+        return fetchQuery(query, ...argsWithToken);
+      }, args),
+    fetchMutation: async <Mutation extends FunctionReference<"mutation">>(
+      mutation: Mutation,
+      ...args: ArgsAndOptions<Mutation, NextjsOptions>
+    ): Promise<FunctionReturnType<Mutation>> =>
+      callWithToken(
+        (argsWithToken: ArgsAndOptions<Mutation, NextjsOptions>) => {
+          return fetchMutation(mutation, ...argsWithToken);
+        },
+        args
+      ),
+    fetchAction: async <Action extends FunctionReference<"action">>(
+      action: Action,
+      ...args: ArgsAndOptions<Action, NextjsOptions>
+    ): Promise<FunctionReturnType<Action>> =>
+      callWithToken((argsWithToken: ArgsAndOptions<Action, NextjsOptions>) => {
+        return fetchAction(action, ...argsWithToken);
+      }, args),
   };
 };

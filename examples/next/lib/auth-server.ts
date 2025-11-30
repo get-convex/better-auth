@@ -1,3 +1,4 @@
+import { isAuthError } from "@/lib/utils";
 import { convexBetterAuthNextJs } from "@convex-dev/better-auth/nextjs";
 
 export const {
@@ -11,5 +12,6 @@ export const {
 } = convexBetterAuthNextJs(process.env.NEXT_PUBLIC_CONVEX_SITE_URL!, {
   jwtCache: {
     enabled: true,
+    isAuthError,
   },
 });
