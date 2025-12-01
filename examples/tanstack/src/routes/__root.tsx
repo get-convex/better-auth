@@ -16,10 +16,13 @@ import { getRequestHeaders } from '@tanstack/react-start/server'
 import { seo } from '@/utils/seo'
 import { ConvexQueryClient } from '@convex-dev/react-query'
 import { createServerFn } from '@tanstack/react-start'
-import { getToken } from '@/lib/auth-server'
+import { fetchQuery, getToken } from '@/lib/auth-server'
+import { api } from '@convex/_generated/api'
 
 const getAuth = createServerFn({ method: 'GET' }).handler(async () => {
   const headers = getRequestHeaders()
+  const user = await fetchQuery(api.auth.getAuthUser, {}, { headers })
+  console.log('user', user)
   return await getToken(headers)
 })
 

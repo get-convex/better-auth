@@ -101,10 +101,9 @@ const nextJsHandler = (siteUrl: string) => ({
 });
 
 export const convexBetterAuthNextJs = (
-  convexSiteUrl: string,
-  opts?: GetTokenOptions & NextjsOptions
+  opts: GetTokenOptions & { convexUrl: string; convexSiteUrl: string }
 ) => {
-  const siteUrl = parseConvexSiteUrl(convexSiteUrl);
+  const siteUrl = parseConvexSiteUrl(opts.convexSiteUrl);
 
   const cachedGetToken = cache(
     ({ forceRefresh }: { forceRefresh?: boolean } = {}) =>
