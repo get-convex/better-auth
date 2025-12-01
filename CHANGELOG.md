@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.9
+
+- fix: update import extensions for esm resolution
+
 ## 0.9.8
 
 - chore: update to latest component authoring guidelines and tooling
