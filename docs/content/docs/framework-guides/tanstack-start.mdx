@@ -24,6 +24,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     ```npm
     npm install convex@latest @convex-dev/better-auth
     npm install better-auth@1.3.34 --save-exact
+    npm install @types/node --save-dev
     ```
 
   </div>
@@ -51,14 +52,16 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     Add a `convex/auth.config.ts` file to configure Better Auth as an authentication provider.
 
     ```ts title="convex/auth.config.ts"
+    import type { AuthConfig } from 'convex/server'
+
     export default {
       providers: [
         {
-          domain: process.env.CONVEX_SITE_URL,
-          applicationID: "convex",
+          domain: process.env.CONVEX_SITE_URL!,
+          applicationID: 'convex',
         },
       ],
-    };
+    } satisfies AuthConfig
     ```
 
   </div>
@@ -117,18 +120,19 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     <Callout>Some Typescript errors will show until you save the file.</Callout>
 
     ```ts title="convex/auth.ts"
-    import { createClient, type GenericCtx } from "@convex-dev/better-auth";
-    import { convex } from "@convex-dev/better-auth/plugins";
-    import { components } from "./_generated/api";
-    import { DataModel } from "./_generated/dataModel";
-    import { query } from "./_generated/server";
-    import { betterAuth } from "better-auth";
+    import { createClient } from '@convex-dev/better-auth'
+    import { convex } from '@convex-dev/better-auth/plugins'
+    import { betterAuth } from 'better-auth'
+    import { components } from './_generated/api'
+    import { query } from './_generated/server'
+    import type { GenericCtx } from '@convex-dev/better-auth'
+    import type { DataModel } from './_generated/dataModel'
 
-    const siteUrl = process.env.SITE_URL!;
+    const siteUrl = process.env.SITE_URL!
 
     // The component client has methods needed for integrating Convex with Better Auth,
     // as well as helper methods for general use.
-    export const authComponent = createClient<DataModel>(components.betterAuth);
+    export const authComponent = createClient<DataModel>(components.betterAuth)
 
     export const createAuth = (
       ctx: GenericCtx<DataModel>,
@@ -151,17 +155,17 @@ description: Install and configure Convex + Better Auth for TanStack Start.
           // The Convex plugin is required for Convex compatibility
           convex(),
         ],
-      });
-    };
+      })
+    }
 
     // Example function for getting the current user
     // Feel free to edit, omit, etc.
     export const getCurrentUser = query({
       args: {},
       handler: async (ctx) => {
-        return authComponent.getAuthUser(ctx);
+        return authComponent.getAuthUser(ctx)
       },
-    });
+    })
     ```
 
   </div>
@@ -172,12 +176,12 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     Create a Better Auth client instance for interacting with the Better Auth server from your client.
 
     ```ts title="src/lib/auth-client.ts"
-    import { createAuthClient } from "better-auth/react";
-    import { convexClient } from "@convex-dev/better-auth/client/plugins";
+    import { createAuthClient } from 'better-auth/react'
+    import { convexClient } from '@convex-dev/better-auth/client/plugins'
 
     export const authClient = createAuthClient({
       plugins: [convexClient()],
-    });
+    })
     ```
 
   </div>
@@ -227,24 +231,27 @@ description: Install and configure Convex + Better Auth for TanStack Start.
 
     ```ts title="src/routes/__root.tsx"
     /// <reference types="vite/client" />
-    import * as React from 'react'
-    import appCss from '@/styles/app.css?url'
     import {
-      Outlet,
-      createRootRouteWithContext,
       HeadContent,
+      Outlet,
       Scripts,
-      useRouteContext, // [!code ++]
+      createRootRouteWithContext,
+      useRouteContext,
     } from '@tanstack/react-router'
-    // [!code ++:8]
+    import * as React from 'react'
+    // [!code ++:11]
     import { createServerFn } from '@tanstack/react-start'
-    import { QueryClient } from '@tanstack/react-query'
-    import { ConvexQueryClient } from '@convex-dev/react-query'
-    import { ConvexReactClient } from 'convex/react'
     import { getCookie, getRequest } from '@tanstack/react-start/server'
     import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
-    import { fetchSession, getCookieName } from '@convex-dev/better-auth/react-start'
-    import { authClient } from "@/lib/auth-client";
+    import {
+      fetchSession,
+      getCookieName,
+    } from '@convex-dev/better-auth/react-start'
+    import type { ConvexQueryClient } from '@convex-dev/react-query'
+    import type { ConvexReactClient } from 'convex/react'
+    import type { QueryClient } from '@tanstack/react-query'
+    import { authClient } from '~/lib/auth-client'
+    import appCss from '~/styles/app.css?url'
 
     // [!code ++:11]
     // Get auth information for SSR using available cookies
@@ -279,7 +286,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
           { rel: 'icon', href: '/favicon.ico' },
         ],
       }),
-      // [!code ++:14]
+      // [!code ++:13]
       beforeLoad: async (ctx) => {
         // all queries, mutations and action made with TanStack Query will be
         // authenticated by an identity token.
@@ -297,7 +304,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     })
 
     function RootComponent() {
-      const context = useRouteContext({ from: Route.id })
+      const context = useRouteContext({ from: Route.id }) // [!code ++]
       return (
         // [!code ++:4]
         <ConvexBetterAuthProvider
@@ -343,13 +350,9 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     export function getRouter() {
       const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!
       if (!CONVEX_URL) {
-        throw new Error('missing VITE_CONVEX_URL envar')
+        console.error('missing envar CONVEX_URL')
       }
-      // [!code ++:4]
-      const convex = new ConvexReactClient(CONVEX_URL, {
-        unsavedChangesWarning: false,
-      })
-      const convexQueryClient = new ConvexQueryClient(convex)
+      const convexQueryClient = new ConvexQueryClient(CONVEX_URL)
 
       const queryClient: QueryClient = new QueryClient({
         defaultOptions: {
@@ -366,7 +369,13 @@ description: Install and configure Convex + Better Auth for TanStack Start.
           routeTree,
           defaultPreload: 'intent',
           scrollRestoration: true,
-          context: { queryClient, convexClient: convex, convexQueryClient }, // [!code ++]
+          context: { queryClient }, // [!code --]
+          // [!code ++:5]
+          context: {
+            queryClient,
+            convexClient: convexQueryClient.convexClient,
+            convexQueryClient,
+          },
           Wrap: ({ children }) => (
             <ConvexProvider client={convexQueryClient.convexClient}>
               {children}
@@ -394,10 +403,10 @@ usage. Below are usage notes specific to TanStack Start.
 
 ### Using Better Auth from the server
 
-To use Better Auth's [server
-methods](https://www.better-auth.com/docs/concepts/api) in server rendering,
-server functions, or any other TanStack Start server code, use Convex functions
-and call the function from your server code.
+To use Better Auth's
+[server methods](https://www.better-auth.com/docs/concepts/api) in server
+rendering, server functions, or any other TanStack Start server code, use Convex
+functions and call the function from your server code.
 
 First, export helpers for calling Convex functions from your server code.
 
@@ -410,8 +419,8 @@ export const { fetchQuery, fetchMutation, fetchAction } =
   await setupFetchClient(createAuth, getCookie);
 ```
 
-Here's an example Convex function that uses Better Auth's server methods, and
-a TanStack server function that calls the Convex function.
+Here's an example Convex function that uses Better Auth's server methods, and a
+TanStack server function that calls the Convex function.
 
 ```ts title="convex/users.ts"
 import { mutation } from "./_generated/server";
