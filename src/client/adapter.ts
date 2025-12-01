@@ -13,14 +13,14 @@ import {
   type WithoutSystemFields,
 } from "convex/server";
 import type { SetOptional } from "type-fest";
-import defaultSchema from "../component/schema";
+import defaultSchema from "../component/schema.js";
 import type { Where } from "better-auth/types";
 import { asyncMap } from "convex-helpers";
 import { prop, sortBy, unique } from "remeda";
-import { isRunMutationCtx } from "../utils";
-import type { Doc, TableNames } from "../component/_generated/dataModel";
-import type { ComponentApi } from "../component/_generated/component";
-import type { AuthFunctions, GenericCtx, Triggers } from ".";
+import { isRunMutationCtx } from "../utils/index.js";
+import type { Doc, TableNames } from "../component/_generated/dataModel.js";
+import type { ComponentApi } from "../component/_generated/component.js";
+import type { AuthFunctions, GenericCtx, Triggers } from "./index.js";
 
 const handlePagination = async (
   next: ({

@@ -5,7 +5,7 @@ import { type AuthTokenFetcher } from "convex/browser";
 import { ConvexProviderWithAuth } from "convex/react";
 import { type BetterAuthClientPlugin } from "better-auth";
 import { createAuthClient } from "better-auth/react";
-import { convexClient, crossDomainClient } from "../client/plugins";
+import { convexClient, crossDomainClient } from "../client/plugins/index.js";
 
 type CrossDomainClient = ReturnType<typeof crossDomainClient>;
 type ConvexClient = ReturnType<typeof convexClient>;

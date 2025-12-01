@@ -8,9 +8,9 @@ import {
   type GenericActionCtx,
   type GenericDataModel,
 } from "convex/server";
-import { JWT_COOKIE_NAME } from "../plugins/convex";
+import { JWT_COOKIE_NAME } from "../plugins/convex/index.js";
 import { ConvexHttpClient } from "convex/browser";
-import { type CreateAuth, getStaticAuth } from "../client";
+import { type CreateAuth, getStaticAuth } from "../client/index.js";
 
 export const getCookieName = <DataModel extends GenericDataModel>(
   createAuth: CreateAuth<DataModel>

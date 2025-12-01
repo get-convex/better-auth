@@ -3,9 +3,9 @@
 import { describe, expect, test } from "vitest";
 import { runAdapterTest } from "better-auth/adapters/test";
 import { convexTest } from "convex-test";
-import { api } from "../component/_generated/api";
-import schema from "../component/schema";
-import { serialize } from "../component/adapterTest";
+import { api } from "../component/_generated/api.js";
+import schema from "../component/schema.js";
+import { serialize } from "../component/adapterTest.js";
 import type { DBAdapter } from "better-auth/adapters";
 
 export const getAdapter = (t: ReturnType<typeof convexTest>) => async () => {

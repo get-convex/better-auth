@@ -17,7 +17,7 @@ import {
   queryGeneric,
 } from "convex/server";
 import { type GenericId, type Infer, v } from "convex/values";
-import { convexAdapter } from "./adapter";
+import { convexAdapter } from "./adapter.js";
 import { type Auth, betterAuth } from "better-auth";
 import type { DBAdapterInstance } from "better-auth/adapters";
 import { asyncMap } from "convex-helpers";
@@ -29,15 +29,15 @@ import {
   listOne,
   paginate,
   selectFields,
-} from "./adapterUtils";
+} from "./adapterUtils.js";
 import { corsRouter } from "convex-helpers/server/cors";
 import { version as convexVersion } from "convex";
 import semver from "semver";
-import defaultSchema from "../component/schema";
+import defaultSchema from "../component/schema.js";
 import { getAuthTables } from "better-auth/db";
 import type { SetOptional } from "type-fest";
-import type { ComponentApi } from "../component/_generated/component";
-import type { TableNames } from "../component/_generated/dataModel";
+import type { ComponentApi } from "../component/_generated/component.js";
+import type { TableNames } from "../component/_generated/dataModel.js";
 
 export { convexAdapter };
 
@@ -671,7 +671,7 @@ export const createClient = <
       const staticAuth = getStaticAuth(createAuth);
       const path = staticAuth.options.basePath ?? "/api/auth";
       const authRequestHandler = httpActionGeneric(async (ctx, request) => {
-        if (!config?.verbose) {
+        if (config?.verbose) {
           console.log("options.baseURL", staticAuth.options.baseURL);
           console.log("request headers", request.headers);
         }
