@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.9.7-alpha.0
+## 0.9.8
+
+- chore: update to latest component authoring guidelines and tooling
+
+## 0.9.7
 
 - fix: add type error for triggers without authFunctions
 - fix: support Better Auth options inference through getStaticAuth
@@ -45,8 +49,8 @@
 - feat: add requireRunMutationCtx and requireActionCtx type utils
 - fix: swap old and new doc params in onUpdate trigger
 
-  This was just a mistake in design - you often will not need the
-  old doc in an update trigger, so it should be a trailing param
+  This was just a mistake in design - you often will not need the old doc in an
+  update trigger, so it should be a trailing param
 
   BREAKING CHANGE: 2nd and 3rd params in onUpdate trigger are swapped
 
@@ -153,7 +157,8 @@
 
 ## 0.7.8
 
-- Add `updateUserMetadata` method to the client (undocumented, may change or be removed).
+- Add `updateUserMetadata` method to the client (undocumented, may change or be
+  removed).
 
 ## 0.7.7
 
@@ -200,8 +205,7 @@
   The `path` and `allowedOrigins` options have been removed from the
   `registerRoutes` method, they now defer to Better Auth's `basePath` and
   `trustedOrigins` options, respectively. The `siteUrl` option for the
-  crossDomain plugin continues to be automatically added to
-  `trustedOrigins`.
+  crossDomain plugin continues to be automatically added to `trustedOrigins`.
 
 - Support `listSessions` method.
 
@@ -210,9 +214,9 @@
   Without this the cookie wasn't set until the first authenticated client load,
   making SSA fail when loading the next route after login.
 
-- Delete expired sessions at login. This will help with sessions piling up
-  in the database, but doesn't completely solve it, especially for apps with very long
-  lived sessions and lots of users.
+- Delete expired sessions at login. This will help with sessions piling up in
+  the database, but doesn't completely solve it, especially for apps with very
+  long lived sessions and lots of users.
 
 ## 0.6.2
 
