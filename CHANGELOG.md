@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.11
+
+- fix: drop stray troubleshooting logs
+
 ## 0.9.10
 
 - fix: support custom schema type in createClient
