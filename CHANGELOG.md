@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.10
+
+- fix: support custom schema type in createClient
+
 ## 0.9.9
 
 - fix: update import extensions for esm resolution
