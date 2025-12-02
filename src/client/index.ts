@@ -35,7 +35,6 @@ import { version as convexVersion } from "convex";
 import semver from "semver";
 import defaultSchema from "../component/schema.js";
 import { getAuthTables } from "better-auth/db";
-import type { SetOptional } from "type-fest";
 import type { ComponentApi } from "../component/_generated/component.js";
 import type { TableNames } from "../component/_generated/dataModel.js";
 
@@ -444,14 +443,26 @@ export type Triggers<
   };
 };
 
+type SlimComponentApi = {
+  adapter: {
+    create: FunctionReference<"mutation", "internal">;
+    findOne: FunctionReference<"query", "internal">;
+    findMany: FunctionReference<"query", "internal">;
+    updateOne: FunctionReference<"mutation", "internal">;
+    updateMany: FunctionReference<"mutation", "internal">;
+    deleteOne: FunctionReference<"mutation", "internal">;
+    deleteMany: FunctionReference<"mutation", "internal">;
+    migrationRemoveUserId?: FunctionReference<"mutation", "internal">;
+  };
+  adapterTest?: ComponentApi["adapterTest"];
+};
+
 export const createClient = <
   DataModel extends GenericDataModel,
   Schema extends SchemaDefinition<GenericSchema, true> = typeof defaultSchema,
+  Api extends SlimComponentApi = SlimComponentApi,
 >(
-  component: {
-    adapter: SetOptional<ComponentApi["adapter"], "migrationRemoveUserId">;
-    adapterTest?: ComponentApi["adapterTest"];
-  },
+  component: Api,
   config?: {
     local?: {
       schema?: Schema;
