@@ -3,7 +3,7 @@ import { convexQuery } from '@convex-dev/react-query'
 import { api } from '@convex/_generated/api'
 import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/settings')({
+export const Route = createFileRoute('/_authed/settings')({
   component: RouteComponent,
   loader: async ({ context }) => {
     await Promise.all([

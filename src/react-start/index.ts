@@ -1,11 +1,16 @@
 import { stripIndent } from "common-tags";
-import { betterFetch } from "@better-fetch/fetch";
-import * as jose from "jose";
-import { getSessionCookie } from "better-auth/cookies";
-import { JWT_COOKIE_NAME } from "../plugins/convex/index.js";
 import type { FunctionReference, FunctionReturnType } from "convex/server";
 import { ConvexHttpClient } from "convex/browser";
 import type { SetOptional } from "type-fest";
+import { getToken, type GetTokenOptions } from "../utils/index.js";
+import React from "react";
+
+// Caching supported for React 19+
+const cache =
+  React.cache ||
+  ((fn: (...args: any[]) => any) => {
+    return (...args: any[]) => fn(...args);
+  });
 
 type ClientOptions = {
   /**
@@ -84,57 +89,6 @@ const parseConvexSiteUrl = (url: string) => {
   return url;
 };
 
-type GetTokenOptions = {
-  forceRefresh?: boolean;
-  cookiePrefix?: string;
-  jwtCache?: {
-    enabled: boolean;
-    expirationToleranceSeconds?: number;
-    isAuthError: (error: unknown) => boolean;
-  };
-};
-
-const getTokenFn = async (
-  siteUrl: string,
-  headers: Headers,
-  opts?: GetTokenOptions
-) => {
-  const fetchToken = async () => {
-    const { data } = await betterFetch<{ token: string }>(
-      "/api/auth/convex/token",
-      {
-        baseURL: siteUrl,
-        headers,
-      }
-    );
-    return { isFresh: true, token: data?.token };
-  };
-  if (!opts?.jwtCache?.enabled || opts.forceRefresh) {
-    return await fetchToken();
-  }
-  const token = getSessionCookie(new Headers(headers), {
-    cookieName: JWT_COOKIE_NAME,
-    cookiePrefix: opts?.cookiePrefix,
-  });
-  if (!token) {
-    return await fetchToken();
-  }
-  try {
-    const claims = jose.decodeJwt(token);
-    const exp = claims?.exp;
-    const now = Math.floor(new Date().getTime() / 1000);
-    const isExpired = exp
-      ? now > exp + (opts?.jwtCache?.expirationToleranceSeconds ?? 60)
-      : true;
-    if (!isExpired) {
-      return { isFresh: false, token };
-    }
-  } catch (error) {
-    console.error("Error decoding JWT", error);
-  }
-  return await fetchToken();
-};
-
 const handler = (request: Request, opts: { convexSiteUrl: string }) => {
   const requestUrl = new URL(request.url);
   const nextUrl = `${opts.convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
@@ -159,10 +113,12 @@ export const convexBetterAuthReactStart = (
 ) => {
   const siteUrl = parseConvexSiteUrl(opts.convexSiteUrl);
 
-  const getToken = async (opts: GetTokenOptions & { headers: Headers }) => {
-    const { headers, ...rest } = opts;
-    return getTokenFn(siteUrl, headers, rest);
-  };
+  const cachedGetToken = cache(
+    (opts: GetTokenOptions & { headers: Headers }) => {
+      const { headers, ...rest } = opts;
+      return getToken(siteUrl, headers, rest);
+    }
+  );
 
   const callWithToken = async <
     FnType extends "query" | "mutation" | "action",
@@ -174,7 +130,7 @@ export const convexBetterAuthReactStart = (
     if (options.token) {
       return fn(options.token);
     }
-    const token = (await getToken({ ...opts, ...options })) ?? {};
+    const token = (await cachedGetToken({ ...opts, ...options })) ?? {};
     try {
       return await fn(token?.token);
     } catch (error) {
@@ -185,14 +141,14 @@ export const convexBetterAuthReactStart = (
       ) {
         throw error;
       }
-      const newToken = await getToken({ ...options, forceRefresh: true });
+      const newToken = await cachedGetToken({ ...options, forceRefresh: true });
       return await fn(newToken.token);
     }
   };
 
   return {
     getToken: async (headers: Headers) => {
-      const token = await getToken({ ...opts, headers });
+      const token = await cachedGetToken({ ...opts, headers });
       return token.token;
     },
     handler: (request: Request) => handler(request, opts),

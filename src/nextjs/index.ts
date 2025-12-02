@@ -1,5 +1,3 @@
-import { betterFetch } from "@better-fetch/fetch";
-import { getSessionCookie } from "better-auth/cookies";
 import { stripIndent } from "common-tags";
 import {
   fetchAction,
@@ -15,8 +13,7 @@ import {
   type FunctionReturnType,
 } from "convex/server";
 import { cache } from "react";
-import * as jose from "jose";
-import { JWT_COOKIE_NAME } from "../plugins/convex/index.js";
+import { getToken, type GetTokenOptions } from "../utils/index.js";
 
 const parseConvexSiteUrl = (url: string) => {
   if (!url) {
@@ -33,57 +30,6 @@ const parseConvexSiteUrl = (url: string) => {
     `);
   }
   return url;
-};
-
-type GetTokenOptions = {
-  forceRefresh?: boolean;
-  cookiePrefix?: string;
-  jwtCache?: {
-    enabled: boolean;
-    expirationToleranceSeconds?: number;
-    isAuthError: (error: unknown) => boolean;
-  };
-};
-
-const getToken = async (
-  siteUrl: string,
-  opts?: GetTokenOptions
-): Promise<{ token?: string; isFresh: boolean }> => {
-  const headers = await (await import("next/headers.js")).headers();
-  const fetchToken = async () => {
-    const { data } = await betterFetch<{ token: string }>(
-      "/api/auth/convex/token",
-      {
-        baseURL: siteUrl,
-        headers,
-      }
-    );
-    return { isFresh: true, token: data?.token };
-  };
-  if (!opts?.jwtCache?.enabled || opts.forceRefresh) {
-    return await fetchToken();
-  }
-  const token = getSessionCookie(new Headers(headers), {
-    cookieName: JWT_COOKIE_NAME,
-    cookiePrefix: opts?.cookiePrefix,
-  });
-  if (!token) {
-    return await fetchToken();
-  }
-  try {
-    const claims = jose.decodeJwt(token);
-    const exp = claims?.exp;
-    const now = Math.floor(new Date().getTime() / 1000);
-    const isExpired = exp
-      ? now > exp + (opts?.jwtCache?.expirationToleranceSeconds ?? 60)
-      : true;
-    if (!isExpired) {
-      return { isFresh: false, token };
-    }
-  } catch (error) {
-    console.error("Error decoding JWT", error);
-  }
-  return await fetchToken();
 };
 
 const handler = (request: Request, siteUrl: string) => {
@@ -106,8 +52,10 @@ export const convexBetterAuthNextJs = (
   const siteUrl = parseConvexSiteUrl(opts.convexSiteUrl);
 
   const cachedGetToken = cache(
-    ({ forceRefresh }: { forceRefresh?: boolean } = {}) =>
-      getToken(siteUrl, { ...opts, forceRefresh })
+    async ({ forceRefresh }: { forceRefresh?: boolean } = {}) => {
+      const headers = await (await import("next/headers.js")).headers();
+      return getToken(siteUrl, headers, { ...opts, forceRefresh });
+    }
   );
 
   const argsWithToken = <
