@@ -686,23 +686,8 @@ export const createClient = <
           console.log("options.baseURL", staticAuth.options.baseURL);
           console.log("request headers", request.headers);
         }
-        const nodeENV =
-          (typeof process !== "undefined" &&
-            process.env &&
-            process.env.NODE_ENV) ||
-          "";
-        const isProduction = nodeENV === "production";
         const auth = createAuth(ctx as any);
-        const secure =
-          auth.options.advanced?.useSecureCookies !== undefined
-            ? auth.options.advanced?.useSecureCookies
-            : auth.options.baseURL !== undefined
-              ? auth.options.baseURL.startsWith("https://")
-                ? true
-                : false
-              : isProduction;
         const response = await auth.handler(request);
-        console.log({ nodeENV, isProduction, secure });
         if (config?.verbose) {
           console.log("response headers", response.headers);
         }
