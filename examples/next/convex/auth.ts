@@ -151,7 +151,7 @@ export const createAuth = (
 // api.auth object and we'll type the arg as { getAuthUser: (ctx: QueryCtx) =>
 // Promise<User> } or something
 // This is Tanstack, we need to move it to nextjs first
-export const { getAuthUser } = authComponent.clientApi();
+export const { authCheck } = authComponent.clientApi();
 
 // Get the current user
 export const getCurrentUser = query({

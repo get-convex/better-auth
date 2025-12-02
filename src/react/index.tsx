@@ -1,12 +1,24 @@
-import { useEffect, useState } from "react";
-
-import { type ReactNode, useCallback, useMemo } from "react";
+import {
+  Component,
+  type PropsWithChildren,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { type AuthTokenFetcher } from "convex/browser";
-import { ConvexProviderWithAuth } from "convex/react";
+import {
+  Authenticated,
+  ConvexProviderWithAuth,
+  useConvexAuth,
+  useQuery,
+} from "convex/react";
+import type { FunctionReference } from "convex/server";
 import { type BetterAuthClientPlugin } from "better-auth";
 import { createAuthClient } from "better-auth/react";
 import { convexClient, crossDomainClient } from "../client/plugins/index.js";
-import React from "react";
+import type { EmptyObject } from "convex-helpers";
 
 type CrossDomainClient = ReturnType<typeof crossDomainClient>;
 type ConvexClient = ReturnType<typeof convexClient>;
@@ -144,3 +156,90 @@ function useUseAuthFromBetterAuth(
     [authClient]
   );
 }
+
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  onUnauth: () => void | Promise<void>;
+  renderFallback?: () => React.ReactNode;
+  isAuthError: (error: unknown) => boolean;
+}
+interface ErrorBoundaryState {
+  error?: unknown;
+}
+
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = {};
+  }
+  static defaultProps: Partial<ErrorBoundaryProps> = {
+    renderFallback: () => null,
+  };
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+  async componentDidCatch(error: Error) {
+    if (this.props.isAuthError(error)) {
+      await this.props.onUnauth();
+    }
+  }
+  render() {
+    if (this.state.error && this.props.isAuthError(this.state.error)) {
+      return this.props.renderFallback?.();
+    }
+    return this.props.children;
+  }
+}
+
+// Subscribe to the session validated user to keep this check reactive to
+// actual user auth state at the provider level (rather than just jwt validity state).
+const UserSubscription = ({
+  getAuthUserFn,
+}: {
+  getAuthUserFn: FunctionReference<"query">;
+}) => {
+  useQuery(getAuthUserFn);
+  return null;
+};
+
+export const AuthCheck = ({
+  children,
+  onUnauth,
+  authClient,
+  renderFallback,
+  getAuthUserFn,
+  isAuthError,
+}: PropsWithChildren<{
+  onUnauth: () => void | Promise<void>;
+  authClient: AuthClient;
+  renderFallback?: () => React.ReactNode;
+  getAuthUserFn: FunctionReference<"query", "public", EmptyObject>;
+  isAuthError: (error: unknown) => boolean;
+}>) => {
+  const { isAuthenticated, isLoading } = useConvexAuth();
+  const handleUnauth = useCallback(async () => {
+    await authClient.getSession();
+    await onUnauth();
+  }, [onUnauth]);
+
+  useEffect(() => {
+    void (async () => {
+      if (!isLoading && !isAuthenticated) {
+        await handleUnauth();
+      }
+    })();
+  }, [isLoading, isAuthenticated]);
+
+  return (
+    <ErrorBoundary
+      onUnauth={handleUnauth}
+      isAuthError={isAuthError}
+      renderFallback={renderFallback}
+    >
+      <Authenticated>
+        <UserSubscription getAuthUserFn={getAuthUserFn} />
+      </Authenticated>
+      {children}
+    </ErrorBoundary>
+  );
+};

@@ -37,7 +37,7 @@ function App() {
         <UserProfile user={user.data} />
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" asChild>
-            <Link to="/">
+            <Link to="/settings">
               <div className="flex items-center gap-2">
                 <Settings size={16} />
                 Settings

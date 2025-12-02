@@ -21,8 +21,6 @@ import { api } from '@convex/_generated/api'
 
 const getAuth = createServerFn({ method: 'GET' }).handler(async () => {
   const headers = getRequestHeaders()
-  const user = await fetchQuery(api.auth.getAuthUser, {}, { headers })
-  console.log('user', user)
   return await getToken(headers)
 })
 

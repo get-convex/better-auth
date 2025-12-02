@@ -18,6 +18,7 @@ import betterAuthSchema from './betterAuth/schema'
 import { query, QueryCtx } from './_generated/server'
 import { DataModel, Id } from './_generated/dataModel'
 import { asyncMap, withoutSystemFields } from 'convex-helpers'
+import { v } from 'convex/values'
 
 // This implementation is upgraded to 0.8 Local Install with no
 // database migration required. It continues the pattern of writing
@@ -73,7 +74,7 @@ export const authComponent = createClient<DataModel, typeof betterAuthSchema>(
 
 export const { onCreate, onUpdate, onDelete } = authComponent.triggersApi()
 
-export const { getAuthUser } = authComponent.clientApi()
+export const { authCheck } = authComponent.clientApi()
 
 export const createAuth = (
   ctx: GenericCtx<DataModel>,
@@ -175,8 +176,19 @@ export const getUser = async (ctx: QueryCtx) => {
 }
 
 export const getCurrentUser = query({
+  args: { caller: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    return await getUser(ctx)
+  },
+})
+
+export const hasPassword = query({
   args: {},
   handler: async (ctx) => {
-    return await safeGetUser(ctx)
+    const { auth, headers } = await authComponent.getAuth(createAuth, ctx)
+    const accounts = await auth.api.listUserAccounts({
+      headers,
+    })
+    return accounts.some((account) => account.providerId === 'credential')
   },
 })

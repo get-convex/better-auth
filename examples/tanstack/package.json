@@ -43,6 +43,7 @@
     "postcss": "^8.5.4",
     "react": "file:../../node_modules/react",
     "react-dom": "file:../../node_modules/react-dom",
+    "react-qr-code": "^2.0.18",
     "redaxios": "^0.5.1",
     "resend": "^4.5.2",
     "sonner": "^2.0.5",

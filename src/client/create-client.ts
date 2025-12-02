@@ -264,7 +264,7 @@ export const createClient = <
     },
 
     clientApi: () => ({
-      getAuthUser: queryGeneric({
+      authCheck: queryGeneric({
         args: {},
         handler: async (ctx: GenericCtx<DataModel>) => {
           const user = await safeGetAuthUser(ctx);

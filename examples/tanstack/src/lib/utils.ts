@@ -7,5 +7,12 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function isAuthError(error: unknown) {
-  return error instanceof ConvexError && error.data === 'Unauthenticated'
+  return Boolean(
+    // Uncaught errors that are not Convex errors, retry just in case
+    !(error instanceof Error) ||
+      // Match Convex errors that include 'auth' or 'user' in the error message
+      (error instanceof ConvexError &&
+        typeof error.data === 'string' &&
+        error.data.match(/auth|user/i)),
+  )
 }

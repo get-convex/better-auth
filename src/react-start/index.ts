@@ -152,7 +152,10 @@ const handler = (request: Request, opts: { convexSiteUrl: string }) => {
 };
 
 export const convexBetterAuthReactStart = (
-  opts: GetTokenOptions & { convexUrl: string; convexSiteUrl: string }
+  opts: Omit<GetTokenOptions, "forceRefresh"> & {
+    convexUrl: string;
+    convexSiteUrl: string;
+  }
 ) => {
   const siteUrl = parseConvexSiteUrl(opts.convexSiteUrl);
 
@@ -171,7 +174,7 @@ export const convexBetterAuthReactStart = (
     if (options.token) {
       return fn(options.token);
     }
-    const token = (await getToken(options)) ?? {};
+    const token = (await getToken({ ...opts, ...options })) ?? {};
     try {
       return await fn(token?.token);
     } catch (error) {
@@ -197,15 +200,18 @@ export const convexBetterAuthReactStart = (
       query: Query,
       args: Query["_args"],
       options: FetchOptions
-    ): Promise<FunctionReturnType<Query>> =>
-      callWithToken((token?: string) => {
-        return fetchQuery(query, args, {
-          convexUrl: opts.convexUrl,
-          convexSiteUrl: opts.convexSiteUrl,
-          ...options,
-          token,
-        });
-      }, options),
+    ): Promise<FunctionReturnType<Query>> => {
+      return callWithToken(
+        (token?: string) =>
+          fetchQuery(query, args, {
+            convexUrl: opts.convexUrl,
+            convexSiteUrl: opts.convexSiteUrl,
+            ...options,
+            token,
+          }),
+        options
+      );
+    },
     fetchMutation: async <Mutation extends FunctionReference<"mutation">>(
       mutation: Mutation,
       args: Mutation["_args"],
