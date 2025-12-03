@@ -8,15 +8,15 @@ import {
   genericOAuth,
   twoFactor,
   username,
+  emailOTP,
+  magicLink
 } from "better-auth/plugins";
-import { emailOTP } from "better-auth/plugins";
 import {
   sendMagicLink,
   sendOTPVerification,
   sendEmailVerification,
   sendResetPassword,
 } from "../convex/email";
-import { magicLink } from "better-auth/plugins";
 import { betterAuth, BetterAuthOptions } from "better-auth";
 import { requireActionCtx } from "@convex-dev/better-auth/utils";
 import { DataModel } from "./_generated/dataModel";
