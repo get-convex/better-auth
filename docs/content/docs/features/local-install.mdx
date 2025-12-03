@@ -26,9 +26,9 @@ installation experience with other providers.
 
     ### Create the component definition
 
-Create a `convex/betterAuth/convex.config.ts` file to define the component. This
-will signal to Convex that the `convex/betterAuth` directory is a locally
-installed component.
+    Create a `convex/betterAuth/convex.config.ts` file to define the component. This
+    will signal to Convex that the `convex/betterAuth` directory is a locally
+    installed component.
 
     ```ts title="convex/betterAuth/convex.config.ts"
     import { defineComponent } from "convex/server";
@@ -75,14 +75,14 @@ installed component.
     import { createAuth } from "../auth";
 
     export const {
-      create,
-      findOne,
-      findMany,
-      updateOne,
-      updateMany,
-      deleteOne,
-      deleteMany,
-    } = createApi(schema, createAuth);
+    create,
+    findOne,
+    findMany,
+    updateOne,
+    updateMany,
+    deleteOne,
+    deleteMany,
+  } = createApi(schema, createAuth);
     ```
 
   </div>
@@ -118,13 +118,13 @@ installed component.
 
     export const authComponent = createClient<DataModel>(components.betterAuth); // [!code --]
     export const authComponent = createClient<DataModel, typeof authSchema>( // [!code ++]
-      components.betterAuth,
-      // [!code ++:5]
-      {
-        local: {
-          schema: authSchema,
-        },
-      }
+    components.betterAuth,
+    // [!code ++:5]
+    {
+      local: {
+      schema: authSchema,
+    },
+    }
     );
 
     // ...
@@ -199,10 +199,10 @@ custom indexes aren't overwritten when the schema is regenerated.
     import { tables } from "./generatedSchema";
 
     const schema = defineSchema({
-      ...tables,
-      // Spread the generated schema and add a custom index
-      user: tables.user.index("custom_index", ["field1", "field2"]),
-    });
+    ...tables,
+    // Spread the generated schema and add a custom index
+    user: tables.user.index("custom_index", ["field1", "field2"]),
+  });
 
     export default schema;
     ```
@@ -235,21 +235,21 @@ import { v } from "convex/values";
 
 // This is accessible from outside the component
 export const someFunction = query({
-  args: { sessionId: v.id("session") },
-  // Add a return validator so the return value is typed when
-  // called from outside the component.
-  returns: v.union(v.null(), doc(schema, "session")),
+args: { sessionId: v.id("session") },
+// Add a return validator so the return value is typed when
+// called from outside the component.
+returns: v.union(v.null(), doc(schema, "session")),
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.sessionId);
-  },
+  return await ctx.db.get(args.sessionId);
+},
 });
 
 // This is not accessible from outside the component.
 export const someInternalFunction = internalQuery({
-  args: { sessionId: v.id("session") },
-  handler: async (ctx, args) => {
-    return await ctx.db.get(args.sessionId);
-  },
+args: { sessionId: v.id("session") },
+handler: async (ctx, args) => {
+  return await ctx.db.get(args.sessionId);
+},
 });
 ```
 
@@ -261,11 +261,128 @@ import { components } from "./_generated/api";
 import { v } from "convex/values";
 
 export const someFunction = query({
-  args: { sessionId: v.id("session") },
-  handler: async (ctx, args) => {
-    return await ctx.runQuery(components.betterAuth.someFile.someFunction, {
-      sessionId: args.sessionId,
-    });
-  },
+args: { sessionId: v.id("session") },
+handler: async (ctx, args) => {
+  return await ctx.runQuery(components.betterAuth.someFile.someFunction, {
+    sessionId: args.sessionId,
+  });
+},
 });
 ```
+
+### Stripe createCustomerOnSignUp CONVEX Uncaught ReferenceError Fix
+
+<Callout>
+  If you are installing the `@better-auth/stripe` package, you will encounter the following error when using the createCustomerOnSignUp
+</Callout>
+
+<div className="fd-steps">
+
+
+  <div className="fd-step">
+
+    Example of error with default local installation:
+    ```ts
+    11/15/2025, 2:49:55 PM [CONVEX H(GET /api/auth/callback/github)] [LOG] '2025-11-15T20:49:55.811Z INFO [Better Auth]: [Convex Adapter]' '#5 \x1B[40m\x1B[33m[4/4]\x1B[0m' '\x1B[1mcreate\x1B[0m \x1B[2m(Parsed Result)\x1B[0m:' {
+    model: 'user',
+    data: {
+    name: 'Alexander K',
+    email: 'xxxxx@gmail.com',
+    emailVerified: true,
+    image: 'https://avatars.githubusercontent.com/u/xxxxxx',
+    createdAt: 1763239795775,
+    updatedAt: 1763239795775,
+    userId: undefined,
+    stripeCustomerId: undefined,
+    id: '12345234234'
+  }
+  }
+    11/15/2025, 2:49:55 PM [CONVEX H(GET /api/auth/callback/github)] Uncaught ReferenceError: Buffer is not defined
+    ```
+  </div>
+  <div className="fd-step">
+
+    ### This usually occurs when passing
+    ```ts
+    createCustomerOnSignUp: true
+    ```
+    in the @betterauth/stripe plugin initialization in convex/auth.ts
+    ```ts
+    plugins: [
+
+    convex(),
+    stripe({
+    createCustomerOnSignUp: true,
+    stripeClient: stripeClient,
+    stripeWebhookSecret: "xxxxxx"
+  }),
+
+    ],
+    ```
+  </div>
+
+
+
+
+  <div className="fd-step">
+
+    ### Install Buffer Package
+
+    Export adapter functions for the component.
+
+    ```ts title="cli"
+    npm i buffer
+    ```
+
+  </div>
+
+  <div className="fd-step">
+
+    ### Add Code
+    Add the following lines to fix the issue
+
+    ```ts title="convex/auth.ts"
+
+
+    import { Buffer } from 'buffer'; // [!code ++]
+
+    //all other import statements in auth.ts
+
+
+    globalThis.Buffer = Buffer; // [!code ++]
+
+    const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    //stripe client code args
+  })
+
+
+    const siteUrl = process.env.SITE_URL!;
+
+    export const authComponent = createClient<DataModel, typeof authSchema>(
+    //authComponent code args
+    );
+
+    globalThis.Buffer = globalThis.Buffer || { // [!code ++]
+    //Dont put anything here [!code ++]
+  } as any; // [!code ++]
+
+
+    export const createAuth = (
+    ctx: GenericCtx<DataModel>,
+    { optionsOnly } = { optionsOnly: false },
+    ) => {
+      return betterAuth({
+      ///your better auth code
+    });
+    };
+
+    ```
+
+  </div>
+
+</div>
+
+
+
+
+
