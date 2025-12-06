@@ -1,10 +1,10 @@
 ---
-title: Sveltekit
-description: Install and configure Convex + Better Auth for Sveltekit.
+title: SvelteKit
+description: Install and configure Convex + Better Auth for SvelteKit.
 ---
 
 <Callout>
-  Sveltekit support is currently community maintained, and relies on the
+  SvelteKit support is currently community maintained, and relies on the
   [@mmailaender/convex-better-auth-svelte](https://github.com/mmailaender/convex-better-auth-svelte)
   package. A complete working example is provided in the repo, and any issues
   can be reported there as well.
@@ -345,13 +345,9 @@ You're now ready to start using Better Auth with Convex.
 ## Usage
 
 Check out the [Basic Usage](/basic-usage) guide for more information on general
-usage. Below are usage notes specific to Sveltekit.
+usage. Below are usage notes specific to SvelteKit.
 
 ### Using Better Auth from the client
-
-Note: To add SSR support (`data.currentUser`) also add the
-`src/routes/+page.server.ts` file from the `Using Better Auth from the server`
-example.
 
 ```svelte title="src/routes/+page.svelte"
 <script lang="ts">
@@ -364,11 +360,11 @@ example.
 
 	// Auth state store
 	const auth = useAuth();
-	const isLoading = $derived(auth.isLoading && !data.currentUser);
-	const isAuthenticated = $derived(auth.isAuthenticated || !!data.currentUser);
+	const isLoading = $derived(auth.isLoading);
+	const isAuthenticated = $derived(auth.isAuthenticated);
 
 	const currentUserResponse = useQuery(api.auth.getCurrentUser, () => (isAuthenticated ? {} : 'skip'));
-	let user = $derived(currentUserResponse.data ?? data.currentUser);
+	let user = $derived(currentUserResponse.data);
 
 	// Sign in/up form state
 	let showSignIn = $state(true);
@@ -533,7 +529,7 @@ example.
 
 To use Better Auth's
 [server methods](https://www.better-auth.com/docs/concepts/api) in server
-rendering, server functions, or any other Sveltekit server code, use Convex
+rendering, server functions, or any other SvelteKit server code, use Convex
 functions and call the function from your server code.
 
 Here's an example server action that calls the Convex function `getCurrentUser`
@@ -551,3 +547,169 @@ export const load: PageServerLoad = async ({ locals }) => {
   return { currentUser };
 };
 ```
+
+### Authenticated requests
+
+There are two common ways to make authenticated Convex requests from Svelte
+components.
+
+#### Option 1: Conditionally run queries with `useQuery` and `auth.isAuthenticated`
+
+Use this when your app has a mix of public and members-only content.  
+You can read the auth state from `useAuth` and return `"skip"` for queries that
+should only run once the user is authenticated.
+
+```ts title="src/routes/+page.svelte"
+import { api } from "$convex/_generated/api";
+import { useQuery } from "convex-svelte";
+import { useAuth } from "@mmailaender/convex-better-auth-svelte/svelte";
+
+const auth = useAuth();
+
+// Only fetch once the user is authenticated
+const memberOnlyPosts = useQuery(api.posts.getMemberOnlyPosts, () =>
+  auth.isAuthenticated ? {} : "skip"
+);
+
+// Always fetched, regardless of auth state
+const publicPosts = useQuery(api.posts.getPublicPosts, {});
+```
+
+#### Option 2: Make all requests authenticated with `expectAuth`
+
+Use this when your app is essentially “members-only” and almost all data
+requires authentication.
+
+By enabling `expectAuth`, all Convex queries and mutations created through
+`createSvelteAuthClient` will:
+
+- automatically include the auth token, and
+- not run until the user is authenticated.
+
+Unauthenticated users won’t trigger any Convex requests until they sign in.
+
+```ts title="src/routes/+layout.svelte"
+import { createSvelteAuthClient } from "@mmailaender/convex-better-auth-svelte/svelte";
+import { authClient } from "$lib/auth-client";
+
+createSvelteAuthClient({
+  authClient,
+  options: {
+    expectAuth: true,
+  },
+});
+```
+
+### SSR (Optional)
+
+By default, authentication state is determined on the client, which can cause a
+brief loading state flash while the session is validated. SSR authentication
+avoids this by providing the auth state from the server during the initial page
+load.
+
+**Benefits**
+
+- **No loading state flash** - `isLoading` starts as `false`, and
+  `isAuthenticated` is immediately correct
+- **Instant content** - Protected content renders on first paint
+- **Better UX** - Users see their personalized content without waiting for
+  client-side checks.
+
+**Setup**
+
+<div className="fd-steps">
+  <div className="fd-step">
+    #### Get auth state in your layout server
+
+    Use `getAuthState` to determine authentication status from cookies during SSR.
+
+    ```ts title="src/routes/+layout.server.ts"
+    import type { LayoutServerLoad } from "./$types";
+    import { createAuth } from "$convex/auth.js";
+    import { getAuthState } from "@mmailaender/convex-better-auth-svelte/sveltekit";
+
+    export const load: LayoutServerLoad = async ({ cookies }) => {
+      const authState = await getAuthState(createAuth, cookies);
+      return { authState };
+    };
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    #### Pass auth state to the client
+
+    Update your layout to pass the server auth state to `createSvelteAuthClient`.
+
+    ```ts title="src/routes/+layout.svelte"
+    <script lang="ts">
+      import { createSvelteAuthClient } from '@mmailaender/convex-better-auth-svelte/svelte';
+      import { authClient } from '$lib/auth-client';
+
+      let { children, data } = $props();
+
+      // Pass server auth state to prevent loading flash
+      createSvelteAuthClient({
+        authClient,
+        getServerState: () => data.authState  // [!code ++]
+      });
+    </script>
+
+    {@render children()}
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    #### Prefetch user data
+
+    For the best experience, also prefetch user data on the server to prevent content flash.
+
+    ```ts title="src/routes/+layout.server.ts"
+    import type { LayoutServerLoad } from "./$types";
+    import { api } from "$convex/_generated/api";
+    import { createAuth } from "$convex/auth.js";
+    import { createConvexHttpClient, getAuthState } from "@mmailaender/convex-better-auth-svelte/sveltekit";
+
+    export const load: LayoutServerLoad = async ({ locals, cookies }) => {
+      const authState = await getAuthState(createAuth, cookies);
+
+      if (!authState.isAuthenticated) {
+        return { authState, currentUser: null };
+      }
+
+      const client = createConvexHttpClient({ token: locals.token });
+
+      try {
+        const currentUser = await client.query(api.auth.getCurrentUser, {});
+        return { authState, currentUser };
+      } catch {
+        return { authState, currentUser: null };
+      }
+    };
+    ```
+
+    Then use `initialData` in your queries to prevent data flash:
+
+    ```ts title="src/routes/+page.svelte"
+    <script lang="ts">
+      import { api } from '$convex/_generated/api';
+      import { useQuery } from 'convex-svelte';
+      import { useAuth } from '@mmailaender/convex-better-auth-svelte/svelte';
+
+      let { data } = $props();
+      const auth = useAuth();
+
+      const currentUserResponse = useQuery(
+        api.auth.getCurrentUser,
+        () => (auth.isAuthenticated ? {} : 'skip'),
+        () => ({
+          initialData: data.currentUser,
+          keepPreviousData: true
+        })
+      );
+    </script>
+    ```
+
+  </div>
+</div>
