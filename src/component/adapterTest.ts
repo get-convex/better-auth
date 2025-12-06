@@ -1,7 +1,7 @@
-import { convexAdapter, GenericCtx } from "../client";
-import { api } from "./_generated/api";
-import { mutation, query } from "./_generated/server";
-import {
+import { convexAdapter, type GenericCtx } from "../client/index.js";
+import { api } from "./_generated/api.js";
+import { mutation, query } from "./_generated/server.js";
+import type {
   GenericDataModel,
   GenericMutationCtx,
   GenericQueryCtx,

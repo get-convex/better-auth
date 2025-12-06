@@ -9,15 +9,20 @@
     "lib": ["ES2021", "dom", "DOM.Iterable"],
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    // We enforce stricter module resolution for Node16 compatibility
+    // But when building we use Bundler & ESNext for ESM
+    "module": "Node16",
+    "moduleResolution": "NodeNext",
 
+    "composite": true,
     "isolatedModules": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "rootDir": "./src",
     "outDir": "./dist",
+    "verbatimModuleSyntax": true,
     "skipLibCheck": true
   },
-  "include": ["./src/**/*", "./vitest.config.mts"]
+  "include": ["./src/**/*"]
 }

@@ -1,2 +1,2 @@
-export * from "./convex";
-export * from "./cross-domain";
+export * from "./convex/index.js";
+export * from "./cross-domain/index.js";

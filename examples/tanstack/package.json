@@ -49,6 +49,8 @@
   },
   "devDependencies": {
     "@types/node": "^22.5.4",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
     "concurrently": "~8.2.2",
     "prettier": "3.4.2",
     "tw-animate-css": "^1.3.4",

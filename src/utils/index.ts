@@ -1,10 +1,10 @@
 import {
-  GenericActionCtx,
-  GenericDataModel,
-  GenericMutationCtx,
-  GenericQueryCtx,
+  type GenericActionCtx,
+  type GenericDataModel,
+  type GenericMutationCtx,
+  type GenericQueryCtx,
 } from "convex/server";
-import { GenericCtx } from "../client";
+import { type GenericCtx } from "../client/index.js";
 
 export type RunMutationCtx<DataModel extends GenericDataModel> = (
   | GenericMutationCtx<DataModel>

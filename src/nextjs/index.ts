@@ -1,13 +1,13 @@
 import { createCookieGetter } from "better-auth/cookies";
-import { JWT_COOKIE_NAME } from "../plugins/convex";
-import { CreateAuth, getStaticAuth } from "../client";
-import { GenericDataModel } from "convex/server";
+import { JWT_COOKIE_NAME } from "../plugins/convex/index.js";
+import { type CreateAuth, getStaticAuth } from "../client/index.js";
+import type { GenericDataModel } from "convex/server";
 
 export const getToken = async <DataModel extends GenericDataModel>(
   createAuth: CreateAuth<DataModel>
 ) => {
   const options = getStaticAuth(createAuth).options;
-  const { cookies } = await import("next/headers");
+  const { cookies } = await import("next/headers.js");
   const cookieStore = await cookies();
   const createCookie = createCookieGetter(options);
   const cookie = createCookie(JWT_COOKIE_NAME);
@@ -46,6 +46,7 @@ const handler = (request: Request, opts?: { convexSiteUrl?: string }) => {
   const nextUrl = `${convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
   const newRequest = new Request(nextUrl, request);
   newRequest.headers.set("accept-encoding", "application/json");
+  newRequest.headers.set("host", convexSiteUrl);
   return fetch(newRequest, { method: request.method, redirect: "manual" });
 };
 

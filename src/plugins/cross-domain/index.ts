@@ -1,4 +1,4 @@
-import { type BetterAuthPlugin, HookEndpointContext } from "better-auth";
+import { type BetterAuthPlugin, type HookEndpointContext } from "better-auth";
 import { setSessionCookie } from "better-auth/cookies";
 import { generateRandomString } from "better-auth/crypto";
 import {

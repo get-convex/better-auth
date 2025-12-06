@@ -1,6 +1,6 @@
-import { createApi } from "../client";
-import { auth } from "../auth";
-import schema from "./schema";
+import { createApi } from "../client/index.js";
+import { auth } from "../auth.js";
+import schema from "./schema.js";
 
 export const {
   create,
