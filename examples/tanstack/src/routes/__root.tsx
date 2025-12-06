@@ -55,7 +55,6 @@ export const Route = createRootRouteWithContext<{
     if (token) {
       // During SSR only (the only time serverHttpClient exists),
       // set the auth token to make HTTP queries with.
-      console.log('setting auth token', token)
       ctx.context.convexQueryClient.serverHttpClient?.setAuth(token)
     }
 

@@ -15,7 +15,7 @@ export const Route = createFileRoute('/_authed/')({
   component: App,
   loader: async ({ context }) => {
     await Promise.all([
-      context.queryClient.ensureQueryData(
+      context.queryClient.prefetchQuery(
         convexQuery(api.auth.getCurrentUser, {}),
       ),
       context.queryClient.ensureQueryData(convexQuery(api.todos.get, {})),

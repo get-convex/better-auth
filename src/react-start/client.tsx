@@ -18,11 +18,10 @@ export const useAuthQuery = <
   queryClient?: QueryClient
 ) => {
   const { isLoading, isAuthenticated } = useConvexAuth();
-  const isEnabled =
-    options.enabled !== undefined
-      ? options.enabled
-      : !isLoading && isAuthenticated;
-  const result = useQuery({ ...options }, queryClient);
+  const isEnabled = isAuthenticated
+    ? options.enabled
+    : !isLoading && isAuthenticated;
+  const result = useQuery({ ...options, enabled: isEnabled }, queryClient);
 
   // Capture preloaded data once
   const [data, setData] = useState(result.data);
@@ -32,15 +31,5 @@ export const useAuthQuery = <
     }
   }, [result.data, isLoading]);
 
-  if (options.queryKey.indexOf("auth:getCurrentUser") !== -1) {
-    console.log({
-      isLoading,
-      isAuthenticated,
-      isEnabled,
-      error: result.error,
-      data: result.data,
-      options,
-    });
-  }
   return { ...result, data };
 };
