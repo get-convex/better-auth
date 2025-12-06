@@ -2,31 +2,45 @@ import {
   type DefaultError,
   type QueryClient,
   type QueryKey,
-} from "@tanstack/query-core";
-import {
-  useSuspenseQuery,
-  type UseSuspenseQueryOptions,
-  type UseSuspenseQueryResult,
+  type UseQueryOptions,
+  useQuery,
 } from "@tanstack/react-query";
 import { useConvexAuth } from "convex/react";
 import { useEffect, useState } from "react";
 
-export const useAuthSuspenseQuery = <
+export const useAuthQuery = <
   TQueryFnData = unknown,
   TError = DefaultError,
   TData = TQueryFnData,
   TQueryKey extends QueryKey = QueryKey,
 >(
-  options: UseSuspenseQueryOptions<TQueryFnData, TError, TData, TQueryKey>,
+  options: UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>,
   queryClient?: QueryClient
-): UseSuspenseQueryResult<TData, TError> => {
-  const { isLoading } = useConvexAuth();
-  const result = useSuspenseQuery(options, queryClient);
+) => {
+  const { isLoading, isAuthenticated } = useConvexAuth();
+  const isEnabled =
+    options.enabled !== undefined
+      ? options.enabled
+      : !isLoading && isAuthenticated;
+  const result = useQuery({ ...options }, queryClient);
+
+  // Capture preloaded data once
   const [data, setData] = useState(result.data);
   useEffect(() => {
     if (!isLoading) {
       setData(result.data);
     }
   }, [result.data, isLoading]);
+
+  if (options.queryKey.indexOf("auth:getCurrentUser") !== -1) {
+    console.log({
+      isLoading,
+      isAuthenticated,
+      isEnabled,
+      error: result.error,
+      data: result.data,
+      options,
+    });
+  }
   return { ...result, data };
 };

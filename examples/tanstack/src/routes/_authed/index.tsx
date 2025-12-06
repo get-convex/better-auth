@@ -4,18 +4,19 @@ import { Toaster } from 'sonner'
 import { UserProfile } from '@/components/UserProfile'
 import { SignOutButton } from '@/components/client'
 import { api } from '@convex/_generated/api'
-import { convexQuery } from '@convex-dev/react-query'
+import { convexQuery, useConvexAuth } from '@convex-dev/react-query'
 import { authClient } from '@/lib/auth-client'
-import { useAuthSuspenseQuery } from '@convex-dev/better-auth/react-start/client'
+import { useAuthQuery } from '@convex-dev/better-auth/react-start/client'
 import { Button } from '@/components/ui/button'
 import { Settings } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 
 export const Route = createFileRoute('/_authed/')({
   component: App,
   loader: async ({ context }) => {
     await Promise.all([
       context.queryClient.ensureQueryData(
-        convexQuery(api.auth.getCurrentUser, { caller: 'index loader' }),
+        convexQuery(api.auth.getCurrentUser, {}),
       ),
       context.queryClient.ensureQueryData(convexQuery(api.todos.get, {})),
     ])
@@ -23,7 +24,9 @@ export const Route = createFileRoute('/_authed/')({
 })
 
 function App() {
-  const user = useAuthSuspenseQuery(convexQuery(api.auth.getCurrentUser, {}))
+  const user = useQuery({
+    ...convexQuery(api.auth.getCurrentUser, {}),
+  })
   const navigate = useNavigate()
 
   const handleSignOut = async () => {

@@ -176,14 +176,9 @@ export const getUser = async (ctx: QueryCtx) => {
 }
 
 export const getCurrentUser = query({
-  args: { caller: v.optional(v.string()) },
-  handler: async (ctx, args) => {
-    console.log('caller', args.caller)
-    try {
-      return await getUser(ctx)
-    } catch (error) {
-      throw new Error(`Error, caller: ${args.caller}`)
-    }
+  args: {},
+  handler: async (ctx) => {
+    return await getUser(ctx)
   },
 })
 

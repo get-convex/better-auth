@@ -4,7 +4,7 @@ import { convexQuery } from '@convex-dev/react-query'
 import { Button } from '@/components/ui/button'
 import { Trash2, X } from 'lucide-react'
 import { Check } from 'lucide-react'
-import { useAuthSuspenseQuery } from '@convex-dev/better-auth/react-start/client'
+import { useAuthQuery } from '@convex-dev/better-auth/react-start/client'
 import { Input } from '@/components/ui/input'
 import { Id } from '@convex/_generated/dataModel'
 import { useForm } from '@tanstack/react-form'
@@ -103,10 +103,10 @@ export const AddTodoForm = () => {
 }
 
 export const TodoList = () => {
-  const { data } = useAuthSuspenseQuery(convexQuery(api.todos.get, {}))
+  const { data } = useAuthQuery(convexQuery(api.todos.get, {}))
   const toggle = useToggleCompleted()
   const remove = useRemoveTodo()
-  const todos = data
+  const todos = data ?? []
 
   return (
     <main>

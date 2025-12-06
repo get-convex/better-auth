@@ -9,7 +9,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth-client'
-import { useAuthSuspenseQuery } from '@convex-dev/better-auth/react-start/client'
+import { useAuthQuery } from '@convex-dev/better-auth/react-start/client'
 import { convexQuery } from '@convex-dev/react-query'
 import { api } from '@convex/_generated/api'
 import { ArrowLeft, Check, Copy, Loader2 } from 'lucide-react'
@@ -23,11 +23,9 @@ type SetupStep =
   | 'qr-verify'
   | 'backup'
 
-export default function EnableTwoFactor() {
-  const { data: user } = useAuthSuspenseQuery(
-    convexQuery(api.auth.getCurrentUser, { caller: 'EnableTwoFactor' }),
-  )
-  const { data: hasPassword } = useAuthSuspenseQuery(
+export default function EnableTwoFactor({ onBack }: { onBack: () => void }) {
+  const { data: user } = useAuthQuery(convexQuery(api.auth.getCurrentUser, {}))
+  const { data: hasPassword } = useAuthQuery(
     convexQuery(api.auth.hasPassword, {}),
   )
   const [step, setStep] = useState<SetupStep>(
@@ -82,7 +80,7 @@ export default function EnableTwoFactor() {
   }
 
   const handleResetPassword = async () => {
-    if (!user.email) {
+    if (!user?.email) {
       alert('User email not found')
       return
     }
@@ -108,7 +106,7 @@ export default function EnableTwoFactor() {
             variant="ghost"
             size="sm"
             className="flex items-center gap-2 mb-4"
-            onClick={() => window.location.reload()}
+            onClick={onBack}
           >
             <ArrowLeft size={16} />
             Back to Settings

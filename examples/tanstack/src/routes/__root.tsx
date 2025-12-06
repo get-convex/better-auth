@@ -7,6 +7,7 @@ import {
   Scripts,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { QueryClient } from '@tanstack/react-query'
 import * as React from 'react'
 import appCss from '@/styles/app.css?url'
@@ -16,8 +17,7 @@ import { getRequestHeaders } from '@tanstack/react-start/server'
 import { seo } from '@/utils/seo'
 import { ConvexQueryClient } from '@convex-dev/react-query'
 import { createServerFn } from '@tanstack/react-start'
-import { fetchQuery, getToken } from '@/lib/auth-server'
-import { api } from '@convex/_generated/api'
+import { getToken } from '@/lib/auth-server'
 
 const getAuth = createServerFn({ method: 'GET' }).handler(async () => {
   const headers = getRequestHeaders()
@@ -55,6 +55,7 @@ export const Route = createRootRouteWithContext<{
     if (token) {
       // During SSR only (the only time serverHttpClient exists),
       // set the auth token to make HTTP queries with.
+      console.log('setting auth token', token)
       ctx.context.convexQueryClient.serverHttpClient?.setAuth(token)
     }
 
@@ -89,6 +90,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="bg-neutral-950 text-neutral-50">
         {children}
+        <ReactQueryDevtools />
         <TanStackRouterDevtools position="bottom-right" />
         <Scripts />
       </body>

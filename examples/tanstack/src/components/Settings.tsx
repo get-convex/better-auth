@@ -49,8 +49,8 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4">
-      {!showEnable2FA ? (
-        <EnableTwoFactor />
+      {showEnable2FA ? (
+        <EnableTwoFactor onBack={() => setShowEnable2FA(false)} />
       ) : (
         <div className="w-full max-w-md space-y-4">
           <Button
