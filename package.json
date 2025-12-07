@@ -134,6 +134,7 @@
   "types": "./dist/client/index.d.ts",
   "module": "./dist/client/index.js",
   "dependencies": {
+    "@better-auth/passkey": "^1.4.5",
     "common-tags": "^1.8.2",
     "convex-helpers": "^0.1.95",
     "jose": "^6.1.0",
