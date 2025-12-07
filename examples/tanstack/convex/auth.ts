@@ -18,12 +18,6 @@ import betterAuthSchema from './betterAuth/schema'
 import { query, QueryCtx } from './_generated/server'
 import { DataModel, Id } from './_generated/dataModel'
 import { asyncMap, withoutSystemFields } from 'convex-helpers'
-import { v } from 'convex/values'
-
-// This implementation is upgraded to 0.8 Local Install with no
-// database migration required. It continues the pattern of writing
-// userId to the Better Auth users table and maintaining a separate
-// users table for application data.
 
 const siteUrl = process.env.SITE_URL
 
@@ -74,7 +68,7 @@ export const authComponent = createClient<DataModel, typeof betterAuthSchema>(
 
 export const { onCreate, onUpdate, onDelete } = authComponent.triggersApi()
 
-export const { authCheck } = authComponent.clientApi()
+export const { getAuthUser } = authComponent.clientApi()
 
 export const createAuth = (
   ctx: GenericCtx<DataModel>,

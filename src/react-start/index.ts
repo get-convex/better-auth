@@ -5,7 +5,7 @@ import type { SetOptional } from "type-fest";
 import { getToken, type GetTokenOptions } from "../utils/index.js";
 import React from "react";
 
-// Caching supported for React 19+
+// Caching supported for React 19+ only
 const cache =
   React.cache ||
   ((fn: (...args: any[]) => any) => {

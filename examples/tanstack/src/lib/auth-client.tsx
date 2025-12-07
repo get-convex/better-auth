@@ -6,7 +6,7 @@ import {
 } from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { convexClient } from '@convex-dev/better-auth/client/plugins'
-import { AuthCheck } from '@convex-dev/better-auth/react'
+import { AuthBoundary } from '@convex-dev/better-auth/react'
 import { PropsWithChildren } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { api } from '@convex/_generated/api'
@@ -22,16 +22,16 @@ export const authClient = createAuthClient({
   ],
 })
 
-export const ClientAuthCheck = ({ children }: PropsWithChildren) => {
+export const ClientAuthBoundary = ({ children }: PropsWithChildren) => {
   const navigate = useNavigate()
   return (
-    <AuthCheck
+    <AuthBoundary
       authClient={authClient}
       onUnauth={() => navigate({ to: '/sign-in' })}
-      getAuthUserFn={api.auth.authCheck}
+      getAuthUserFn={api.auth.getAuthUser}
       isAuthError={isAuthError}
     >
       <>{children}</>
-    </AuthCheck>
+    </AuthBoundary>
   )
 }

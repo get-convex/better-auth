@@ -105,7 +105,7 @@ export const convexAdapter = <
 >(
   ctx: Ctx,
   api: {
-    adapter: SetOptional<ComponentApi["adapter"], "migrationRemoveUserId">;
+    adapter: ComponentApi["adapter"];
     adapterTest?: ComponentApi["adapterTest"];
   },
   config: {

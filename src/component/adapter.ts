@@ -10,5 +10,4 @@ export const {
   updateMany,
   deleteOne,
   deleteMany,
-  migrationRemoveUserId,
 } = createApi(schema, () => auth);

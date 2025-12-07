@@ -3,12 +3,10 @@ import { type FunctionReference, makeFunctionReference } from "convex/server";
 import { jsonToConvex } from "convex/values";
 import { useEffect, useMemo, useState } from "react";
 
-export function useConvexPreloadedQuery<
-  Query extends FunctionReference<"query">,
->(
+const useConvexPreloadedQuery = <Query extends FunctionReference<"query">>(
   preloadedQuery: Preloaded<Query>,
   { requireAuth = true }: { requireAuth?: boolean } = {}
-): Query["_returnType"] {
+): Query["_returnType"] => {
   const { isLoading, isAuthenticated } = useConvexAuth();
   const [preloadExpired, setPreloadExpired] = useState(false);
   useEffect(() => {
@@ -37,9 +35,9 @@ export function useConvexPreloadedQuery<
     return preloadExpired ? result : preloadedResult;
   }
   return result === undefined ? preloadedResult : result;
-}
+};
 
-export const usePreloadedQuery = <Query extends FunctionReference<"query">>(
+export const useAuthPreloadedQuery = <Query extends FunctionReference<"query">>(
   preloadedQuery: Preloaded<Query>
 ): Query["_returnType"] | null => {
   const { isLoading } = useConvexAuth();

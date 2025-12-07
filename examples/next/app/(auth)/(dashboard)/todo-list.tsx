@@ -2,7 +2,7 @@
 
 import { api } from "@/convex/_generated/api";
 import { Preloaded } from "convex/react";
-import { usePreloadedQuery } from "@convex-dev/better-auth/nextjs/client";
+import { useAuthPreloadedQuery } from "@convex-dev/better-auth/nextjs/client";
 import { useToggleCompleted, useRemoveTodo } from "./mutations";
 import { TodoItem } from "./todo-item";
 import { TodoForm } from "./todo-form";
@@ -14,7 +14,7 @@ export const TodoList = ({
 }) => {
   const toggleCompleted = useToggleCompleted();
   const removeTodo = useRemoveTodo();
-  const todos = usePreloadedQuery(preloadedTodosQuery);
+  const todos = useAuthPreloadedQuery(preloadedTodosQuery);
 
   return (
     <main>

@@ -67,16 +67,6 @@ export const createApi = <
 ) => {
   const betterAuthSchema = getAuthTables(getStaticAuth(createAuth).options);
   return {
-    migrationRemoveUserId: mutationGeneric({
-      args: {
-        userId: v.string(),
-      },
-      handler: async (ctx, args) => {
-        await ctx.db.patch(args.userId as GenericId<"user">, {
-          userId: undefined,
-        });
-      },
-    }),
     create: mutationGeneric({
       args: {
         input: v.union(

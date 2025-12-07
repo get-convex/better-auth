@@ -83,10 +83,6 @@
       "types": "./dist/react-start/index.d.ts",
       "default": "./dist/react-start/index.js"
     },
-    "./react-start/client": {
-      "types": "./dist/react-start/client.d.ts",
-      "default": "./dist/react-start/client.js"
-    },
     "./test": "./src/test.ts",
     "./utils": {
       "types": "./dist/utils/index.d.ts",

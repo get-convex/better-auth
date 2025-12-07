@@ -12,8 +12,15 @@ import {
   type FunctionReference,
   type FunctionReturnType,
 } from "convex/server";
-import { cache } from "react";
+import React from "react";
 import { getToken, type GetTokenOptions } from "../utils/index.js";
+
+// Caching supported for React 19+ only
+const cache =
+  React.cache ||
+  ((fn: (...args: any[]) => any) => {
+    return (...args: any[]) => fn(...args);
+  });
 
 const parseConvexSiteUrl = (url: string) => {
   if (!url) {

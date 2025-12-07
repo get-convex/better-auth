@@ -14,7 +14,7 @@ import { createAuthClient } from "better-auth/react";
 import { PropsWithChildren } from "react";
 import { redirect } from "next/navigation";
 import { api } from "@/convex/_generated/api";
-import { AuthCheck } from "@convex-dev/better-auth/react";
+import { AuthBoundary } from "@convex-dev/better-auth/react";
 import { isAuthError } from "@/lib/utils";
 
 export const authClient = createAuthClient({
@@ -29,15 +29,15 @@ export const authClient = createAuthClient({
   ],
 });
 
-export const ClientAuthCheck = ({ children }: PropsWithChildren) => {
+export const ClientAuthBoundary = ({ children }: PropsWithChildren) => {
   return (
-    <AuthCheck
+    <AuthBoundary
       authClient={authClient}
       onUnauth={() => redirect("/sign-in")}
-      getAuthUserFn={api.auth.authCheck}
+      getAuthUserFn={api.auth.getAuthUser}
       isAuthError={isAuthError}
     >
       {children}
-    </AuthCheck>
+    </AuthBoundary>
   );
 };

@@ -7,14 +7,14 @@ import { LogOut, Settings } from "lucide-react";
 import { Preloaded } from "convex/react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
-import { usePreloadedQuery } from "@convex-dev/better-auth/nextjs/client";
+import { useAuthPreloadedQuery } from "@convex-dev/better-auth/nextjs/client";
 
 const UserProfile = ({
   preloadedUserQuery,
 }: {
   preloadedUserQuery: Preloaded<typeof api.auth.getCurrentUser>;
 }) => {
-  const user = usePreloadedQuery(preloadedUserQuery);
+  const user = useAuthPreloadedQuery(preloadedUserQuery);
   return (
     <div className="flex items-center space-x-2">
       {user?.image ? (

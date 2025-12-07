@@ -9,9 +9,9 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth-client'
-import { useAuthQuery } from '@convex-dev/better-auth/react-start/client'
 import { convexQuery } from '@convex-dev/react-query'
 import { api } from '@convex/_generated/api'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { ArrowLeft, Check, Copy, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import QRCode from 'react-qr-code'
@@ -24,8 +24,10 @@ type SetupStep =
   | 'backup'
 
 export default function EnableTwoFactor({ onBack }: { onBack: () => void }) {
-  const { data: user } = useAuthQuery(convexQuery(api.auth.getCurrentUser, {}))
-  const { data: hasPassword } = useAuthQuery(
+  const { data: user } = useSuspenseQuery(
+    convexQuery(api.auth.getCurrentUser, {}),
+  )
+  const { data: hasPassword } = useSuspenseQuery(
     convexQuery(api.auth.hasPassword, {}),
   )
   const [step, setStep] = useState<SetupStep>(
@@ -80,7 +82,7 @@ export default function EnableTwoFactor({ onBack }: { onBack: () => void }) {
   }
 
   const handleResetPassword = async () => {
-    if (!user?.email) {
+    if (!user.email) {
       alert('User email not found')
       return
     }

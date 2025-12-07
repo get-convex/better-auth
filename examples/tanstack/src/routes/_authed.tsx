@@ -1,4 +1,4 @@
-import { ClientAuthCheck } from '@/lib/auth-client'
+import { ClientAuthBoundary } from '@/lib/auth-client'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authed')({
@@ -9,9 +9,9 @@ export const Route = createFileRoute('/_authed')({
   },
   component: () => {
     return (
-      <ClientAuthCheck>
+      <ClientAuthBoundary>
         <Outlet />
-      </ClientAuthCheck>
+      </ClientAuthBoundary>
     )
   },
 })

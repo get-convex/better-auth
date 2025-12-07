@@ -1,7 +1,7 @@
 export const UserProfile = ({
   user,
 }: {
-  user?: { name: string; image?: string | null; email: string } | null
+  user: { name: string; image?: string | null; email: string } | null
 }) => {
   return (
     <div className="flex items-center space-x-2">

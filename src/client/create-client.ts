@@ -65,11 +65,24 @@ type SlimComponentApi = {
     updateMany: FunctionReference<"mutation", "internal">;
     deleteOne: FunctionReference<"mutation", "internal">;
     deleteMany: FunctionReference<"mutation", "internal">;
-    migrationRemoveUserId?: FunctionReference<"mutation", "internal">;
   };
   adapterTest?: ComponentApi["adapterTest"];
 };
 
+/**
+ * Backend API for the Better Auth component.
+ * Responsible for exposing the `client` and `triggers` APIs to the client, http
+ * route registration, and having convenience methods for interacting with the
+ * component from the backend.
+ *
+ * @param component - Generally `components.betterAuth` from
+ * `./_generated/api` once you've configured it in `convex.config.ts`.
+ * @param config - Configuration options for the component.
+ * @param config.local - Local schema configuration.
+ * @param config.verbose - Whether to enable verbose logging.
+ * @param config.triggers - Triggers configuration.
+ * @param config.authFunctions - Authentication functions configuration.
+ */
 export const createClient = <
   DataModel extends GenericDataModel,
   Schema extends SchemaDefinition<GenericSchema, true> = typeof defaultSchema,
@@ -130,6 +143,14 @@ export const createClient = <
     return doc;
   };
 
+  const getAuthUser = async (ctx: GenericCtx<DataModel>) => {
+    const user = await safeGetAuthUser(ctx);
+    if (!user) {
+      throw new Error("Unauthenticated");
+    }
+    return user;
+  };
+
   const getHeaders = async (ctx: GenericCtx<DataModel>) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
@@ -154,13 +175,28 @@ export const createClient = <
   };
 
   return {
-    component,
+    /**
+     * Returns the Convex database adapter for use in Better Auth options.
+     * @param ctx - The Convex context
+     * @returns The Convex database adapter
+     */
     adapter: (ctx: GenericCtx<DataModel>) =>
       convexAdapter<DataModel, typeof ctx, Schema>(ctx, component, {
         ...config,
         debugLogs: config?.verbose,
       }),
 
+    /**
+     * Returns the Better Auth auth object and headers for using Better Auth API
+     * methods directly in a Convex mutation or query. Convex functions don't
+     * have access to request headers, so the headers object is created at
+     * runtime with the token for the current session as a Bearer token.
+     *
+     * @param createAuth - The createAuth function
+     * @param ctx - The Convex context
+     * @returns A promise that resolves to the Better Auth `auth` API object and
+     * headers.
+     */
     getAuth: async <T extends CreateAuth<DataModel>>(
       createAuth: T,
       ctx: GenericCtx<DataModel>
@@ -169,6 +205,15 @@ export const createClient = <
       headers: await getHeaders(ctx),
     }),
 
+    /**
+     * Returns a Headers object for the current session using the session id
+     * from the current user identity via `ctx.auth.getUserIdentity()`. This is
+     * used to pass the headers to the Better Auth API methods when using the
+     * `getAuth` method.
+     *
+     * @param ctx - The Convex context
+     * @returns The headers
+     */
     getHeaders,
 
     /**
@@ -179,17 +224,12 @@ export const createClient = <
     safeGetAuthUser,
 
     /**
-     * Returns the current user.
+     * Returns the current user or throws an error if the user is not found
+     *
      * @param ctx - The Convex context
      * @returns The user or throws an error if the user is not found
      */
-    getAuthUser: async (ctx: GenericCtx<DataModel>) => {
-      const user = await safeGetAuthUser(ctx);
-      if (!user) {
-        throw new Error("Unauthenticated");
-      }
-      return user;
-    },
+    getAuthUser,
 
     /**
      * Returns a user by their Better Auth user id.
@@ -204,8 +244,6 @@ export const createClient = <
       })) as BetterAuthDataModel["user"]["document"] | null;
     },
 
-    // Replaces 0.7 behavior of returning a new user id from
-    // onCreateUser, deprecated in 0.9
     /**
      * Replaces 0.7 behavior of returning a new user id from
      * onCreateUser
@@ -229,52 +267,37 @@ export const createClient = <
     },
 
     /**
-     * Temporary method to simplify 0.9 migration, gets a user by `userId` field
-     * @param ctx - The Convex context
-     * @param userId - The app user id
-     * @returns The user or null if the user is not found
+     * Exposes functions for use with the ClientAuthBoundary component. Currently
+     * only contains getAuthUser.
+     * @returns Functions to pass to the ClientAuthBoundary component.
      */
-    migrationGetUser: async (
-      ctx: GenericMutationCtx<DataModel>,
-      userId: string
-    ) => {
-      return (await ctx.runQuery(component.adapter.findOne, {
-        model: "user",
-        where: [{ field: "userId", value: userId }],
-      })) as BetterAuthDataModel["user"]["document"] | null;
-    },
-
-    /**
-     * Temporary method to simplify 0.9 migration, removes the `userId` field
-     * from the Better Auth user record
-     * @param ctx - The Convex context
-     * @param userId - The app user id
-     */
-    migrationRemoveUserId: async (
-      ctx: GenericMutationCtx<DataModel>,
-      userId: string
-    ) => {
-      if (!component.adapter.migrationRemoveUserId) {
-        throw new Error("migrationRemoveUserId not found");
-      }
-      await ctx.runMutation(component.adapter.migrationRemoveUserId, {
-        userId,
-      });
-    },
-
     clientApi: () => ({
-      authCheck: queryGeneric({
+      /**
+       * Convex query to get the current user. For use with the ClientAuthBoundary component.
+       *
+       * ```ts title="convex/auth.ts"
+       * export const { getAuthUser } = authComponent.clientApi();
+       * ```
+       *
+       * @returns The user or throws an error if the user is not found
+       */
+      getAuthUser: queryGeneric({
         args: {},
         handler: async (ctx: GenericCtx<DataModel>) => {
-          const user = await safeGetAuthUser(ctx);
-          if (!user) {
-            throw new ConvexError("Unauthenticated");
-          }
-          return user;
+          return await getAuthUser(ctx);
         },
       }),
     }),
 
+    /**
+     * Exposes functions for executing trigger callbacks in the app context.
+     *
+     * Callbacks are defined in the `triggers` option to the component client config.
+     *
+     * See {@link createClient} for more information.
+     *
+     * @returns Functions to execute trigger callbacks in the app context.
+     */
     triggersApi: () => ({
       onCreate: internalMutationGeneric({
         args: {
