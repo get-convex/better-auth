@@ -97,12 +97,13 @@
     }
   },
   "peerDependencies": {
-    "better-auth": "1.3.34",
+    "better-auth": "1.4.6-beta.3",
     "convex": "^1.25.0",
     "react": "^18.3.1 || ^19.0.0",
     "react-dom": "^18.3.1 || ^19.0.0"
   },
   "devDependencies": {
+    "@better-auth/passkey": "^1.4.6-beta.3",
     "@better-fetch/fetch": "^1.1.18",
     "@edge-runtime/vm": "5.0.0",
     "@eslint/eslintrc": "3.3.1",
@@ -144,6 +145,6 @@
     "remeda": "^2.32.0",
     "semver": "^7.7.3",
     "type-fest": "^4.39.1",
-    "zod": "^3.24.4"
+    "zod": "^4.0.0"
   }
 }
