@@ -52,7 +52,6 @@ export const createAuth = (
     baseURL: siteUrl,
     logger: {
       disabled: optionsOnly,
-      level: "debug",
     },
     database: authComponent.adapter(ctx),
     account: {

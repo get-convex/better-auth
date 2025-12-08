@@ -347,20 +347,15 @@ export const createClient = <
             };
       } = {}
     ) => {
-      console.log(0);
       const staticAuth = getStaticAuth(createAuth);
-      console.log(1);
       const path = staticAuth.options.basePath ?? "/api/auth";
       const authRequestHandler = httpActionGeneric(async (ctx, request) => {
-        console.log(3);
         if (config?.verbose) {
           console.log("options.baseURL", staticAuth.options.baseURL);
           console.log("request headers", request.headers);
         }
         const auth = createAuth(ctx as any);
-        console.log(4);
         const response = await auth.handler(request);
-        console.log(5);
         if (config?.verbose) {
           console.log("response headers", response.headers);
         }
