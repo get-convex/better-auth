@@ -97,13 +97,14 @@
     }
   },
   "peerDependencies": {
-    "better-auth": "1.4.6-beta.3",
+    "better-auth": "file:../../better-auth/packages/better-auth/better-auth.tgz",
     "convex": "^1.25.0",
     "react": "^18.3.1 || ^19.0.0",
     "react-dom": "^18.3.1 || ^19.0.0"
   },
   "devDependencies": {
-    "@better-auth/passkey": "^1.4.6-beta.3",
+    "@better-auth/core": "file:../../better-auth/packages/core/better-auth-core.tgz",
+    "@better-auth/passkey": "file:../../better-auth/packages/passkey/better-auth-passkey.tgz",
     "@better-fetch/fetch": "^1.1.18",
     "@edge-runtime/vm": "5.0.0",
     "@eslint/eslintrc": "3.3.1",

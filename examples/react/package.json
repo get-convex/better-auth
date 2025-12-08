@@ -7,7 +7,7 @@
     "dev": "run-p -r 'dev:*'",
     "dev:frontend": "vite --clearScreen false",
     "dev:backend": "convex dev --typecheck-components",
-    "dev:build": "chokidar '../../tsconfig*.json' '../../src/**/*.ts' '../../src/**/*.tsx' -i '**/*.test.ts' -c 'npx convex codegen --component-dir ./src/component && npm run build' --initial",
+    "dev:build": "chokidar '../../tsconfig*.json' '../../src/**/*.ts' '../../src/**/*.tsx' -i '**/*.test.ts' -c 'npm run build' --initial",
     "build": "convex codegen --component-dir ../../src/component && cd ../../ && npm run build",
     "predev": "convex dev --skip-push && mkdir -p dist",
     "logs": "convex logs",
@@ -50,5 +50,9 @@
     "typescript": "^5.5.0",
     "typescript-eslint": "^8.0.1",
     "vite": "^7.1.4"
+  },
+  "overrides": {
+    "better-call": "1.1.5",
+    "@better-auth/core": "file:../../better-auth/packages/core/better-auth-core.tgz"
   }
 }
