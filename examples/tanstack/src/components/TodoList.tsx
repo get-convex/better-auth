@@ -1,11 +1,11 @@
 import { useMutation } from 'convex/react'
-import { api } from '@convex/_generated/api'
+import { api } from '~/convex/_generated/api'
 import { convexQuery } from '@convex-dev/react-query'
 import { Button } from '@/components/ui/button'
 import { Trash2, X } from 'lucide-react'
 import { Check } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import { Id } from '@convex/_generated/dataModel'
+import { Id } from '~/convex/_generated/dataModel'
 import { useForm } from '@tanstack/react-form'
 import { useSuspenseQuery } from '@tanstack/react-query'
 

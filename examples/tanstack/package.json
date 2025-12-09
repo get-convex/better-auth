@@ -24,15 +24,13 @@
     "@radix-ui/react-slot": "^1.1.2",
     "@react-email/components": "0.5.3",
     "@tailwindcss/postcss": "^4.1.8",
-    "@tanstack/query-core": "^5.90.12",
     "@tanstack/react-form": "^1.25.0",
-    "@tanstack/react-query": "file:../../node_modules/@tanstack/react-query",
+    "@tanstack/react-query": "^5.90.12",
     "@tanstack/react-query-devtools": "^5.91.1",
-    "@tanstack/react-router": "^1.139.12",
-    "@tanstack/react-router-devtools": "^1.139.12",
-    "@tanstack/react-router-ssr-query": "^1.139.12",
-    "@tanstack/react-start": "^1.139.12",
-    "@vitejs/plugin-react": "^5.0.4",
+    "@tanstack/react-router": "^1.140.1",
+    "@tanstack/react-router-devtools": "^1.140.1",
+    "@tanstack/react-router-ssr-query": "^1.140.1",
+    "@tanstack/react-start": "^1.140.1",
     "better-auth": "file:../../node_modules/better-auth",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -48,17 +46,18 @@
     "resend": "^4.5.2",
     "sonner": "^2.0.5",
     "tailwind-merge": "^2.6.0",
-    "tailwindcss": "^4.1.8",
-    "vite": "^7.1.9"
+    "tailwindcss": "^4.1.8"
   },
   "devDependencies": {
     "@types/node": "^22.5.4",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.0.4",
     "concurrently": "~8.2.2",
     "prettier": "3.4.2",
     "tw-animate-css": "^1.3.4",
     "typescript": "^5.7.2",
+    "vite": "^7.2.7",
     "vite-tsconfig-paths": "^5.1.4"
   }
 }

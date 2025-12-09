@@ -16,7 +16,6 @@ import type * as emails_resetPassword from "../emails/resetPassword.js";
 import type * as emails_verifyEmail from "../emails/verifyEmail.js";
 import type * as emails_verifyOTP from "../emails/verifyOTP.js";
 import type * as http from "../http.js";
-import type * as migrations from "../migrations.js";
 import type * as todos from "../todos.js";
 
 import type {
@@ -34,7 +33,6 @@ declare const fullApi: ApiFromModules<{
   "emails/verifyEmail": typeof emails_verifyEmail;
   "emails/verifyOTP": typeof emails_verifyOTP;
   http: typeof http;
-  migrations: typeof migrations;
   todos: typeof todos;
 }>;
 
@@ -67,5 +65,4 @@ export declare const internal: FilterApi<
 export declare const components: {
   betterAuth: import("./betterAuth/_generated/component.js").ComponentApi<"betterAuth">;
   resend: import("@convex-dev/resend/_generated/component.js").ComponentApi<"resend">;
-  migrations: import("@convex-dev/migrations/_generated/component.js").ComponentApi<"migrations">;
 };

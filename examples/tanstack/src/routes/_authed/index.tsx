@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { Toaster } from 'sonner'
 import { UserProfile } from '@/components/UserProfile'
 import { SignOutButton } from '@/components/client'
-import { api } from '@convex/_generated/api'
+import { api } from '~/convex/_generated/api'
 import { convexQuery } from '@convex-dev/react-query'
 import { authClient } from '@/lib/auth-client'
 import { Button } from '@/components/ui/button'
@@ -13,12 +13,14 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 export const Route = createFileRoute('/_authed/')({
   component: App,
   loader: async ({ context }) => {
+    console.log('loading start')
     await Promise.all([
       context.queryClient.ensureQueryData(
         convexQuery(api.auth.getCurrentUser, {}),
       ),
       context.queryClient.ensureQueryData(convexQuery(api.todos.get, {})),
     ])
+    console.log('loading end')
   },
 })
 
@@ -27,8 +29,13 @@ function App() {
   const navigate = useNavigate()
 
   const handleSignOut = async () => {
-    await authClient.signOut()
-    void navigate({ to: '/sign-in' })
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          void navigate({ to: '/sign-in' })
+        },
+      },
+    })
   }
 
   return (

@@ -9,7 +9,7 @@ import { convexClient } from '@convex-dev/better-auth/client/plugins'
 import { AuthBoundary } from '@convex-dev/better-auth/react'
 import { PropsWithChildren } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { api } from '@convex/_generated/api'
+import { api } from '~/convex/_generated/api'
 import { isAuthError } from '@/lib/utils'
 
 export const authClient = createAuthClient({
