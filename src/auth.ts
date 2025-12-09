@@ -13,8 +13,8 @@ import {
   twoFactor,
   username,
 } from "better-auth/plugins";
+import { passkey } from "better-auth/plugins/passkey";
 import { convex } from "./plugins/convex/index.js";
-import { passkey } from "@better-auth/passkey";
 import { convexAdapter } from "./client/adapter.js";
 
 // This is the config used to generate the schema
@@ -23,6 +23,10 @@ const options = {
     disabled: true,
   },
   database: convexAdapter({} as any, {} as any),
+  // Random secret to keep Better Auth happy, not actually used - the database
+  // adapter above has no function handles passed in, so it's unable to interact
+  // with the database.
+  secret: "5csVL9Xi8upm96F7Qgv3e955dEaY6diFY2hFjPRvuyo=",
   rateLimit: {
     storage: "database",
   },

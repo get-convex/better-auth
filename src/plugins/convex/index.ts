@@ -319,37 +319,6 @@ export const convex = (
           return response;
         }
       ),
-      unsetToken: createAuthEndpoint(
-        "/convex/unset-token",
-        {
-          method: "GET",
-          requireHeaders: true,
-          metadata: {
-            openapi: {
-              description: "Unset the JWT token cookie",
-              responses: {
-                200: {
-                  description: "Success",
-                  content: {
-                    "text/plain": {
-                      schema: {
-                        type: "string",
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-        async (ctx) => {
-          const jwtCookie = ctx.context.createAuthCookie(JWT_COOKIE_NAME, {
-            maxAge: 0,
-          });
-          ctx.setCookie(jwtCookie.name, "", jwtCookie.attributes);
-          return { status: 200, body: "OK" };
-        }
-      ),
     },
     schema,
   } satisfies BetterAuthPlugin;

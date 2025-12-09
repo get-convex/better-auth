@@ -1,4 +1,4 @@
-import { type BetterAuthPlugin, type HookEndpointContext } from "better-auth";
+import { type BetterAuthPlugin } from "better-auth";
 import { setSessionCookie } from "better-auth/cookies";
 import { generateRandomString } from "better-auth/crypto";
 import {
@@ -19,7 +19,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
     return new URL(relativeCallbackURL, siteUrl).toString();
   };
 
-  const isExpoNative = (ctx: HookEndpointContext) => {
+  const isExpoNative = (ctx: { headers?: Headers }) => {
     return ctx.headers?.has("expo-origin");
   };
 
@@ -36,6 +36,13 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         },
         context: {
           oauthConfig: {
+            storeStateStrategy: "database",
+            // We could fake the cookie by sending a header, but it would need
+            // to be set on a 302 redirect from the identity provider, and we
+            // don't have a way to do that. This only means we can't stop an
+            // oauth flow that started in one browser from continuing in
+            // another. We still verify the state token from the query string
+            // against the database.
             skipStateCookieCheck: true,
           },
         },

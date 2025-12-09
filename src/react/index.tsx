@@ -202,7 +202,7 @@ const UserSubscription = ({
   return null;
 };
 
-export const AuthBoundary = ({
+export const AuthCheck = ({
   children,
   onUnauth,
   authClient,
