@@ -18,6 +18,7 @@ import betterAuthSchema from './betterAuth/schema'
 import { query, QueryCtx } from './_generated/server'
 import { DataModel, Id } from './_generated/dataModel'
 import { asyncMap, withoutSystemFields } from 'convex-helpers'
+import authConfig from './auth.config'
 
 const siteUrl = process.env.SITE_URL
 
@@ -143,7 +144,7 @@ export const createAuth = (
       }),
       twoFactor(),
       anonymous(),
-      convex({ jwksAlg: 'RS256' }),
+      convex({ authConfig }),
     ],
   })
 

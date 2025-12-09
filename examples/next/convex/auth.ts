@@ -21,6 +21,7 @@ import { betterAuth, BetterAuthOptions } from "better-auth";
 import { requireActionCtx } from "@convex-dev/better-auth/utils";
 import { DataModel } from "./_generated/dataModel";
 import { v } from "convex/values";
+import authConfig from "./auth.config";
 
 export const isAuthenticated = query({
   args: {},
@@ -138,7 +139,7 @@ export const createAuth = (
       }),
       convex({
         jwtExpirationSeconds: 60 * 15,
-        jwksAlg: "RS256",
+        authConfig,
       }),
     ],
   } satisfies BetterAuthOptions);

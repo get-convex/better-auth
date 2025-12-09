@@ -1,4 +1,5 @@
 import {
+  type AuthConfig,
   type DataModelFromSchemaDefinition,
   type FunctionReference,
   type GenericDataModel,
@@ -10,7 +11,7 @@ import {
   internalMutationGeneric,
   queryGeneric,
 } from "convex/server";
-import { ConvexError, type Infer, v } from "convex/values";
+import { type Infer, v } from "convex/values";
 import { convexAdapter } from "./adapter.js";
 import { corsRouter } from "convex-helpers/server/cors";
 import defaultSchema from "../component/schema.js";

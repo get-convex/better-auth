@@ -12,6 +12,7 @@ import {
   sendOTPVerification,
   sendResetPassword,
 } from "./email";
+import authConfig from "convex/auth.config";
 
 const siteUrl = process.env.SITE_URL!;
 
@@ -80,7 +81,7 @@ export const createAuth = (
         },
       }),
       crossDomain({ siteUrl }),
-      convex(),
+      convex({ authConfig }),
     ],
     account: {
       accountLinking: {

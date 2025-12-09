@@ -59,7 +59,7 @@ export default function SignIn() {
   const handleResetPassword = async () => {
     setForgotLoading(true);
     try {
-      await authClient.forgetPassword({
+      await authClient.requestPasswordReset({
         email,
         redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
       });

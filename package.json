@@ -59,6 +59,10 @@
       "types": "./dist/component/adapter.d.ts",
       "default": "./dist/component/adapter.js"
     },
+    "./auth-config": {
+      "types": "./dist/auth-config.d.ts",
+      "default": "./dist/auth-config.js"
+    },
     "./client/plugins": {
       "types": "./dist/client/plugins/index.d.ts",
       "default": "./dist/client/plugins/index.js"

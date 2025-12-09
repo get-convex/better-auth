@@ -54,7 +54,9 @@ const options = {
     bearer(),
     oneTimeToken(),
     jwt(),
-    convex(),
+    convex({
+      authConfig: { providers: [{ applicationID: "convex", domain: "" }] },
+    }),
   ],
 } as BetterAuthOptions; // assert type to avoid overloading ts compiler
 const config = betterAuth(options) as ReturnType<typeof betterAuth>;

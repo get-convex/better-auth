@@ -7,18 +7,35 @@ import {
   oidcProvider as oidcProviderPlugin,
   type Jwk,
 } from "better-auth/plugins";
+import type { AuthConfig } from "convex/server";
 
 export const JWT_COOKIE_NAME = "convex_jwt";
 
-export const convex = (
-  opts: {
-    jwtExpirationSeconds?: number;
-    deleteExpiredSessionsOnLogin?: boolean;
-    jwksAlg?: "RS256" | "EdDSA";
-    jwks?: string;
-    options?: { basePath?: string };
-  } = {}
-) => {
+const getJwksAlg = (authConfig: AuthConfig) => {
+  const authProvider = authConfig.providers.find(
+    (provider) => provider.applicationID === "convex"
+  );
+  if (!authProvider) {
+    throw new Error("No auth provider found with applicationID 'convex'");
+  }
+  const isCustomJwt =
+    "type" in authProvider && authProvider.type === "customJwt";
+  if (isCustomJwt && authProvider.algorithm !== "RS256") {
+    throw new Error("Only RS256 is supported for custom JWT with Better Auth");
+  }
+  return isCustomJwt ? authProvider.algorithm : "EdDSA";
+};
+
+export const convex = (opts: {
+  jwtExpirationSeconds?: number;
+  jwks?: string;
+  authConfig: AuthConfig;
+  basePath?: string;
+  /**
+   * @deprecated Use `basePath` instead of `options.basePath`
+   */
+  options?: { basePath?: string };
+}) => {
   const { jwtExpirationSeconds = 60 * 15 } = opts;
   const oidcProvider = oidcProviderPlugin({
     loginPage: "/not-used",
@@ -44,7 +61,7 @@ export const convex = (
     },
     jwks: {
       keyPairConfig: {
-        alg: opts.jwksAlg ?? "EdDSA",
+        alg: getJwksAlg(opts.authConfig),
       },
     },
     ...(staticJwks
@@ -308,15 +325,32 @@ export const convex = (
           },
         },
         async (ctx) => {
-          const response = await jwt.endpoints.getToken({
-            ...ctx,
-            returnHeaders: false,
-          });
-          const jwtCookie = ctx.context.createAuthCookie(JWT_COOKIE_NAME, {
-            maxAge: jwtExpirationSeconds,
-          });
-          ctx.setCookie(jwtCookie.name, response.token, jwtCookie.attributes);
-          return response;
+          const runEndpoint = async () => {
+            const response = await jwt.endpoints.getToken({
+              ...ctx,
+              returnHeaders: false,
+            });
+            const jwtCookie = ctx.context.createAuthCookie(JWT_COOKIE_NAME, {
+              maxAge: jwtExpirationSeconds,
+            });
+            ctx.setCookie(jwtCookie.name, response.token, jwtCookie.attributes);
+            return response;
+          };
+          try {
+            return await runEndpoint();
+          } catch (error: any) {
+            console.log("error", error);
+            console.log("error.code", error?.code);
+            // If alg config has changed and no longer matches one or more keys,
+            // roll the keys
+            if (error?.code === "ERR_JOSE_NOT_SUPPORTED") {
+              await ctx.context.adapter.deleteMany({
+                model: "jwks",
+                where: [],
+              });
+            }
+            return await runEndpoint();
+          }
         }
       ),
     },

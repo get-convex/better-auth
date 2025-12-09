@@ -95,7 +95,7 @@ export default function EnableTwoFactor() {
     }
     try {
       setLoading(true);
-      await authClient.forgetPassword({
+      await authClient.requestPasswordReset({
         email: user.email,
         redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
       });
