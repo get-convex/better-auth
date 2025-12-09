@@ -1,4 +1,4 @@
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate, useRouter } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -15,7 +15,7 @@ import { Loader2 } from 'lucide-react'
 import { authClient } from '@/lib/auth-client'
 
 export const SignIn = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [otp, setOtp] = useState('')
@@ -43,7 +43,7 @@ export const SignIn = () => {
           if (ctx.data.twoFactorRedirect) {
             //await navigate({ to: '/verify-2fa' })
           } else {
-            await navigate({ to: '/' })
+            await router.navigate({ to: '/' })
           }
         },
         onError: (ctx) => {
@@ -59,7 +59,7 @@ export const SignIn = () => {
   const handleResetPassword = async () => {
     setForgotLoading(true)
     try {
-      await authClient.requestPasswordReset({
+      await authClient.forgetPassword({
         email,
         redirectTo: `${import.meta.env.VITE_SITE_URL}/reset-password`,
       })
@@ -101,7 +101,8 @@ export const SignIn = () => {
         },
         onSuccess: async () => {
           setAnonymousLoading(false)
-          await navigate({ to: '/' })
+          await router.invalidate()
+          router.navigate({ to: '/' })
         },
         onError: (ctx) => {
           setAnonymousLoading(false)
@@ -181,7 +182,8 @@ export const SignIn = () => {
           },
           onSuccess: async () => {
             setOtpLoading(false)
-            await navigate({ to: '/' })
+            await router.invalidate()
+            router.navigate({ to: '/' })
           },
           onError: (ctx) => {
             setOtpLoading(false)

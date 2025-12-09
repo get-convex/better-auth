@@ -122,7 +122,6 @@ export const getToken = async (
   opts?: GetTokenOptions
 ) => {
   const fetchToken = async () => {
-    console.log("fetching token from", siteUrl);
     const { data } = await betterFetch<{ token: string }>(
       "/api/auth/convex/token",
       {
@@ -130,7 +129,6 @@ export const getToken = async (
         headers,
       }
     );
-    console.log("token fetched", data?.token);
     return { isFresh: true, token: data?.token };
   };
   if (!opts?.jwtCache?.enabled || opts.forceRefresh) {

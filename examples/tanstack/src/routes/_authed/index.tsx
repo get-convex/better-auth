@@ -13,6 +13,10 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 export const Route = createFileRoute('/_authed/')({
   component: App,
   loader: async ({ context }) => {
+    console.log('context', {
+      isAuthenticated: context.isAuthenticated,
+      token: context.token,
+    })
     console.log('loading start')
     await Promise.all([
       context.queryClient.ensureQueryData(
