@@ -121,6 +121,11 @@ function useUseAuthFromBetterAuth(
         const { data: session, isPending: isSessionPending } =
           authClient.useSession();
         const sessionId = session?.session?.id;
+        useEffect(() => {
+          if (!session && !isSessionPending && cachedToken) {
+            setCachedToken(null);
+          }
+        }, [session, isSessionPending]);
         const fetchAccessToken = useCallback(
           async ({
             forceRefreshToken = false,

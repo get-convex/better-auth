@@ -41,9 +41,9 @@ export const SignIn = () => {
         onSuccess: async (ctx) => {
           setOtpLoading(false)
           if (ctx.data.twoFactorRedirect) {
-            //await navigate({ to: '/verify-2fa' })
+            // navigate({ to: '/verify-2fa' })
           } else {
-            await router.navigate({ to: '/' })
+            router.navigate({ to: '/' })
           }
         },
         onError: (ctx) => {
@@ -101,7 +101,6 @@ export const SignIn = () => {
         },
         onSuccess: async () => {
           setAnonymousLoading(false)
-          await router.invalidate()
           router.navigate({ to: '/' })
         },
         onError: (ctx) => {
@@ -182,7 +181,6 @@ export const SignIn = () => {
           },
           onSuccess: async () => {
             setOtpLoading(false)
-            await router.invalidate()
             router.navigate({ to: '/' })
           },
           onError: (ctx) => {

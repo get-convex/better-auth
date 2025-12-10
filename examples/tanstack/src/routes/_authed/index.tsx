@@ -1,5 +1,10 @@
 import { TodoList } from '@/components/TodoList'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  Link,
+  useNavigate,
+  useRouteContext,
+} from '@tanstack/react-router'
 import { Toaster } from 'sonner'
 import { UserProfile } from '@/components/UserProfile'
 import { SignOutButton } from '@/components/client'
@@ -13,29 +18,24 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 export const Route = createFileRoute('/_authed/')({
   component: App,
   loader: async ({ context }) => {
-    console.log('context', {
-      isAuthenticated: context.isAuthenticated,
-      token: context.token,
-    })
-    console.log('loading start')
     await Promise.all([
       context.queryClient.ensureQueryData(
         convexQuery(api.auth.getCurrentUser, {}),
       ),
       context.queryClient.ensureQueryData(convexQuery(api.todos.get, {})),
     ])
-    console.log('loading end')
   },
 })
 
 function App() {
   const user = useSuspenseQuery(convexQuery(api.auth.getCurrentUser, {}))
+  const routeContext = useRouteContext({ from: Route.id })
   const navigate = useNavigate()
-
   const handleSignOut = async () => {
     await authClient.signOut({
       fetchOptions: {
-        onSuccess: () => {
+        onSuccess: async () => {
+          routeContext.queryClient.clear()
           void navigate({ to: '/sign-in' })
         },
       },

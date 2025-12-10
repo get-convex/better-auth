@@ -12,9 +12,11 @@ import { Label } from '@/components/ui/label'
 import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { authClient } from '@/lib/auth-client'
-import { redirect, useSearch } from '@tanstack/react-router'
+import { useSearch } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 
 export default function ResetPassword() {
+  const navigate = useNavigate()
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -41,7 +43,7 @@ export default function ResetPassword() {
         },
         onSuccess: () => {
           setLoading(false)
-          redirect({ to: '/' })
+          void navigate({ to: '/' })
         },
         onError: (ctx) => {
           setLoading(false)

@@ -7,7 +7,7 @@ export const get = query({
   handler: async (ctx) => {
     const user = await safeGetUser(ctx)
     if (!user) {
-      return []
+      throw new Error('User not found')
     }
     return await ctx.db
       .query('todos')
