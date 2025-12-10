@@ -53,14 +53,10 @@ description: Install and configure Convex + Better Auth for TanStack Start.
 
     ```ts title="convex/auth.config.ts"
     import type { AuthConfig } from 'convex/server'
+    import { getAuthConfigProvider } from '@convex-dev/better-auth/auth-config'
 
     export default {
-      providers: [
-        {
-          domain: process.env.CONVEX_SITE_URL!,
-          applicationID: 'convex',
-        },
-      ],
+      providers: [getAuthConfigProvider()],
     } satisfies AuthConfig
     ```
 
@@ -127,6 +123,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     import { query } from './_generated/server'
     import type { GenericCtx } from '@convex-dev/better-auth'
     import type { DataModel } from './_generated/dataModel'
+    import { authConfig } from './auth.config'
 
     const siteUrl = process.env.SITE_URL!
 
@@ -153,7 +150,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
         },
         plugins: [
           // The Convex plugin is required for Convex compatibility
-          convex(),
+          convex({ authConfig }),
         ],
       })
     }
