@@ -51,7 +51,7 @@ export default function SignIn() {
   const handleResetPassword = async () => {
     setForgotLoading(true);
     try {
-      await authClient.forgetPassword({
+      await authClient.requestPasswordReset({
         email,
         redirectTo: `${import.meta.env.VITE_SITE_URL}/reset-password`,
       });

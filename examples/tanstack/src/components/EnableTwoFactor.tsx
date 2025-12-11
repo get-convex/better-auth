@@ -88,7 +88,7 @@ export default function EnableTwoFactor({ onBack }: { onBack: () => void }) {
     }
     try {
       setLoading(true)
-      await authClient.forgetPassword({
+      await authClient.requestPasswordReset({
         email: user.email,
         redirectTo: `${import.meta.env.VITE_SITE_URL}/reset-password`,
       })

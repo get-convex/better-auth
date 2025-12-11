@@ -13,7 +13,7 @@ import {
   twoFactor,
   username,
 } from "better-auth/plugins";
-import { passkey } from "better-auth/plugins/passkey";
+import { passkey } from "@better-auth/passkey";
 import { convex } from "./plugins/convex/index.js";
 import { convexAdapter } from "./client/adapter.js";
 

@@ -188,6 +188,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
           const response = await oneTimeToken.endpoints.verifyOneTimeToken({
             ...ctx,
             returnHeaders: false,
+            returnStatus: false,
           });
           await setSessionCookie(ctx, response);
           return response;

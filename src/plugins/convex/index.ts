@@ -154,6 +154,7 @@ export const convex = (opts: {
                   cookie: parseSetCookie(setCookie),
                 },
                 returnHeaders: false,
+                returnStatus: false,
               });
               const jwtCookie = ctx.context.createAuthCookie(JWT_COOKIE_NAME, {
                 maxAge: jwtExpirationSeconds,
@@ -196,6 +197,7 @@ export const convex = (opts: {
           const response = await oidcProvider.endpoints.getOpenIdConfig({
             ...ctx,
             returnHeaders: false,
+            returnStatus: false,
           });
           return response;
         }
@@ -291,6 +293,7 @@ export const convex = (opts: {
           const response = await jwt.endpoints.getJwks({
             ...ctx,
             returnHeaders: false,
+            returnStatus: false,
           });
           return response;
         }
@@ -329,6 +332,7 @@ export const convex = (opts: {
             const response = await jwt.endpoints.getToken({
               ...ctx,
               returnHeaders: false,
+              returnStatus: false,
             });
             const jwtCookie = ctx.context.createAuthCookie(JWT_COOKIE_NAME, {
               maxAge: jwtExpirationSeconds,
