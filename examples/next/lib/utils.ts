@@ -7,5 +7,9 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const isAuthError = (error: unknown) => {
-  return error instanceof ConvexError && error.data === "Unauthenticated";
+  const message =
+    (error instanceof ConvexError && error.data) ||
+    (error instanceof Error && error.message) ||
+    "";
+  return message.match(/auth|user/i);
 };
