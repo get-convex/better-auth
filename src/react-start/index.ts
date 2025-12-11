@@ -64,7 +64,7 @@ const handler = (request: Request, opts: { convexSiteUrl: string }) => {
   const nextUrl = `${opts.convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
   const headers = new Headers(request.headers);
   headers.set("accept-encoding", "application/json");
-  headers.set("host", opts.convexSiteUrl);
+  headers.set("host", new URL(opts.convexSiteUrl).host);
   return fetch(nextUrl, {
     method: request.method,
     headers,
