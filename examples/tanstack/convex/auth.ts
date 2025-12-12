@@ -15,7 +15,7 @@ import {
 import { requireActionCtx } from '@convex-dev/better-auth/utils'
 import { components, internal } from './_generated/api'
 import betterAuthSchema from './betterAuth/schema'
-import { query, QueryCtx } from './_generated/server'
+import { internalAction, query, QueryCtx } from './_generated/server'
 import { DataModel, Id } from './_generated/dataModel'
 import { asyncMap, withoutSystemFields } from 'convex-helpers'
 import authConfig from './auth.config'
@@ -81,6 +81,11 @@ export const createAuth = (
       disabled: optionsOnly,
     },
     database: authComponent.adapter(ctx),
+    ...(optionsOnly
+      ? {
+          secret: '5csVL9Xi8upm96F7Qgv3e955dEaY6diFY2hFjPRvuyo=',
+        }
+      : {}),
     account: {
       accountLinking: {
         enabled: true,
@@ -144,9 +149,20 @@ export const createAuth = (
       }),
       twoFactor(),
       anonymous(),
-      convex({ authConfig }),
+      convex({
+        authConfig,
+        jwks: process.env.JWKS,
+      }),
     ],
   })
+
+export const rotateKeys = internalAction({
+  args: {},
+  handler: async (ctx) => {
+    const auth = createAuth(ctx)
+    return auth.api.rotateKeys()
+  },
+})
 
 // Below are example functions for getting the current user
 // Feel free to edit, omit, etc.

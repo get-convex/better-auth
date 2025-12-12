@@ -2,6 +2,8 @@ import { betterFetch } from "@better-fetch/fetch";
 import { type Auth, betterAuth } from "better-auth";
 import { getSessionCookie } from "better-auth/cookies";
 import {
+  type AuthConfig,
+  type AuthProvider,
   type DefaultFunctionArgs,
   type FunctionReference,
   type GenericActionCtx,
@@ -11,6 +13,7 @@ import {
 } from "convex/server";
 import { JWT_COOKIE_NAME } from "../plugins/convex/index.js";
 import * as jose from "jose";
+import type { Jwk } from "better-auth/plugins/jwt";
 
 export type CreateAuth<
   DataModel extends GenericDataModel,
@@ -155,4 +158,24 @@ export const getToken = async (
     console.error("Error decoding JWT", error);
   }
   return await fetchToken();
+};
+
+export const parseJwks = (providerConfig: AuthProvider) => {
+  const staticJwksString =
+    "jwks" in providerConfig && providerConfig.jwks?.startsWith("data:text/")
+      ? atob(providerConfig.jwks.split("base64,")[1])
+      : undefined;
+
+  if (!staticJwksString) {
+    return;
+  }
+  const parsed = JSON.parse(
+    staticJwksString?.slice(1, -1).replaceAll(/[\s\\]/g, "") || "{}"
+  );
+  const staticJwks = {
+    ...parsed,
+    privateKey: `"${parsed.privateKey}"`,
+    publicKey: `"${parsed.publicKey}"`,
+  } as Jwk;
+  return staticJwks;
 };
