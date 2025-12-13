@@ -1,4 +1,4 @@
-import { v } from 'convex/values'
+import { ConvexError, v } from 'convex/values'
 import { mutation, query } from './_generated/server'
 import { getUser, safeGetUser } from './auth'
 
@@ -7,7 +7,7 @@ export const get = query({
   handler: async (ctx) => {
     const user = await safeGetUser(ctx)
     if (!user) {
-      throw new Error('User not found')
+      throw new ConvexError('Unauthorized')
     }
     return await ctx.db
       .query('todos')
@@ -35,8 +35,12 @@ export const toggle = mutation({
     const user = await getUser(ctx)
 
     const todo = await ctx.db.get(args.id)
-    if (!todo || todo.userId !== user._id) {
-      throw new Error('Todo not found or unauthorized')
+    if (!todo) {
+      console.warn('Todo not found', args.id)
+      return
+    }
+    if (todo.userId !== user._id) {
+      throw new ConvexError('Unauthorized')
     }
 
     await ctx.db.patch(args.id, {
@@ -51,8 +55,12 @@ export const remove = mutation({
     const user = await getUser(ctx)
 
     const todo = await ctx.db.get(args.id)
-    if (!todo || todo.userId !== user._id) {
-      throw new Error('Todo not found or unauthorized')
+    if (!todo) {
+      console.warn('Todo not found', args.id)
+      return
+    }
+    if (todo.userId !== user._id) {
+      throw new ConvexError('Unauthorized')
     }
 
     await ctx.db.delete(args.id)

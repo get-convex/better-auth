@@ -19,6 +19,7 @@ import { internalAction, query, QueryCtx } from './_generated/server'
 import { DataModel, Id } from './_generated/dataModel'
 import { asyncMap, withoutSystemFields } from 'convex-helpers'
 import authConfig from './auth.config'
+import { ConvexError } from 'convex/values'
 
 const siteUrl = process.env.SITE_URL
 
@@ -181,7 +182,7 @@ export const safeGetUser = async (ctx: QueryCtx) => {
 export const getUser = async (ctx: QueryCtx) => {
   const user = await safeGetUser(ctx)
   if (!user) {
-    throw new Error('User not found')
+    throw new ConvexError('Unauthenticated')
   }
   return user
 }
