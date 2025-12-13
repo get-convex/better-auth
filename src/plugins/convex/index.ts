@@ -8,7 +8,6 @@ import {
   type JwtOptions,
 } from "better-auth/plugins";
 import type { AuthConfig, AuthProvider } from "convex/server";
-import type { Doc } from "../../component/_generated/dataModel.js";
 
 export const JWT_COOKIE_NAME = "convex_jwt";
 
@@ -21,21 +20,47 @@ const getJwksAlg = (authProvider: AuthProvider) => {
   return isCustomJwt ? authProvider.algorithm : "EdDSA";
 };
 
+const parseAuthConfig = (authConfig: AuthConfig, opts: { jwks?: string }) => {
+  const providerConfigs = authConfig.providers.filter(
+    (provider) => provider.applicationID === "convex"
+  );
+  if (providerConfigs.length > 1) {
+    throw new Error(
+      "Multiple auth providers with applicationID 'convex' detected. Please use only one."
+    );
+  }
+  const providerConfig = providerConfigs[0];
+  if (!providerConfig) {
+    throw new Error(
+      "No auth provider with applicationID 'convex' found. Please add one to your auth config."
+    );
+  }
+  if (!("type" in providerConfig) || providerConfig.type !== "customJwt") {
+    return providerConfig;
+  }
+
+  const isDataUriJwks = providerConfig.jwks?.startsWith("data:text/");
+
+  if (isDataUriJwks && !opts.jwks) {
+    throw new Error(
+      "Static JWKS detected in auth config, but missing from Convex plugin"
+    );
+  }
+  if (!isDataUriJwks && opts.jwks) {
+    console.warn(
+      "Static JWKS provided to Convex plugin, but not to auth config. This adds an unnecessary network request for token verification."
+    );
+  }
+  return providerConfig;
+};
+
 export const convex = (opts: {
-  jwtExpirationSeconds?: number;
-  authConfig: AuthConfig;
   /**
-   * @param jwks - Optional static JWKS to avoid fetching from the database.
+   * @param {AuthConfig} authConfig - Auth config from your Convex project.
    *
-   * This should be a stringified document from the Better Auth JWKS table. You
-   * can create one in the console.
+   * Typically found in `convex/auth.config.ts`.
    *
-   * Example:
-   * ```bash
-   * npx convex run auth:generateJwk | npx convex env set JWKS
-   * ```
-   *
-   * Then use it in your auth config and Better Auth options:
+   * @example
    * ```ts
    * // convex/auth.config.ts
    * export default {
@@ -43,20 +68,71 @@ export const convex = (opts: {
    * } satisfies AuthConfig;
    * ```
    *
+   * @example
    * ```ts
+   * // convex/auth.ts
+   * import authConfig from './auth.config';
+   * export const createAuth = (ctx: GenericCtx<DataModel>) => {
+   *   return betterAuth({
+   *     // ...
+   *     plugins: [convex({ authConfig })],
+   *   });
+   * };
+   * ```
+   */
+  authConfig: AuthConfig;
+  jwtExpirationSeconds?: number;
+  /**
+   * @param {string} jwks - Optional static JWKS to avoid fetching from the database.
+   *
+   * This should be a stringified document from the Better Auth JWKS table. You
+   * can create one in the console.
+   *
+   * @example
+   * ```ts
+   * // convex/auth.ts
+   * export const rotateKeys = internalAction({
+   *   args: {},
+   *   handler: async (ctx) => {
+   *     const auth = createAuth(ctx)
+   *     return await auth.api.rotateKeys()
+   *   },
+   * })
+   * ```
+   * Run the action and set the JWKS environment variable
+   *
+   * ```bash
+   * npx convex run auth:rotateKeys | npx convex env set JWKS
+   * ```
+   * Then use it in your auth config and Better Auth options:
+   *
+   * ```ts
+   * // convex/auth.config.ts
+   * export default {
+   *   providers: [getAuthConfigProvider({ jwks: process.env.JWKS })],
+   * } satisfies AuthConfig;
+   *
    * // convex/auth.ts
    * export const createAuth = (ctx: GenericCtx<DataModel>) => {
    *   return betterAuth({
+   *     // ...
    *     plugins: [convex({ authConfig, jwks: process.env.JWKS })],
    *   });
    * };
    * ```
    */
   jwks?: string;
-  basePath?: string;
   /**
-   * @deprecated Use `basePath` instead of `options.basePath`
+   * @param {boolean} jwksRotateOnTokenGenerationError - Whether to rotate the JWKS on token generation error.
+   *
+   * Does nothing if a static JWKS is provided.
+   *
+   * Handles error that occurs when existing JWKS key does not match configured
+   * algorithm, which will be common for 0.10 upgrades switching from EdDSA to RS256.
+   *
+   * @default false
    */
+  jwksRotateOnTokenGenerationError?: boolean;
   options?: { basePath?: string };
 }) => {
   const { jwtExpirationSeconds = 60 * 15 } = opts;
@@ -67,19 +143,7 @@ export const convex = (opts: {
       jwks_uri: `${process.env.CONVEX_SITE_URL}${opts.options?.basePath ?? "/api/auth"}/convex/jwks`,
     },
   });
-  const providerConfigs = opts.authConfig.providers.filter(
-    (provider) => provider.applicationID === "convex"
-  );
-  if (providerConfigs.length > 1) {
-    throw new Error(
-      "Only one auth provider with applicationID 'convex' is supported"
-    );
-  }
-  const providerConfig = providerConfigs[0];
-  if (!providerConfig) {
-    throw new Error("No auth provider found with applicationID 'convex'");
-  }
-  console.log("providerConfig", providerConfig);
+  const providerConfig = parseAuthConfig(opts.authConfig, opts);
 
   const jwtOptions = {
     jwt: {
@@ -99,7 +163,6 @@ export const convex = (opts: {
       },
     },
   } satisfies JwtOptions;
-  console.log("jwtOptions", jwtOptions);
   const jwks = opts.jwks ? JSON.parse(opts.jwks) : undefined;
   const jwt = jwtPlugin({
     ...jwtOptions,
@@ -189,19 +252,15 @@ export const convex = (opts: {
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
-            // Set jwt cookie at login for ssa using set-cookie header
-            const setCookie =
-              ctx.context.responseHeaders?.get("set-cookie") ?? "";
-            if (!setCookie) {
-              return;
-            }
+            // Set jwt cookie at login for authenticated ssr
+            const originalSession = ctx.context.session;
             try {
+              ctx.context.session =
+                ctx.context.session ?? ctx.context.newSession;
               const { token } = await jwt.endpoints.getToken({
                 ...ctx,
+                headers: {},
                 method: "GET",
-                headers: {
-                  cookie: parseSetCookie(setCookie),
-                },
                 returnHeaders: false,
                 returnStatus: false,
               });
@@ -214,6 +273,7 @@ export const convex = (opts: {
               // no-op, some sign-in calls (eg., when redirecting to 2fa)
               // 401 here
             }
+            ctx.context.session = originalSession;
           }),
         },
         {
@@ -241,6 +301,7 @@ export const convex = (opts: {
           metadata: {
             isAction: false,
           },
+          // TODO: properly type this
         },
         async (ctx) => {
           const response = await oidcProvider.endpoints.getOpenIdConfig({
@@ -355,7 +416,8 @@ export const convex = (opts: {
           metadata: {
             SERVER_ONLY: true,
             openapi: {
-              description: "Get JWKS for static usage",
+              description:
+                "Delete and regenerate JWKS, and return the new JWKS for static usage",
             },
           },
         },
@@ -427,7 +489,11 @@ export const convex = (opts: {
           } catch (error: any) {
             // If alg config has changed and no longer matches one or more keys,
             // roll the keys
-            if (error?.code === "ERR_JOSE_NOT_SUPPORTED") {
+            if (
+              opts.jwksRotateOnTokenGenerationError &&
+              !opts.jwks &&
+              error?.code === "ERR_JOSE_NOT_SUPPORTED"
+            ) {
               await ctx.context.adapter.deleteMany({
                 model: "jwks",
                 where: [],

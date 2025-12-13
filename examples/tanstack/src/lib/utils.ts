@@ -6,13 +6,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function isAuthError(error: unknown) {
-  return Boolean(
-    // Uncaught errors that are not Convex errors, retry just in case
-    !(error instanceof Error) ||
-      // Match Convex errors that include 'auth' or 'user' in the error message
-      (error instanceof ConvexError &&
-        typeof error.data === 'string' &&
-        error.data.match(/auth|user/i)),
-  )
+export const isAuthError = (error: unknown) => {
+  const message =
+    (error instanceof ConvexError && error.data) ||
+    (error instanceof Error && error.message) ||
+    ''
+  return message.match(/auth|user/i)
 }
