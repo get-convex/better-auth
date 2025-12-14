@@ -13,5 +13,5 @@ export const isAuthError = (error: unknown) => {
     (error instanceof ConvexError && error.data) ||
     (error instanceof Error && error.message) ||
     ''
-  return message.match(/auth/i)
+  return /auth/i.test(message)
 }

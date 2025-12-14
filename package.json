@@ -101,14 +101,14 @@
     }
   },
   "peerDependencies": {
-    "better-auth": "1.4.7-beta.4",
+    "better-auth": "1.4.7",
     "convex": "^1.25.0",
     "react": "^18.3.1 || ^19.0.0",
     "react-dom": "^18.3.1 || ^19.0.0"
   },
   "devDependencies": {
     "@better-fetch/fetch": "^1.1.18",
-    "@better-auth/passkey": "1.4.7-beta.4",
+    "@better-auth/passkey": "1.4.7",
     "@edge-runtime/vm": "5.0.0",
     "@eslint/eslintrc": "3.3.1",
     "@eslint/js": "9.39.1",

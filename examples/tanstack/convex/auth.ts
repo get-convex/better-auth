@@ -152,7 +152,6 @@ export const createAuth = (
       anonymous(),
       convex({
         authConfig,
-        jwks: process.env.JWKS,
       }),
     ],
   })

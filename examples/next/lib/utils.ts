@@ -14,5 +14,5 @@ export const isAuthError = (error: unknown) => {
     (error instanceof Error && error.message) ||
     "";
   // Loose match for auth related errors
-  return message.match(/auth/i);
+  return /auth/i.test(message);
 };

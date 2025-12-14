@@ -137,7 +137,7 @@ export const convexBetterAuthReactStart = (
       if (
         !opts?.jwtCache?.enabled ||
         token.isFresh ||
-        opts.jwtCache.isAuthError(error)
+        opts.jwtCache?.isAuthError(error)
       ) {
         throw error;
       }

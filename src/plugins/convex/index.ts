@@ -130,12 +130,15 @@ export const convex = (opts: {
    * Handles error that occurs when existing JWKS key does not match configured
    * algorithm, which will be common for 0.10 upgrades switching from EdDSA to RS256.
    *
-   * @default false
+   * @default true
    */
   jwksRotateOnTokenGenerationError?: boolean;
   options?: { basePath?: string };
 }) => {
-  const { jwtExpirationSeconds = 60 * 15 } = opts;
+  const {
+    jwtExpirationSeconds = 60 * 15,
+    jwksRotateOnTokenGenerationError = true,
+  } = opts;
   const oidcProvider = oidcProviderPlugin({
     loginPage: "/not-used",
     metadata: {
@@ -190,16 +193,6 @@ export const convex = (opts: {
     ...jwt.schema,
   };
 
-  const parseSetCookie = (setCookieHeader: string) => {
-    return setCookieHeader
-      .split(", ")
-      .map((cookie) => {
-        const semiIdx = cookie.indexOf(";");
-        const endIdx = semiIdx === -1 ? cookie.length + 1 : semiIdx;
-        return cookie.slice(0, endIdx);
-      })
-      .join("; ");
-  };
   return {
     id: "convex",
     init: (ctx) => {
@@ -490,7 +483,7 @@ export const convex = (opts: {
             // If alg config has changed and no longer matches one or more keys,
             // roll the keys
             if (
-              opts.jwksRotateOnTokenGenerationError &&
+              jwksRotateOnTokenGenerationError &&
               !opts.jwks &&
               error?.code === "ERR_JOSE_NOT_SUPPORTED"
             ) {
