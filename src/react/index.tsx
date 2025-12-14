@@ -207,12 +207,67 @@ const UserSubscription = ({
   return null;
 };
 
+/**
+ * A wrapper React component which provides error handling for auth related errors.
+ * This is typically used to redirect the user to the login page when they are
+ * unauthenticated, and does so reactively based on the getAuthUserFn query.
+ *
+ * @example
+ * ```ts
+ * // convex/auth.ts
+ * export const { getAuthUser } = authComponent.clientApi();
+ *
+ * // auth-client.tsx
+ * import { AuthBoundary } from "@convex-dev/react";
+ * import { api } from '../../convex/_generated/api'
+ * import { isAuthError } from '../lib/utils'
+ *
+ * export const ClientAuthBoundary = ({ children }: PropsWithChildren) => {
+ *   return (
+ *     <AuthBoundary
+ *       onUnauth={() => redirect("/sign-in")}
+ *       authClient={authClient}
+ *       getAuthUserFn={api.auth.getAuthUser}
+ *       isAuthError={isAuthError}
+ * >
+ *   <>{children}</>
+ * </AuthBoundary>
+ * )
+ * ```
+ * @param props.children - Children to render.
+ * @param props.onUnauth - Function to call when the user is
+ * unauthenticated. Typically a redirect to the login page.
+ * @param props.authClient - Better Auth authClient to use.
+ * @param props.renderFallback - Fallback component to render when the user is
+ * unauthenticated. Defaults to null. Generally not rendered as error handling
+ * is typically a redirect.
+ * @param props.getAuthUserFn - Reference to a Convex query that returns user.
+ * The component provides a query for this via `export const { getAuthUser } = authComponent.clientApi()`.
+ * @param props.isAuthError - Function to check if the error is auth related.
+ */
 export const AuthBoundary = ({
   children,
+  /**
+   * The function to call when the user is unauthenticated. Typically a redirect
+   * to the login page.
+   */
   onUnauth,
+  /**
+   * The Better Auth authClient to use.
+   */
   authClient,
+  /**
+   * The fallback to render when the user is unauthenticated. Defaults to null.
+   * Generally not rendered as error handling is typically a redirect.
+   */
   renderFallback,
+  /**
+   * The function to call to get the auth user.
+   */
   getAuthUserFn,
+  /**
+   * The function to call to check if the error is auth related.
+   */
   isAuthError,
 }: PropsWithChildren<{
   onUnauth: () => void | Promise<void>;

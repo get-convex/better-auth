@@ -7,9 +7,11 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const isAuthError = (error: unknown) => {
+  // This broadly matches potentially auth related errors, can be rewritten to
+  // work with your app's own error handling.
   const message =
     (error instanceof ConvexError && error.data) ||
     (error instanceof Error && error.message) ||
     ''
-  return message.match(/auth|user/i)
+  return message.match(/auth/i)
 }
