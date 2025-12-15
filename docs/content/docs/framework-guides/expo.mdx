@@ -17,7 +17,7 @@ description: Install and configure Convex + Better Auth for Expo.
 
     ```npm
     npm install convex@latest @convex-dev/better-auth
-    npm install better-auth@1.3.34 @better-auth/expo@1.3.34 --save-exact
+    npm install better-auth@1.3.34 @better-auth/expo@1.4.7 --save-exact
     ```
 
   </div>
@@ -57,14 +57,12 @@ description: Install and configure Convex + Better Auth for Expo.
     Add a `convex/auth.config.ts` file to configure Better Auth as an authentication provider.
 
     ```ts title="convex/auth.config.ts"
+    import { getAuthConfigProvider } from "@convex-dev/better-auth/auth-config";
+    import type { AuthConfig } from "convex/server";
+
     export default {
-      providers: [
-        {
-          domain: process.env.CONVEX_SITE_URL,
-          applicationID: "convex",
-        },
-      ],
-    };
+      providers: [getAuthConfigProvider()],
+    } satisfies AuthConfig;
     ```
 
   </div>
@@ -118,6 +116,7 @@ description: Install and configure Convex + Better Auth for Expo.
     import { components } from "./_generated/api";
     import { DataModel } from "./_generated/dataModel";
     import { query } from "./_generated/server";
+    import authConfig from "./auth.config";
 
     // The component client has methods needed for integrating Convex with Better Auth,
     // as well as helper methods for general use.
@@ -134,7 +133,7 @@ description: Install and configure Convex + Better Auth for Expo.
       plugins: [
         // The Expo and Convex plugins are required
         expo(),
-        convex(),
+        convex({ authConfig }),
       ],
     }) satisfies BetterAuthOptions;
 
@@ -303,6 +302,7 @@ import { expo } from "@better-auth/expo";
 import { components } from "./_generated/api";
 import { DataModel } from "./_generated/dataModel";
 import { query } from "./_generated/server";
+import authConfig from "./auth.config";
 
 // The component client has methods needed for integrating Convex with Better Auth,
 // as well as helper methods for general use.
@@ -320,13 +320,10 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
     },
     plugins: [
       expo(),
-      convex(),
+      convex({ authConfig }),
       crossDomain({ siteUrl }), // [!code ++]
     ],
   }) satisfies BetterAuthOptions;
-
-export const createAuth = (ctx: GenericCtx<DataModel>) =>
-  betterAuth(createAuthOptions(ctx));
 ```
 
 </div>

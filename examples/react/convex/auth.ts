@@ -2,7 +2,7 @@ import { createClient, type GenericCtx } from "@convex-dev/better-auth";
 import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
 import { requireActionCtx } from "@convex-dev/better-auth/utils";
 import { components } from "./_generated/api";
-import { internalAction, query, QueryCtx } from "./_generated/server";
+import { query } from "./_generated/server";
 import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { emailOTP, magicLink } from "better-auth/plugins";
 import { DataModel } from "./_generated/dataModel";
