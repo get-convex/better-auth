@@ -2,7 +2,7 @@ import { createClient, type GenericCtx } from "@convex-dev/better-auth";
 import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
 import { requireActionCtx } from "@convex-dev/better-auth/utils";
 import { components } from "./_generated/api";
-import { query, QueryCtx } from "./_generated/server";
+import { internalAction, query, QueryCtx } from "./_generated/server";
 import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { emailOTP, magicLink } from "better-auth/plugins";
 import { DataModel } from "./_generated/dataModel";
@@ -86,6 +86,14 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
 
 export const createAuth = (ctx: GenericCtx<DataModel>) =>
   betterAuth(createAuthOptions(ctx));
+
+export const rotateKeys = internalAction({
+  args: {},
+  handler: async (ctx) => {
+    const auth = createAuth(ctx);
+    return await auth.api.rotateKeys();
+  },
+});
 
 // Below are example helpers and functions for getting the current user
 // Feel free to edit, omit, etc.

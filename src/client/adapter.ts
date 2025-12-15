@@ -130,6 +130,8 @@ export const convexAdapter = <
       mapKeysTransformOutput: {
         _id: "id",
       },
+      // Dates provided as strings
+      supportsDates: false,
       // Convert dates to numbers. This aligns with how
       // Convex stores _creationTime and avoids a breaking change.
       customTransformInput: ({ data, fieldAttributes }) => {
@@ -140,7 +142,7 @@ export const convexAdapter = <
       },
       customTransformOutput: ({ data, fieldAttributes }) => {
         if (data && fieldAttributes.type === "date") {
-          return new Date(data);
+          return new Date(data).getTime();
         }
         return data;
       },

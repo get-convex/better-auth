@@ -4,12 +4,69 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { useState } from "react";
 import { Check, Trash2, X } from "lucide-react";
+import { Id } from "convex/_generated/dataModel";
+
+// Mutations w/ optimistic updates
+const useCreateTodo = () =>
+  useMutation(api.todos.create).withOptimisticUpdate((localStore, args) => {
+    const todos = localStore.getQuery(api.todos.get);
+    if (!todos) {
+      return;
+    }
+    const user = localStore.getQuery(api.auth.getCurrentUser);
+    if (!user) {
+      return;
+    }
+    localStore.setQuery(api.todos.get, {}, [
+      {
+        _id: crypto.randomUUID() as Id<"todos">,
+        _creationTime: Date.now(),
+        text: args.text,
+        completed: false,
+        userId: user._id,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      },
+      ...todos,
+    ]);
+  });
+
+export const useToggleCompleted = () =>
+  useMutation(api.todos.toggle).withOptimisticUpdate((localStore, args) => {
+    const todos = localStore.getQuery(api.todos.get);
+    if (!todos) {
+      return;
+    }
+    const index = todos.findIndex((todo) => todo._id === args.id);
+    const todo = todos[index];
+    if (!todo) {
+      return;
+    }
+    localStore.setQuery(
+      api.todos.get,
+      {},
+      todos.toSpliced(index, 1, {
+        ...todo,
+        completed: !todo.completed,
+      })
+    );
+  });
+
+export const useRemoveTodo = () =>
+  useMutation(api.todos.remove).withOptimisticUpdate((localStore, args) => {
+    const todos = localStore.getQuery(api.todos.get);
+    if (!todos) {
+      return;
+    }
+    const index = todos.findIndex((todo) => todo._id === args.id);
+    localStore.setQuery(api.todos.get, {}, todos.toSpliced(index, 1));
+  });
 
 export function TodoList() {
   const todos = useQuery(api.todos.get);
-  const create = useMutation(api.todos.create);
-  const toggle = useMutation(api.todos.toggle);
-  const remove = useMutation(api.todos.remove);
+  const create = useCreateTodo();
+  const toggle = useToggleCompleted();
+  const remove = useRemoveTodo();
   const [newTodo, setNewTodo] = useState("");
 
   if (!todos) {
@@ -23,7 +80,7 @@ export function TodoList() {
         onSubmit={async (e) => {
           e.preventDefault();
           if (!newTodo.trim()) return;
-          await create({ text: newTodo.trim() });
+          create({ text: newTodo.trim() });
           setNewTodo("");
         }}
       >
