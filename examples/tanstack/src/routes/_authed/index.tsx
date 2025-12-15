@@ -1,10 +1,5 @@
 import { TodoList } from '@/components/TodoList'
-import {
-  createFileRoute,
-  Link,
-  useNavigate,
-  useRouteContext,
-} from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { Toaster } from 'sonner'
 import { UserProfile } from '@/components/UserProfile'
 import { SignOutButton } from '@/components/client'
@@ -29,12 +24,13 @@ export const Route = createFileRoute('/_authed/')({
 
 function App() {
   const user = useSuspenseQuery(convexQuery(api.auth.getCurrentUser, {}))
-  const navigate = useNavigate()
   const handleSignOut = async () => {
     await authClient.signOut({
       fetchOptions: {
         onSuccess: async () => {
-          void navigate({ to: '/sign-in' })
+          // for now, recommend reloading on sign out as Convex client
+          // expectAuth only works on initial load
+          location.reload()
         },
       },
     })
