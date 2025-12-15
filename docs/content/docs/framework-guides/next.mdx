@@ -129,16 +129,7 @@ description: Install and configure Convex + Better Auth for Next.js.
     // as well as helper methods for general use.
     export const authComponent = createClient<DataModel>(components.betterAuth);
 
-    export const createAuth = (
-      ctx: GenericCtx<DataModel>,
-      { optionsOnly } = { optionsOnly: false },
-    ) => {
-      return betterAuth({
-        // disable logging when createAuth is called just to generate options.
-        // this is not required, but there's a lot of noise in logs without it.
-        logger: {
-          disabled: optionsOnly,
-        },
+    export const createAuthOptions = (ctx: GenericCtx<DataModel>) => ({
         baseURL: siteUrl,
         database: authComponent.adapter(ctx),
         // Configure simple, non-verified email/password to get started
@@ -150,8 +141,10 @@ description: Install and configure Convex + Better Auth for Next.js.
           // The Convex plugin is required for Convex compatibility
           convex(),
         ],
-      });
-    };
+      }) satisfies BetterAuthOptions;
+
+    export const createAuth = (ctx: GenericCtx<DataModel>) =>
+      betterAuth(createAuthOptions(ctx));
 
     // Example function for getting the current user
     // Feel free to edit, omit, etc.
@@ -248,10 +241,10 @@ usage. Below are usage notes specific to Next.js.
 
 ### Using Better Auth from the server
 
-To use Better Auth's [server
-methods](https://www.better-auth.com/docs/concepts/api) in server rendering,
-server functions, or any other Next.js server code, use Convex functions
-and call the function from your server code.
+To use Better Auth's
+[server methods](https://www.better-auth.com/docs/concepts/api) in server
+rendering, server functions, or any other Next.js server code, use Convex
+functions and call the function from your server code.
 
 First, a token helper for calling Convex functions from your server code.
 
@@ -264,8 +257,8 @@ export const getToken = () => {
 };
 ```
 
-Here's an example Convex function that uses Better Auth's server methods, and
-a server action that calls the Convex function.
+Here's an example Convex function that uses Better Auth's server methods, and a
+server action that calls the Convex function.
 
 ```ts title="convex/users.ts"
 import { mutation } from "./_generated/server";

@@ -2,7 +2,6 @@ import { betterFetch } from "@better-fetch/fetch";
 import { type Auth, betterAuth } from "better-auth";
 import { getSessionCookie } from "better-auth/cookies";
 import {
-  type AuthConfig,
   type AuthProvider,
   type DefaultFunctionArgs,
   type FunctionReference,
@@ -18,18 +17,7 @@ import type { Jwk } from "better-auth/plugins/jwt";
 export type CreateAuth<
   DataModel extends GenericDataModel,
   A extends ReturnType<typeof betterAuth> = Auth,
-> =
-  | ((ctx: GenericCtx<DataModel>) => A)
-  | ((ctx: GenericCtx<DataModel>, opts?: { optionsOnly?: boolean }) => A);
-
-export const getStaticAuth = <
-  DataModel extends GenericDataModel,
-  Auth extends ReturnType<typeof betterAuth>,
->(
-  createAuth: CreateAuth<DataModel, Auth>
-): Auth => {
-  return createAuth({} as any, { optionsOnly: true });
-};
+> = (ctx: GenericCtx<DataModel>) => A;
 
 export type EventFunction<T extends DefaultFunctionArgs> = FunctionReference<
   "mutation",

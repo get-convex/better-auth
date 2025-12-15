@@ -1,6 +1,5 @@
 import {
   type FunctionHandle,
-  type GenericDataModel,
   type SchemaDefinition,
   mutationGeneric,
   paginationOptsValidator,
@@ -19,7 +18,7 @@ import {
 } from "./adapter-utils.js";
 import { getAuthTables } from "better-auth/db";
 import { type TableNames } from "../component/_generated/dataModel.js";
-import { type CreateAuth, getStaticAuth } from "./index.js";
+import type { BetterAuthOptions } from "better-auth";
 
 const whereValidator = (
   schema: SchemaDefinition<any, any>,
@@ -58,14 +57,11 @@ const whereValidator = (
     connector: v.optional(v.union(v.literal("AND"), v.literal("OR"))),
   });
 
-export const createApi = <
-  DataModel extends GenericDataModel,
-  Schema extends SchemaDefinition<any, any>,
->(
+export const createApi = <Schema extends SchemaDefinition<any, any>>(
   schema: Schema,
-  createAuth: CreateAuth<DataModel>
+  createAuthOptions: (ctx: any) => BetterAuthOptions
 ) => {
-  const betterAuthSchema = getAuthTables(getStaticAuth(createAuth).options);
+  const betterAuthSchema = getAuthTables(createAuthOptions({} as any));
   return {
     create: mutationGeneric({
       args: {

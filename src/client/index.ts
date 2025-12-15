@@ -11,7 +11,6 @@ import {
   type CreateAuth,
   type EventFunction,
   type GenericCtx,
-  getStaticAuth,
 } from "../utils/index.js";
 
 if (semverLt(convexVersion, "1.25.0")) {
@@ -22,7 +21,6 @@ export {
   convexAdapter,
   createClient,
   createApi,
-  getStaticAuth,
   type CreateAuth,
   type EventFunction,
   type GenericCtx,

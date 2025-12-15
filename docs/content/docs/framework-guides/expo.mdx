@@ -113,7 +113,7 @@ description: Install and configure Convex + Better Auth for Expo.
     ```ts title="convex/auth.ts"
     import { createClient, type GenericCtx } from "@convex-dev/better-auth";
     import { convex } from "@convex-dev/better-auth/plugins";
-    import { betterAuth } from "better-auth";
+    import { betterAuth, type BetterAuthOptions } from "better-auth";
     import { expo } from '@better-auth/expo'
     import { components } from "./_generated/api";
     import { DataModel } from "./_generated/dataModel";
@@ -123,30 +123,23 @@ description: Install and configure Convex + Better Auth for Expo.
     // as well as helper methods for general use.
     export const authComponent = createClient<DataModel>(components.betterAuth);
 
-    export const createAuth = (
-      ctx: GenericCtx<DataModel>,
-      { optionsOnly } = { optionsOnly: false },
-    ) => {
-      return betterAuth({
-        // disable logging when createAuth is called just to generate options.
-        // this is not required, but there's a lot of noise in logs without it.
-        logger: {
-          disabled: optionsOnly,
-        },
-        trustedOrigins: ["your-scheme://"],
-        database: authComponent.adapter(ctx),
-        // Configure simple, non-verified email/password to get started
-        emailAndPassword: {
-          enabled: true,
-          requireEmailVerification: false,
-        },
-        plugins: [
-          // The Expo and Convex plugins are required
-          expo(),
-          convex(),
-        ],
-      });
-    };
+    export const createAuthOptions = (ctx: GenericCtx<DataModel>) => ({
+      trustedOrigins: ["your-scheme://"],
+      database: authComponent.adapter(ctx),
+      // Configure simple, non-verified email/password to get started
+      emailAndPassword: {
+        enabled: true,
+        requireEmailVerification: false,
+      },
+      plugins: [
+        // The Expo and Convex plugins are required
+        expo(),
+        convex(),
+      ],
+    }) satisfies BetterAuthOptions;
+
+    export const createAuth = (ctx: GenericCtx<DataModel>) =>
+      betterAuth(createAuthOptions(ctx));
 
     // Example function for getting the current user
     // Feel free to edit, omit, etc.
@@ -261,12 +254,12 @@ usage. Below are usage notes specific to Expo.
 ### Social sign-in
 
 Social sign-in for Expo works the same as with full stack frameworks, but the
-authorized origin and redirect URI are based on your Convex site URL instead
-of your application domain.
+authorized origin and redirect URI are based on your Convex site URL instead of
+your application domain.
 
 For example, with
-[Google sign-in](https://www.better-auth.com/docs/authentication/google), the authorized
-origin and redirect URI would look like:
+[Google sign-in](https://www.better-auth.com/docs/authentication/google), the
+authorized origin and redirect URI would look like:
 
 ```
 // authorized origin
@@ -278,7 +271,8 @@ https://adjective-animal-123.convex.site/api/auth/callback/google
 
 ## Expo Web support
 
-To use Expo Web along with Expo/Expo Go, you'll need to follow a few additional steps.
+To use Expo Web along with Expo/Expo Go, you'll need to follow a few additional
+steps.
 
 <div className="fd-steps">
 
@@ -286,8 +280,8 @@ To use Expo Web along with Expo/Expo Go, you'll need to follow a few additional 
 
 ### Update environment variables
 
-To use Expo Web, follow [step 4 of the React
-guide](https://convex-better-auth.netlify.app/framework-guides/react#set-environment-variables)
+To use Expo Web, follow
+[step 4 of the React guide](https://convex-better-auth.netlify.app/framework-guides/react#set-environment-variables)
 to add your Expo Web site URL as the `SITE_URL` environment variable.
 
 </div>
@@ -300,9 +294,9 @@ Add the site URL and the cross-domain plugin to the Better Auth instance.
 
 ```ts title="convex/auth.ts"
 import { createClient, type GenericCtx } from "@convex-dev/better-auth";
-import { 
+import {
   convex,
-  crossDomain // [!code ++]
+  crossDomain, // [!code ++]
 } from "@convex-dev/better-auth/plugins";
 import { betterAuth } from "better-auth";
 import { expo } from "@better-auth/expo";
@@ -316,14 +310,8 @@ export const authComponent = createClient<DataModel>(components.betterAuth);
 
 const siteUrl = process.env.SITE_URL!; // [!code ++]
 
-export const createAuth = (
-  ctx: GenericCtx<DataModel>,
-  { optionsOnly } = { optionsOnly: false }
-) => {
-  return betterAuth({
-    logger: {
-      disabled: optionsOnly,
-    },
+export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
+  ({
     trustedOrigins: [siteUrl, "your-scheme://"], // [!code ++]
     database: authComponent.adapter(ctx),
     emailAndPassword: {
@@ -335,8 +323,10 @@ export const createAuth = (
       convex(),
       crossDomain({ siteUrl }), // [!code ++]
     ],
-  });
-};
+  }) satisfies BetterAuthOptions;
+
+export const createAuth = (ctx: GenericCtx<DataModel>) =>
+  betterAuth(createAuthOptions(ctx));
 ```
 
 </div>

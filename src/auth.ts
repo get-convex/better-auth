@@ -60,4 +60,4 @@ const options = {
   ],
 } as BetterAuthOptions; // assert type to avoid overloading ts compiler
 const config = betterAuth(options) as ReturnType<typeof betterAuth>;
-export { config as auth };
+export { options, config as auth };

@@ -1,6 +1,8 @@
 import { createApi } from "@convex-dev/better-auth";
 import schema from "./schema";
-import { createAuth } from "../auth";
+import { createAuthOptions } from "../auth";
+
+process.env.BETTER_AUTH_SECRET = "5csVL9Xi8upm96F7Qgv3e955dEaY6diFY2hFjPRvuyo=";
 
 export const {
   create,
@@ -10,4 +12,4 @@ export const {
   updateMany,
   deleteOne,
   deleteMany,
-} = createApi(schema, createAuth);
+} = createApi(schema, createAuthOptions);

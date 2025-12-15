@@ -121,7 +121,7 @@ description: Install and configure Convex + Better Auth for React.
     import { components } from "./_generated/api";
     import { DataModel } from "./_generated/dataModel";
     import { query } from "./_generated/server";
-    import { betterAuth } from "better-auth";
+    import { betterAuth, type BetterAuthOptions } from "better-auth";
 
     const siteUrl = process.env.SITE_URL!;
 
@@ -129,16 +129,9 @@ description: Install and configure Convex + Better Auth for React.
     // as well as helper methods for general use.
     export const authComponent = createClient<DataModel>(components.betterAuth);
 
-    export const createAuth = (
+    export const createAuthOptions = (
       ctx: GenericCtx<DataModel>,
-      { optionsOnly } = { optionsOnly: false },
-    ) => {
-      return betterAuth({
-        // disable logging when createAuth is called just to generate options.
-        // this is not required, but there's a lot of noise in logs without it.
-        logger: {
-          disabled: optionsOnly,
-        },
+    ) => ({
         trustedOrigins: [siteUrl],
         database: authComponent.adapter(ctx),
         // Configure simple, non-verified email/password to get started
@@ -152,8 +145,10 @@ description: Install and configure Convex + Better Auth for React.
           // The Convex plugin is required for Convex compatibility
           convex(),
         ],
-      });
-    };
+      }) satisfies BetterAuthOptions;
+
+    export const createAuth = (ctx: GenericCtx<DataModel>) =>
+      betterAuth(createAuthOptions(ctx));
 
     // Example function for getting the current user
     // Feel free to edit, omit, etc.
@@ -248,12 +243,13 @@ usage. Below are usage notes specific to React SPAs.
 
 ### Social sign-in
 
-Social sign-in for React SPAs works the same as with full stack frameworks, but the
-authorized redirect URI is based on your Convex site URL instead of your application domain.
+Social sign-in for React SPAs works the same as with full stack frameworks, but
+the authorized redirect URI is based on your Convex site URL instead of your
+application domain.
 
 For example, with
-[Google sign-in](https://www.better-auth.com/docs/authentication/google), the authorized
-redirect URI would look like:
+[Google sign-in](https://www.better-auth.com/docs/authentication/google), the
+authorized redirect URI would look like:
 
 ```
 https://adjective-animal-123.convex.site/api/auth/callback/google
