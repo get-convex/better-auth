@@ -57,6 +57,8 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
         enabled: true,
       },
     },
+
+    secret: "Zs4/lrLCVgUgEVFeKVrbJ5Y+FrodQL2DPJHN7nK16mU",
     plugins: [
       magicLink({
         sendMagicLink: async ({ email, url }) => {
@@ -87,32 +89,10 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
 export const createAuth = (ctx: GenericCtx<DataModel>) =>
   betterAuth(createAuthOptions(ctx));
 
-export const rotateKeys = internalAction({
-  args: {},
-  handler: async (ctx) => {
-    const auth = createAuth(ctx);
-    return await auth.api.rotateKeys();
-  },
-});
-
-// Below are example helpers and functions for getting the current user
-// Feel free to edit, omit, etc.
-export const safeGetUser = async (ctx: QueryCtx) => {
-  return authComponent.safeGetAuthUser(ctx);
-};
-
-export const getUserId = async (ctx: QueryCtx) => {
-  const identity = await ctx.auth.getUserIdentity();
-  return identity?.subject;
-};
-
-export const getUser = async (ctx: QueryCtx) => {
-  return authComponent.getAuthUser(ctx);
-};
-
+// Example function for getting the current user
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    return await safeGetUser(ctx);
+    return await authComponent.getAuthUser(ctx);
   },
 });

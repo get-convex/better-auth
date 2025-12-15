@@ -1,5 +1,5 @@
 import { createApi } from "../client/index.js";
-import { options } from "../auth.js";
+import { options } from "../auth-options.js";
 import schema from "./schema.js";
 
 export const {

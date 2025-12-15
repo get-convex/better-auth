@@ -22,7 +22,7 @@ description: Install and configure Convex + Better Auth for React.
 
     ```npm
     npm install convex@latest @convex-dev/better-auth
-    npm install better-auth@1.3.34 --save-exact
+    npm install better-auth@1.4.7 --save-exact
     ```
 
   </div>
@@ -50,14 +50,12 @@ description: Install and configure Convex + Better Auth for React.
     Add a `convex/auth.config.ts` file to configure Better Auth as an authentication provider.
 
     ```ts title="convex/auth.config.ts"
+    import { getAuthConfigProvider } from "@convex-dev/better-auth/auth-config";
+    import type { AuthConfig } from "convex/server";
+
     export default {
-      providers: [
-        {
-          domain: process.env.CONVEX_SITE_URL,
-          applicationID: "convex",
-        },
-      ],
-    };
+      providers: [getAuthConfigProvider()],
+    } satisfies AuthConfig;
     ```
 
   </div>
@@ -89,7 +87,7 @@ description: Install and configure Convex + Better Auth for React.
     VITE_CONVEX_SITE_URL=https://adjective-animal-123.convex.site # [!code ++]
 
     # Your local site URL // [!code ++]
-    SITE_URL=http://localhost:5173 # [!code ++]
+    VITE_SITE_URL=http://localhost:5173 # [!code ++]
     ```
 
     ```shell title=".env.local" tab="Self hosted"
@@ -103,7 +101,7 @@ description: Install and configure Convex + Better Auth for React.
     VITE_CONVEX_SITE_URL=http://127.0.0.1:3211 # [!code ++]
 
     # Your local site URL // [!code ++]
-    SITE_URL=http://localhost:5173 # [!code ++]
+    VITE_SITE_URL=http://localhost:5173 # [!code ++]
     ```
 
   </div>
@@ -122,6 +120,7 @@ description: Install and configure Convex + Better Auth for React.
     import { DataModel } from "./_generated/dataModel";
     import { query } from "./_generated/server";
     import { betterAuth, type BetterAuthOptions } from "better-auth";
+    import authConfig from "./auth.config";
 
     const siteUrl = process.env.SITE_URL!;
 
@@ -143,7 +142,7 @@ description: Install and configure Convex + Better Auth for React.
           // The cross domain plugin is required for client side frameworks
           crossDomain({ siteUrl }),
           // The Convex plugin is required for Convex compatibility
-          convex(),
+          convex({ authConfig }),
         ],
       }) satisfies BetterAuthOptions;
 
