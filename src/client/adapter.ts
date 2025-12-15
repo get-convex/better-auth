@@ -131,7 +131,7 @@ export const convexAdapter = <
         _id: "id",
       },
       // Convert dates to numbers. This aligns with how
-      // Convex stores _creationTime, and avoids a breaking change.
+      // Convex stores _creationTime and avoids a breaking change.
       customTransformInput: ({ data, fieldAttributes }) => {
         if (data && fieldAttributes.type === "date") {
           return new Date(data).getTime();
@@ -140,7 +140,7 @@ export const convexAdapter = <
       },
       customTransformOutput: ({ data, fieldAttributes }) => {
         if (data && fieldAttributes.type === "date") {
-          return new Date(data).getTime();
+          return new Date(data);
         }
         return data;
       },

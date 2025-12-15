@@ -1,5 +1,5 @@
 import { components } from "./_generated/api";
-import { query } from "./_generated/server";
+import { internalAction, query } from "./_generated/server";
 import authSchema from "./betterAuth/schema";
 import { createClient, GenericCtx } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
@@ -142,6 +142,14 @@ export const createAuth = (ctx: GenericCtx<DataModel>) =>
   betterAuth(createAuthOptions(ctx));
 
 export const { getAuthUser } = authComponent.clientApi();
+
+export const rotateKeys = internalAction({
+  args: {},
+  handler: async (ctx) => {
+    const auth = createAuth(ctx);
+    return auth.api.rotateKeys();
+  },
+});
 
 // Example functions, feel free to edit, omit, etc.
 
