@@ -208,6 +208,8 @@ const UserSubscription = ({
 };
 
 /**
+ * _Experimental_
+ *
  * A wrapper React component which provides error handling for auth related errors.
  * This is typically used to redirect the user to the login page when they are
  * unauthenticated, and does so reactively based on the getAuthUserFn query.

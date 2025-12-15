@@ -23,14 +23,6 @@ import { DataModel } from "./_generated/dataModel";
 import { v } from "convex/values";
 import authConfig from "./auth.config";
 
-export const isAuthenticated = query({
-  args: {},
-  handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    return identity !== null;
-  },
-});
-
 // This implementation uses Local Install as it would be in a new project.
 
 const siteUrl = process.env.SITE_URL;
@@ -132,7 +124,6 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
         ],
       }),
       convex({
-        jwtExpirationSeconds: 60 * 15,
         authConfig,
       }),
     ],

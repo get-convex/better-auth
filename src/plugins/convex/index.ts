@@ -439,7 +439,6 @@ export const convex = (opts: {
         }
       ),
       rotateKeys: createAuthEndpoint(
-        "/convex/rotate-keys",
         {
           isAction: true,
           method: "GET",
