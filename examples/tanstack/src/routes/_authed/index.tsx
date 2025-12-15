@@ -29,13 +29,11 @@ export const Route = createFileRoute('/_authed/')({
 
 function App() {
   const user = useSuspenseQuery(convexQuery(api.auth.getCurrentUser, {}))
-  const routeContext = useRouteContext({ from: Route.id })
   const navigate = useNavigate()
   const handleSignOut = async () => {
     await authClient.signOut({
       fetchOptions: {
         onSuccess: async () => {
-          routeContext.queryClient.clear()
           void navigate({ to: '/sign-in' })
         },
       },
