@@ -1,4 +1,9 @@
-import { type BetterAuthPlugin } from "better-auth";
+import {
+  type BetterAuthOptions,
+  type BetterAuthPlugin,
+  type Session,
+  type User,
+} from "better-auth";
 import { createAuthMiddleware, sessionMiddleware } from "better-auth/api";
 import {
   createAuthEndpoint,
@@ -7,6 +12,7 @@ import {
   oidcProvider as oidcProviderPlugin,
   type JwtOptions,
 } from "better-auth/plugins";
+import { omit } from "convex-helpers";
 import type { AuthConfig, AuthProvider } from "convex/server";
 
 export const JWT_COOKIE_NAME = "convex_jwt";
@@ -81,6 +87,21 @@ export const convex = (opts: {
    * ```
    */
   authConfig: AuthConfig;
+  /**
+   * @param {Object} jwt - JWT options.
+   * @param {number} jwt.expirationSeconds - JWT expiration seconds.
+   * @param {Function} jwt.definePayload - Function to define the JWT payload. `sessionId` and `iat` are added automatically.
+   */
+  jwt?: {
+    expirationSeconds?: number;
+    definePayload?: (session: {
+      user: User & Record<string, any>;
+      session: Session & Record<string, any>;
+    }) => Promise<Record<string, any>> | Record<string, any> | undefined;
+  };
+  /**
+   * @deprecated Use jwt.expirationSeconds instead.
+   */
   jwtExpirationSeconds?: number;
   /**
    * @param {string} jwks - Optional static JWKS to avoid fetching from the database.
@@ -133,12 +154,14 @@ export const convex = (opts: {
    * @default true
    */
   jwksRotateOnTokenGenerationError?: boolean;
-  options?: { basePath?: string };
+  /**
+   * @param {BetterAuthOptions} options - Better Auth options. Not required,
+   * currently used to pass the basePath to the oidcProvider plugin.
+   */
+  options?: BetterAuthOptions;
 }) => {
-  const {
-    jwtExpirationSeconds = 60 * 15,
-    jwksRotateOnTokenGenerationError = true,
-  } = opts;
+  const jwtExpirationSeconds =
+    opts.jwt?.expirationSeconds ?? opts.jwtExpirationSeconds ?? 60 * 15;
   const oidcProvider = oidcProviderPlugin({
     loginPage: "/not-used",
     metadata: {
@@ -153,9 +176,10 @@ export const convex = (opts: {
       issuer: `${process.env.CONVEX_SITE_URL}`,
       audience: "convex",
       expirationTime: `${jwtExpirationSeconds}s`,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      definePayload: ({ user: { id, image, ...user }, session }) => ({
-        ...user,
+      definePayload: ({ user, session }) => ({
+        ...(opts.jwt?.definePayload
+          ? opts.jwt.definePayload({ user, session })
+          : omit(user, ["id", "image"])),
         sessionId: session.id,
         iat: Math.floor(new Date().getTime() / 1000),
       }),
@@ -197,6 +221,19 @@ export const convex = (opts: {
     id: "convex",
     init: (ctx) => {
       const { options, logger } = ctx;
+      if (options.basePath !== "/api/auth" && !opts.options?.basePath) {
+        console.warn(
+          `Better Auth basePath set to ${options.basePath} but no basePath is set in the Convex plugin. This is probably a mistake.`
+        );
+      }
+      if (
+        opts.options?.basePath &&
+        options.basePath !== opts.options?.basePath
+      ) {
+        console.warn(
+          `Better Auth basePath ${options.basePath} does not match Convex plugin basePath ${opts.options?.basePath}. This is probably a mistake.`
+        );
+      }
       if (
         options.plugins?.every((p) => p.id !== "cross-domain") &&
         !options.baseURL
@@ -483,7 +520,7 @@ export const convex = (opts: {
             // If alg config has changed and no longer matches one or more keys,
             // roll the keys
             if (
-              jwksRotateOnTokenGenerationError &&
+              opts.jwksRotateOnTokenGenerationError &&
               !opts.jwks &&
               error?.code === "ERR_JOSE_NOT_SUPPORTED"
             ) {

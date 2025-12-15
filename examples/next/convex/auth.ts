@@ -45,8 +45,8 @@ export const authComponent = createClient<DataModel, typeof authSchema>(
   },
 );
 
-export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
-  ({
+export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
+  return {
     baseURL: siteUrl,
     database: authComponent.adapter(ctx),
     account: {
@@ -136,7 +136,8 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
         authConfig,
       }),
     ],
-  }) satisfies BetterAuthOptions;
+  } satisfies BetterAuthOptions;
+};
 
 export const createAuth = (ctx: GenericCtx<DataModel>) =>
   betterAuth(createAuthOptions(ctx));
