@@ -1,5 +1,9 @@
 import { stripIndent } from "common-tags";
-import type { FunctionReference, FunctionReturnType } from "convex/server";
+import type {
+  FunctionReference,
+  FunctionReturnType,
+  OptionalRestArgs,
+} from "convex/server";
 import { ConvexHttpClient } from "convex/browser";
 import { getToken, type GetTokenOptions } from "../utils/index.js";
 import React from "react";
@@ -35,33 +39,6 @@ function setupClient(options: ClientOptions) {
   // @ts-expect-error - setFetchOptions is internal
   client.setFetchOptions({ cache: "no-store" });
   return client;
-}
-
-async function fetchQuery<Query extends FunctionReference<"query">>(
-  query: Query,
-  args: Query["_args"],
-  options: ClientOptions
-): Promise<FunctionReturnType<Query>> {
-  const client = setupClient(options);
-  return client.query(query, args);
-}
-
-async function fetchMutation<Mutation extends FunctionReference<"mutation">>(
-  mutation: Mutation,
-  args: Mutation["_args"],
-  options: ClientOptions
-): Promise<FunctionReturnType<Mutation>> {
-  const client = setupClient(options);
-  return client.mutation(mutation, args);
-}
-
-async function fetchAction<Action extends FunctionReference<"action">>(
-  action: Action,
-  args: Action["_args"],
-  options: ClientOptions
-): Promise<FunctionReturnType<Action>> {
-  const client = setupClient(options);
-  return client.action(action, args);
 }
 
 const parseConvexSiteUrl = (url: string) => {
@@ -138,31 +115,36 @@ export const convexBetterAuthReactStart = (
 
   return {
     getToken: async () => {
-      const token = await cachedGetToken({ ...opts });
+      const token = await cachedGetToken(opts);
       return token.token;
     },
     handler: (request: Request) => handler(request, opts),
     fetchQuery: async <Query extends FunctionReference<"query">>(
       query: Query,
-      args: Query["_args"]
+      ...args: OptionalRestArgs<Query>
     ): Promise<FunctionReturnType<Query>> => {
-      return callWithToken((token?: string) =>
-        fetchQuery(query, args, { ...opts, token })
-      );
+      return callWithToken((token?: string) => {
+        const client = setupClient({ ...opts, token });
+        return client.query(query, ...args);
+      });
     },
     fetchMutation: async <Mutation extends FunctionReference<"mutation">>(
       mutation: Mutation,
-      args: Mutation["_args"]
-    ): Promise<FunctionReturnType<Mutation>> =>
-      callWithToken((token?: string) => {
-        return fetchMutation(mutation, args, { ...opts, token });
-      }),
+      ...args: OptionalRestArgs<Mutation>
+    ): Promise<FunctionReturnType<Mutation>> => {
+      return callWithToken((token?: string) => {
+        const client = setupClient({ ...opts, token });
+        return client.mutation(mutation, ...args);
+      });
+    },
     fetchAction: async <Action extends FunctionReference<"action">>(
       action: Action,
-      args: Action["_args"]
-    ): Promise<FunctionReturnType<Action>> =>
-      callWithToken((token?: string) => {
-        return fetchAction(action, args, { ...opts, token });
-      }),
+      ...args: OptionalRestArgs<Action>
+    ): Promise<FunctionReturnType<Action>> => {
+      return callWithToken((token?: string) => {
+        const client = setupClient({ ...opts, token });
+        return client.action(action, ...args);
+      });
+    },
   };
 };
