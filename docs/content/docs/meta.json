@@ -7,6 +7,7 @@
     "supported-plugins",
     "debugging",
     "integrations",
+    "experimental",
     "api",
     "migrations"
   ]

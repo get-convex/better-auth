@@ -1,0 +1,274 @@
+---
+title: Experimental
+description: Experimental features for Convex + Better Auth
+---
+
+<Callout>
+  These features are experimental and may be changed or removed in the future.
+</Callout>
+
+## JWT Caching
+
+**Faster page loads and navigation by reusing JWT from cookies.**
+
+Authenticated queries in SSR require an additional request for a token. This can
+slow down initial page load and navigation for frameworks that server render on
+in-app navigation.
+
+JWT caching allows server utilties like `fetchAuthQuery` to utilize the Convex
+JWT from request cookies if present and unexpired.
+
+First, create a utility function for determining whether an error is auth
+related.
+
+```ts title="lib/utils.ts"
+import { ConvexError } from "convex/values";
+
+export const isAuthError = (error: unknown) => {
+  // This broadly matches potentially auth related errors, can be rewritten to
+  // work with your app's own error handling.
+  const message =
+    (error instanceof ConvexError && error.data) ||
+    (error instanceof Error && error.message) ||
+    "";
+  return /auth/i.test(message);
+};
+```
+
+Configure `jwtCache` in server utilities.
+
+<Tabs groupId="framework" items={["next-js", "tanstack-start"]} defaultValue="next-js" persist>
+
+  <Tab value="next-js">
+
+```ts title="lib/auth-server.ts"
+import { convexBetterAuthNextJs } from "@convex-dev/better-auth/nextjs";
+import { isAuthError } from "@/lib/utils";
+
+export const { fetchAuthQuery } = convexBetterAuthNextJs({
+  convexUrl: process.env.NEXT_PUBLIC_CONVEX_URL!,
+  convexSiteUrl: process.env.NEXT_PUBLIC_CONVEX_SITE_URL!,
+  jwtCache: {
+    enabled: true,
+    isAuthError,
+  },
+});
+```
+
+  </Tab>
+
+  <Tab value="tanstack-start">
+
+```ts title="lib/auth-server.ts"
+import { convexBetterAuthReactStart } from "@convex-dev/better-auth/react-start";
+import { isAuthError } from "@/lib/utils";
+
+export const { fetchAuthQuery } = convexBetterAuthReactStart({
+  convexUrl: process.env.VITE_CONVEX_URL!,
+  convexSiteUrl: process.env.VITE_CONVEX_SITE_URL!,
+  jwtCache: {
+    enabled: true,
+    isAuthError,
+  },
+});
+```
+
+  </Tab>
+
+</Tabs>
+
+## Static JWKS
+
+**Faster page loads, navigation, and client readiness by speeding up Convex
+backend token validation.**
+
+When a Convex function is called over http (as opposed to the websocket client),
+every request must include a token and be validated by the Convex backend. Token
+validation is never cached. By default, validation requires the Convex backend
+to make two blocking http requests serially: one for OIDC discovery, which
+provides the JWKS url, and one for fetching the JWKS from the url. The JWT is
+then validated using the JWKS.
+
+By default the Better Auth Component uses Convex's
+[`customJwt`](https://docs.convex.dev/auth/advanced/custom-jwt) to avoid the
+OIDC request by providing the JWKS url statically in the auth config. Static
+JWKS avoids both calls by providing the JWKS itself as a data uri.
+
+First, add an internal mutation to get the latest JWKS. A new key may be
+written, so this must be a mutation.
+
+```ts title="convex/auth.ts"
+export const getLatestJwks = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const auth = createAuth(ctx);
+    // This method is added by the Convex Better Auth plugin and is
+    // available via `auth.api` only, not exposed as a route.
+    return await auth.api.getLatestJwks();
+  },
+});
+```
+
+Run the mutation and set the JWKS environment variable from the CLI.
+
+```bash
+npx convex run auth:getLatestJwks | npx convex env set JWKS
+```
+
+Provide the JWKS environment variable to your auth config and the Convex Better
+Auth plugin.
+
+```ts title="convex/auth.config.ts"
+export default {
+  providers: [getAuthConfigProvider({ jwks: process.env.JWKS })], // [!code ++]
+} satisfies AuthConfig;
+```
+
+```ts title="convex/auth.ts"
+export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
+  return {
+    baseURL: siteUrl,
+    database: authComponent.adapter(ctx),
+    // ... other auth config
+    plugins: [
+      // ... other plugins
+      convex({
+        authConfig,
+        jwks: process.env.JWKS, // [!code ++]
+      }),
+    ],
+  } satisfies BetterAuthOptions;
+};
+```
+
+## AuthBoundary
+
+The `AuthBoundary` React component is a wrapper that provides error handling for
+auth related errors in the client. It subscribes to a session validated user
+query for synced handling of session state changes.
+
+The Convex Component exports a query for use with `AuthBoundary`.
+
+```ts title="convex/auth.ts"
+export const { getAuthUser } = authComponent.clientApi(); // [!code ++]
+```
+
+Create a utility function for determining whether an error is auth related.
+
+```ts title="lib/utils.ts"
+import { ConvexError } from "convex/values";
+
+export const isAuthError = (error: unknown) => {
+  // This broadly matches potentially auth related errors, can be rewritten to
+  // work with your app's own error handling.
+  const message =
+    (error instanceof ConvexError && error.data) ||
+    (error instanceof Error && error.message) ||
+    "";
+  return /auth/i.test(message);
+};
+```
+
+Add a client component to wrap and configure `AuthBoundary`.
+
+<Tabs groupId="framework" items={["next-js", "tanstack-start"]} defaultValue="next-js" persist>
+<Tab value="next-js">
+```tsx title="lib/auth-client.tsx"
+"use client";
+
+import { useRouter } from "next/navigation";
+import { AuthBoundary } from "@convex-dev/better-auth/react";
+import { api } from "@/convex/_generated/api";
+import { isAuthError } from "@/lib/utils";
+import { authClient } from "@/lib/auth-client";
+
+export const ClientAuthBoundary = ({ children }: PropsWithChildren) => {
+  const router = useRouter();
+  return (
+    <AuthBoundary
+      authClient={authClient}
+      // This can do anything you like, a redirect is typical.
+      onUnauth={() => router.replace("/sign-in")}
+      getAuthUserFn={api.auth.getAuthUser}
+      isAuthError={isAuthError}
+    >
+      {children}
+    </AuthBoundary>
+  );
+};
+```
+</Tab>
+<Tab value="tanstack-start">
+```tsx title="lib/auth-client.tsx"
+"use client";
+
+import { useNavigate } from "@tanstack/react-router";
+import { AuthBoundary } from "@convex-dev/better-auth/react";
+import { api } from "@/convex/_generated/api";
+import { isAuthError } from "@/lib/utils";
+import { authClient } from "@/lib/auth-client";
+
+export const ClientAuthBoundary = ({ children }: PropsWithChildren) => {
+  const navigate = useNavigate();
+  return (
+    <AuthBoundary
+      authClient={authClient}
+      // This can do anything you like, a redirect is typical.
+      onUnauth={() => navigate({ to: "/sign-in" })}
+      getAuthUserFn={api.auth.getAuthUser}
+      isAuthError={isAuthError}
+    >
+      {children}
+    </AuthBoundary>
+  );
+};
+```
+</Tab>
+</Tabs>
+
+Wrap authenticated layout, route, etc. with `ClientAuthBoundary`. Most apps can
+just use one.
+
+<Tabs groupId="framework" items={["next-js", "tanstack-start"]} defaultValue="next-js" persist>
+<Tab value="next-js">
+
+```tsx title="app/(auth)/layout.tsx"
+import { isAuthenticated } from "@/lib/auth-server";
+import { ClientAuthBoundary } from "@/lib/auth-client";
+import { redirect } from "next/navigation";
+import { PropsWithChildren } from "react";
+
+export default async function Layout({ children }: PropsWithChildren) {
+  if (!(await isAuthenticated())) {
+    redirect("/sign-in");
+  }
+  return <ClientAuthBoundary>{children}</ClientAuthBoundary>;
+}
+```
+
+</Tab>
+
+<Tab value="tanstack-start">
+```tsx title="src/routes/_authed.tsx"
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+import { ClientAuthBoundary } from '@/lib/auth-client'
+
+export const Route = createFileRoute("/_authed")({
+  beforeLoad: ({ context }) => {
+    if (!context.isAuthenticated) {
+      console.log("redirecting to /sign-in");
+      throw redirect({ to: "/sign-in" });
+    }
+  },
+  component: () => {
+    return (
+      <ClientAuthBoundary>
+        <Outlet />
+      </ClientAuthBoundary>
+    );
+  },
+});
+```
+
+</Tab>
+</Tabs>

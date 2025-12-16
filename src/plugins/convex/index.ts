@@ -460,10 +460,41 @@ export const convex = (opts: {
           return response;
         }
       ),
+      getLatestJwks: createAuthEndpoint(
+        {
+          isAction: true,
+          method: "POST",
+          metadata: {
+            SERVER_ONLY: true,
+            openapi: {
+              description:
+                "Delete and regenerate JWKS, and return the new JWKS for static usage",
+            },
+          },
+        },
+        async (ctx) => {
+          // Ensure at least one key exists
+          await jwtPlugin(jwtOptions).endpoints.getJwks({
+            ...ctx,
+            method: "GET",
+          });
+          const jwks: any[] = await ctx.context.adapter.findMany({
+            model: "jwks",
+            limit: 1,
+            sortBy: {
+              field: "createdAt",
+              direction: "desc",
+            },
+          });
+          // Add alg to jwks, otherwise Better Auth will default to EdDSA
+          jwks[0].alg = jwtOptions.jwks.keyPairConfig.alg;
+          return jwks;
+        }
+      ),
       rotateKeys: createAuthEndpoint(
         {
           isAction: true,
-          method: "GET",
+          method: "POST",
           metadata: {
             SERVER_ONLY: true,
             openapi: {
@@ -480,6 +511,7 @@ export const convex = (opts: {
 
           await jwtPlugin(jwtOptions).endpoints.getJwks({
             ...ctx,
+            method: "GET",
           });
           const jwks: any[] = await ctx.context.adapter.findMany({
             model: "jwks",

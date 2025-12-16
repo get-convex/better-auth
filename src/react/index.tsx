@@ -280,6 +280,7 @@ export const AuthBoundary = ({
 }>) => {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const handleUnauth = useCallback(async () => {
+    // Auth request that will clear cookies if session is invalid
     await authClient.getSession();
     await onUnauth();
   }, [onUnauth]);
