@@ -326,9 +326,10 @@ Better Auth's
 [`auth.api` methods](https://www.better-auth.com/docs/concepts/api) would
 normally run in your Next.js server code, but with Convex being your backend,
 these methods need to run in a Convex function. The Convex function can then be
-called from the client via `useMutation` or in server functions and other server
-code using `fetchAuthMutation`. Authentication is handled automatically using
-session cookies.
+called from the client via hooks like `useMutation` or in server functions and
+other server code using one of the auth-server utilities like
+`fetchAuthMutation`. Authentication is handled automatically using session
+cookies.
 
 Here's an example using the `changePassword` method. The Better Auth `auth.api`
 method is called inside of a Convex mutation, because we know this function

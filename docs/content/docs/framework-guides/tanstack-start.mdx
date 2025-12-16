@@ -458,13 +458,18 @@ const handleSignOut = async () => {
 
 ### Using Better Auth from the server
 
-To use Better Auth's
-[server methods](https://www.better-auth.com/docs/concepts/api) in server
-rendering, server functions, or any other TanStack Start server code, use Convex
-functions and call the function from your server code.
+Better Auth's
+[`auth.api` methods](https://www.better-auth.com/docs/concepts/api) would
+normally run in your TanStack Start server code, but with Convex being your
+backend, these methods need to run in a Convex function. The Convex function can
+then be called from the client via hooks like `useMutation` or in server
+functions and other server code using one of the auth-server utilities like
+`fetchAuthMutation`. Authentication is handled automatically using session
+cookies.
 
-Here's an example Convex function that uses Better Auth's server methods, and a
-TanStack server function that calls the Convex function.
+Here's an example using the `changePassword` method. The Better Auth `auth.api`
+method is called inside of a Convex mutation, because we know this function
+needs write access. For reads a query function can be used.
 
 ```ts title="convex/users.ts"
 import { mutation } from "./_generated/server";
@@ -488,6 +493,8 @@ export const updateUserPassword = mutation({
   },
 });
 ```
+
+Here we call the mutation from a server action.
 
 ```ts title="src/routes/users.ts"
 import { createServerFn } from "@tanstack/react-start";

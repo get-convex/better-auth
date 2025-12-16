@@ -99,7 +99,7 @@ npm install convex convex-svelte
 
     ```npm
     npm install @convex-dev/better-auth @mmailaender/convex-better-auth-svelte
-    npm install better-auth@1.3.34 --save-exact
+    npm install better-auth@1.4.7 --save-exact
     ```
 
   </div>
@@ -127,14 +127,12 @@ npm install convex convex-svelte
     Add a `src/convex/auth.config.ts` file to configure Better Auth as an authentication provider.
 
     ```ts title="src/convex/auth.config.ts"
+    import { getAuthConfigProvider } from "@convex-dev/better-auth/auth-config";
+    import type { AuthConfig } from "convex/server";
+
     export default {
-      providers: [
-        {
-          domain: process.env.CONVEX_SITE_URL,
-          applicationID: "convex",
-        },
-      ],
-    };
+      providers: [getAuthConfigProvider()],
+    } satisfies AuthConfig;
     ```
 
   </div>
@@ -166,7 +164,7 @@ npm install convex convex-svelte
     PUBLIC_CONVEX_SITE_URL=https://adjective-animal-123.convex.site # [!code ++]
 
     # Your local site URL // [!code ++]
-    SITE_URL=http://localhost:5173 # [!code ++]
+    PUBLIC_SITE_URL=http://localhost:5173 # [!code ++]
     ```
 
     ```shell title=".env.local" tab="Self hosted"
@@ -180,7 +178,7 @@ npm install convex convex-svelte
     PUBLIC_CONVEX_SITE_URL=http://127.0.0.1:3211 # [!code ++]
 
     # Your local site URL // [!code ++]
-    SITE_URL=http://localhost:5173 # [!code ++]
+    PUBLIC_SITE_URL=http://localhost:5173 # [!code ++]
     ```
 
   </div>
@@ -199,6 +197,7 @@ npm install convex convex-svelte
     import { type DataModel } from "./_generated/dataModel";
     import { query } from "./_generated/server";
     import { betterAuth, type BetterAuthOptions } from "better-auth";
+    import authConfig from "./auth.config";
 
     const siteUrl = process.env.SITE_URL!;
 
@@ -218,7 +217,7 @@ npm install convex convex-svelte
         },
         plugins: [
           // The Convex plugin is required for Convex compatibility
-          convex(),
+          convex({ authConfig }),
         ],
       }) satisfies BetterAuthOptions;
 
