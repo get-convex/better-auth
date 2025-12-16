@@ -2,13 +2,13 @@ import { Toaster } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { TodoList } from "./todo-list";
 import { Header } from "./header";
-import { preloadQuery } from "@/lib/auth-server";
+import { preloadAuthQuery } from "@/lib/auth-server";
 
 const Page = async () => {
   // Preload queries for SSR
   const [preloadedUserQuery, preloadedTodosQuery] = await Promise.all([
-    preloadQuery(api.auth.getCurrentUser),
-    preloadQuery(api.todos.get),
+    preloadAuthQuery(api.auth.getCurrentUser),
+    preloadAuthQuery(api.todos.get),
   ]);
 
   return (

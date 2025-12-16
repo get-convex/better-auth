@@ -186,7 +186,13 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     ```ts title="src/lib/auth-server.ts"
     import { convexBetterAuthReactStart } from '@convex-dev/better-auth/react-start'
 
-    export const { handler, getToken, fetchQuery } = convexBetterAuthReactStart({
+    export const {
+      handler,
+      getToken,
+      fetchAuthQuery,
+      fetchAuthMutation,
+      fetchAuthAction,
+    } = convexBetterAuthReactStart({
       convexUrl: process.env.VITE_CONVEX_URL!,
       convexSiteUrl: process.env.VITE_CONVEX_SITE_URL!,
     })
@@ -396,6 +402,60 @@ You're now ready to start using Better Auth with Convex.
 Check out the [Basic Usage](/basic-usage) guide for more information on general
 usage. Below are usage notes specific to TanStack Start.
 
+### SSR with TanStack Query
+
+Use TanStack Query's `ensureQueryData` and `useSuspenseQuery` functions to use
+Convex queries in server side rendering.
+
+<Callout>
+  A seamless initial render currently requires `expectAuth: true` in the
+  ConvexQueryClient constructor. This setting does not allow Convex functions to
+  run in the client before authentication.
+</Callout>
+
+```tsx title="src/routes/index.tsx"
+import { createFileRoute } from "@tanstack/react-router";
+import { api } from "~/convex/_generated/api";
+import { convexQuery } from "@convex-dev/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
+
+export const Route = createFileRoute("/")({
+  component: App,
+  loader: async ({ context }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData(
+        convexQuery(api.auth.getCurrentUser, {})
+      ),
+      // Load multiple queries in parallel if needed
+    ]);
+  },
+});
+```
+
+### Signing out with `expectAuth: true`
+
+The `expectAuth: true` setting only has affect before the initial
+authentication. If a user signs out and signs back in, authenticated queries
+will likely be called before authentication is ready, resulting in an error.
+
+**For this reason, the current recommendation is to reload the page on sign
+out.** For apps that redirect based on authentication, signing out is typically
+all that's needed as an unauth redirect will occur after reload.
+
+```ts title="src/routes/index.tsx"
+import { authClient } from "~/lib/auth-client";
+
+const handleSignOut = async () => {
+  await authClient.signOut({
+    fetchOptions: {
+      onSuccess: () => {
+        location.reload();
+      },
+    },
+  },
+};
+```
+
 ### Using Better Auth from the server
 
 To use Better Auth's
@@ -431,12 +491,12 @@ export const updateUserPassword = mutation({
 
 ```ts title="src/routes/users.ts"
 import { createServerFn } from "@tanstack/react-start";
-import { fetchMutation } from "@/lib/auth-server";
+import { fetchAuthMutation } from "@/lib/auth-server";
 import { api } from "../../convex/_generated/api";
 
 export const updatePassword = createServerFn({ method: "POST" }).handler(
   async ({ data: { currentPassword, newPassword } }) => {
-    await fetchMutation(api.users.updatePassword, {
+    await fetchAuthMutation(api.users.updatePassword, {
       currentPassword,
       newPassword,
     });

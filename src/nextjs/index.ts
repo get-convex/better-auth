@@ -109,7 +109,7 @@ export const convexBetterAuthNextJs = (
       const token = await cachedGetToken();
       return !!token.token;
     },
-    preloadQuery: async <Query extends FunctionReference<"query">>(
+    preloadAuthQuery: async <Query extends FunctionReference<"query">>(
       query: Query,
       ...args: OptionalArgs<Query>
     ): Promise<Preloaded<Query>> => {
@@ -118,7 +118,7 @@ export const convexBetterAuthNextJs = (
         return preloadQuery(query, ...argsAndOptions);
       });
     },
-    fetchQuery: async <Query extends FunctionReference<"query">>(
+    fetchAuthQuery: async <Query extends FunctionReference<"query">>(
       query: Query,
       ...args: OptionalArgs<Query>
     ): Promise<FunctionReturnType<Query>> => {
@@ -127,7 +127,7 @@ export const convexBetterAuthNextJs = (
         return fetchQuery(query, ...argsAndOptions);
       });
     },
-    fetchMutation: async <Mutation extends FunctionReference<"mutation">>(
+    fetchAuthMutation: async <Mutation extends FunctionReference<"mutation">>(
       mutation: Mutation,
       ...args: OptionalArgs<Mutation>
     ): Promise<FunctionReturnType<Mutation>> => {
@@ -136,7 +136,7 @@ export const convexBetterAuthNextJs = (
         return fetchMutation(mutation, ...argsAndOptions);
       });
     },
-    fetchAction: async <Action extends FunctionReference<"action">>(
+    fetchAuthAction: async <Action extends FunctionReference<"action">>(
       action: Action,
       ...args: OptionalArgs<Action>
     ): Promise<FunctionReturnType<Action>> => {

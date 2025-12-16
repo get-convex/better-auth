@@ -37,7 +37,7 @@ const useConvexPreloadedQuery = <Query extends FunctionReference<"query">>(
   return result === undefined ? preloadedResult : result;
 };
 
-export const useAuthPreloadedQuery = <Query extends FunctionReference<"query">>(
+export const usePreloadedAuthQuery = <Query extends FunctionReference<"query">>(
   preloadedQuery: Preloaded<Query>
 ): Query["_returnType"] | null => {
   const { isLoading } = useConvexAuth();

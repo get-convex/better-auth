@@ -119,7 +119,7 @@ export const convexBetterAuthReactStart = (
       return token.token;
     },
     handler: (request: Request) => handler(request, opts),
-    fetchQuery: async <Query extends FunctionReference<"query">>(
+    fetchAuthQuery: async <Query extends FunctionReference<"query">>(
       query: Query,
       ...args: OptionalRestArgs<Query>
     ): Promise<FunctionReturnType<Query>> => {
@@ -128,7 +128,7 @@ export const convexBetterAuthReactStart = (
         return client.query(query, ...args);
       });
     },
-    fetchMutation: async <Mutation extends FunctionReference<"mutation">>(
+    fetchAuthMutation: async <Mutation extends FunctionReference<"mutation">>(
       mutation: Mutation,
       ...args: OptionalRestArgs<Mutation>
     ): Promise<FunctionReturnType<Mutation>> => {
@@ -137,7 +137,7 @@ export const convexBetterAuthReactStart = (
         return client.mutation(mutation, ...args);
       });
     },
-    fetchAction: async <Action extends FunctionReference<"action">>(
+    fetchAuthAction: async <Action extends FunctionReference<"action">>(
       action: Action,
       ...args: OptionalRestArgs<Action>
     ): Promise<FunctionReturnType<Action>> => {
