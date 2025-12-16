@@ -22,7 +22,7 @@ description: Install and configure Convex + Better Auth for React.
 
     ```npm
     npm install convex@latest @convex-dev/better-auth
-    npm install better-auth@1.3.34 --save-exact
+    npm install better-auth@1.4.7 --save-exact
     ```
 
   </div>
@@ -50,14 +50,12 @@ description: Install and configure Convex + Better Auth for React.
     Add a `convex/auth.config.ts` file to configure Better Auth as an authentication provider.
 
     ```ts title="convex/auth.config.ts"
+    import { getAuthConfigProvider } from "@convex-dev/better-auth/auth-config";
+    import type { AuthConfig } from "convex/server";
+
     export default {
-      providers: [
-        {
-          domain: process.env.CONVEX_SITE_URL,
-          applicationID: "convex",
-        },
-      ],
-    };
+      providers: [getAuthConfigProvider()],
+    } satisfies AuthConfig;
     ```
 
   </div>
@@ -89,7 +87,7 @@ description: Install and configure Convex + Better Auth for React.
     VITE_CONVEX_SITE_URL=https://adjective-animal-123.convex.site # [!code ++]
 
     # Your local site URL // [!code ++]
-    SITE_URL=http://localhost:5173 # [!code ++]
+    VITE_SITE_URL=http://localhost:5173 # [!code ++]
     ```
 
     ```shell title=".env.local" tab="Self hosted"
@@ -103,7 +101,7 @@ description: Install and configure Convex + Better Auth for React.
     VITE_CONVEX_SITE_URL=http://127.0.0.1:3211 # [!code ++]
 
     # Your local site URL // [!code ++]
-    SITE_URL=http://localhost:5173 # [!code ++]
+    VITE_SITE_URL=http://localhost:5173 # [!code ++]
     ```
 
   </div>
@@ -121,7 +119,8 @@ description: Install and configure Convex + Better Auth for React.
     import { components } from "./_generated/api";
     import { DataModel } from "./_generated/dataModel";
     import { query } from "./_generated/server";
-    import { betterAuth } from "better-auth";
+    import { betterAuth, type BetterAuthOptions } from "better-auth";
+    import authConfig from "./auth.config";
 
     const siteUrl = process.env.SITE_URL!;
 
@@ -129,16 +128,8 @@ description: Install and configure Convex + Better Auth for React.
     // as well as helper methods for general use.
     export const authComponent = createClient<DataModel>(components.betterAuth);
 
-    export const createAuth = (
-      ctx: GenericCtx<DataModel>,
-      { optionsOnly } = { optionsOnly: false },
-    ) => {
+    export const createAuth = (ctx: GenericCtx<DataModel>) => {
       return betterAuth({
-        // disable logging when createAuth is called just to generate options.
-        // this is not required, but there's a lot of noise in logs without it.
-        logger: {
-          disabled: optionsOnly,
-        },
         trustedOrigins: [siteUrl],
         database: authComponent.adapter(ctx),
         // Configure simple, non-verified email/password to get started
@@ -150,10 +141,10 @@ description: Install and configure Convex + Better Auth for React.
           // The cross domain plugin is required for client side frameworks
           crossDomain({ siteUrl }),
           // The Convex plugin is required for Convex compatibility
-          convex(),
+          convex({ authConfig }),
         ],
       });
-    };
+    }
 
     // Example function for getting the current user
     // Feel free to edit, omit, etc.
@@ -248,12 +239,13 @@ usage. Below are usage notes specific to React SPAs.
 
 ### Social sign-in
 
-Social sign-in for React SPAs works the same as with full stack frameworks, but the
-authorized redirect URI is based on your Convex site URL instead of your application domain.
+Social sign-in for React SPAs works the same as with full stack frameworks, but
+the authorized redirect URI is based on your Convex site URL instead of your
+application domain.
 
 For example, with
-[Google sign-in](https://www.better-auth.com/docs/authentication/google), the authorized
-redirect URI would look like:
+[Google sign-in](https://www.better-auth.com/docs/authentication/google), the
+authorized redirect URI would look like:
 
 ```
 https://adjective-animal-123.convex.site/api/auth/callback/google

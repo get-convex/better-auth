@@ -1,5 +1,5 @@
 import { components } from "./_generated/api";
-import { query } from "./_generated/server";
+import { internalAction, query } from "./_generated/server";
 import authSchema from "./betterAuth/schema";
 import { createClient, GenericCtx } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
@@ -17,10 +17,11 @@ import {
   sendResetPassword,
 } from "../convex/email";
 import { magicLink } from "better-auth/plugins";
-import { betterAuth, BetterAuthOptions } from "better-auth";
+import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { requireActionCtx } from "@convex-dev/better-auth/utils";
 import { DataModel } from "./_generated/dataModel";
 import { v } from "convex/values";
+import authConfig from "./auth.config";
 
 // This implementation uses Local Install as it would be in a new project.
 
@@ -36,16 +37,9 @@ export const authComponent = createClient<DataModel, typeof authSchema>(
   },
 );
 
-export const createAuth = (
-  ctx: GenericCtx<DataModel>,
-  { optionsOnly } = { optionsOnly: false },
-) =>
-  betterAuth({
+export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
+  return {
     baseURL: siteUrl,
-    logger: {
-      disabled: optionsOnly,
-      level: "debug",
-    },
     database: authComponent.adapter(ctx),
     account: {
       accountLinking: {
@@ -129,9 +123,25 @@ export const createAuth = (
           },
         ],
       }),
-      convex(),
+      convex({
+        authConfig,
+      }),
     ],
-  } satisfies BetterAuthOptions);
+  } satisfies BetterAuthOptions;
+};
+
+export const createAuth = (ctx: GenericCtx<DataModel>) =>
+  betterAuth(createAuthOptions(ctx));
+
+export const { getAuthUser } = authComponent.clientApi();
+
+export const rotateKeys = internalAction({
+  args: {},
+  handler: async (ctx) => {
+    const auth = createAuth(ctx);
+    return auth.api.rotateKeys();
+  },
+});
 
 // Example functions, feel free to edit, omit, etc.
 
@@ -139,7 +149,7 @@ export const createAuth = (
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    return authComponent.getAuthUser(ctx);
+    return authComponent.safeGetAuthUser(ctx);
   },
 });
 

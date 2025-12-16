@@ -1,22 +1,168 @@
-import { type BetterAuthPlugin } from "better-auth";
+import {
+  type BetterAuthOptions,
+  type BetterAuthPlugin,
+  type Session,
+  type User,
+} from "better-auth";
 import { createAuthMiddleware, sessionMiddleware } from "better-auth/api";
 import {
   createAuthEndpoint,
   jwt as jwtPlugin,
   bearer as bearerPlugin,
   oidcProvider as oidcProviderPlugin,
+  type JwtOptions,
+  type Jwk,
 } from "better-auth/plugins";
+import { omit } from "convex-helpers";
+import type { AuthConfig, AuthProvider } from "convex/server";
 
 export const JWT_COOKIE_NAME = "convex_jwt";
 
-export const convex = (
-  opts: {
-    jwtExpirationSeconds?: number;
-    deleteExpiredSessionsOnLogin?: boolean;
-    options?: { basePath?: string };
-  } = {}
-) => {
-  const { jwtExpirationSeconds = 60 * 15 } = opts;
+const getJwksAlg = (authProvider: AuthProvider) => {
+  const isCustomJwt =
+    "type" in authProvider && authProvider.type === "customJwt";
+  if (isCustomJwt && authProvider.algorithm !== "RS256") {
+    throw new Error("Only RS256 is supported for custom JWT with Better Auth");
+  }
+  return isCustomJwt ? authProvider.algorithm : "EdDSA";
+};
+
+const parseAuthConfig = (authConfig: AuthConfig, opts: { jwks?: string }) => {
+  const providerConfigs = authConfig.providers.filter(
+    (provider) => provider.applicationID === "convex"
+  );
+  if (providerConfigs.length > 1) {
+    throw new Error(
+      "Multiple auth providers with applicationID 'convex' detected. Please use only one."
+    );
+  }
+  const providerConfig = providerConfigs[0];
+  if (!providerConfig) {
+    throw new Error(
+      "No auth provider with applicationID 'convex' found. Please add one to your auth config."
+    );
+  }
+  if (!("type" in providerConfig) || providerConfig.type !== "customJwt") {
+    return providerConfig;
+  }
+
+  const isDataUriJwks = providerConfig.jwks?.startsWith("data:text/");
+
+  if (isDataUriJwks && !opts.jwks) {
+    throw new Error(
+      "Static JWKS detected in auth config, but missing from Convex plugin"
+    );
+  }
+  if (!isDataUriJwks && opts.jwks) {
+    console.warn(
+      "Static JWKS provided to Convex plugin, but not to auth config. This adds an unnecessary network request for token verification."
+    );
+  }
+  return providerConfig;
+};
+
+export const convex = (opts: {
+  /**
+   * @param {AuthConfig} authConfig - Auth config from your Convex project.
+   *
+   * Typically found in `convex/auth.config.ts`.
+   *
+   * @example
+   * ```ts
+   * // convex/auth.config.ts
+   * export default {
+   *   providers: [getAuthConfigProvider({ jwks: process.env.JWKS })],
+   * } satisfies AuthConfig;
+   * ```
+   *
+   * @example
+   * ```ts
+   * // convex/auth.ts
+   * import authConfig from './auth.config';
+   * export const createAuth = (ctx: GenericCtx<DataModel>) => {
+   *   return betterAuth({
+   *     // ...
+   *     plugins: [convex({ authConfig })],
+   *   });
+   * };
+   * ```
+   */
+  authConfig: AuthConfig;
+  /**
+   * @param {Object} jwt - JWT options.
+   * @param {number} jwt.expirationSeconds - JWT expiration seconds.
+   * @param {Function} jwt.definePayload - Function to define the JWT payload. `sessionId` and `iat` are added automatically.
+   */
+  jwt?: {
+    expirationSeconds?: number;
+    definePayload?: (session: {
+      user: User & Record<string, any>;
+      session: Session & Record<string, any>;
+    }) => Promise<Record<string, any>> | Record<string, any> | undefined;
+  };
+  /**
+   * @deprecated Use jwt.expirationSeconds instead.
+   */
+  jwtExpirationSeconds?: number;
+  /**
+   * @param {string} jwks - Optional static JWKS to avoid fetching from the database.
+   *
+   * This should be a stringified document from the Better Auth JWKS table. You
+   * can create one in the console.
+   *
+   * @example
+   * ```ts
+   * // convex/auth.ts
+   * export const rotateKeys = internalAction({
+   *   args: {},
+   *   handler: async (ctx) => {
+   *     const auth = createAuth(ctx)
+   *     return await auth.api.rotateKeys()
+   *   },
+   * })
+   * ```
+   * Run the action and set the JWKS environment variable
+   *
+   * ```bash
+   * npx convex run auth:rotateKeys | npx convex env set JWKS
+   * ```
+   * Then use it in your auth config and Better Auth options:
+   *
+   * ```ts
+   * // convex/auth.config.ts
+   * export default {
+   *   providers: [getAuthConfigProvider({ jwks: process.env.JWKS })],
+   * } satisfies AuthConfig;
+   *
+   * // convex/auth.ts
+   * export const createAuth = (ctx: GenericCtx<DataModel>) => {
+   *   return betterAuth({
+   *     // ...
+   *     plugins: [convex({ authConfig, jwks: process.env.JWKS })],
+   *   });
+   * };
+   * ```
+   */
+  jwks?: string;
+  /**
+   * @param {boolean} jwksRotateOnTokenGenerationError - Whether to rotate the JWKS on token generation error.
+   *
+   * Does nothing if a static JWKS is provided.
+   *
+   * Handles error that occurs when existing JWKS key does not match configured
+   * algorithm, which will be common for 0.10 upgrades switching from EdDSA to RS256.
+   *
+   * @default true
+   */
+  jwksRotateOnTokenGenerationError?: boolean;
+  /**
+   * @param {BetterAuthOptions} options - Better Auth options. Not required,
+   * currently used to pass the basePath to the oidcProvider plugin.
+   */
+  options?: BetterAuthOptions;
+}) => {
+  const jwtExpirationSeconds =
+    opts.jwt?.expirationSeconds ?? opts.jwtExpirationSeconds ?? 60 * 15;
   const oidcProvider = oidcProviderPlugin({
     loginPage: "/not-used",
     metadata: {
@@ -24,17 +170,62 @@ export const convex = (
       jwks_uri: `${process.env.CONVEX_SITE_URL}${opts.options?.basePath ?? "/api/auth"}/convex/jwks`,
     },
   });
-  const jwt = jwtPlugin({
+  const providerConfig = parseAuthConfig(opts.authConfig, opts);
+
+  const jwtOptions = {
     jwt: {
       issuer: `${process.env.CONVEX_SITE_URL}`,
       audience: "convex",
       expirationTime: `${jwtExpirationSeconds}s`,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      definePayload: ({ user: { id, image, ...user }, session }) => ({
-        ...user,
+      definePayload: ({ user, session }) => ({
+        ...(opts.jwt?.definePayload
+          ? opts.jwt.definePayload({ user, session })
+          : omit(user, ["id", "image"])),
         sessionId: session.id,
         iat: Math.floor(new Date().getTime() / 1000),
       }),
+    },
+    jwks: {
+      keyPairConfig: {
+        alg: getJwksAlg(providerConfig),
+      },
+    },
+  } satisfies JwtOptions;
+  const jwks = opts.jwks ? JSON.parse(opts.jwks) : undefined;
+  const jwt = jwtPlugin({
+    ...jwtOptions,
+    adapter: {
+      createJwk: async (webKey, ctx) => {
+        if (opts.jwks) {
+          throw new Error("Not implemented");
+        }
+        // TODO: remove when date parsing for jwks adapter is fixed upstream
+        return await ctx.context.adapter.create<Omit<Jwk, "id">, Jwk>({
+          model: "jwks",
+          data: {
+            ...webKey,
+            createdAt: new Date(),
+          },
+        });
+      },
+      getJwks: async (ctx) => {
+        if (opts.jwks) {
+          return jwks;
+        }
+        // TODO: remove when date parsing for jwks adapter is fixed upstream
+        const keys: Jwk[] = await ctx.context.adapter.findMany<Jwk>({
+          model: "jwks",
+          sortBy: {
+            field: "createdAt",
+            direction: "desc",
+          },
+        });
+        return keys.map((key) => ({
+          ...key,
+          createdAt: new Date(key.createdAt),
+          ...(key.expiresAt ? { expiresAt: new Date(key.expiresAt) } : {}),
+        }));
+      },
     },
   });
   // Bearer plugin converts the session token to a cookie
@@ -48,19 +239,23 @@ export const convex = (
     ...jwt.schema,
   };
 
-  const parseSetCookie = (setCookieHeader: string) => {
-    return setCookieHeader
-      .split(", ")
-      .map((cookie) => {
-        const semiIdx = cookie.indexOf(";");
-        const endIdx = semiIdx === -1 ? cookie.length + 1 : semiIdx;
-        return cookie.slice(0, endIdx);
-      })
-      .join("; ");
-  };
   return {
     id: "convex",
-    init: ({ logger, options }) => {
+    init: (ctx) => {
+      const { options, logger } = ctx;
+      if (options.basePath !== "/api/auth" && !opts.options?.basePath) {
+        console.warn(
+          `Better Auth basePath set to ${options.basePath} but no basePath is set in the Convex plugin. This is probably a mistake.`
+        );
+      }
+      if (
+        opts.options?.basePath &&
+        options.basePath !== opts.options?.basePath
+      ) {
+        console.warn(
+          `Better Auth basePath ${options.basePath} does not match Convex plugin basePath ${opts.options?.basePath}. This is probably a mistake.`
+        );
+      }
       if (
         options.plugins?.every((p) => p.id !== "cross-domain") &&
         !options.baseURL
@@ -96,32 +291,30 @@ export const convex = (
         ...oidcProvider.hooks.after,
         {
           matcher: (ctx) => {
-            return (
+            return Boolean(
               ctx.path.startsWith("/sign-in") ||
-              ctx.path.startsWith("/sign-up") ||
-              ctx.path.startsWith("/callback") ||
-              ctx.path.startsWith("/oauth2/callback") ||
-              ctx.path.startsWith("/magic-link/verify") ||
-              ctx.path.startsWith("/email-otp/verify-email") ||
-              ctx.path.startsWith("/phone-number/verify") ||
-              ctx.path.startsWith("/siwe/verify")
+                ctx.path.startsWith("/sign-up") ||
+                ctx.path.startsWith("/callback") ||
+                ctx.path.startsWith("/oauth2/callback") ||
+                ctx.path.startsWith("/magic-link/verify") ||
+                ctx.path.startsWith("/email-otp/verify-email") ||
+                ctx.path.startsWith("/phone-number/verify") ||
+                ctx.path.startsWith("/siwe/verify") ||
+                (ctx.path.startsWith("/get-session") && ctx.context.session)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
-            // Set jwt cookie at login for ssa using set-cookie header
-            const setCookie =
-              ctx.context.responseHeaders?.get("set-cookie") ?? "";
-            if (!setCookie) {
-              return;
-            }
+            // Set jwt cookie at login for authenticated ssr
+            const originalSession = ctx.context.session;
             try {
+              ctx.context.session =
+                ctx.context.session ?? ctx.context.newSession;
               const { token } = await jwt.endpoints.getToken({
                 ...ctx,
+                headers: {},
                 method: "GET",
-                headers: {
-                  cookie: parseSetCookie(setCookie),
-                },
                 returnHeaders: false,
+                returnStatus: false,
               });
               const jwtCookie = ctx.context.createAuthCookie(JWT_COOKIE_NAME, {
                 maxAge: jwtExpirationSeconds,
@@ -132,13 +325,15 @@ export const convex = (
               // no-op, some sign-in calls (eg., when redirecting to 2fa)
               // 401 here
             }
+            ctx.context.session = originalSession;
           }),
         },
         {
           matcher: (ctx) => {
             return (
               ctx.path?.startsWith("/sign-out") ||
-              ctx.path?.startsWith("/delete-user")
+              ctx.path?.startsWith("/delete-user") ||
+              (ctx.path?.startsWith("/get-session") && !ctx.context.session)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
@@ -158,11 +353,13 @@ export const convex = (
           metadata: {
             isAction: false,
           },
+          // TODO: properly type this
         },
         async (ctx) => {
           const response = await oidcProvider.endpoints.getOpenIdConfig({
             ...ctx,
             returnHeaders: false,
+            returnStatus: false,
           });
           return response;
         }
@@ -258,8 +455,74 @@ export const convex = (
           const response = await jwt.endpoints.getJwks({
             ...ctx,
             returnHeaders: false,
+            returnStatus: false,
           });
           return response;
+        }
+      ),
+      getLatestJwks: createAuthEndpoint(
+        {
+          isAction: true,
+          method: "POST",
+          metadata: {
+            SERVER_ONLY: true,
+            openapi: {
+              description:
+                "Delete and regenerate JWKS, and return the new JWKS for static usage",
+            },
+          },
+        },
+        async (ctx) => {
+          // Ensure at least one key exists
+          await jwtPlugin(jwtOptions).endpoints.getJwks({
+            ...ctx,
+            method: "GET",
+          });
+          const jwks: any[] = await ctx.context.adapter.findMany({
+            model: "jwks",
+            limit: 1,
+            sortBy: {
+              field: "createdAt",
+              direction: "desc",
+            },
+          });
+          // Add alg to jwks, otherwise Better Auth will default to EdDSA
+          jwks[0].alg = jwtOptions.jwks.keyPairConfig.alg;
+          return jwks;
+        }
+      ),
+      rotateKeys: createAuthEndpoint(
+        {
+          isAction: true,
+          method: "POST",
+          metadata: {
+            SERVER_ONLY: true,
+            openapi: {
+              description:
+                "Delete and regenerate JWKS, and return the new JWKS for static usage",
+            },
+          },
+        },
+        async (ctx) => {
+          await ctx.context.adapter.deleteMany({
+            model: "jwks",
+            where: [],
+          });
+
+          await jwtPlugin(jwtOptions).endpoints.getJwks({
+            ...ctx,
+            method: "GET",
+          });
+          const jwks: any[] = await ctx.context.adapter.findMany({
+            model: "jwks",
+            limit: 1,
+            sortBy: {
+              field: "createdAt",
+              direction: "desc",
+            },
+          });
+          jwks[0].alg = jwtOptions.jwks.keyPairConfig.alg;
+          return jwks;
         }
       ),
       getToken: createAuthEndpoint(
@@ -292,15 +555,38 @@ export const convex = (
           },
         },
         async (ctx) => {
-          const response = await jwt.endpoints.getToken({
-            ...ctx,
-            returnHeaders: false,
-          });
-          const jwtCookie = ctx.context.createAuthCookie(JWT_COOKIE_NAME, {
-            maxAge: jwtExpirationSeconds,
-          });
-          ctx.setCookie(jwtCookie.name, response.token, jwtCookie.attributes);
-          return response;
+          const runEndpoint = async () => {
+            const response = await jwt.endpoints.getToken({
+              ...ctx,
+              returnHeaders: false,
+              returnStatus: false,
+            });
+            const jwtCookie = ctx.context.createAuthCookie(JWT_COOKIE_NAME, {
+              maxAge: jwtExpirationSeconds,
+            });
+            ctx.setCookie(jwtCookie.name, response.token, jwtCookie.attributes);
+            return response;
+          };
+          try {
+            return await runEndpoint();
+          } catch (error: any) {
+            // If alg config has changed and no longer matches one or more keys,
+            // roll the keys
+            if (!opts.jwks && error?.code === "ERR_JOSE_NOT_SUPPORTED") {
+              if (opts.jwksRotateOnTokenGenerationError) {
+                await ctx.context.adapter.deleteMany({
+                  model: "jwks",
+                  where: [],
+                });
+                return await runEndpoint();
+              } else {
+                console.error(
+                  "Try temporarily setting jwksRotateOnTokenGenerationError: true on the Convex Better Auth plugin."
+                );
+              }
+            }
+            throw error;
+          }
         }
       ),
     },

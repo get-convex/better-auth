@@ -12,7 +12,8 @@ description: Install and configure Convex + Better Auth for Sveltekit.
 
 ## Prerequisites
 
-You'll first need a project where Convex is already set-up. Ensure that all steps in prerequisites are completed.
+You'll first need a project where Convex is already set-up. Ensure that all
+steps in prerequisites are completed.
 
 <div className="fd-steps">
 
@@ -98,7 +99,7 @@ npm install convex convex-svelte
 
     ```npm
     npm install @convex-dev/better-auth @mmailaender/convex-better-auth-svelte
-    npm install better-auth@1.3.34 --save-exact
+    npm install better-auth@1.4.7 --save-exact
     ```
 
   </div>
@@ -126,14 +127,12 @@ npm install convex convex-svelte
     Add a `src/convex/auth.config.ts` file to configure Better Auth as an authentication provider.
 
     ```ts title="src/convex/auth.config.ts"
+    import { getAuthConfigProvider } from "@convex-dev/better-auth/auth-config";
+    import type { AuthConfig } from "convex/server";
+
     export default {
-      providers: [
-        {
-          domain: process.env.CONVEX_SITE_URL,
-          applicationID: "convex",
-        },
-      ],
-    };
+      providers: [getAuthConfigProvider()],
+    } satisfies AuthConfig;
     ```
 
   </div>
@@ -165,7 +164,7 @@ npm install convex convex-svelte
     PUBLIC_CONVEX_SITE_URL=https://adjective-animal-123.convex.site # [!code ++]
 
     # Your local site URL // [!code ++]
-    SITE_URL=http://localhost:5173 # [!code ++]
+    PUBLIC_SITE_URL=http://localhost:5173 # [!code ++]
     ```
 
     ```shell title=".env.local" tab="Self hosted"
@@ -179,7 +178,7 @@ npm install convex convex-svelte
     PUBLIC_CONVEX_SITE_URL=http://127.0.0.1:3211 # [!code ++]
 
     # Your local site URL // [!code ++]
-    SITE_URL=http://localhost:5173 # [!code ++]
+    PUBLIC_SITE_URL=http://localhost:5173 # [!code ++]
     ```
 
   </div>
@@ -197,7 +196,8 @@ npm install convex convex-svelte
     import { components } from "./_generated/api";
     import { type DataModel } from "./_generated/dataModel";
     import { query } from "./_generated/server";
-    import { betterAuth } from "better-auth";
+    import { betterAuth, type BetterAuthOptions } from "better-auth";
+    import authConfig from "./auth.config";
 
     const siteUrl = process.env.SITE_URL!;
 
@@ -205,16 +205,8 @@ npm install convex convex-svelte
     // as well as helper methods for general use.
     export const authComponent = createClient<DataModel>(components.betterAuth);
 
-    export const createAuth = (
-      ctx: GenericCtx<DataModel>,
-      { optionsOnly } = { optionsOnly: false },
-    ) => {
+    export const createAuth = (ctx: GenericCtx<DataModel>) => {
       return betterAuth({
-        // disable logging when createAuth is called just to generate options.
-        // this is not required, but there's a lot of noise in logs without it.
-        logger: {
-          disabled: optionsOnly,
-        },
         baseURL: siteUrl,
         database: authComponent.adapter(ctx),
         // Configure simple, non-verified email/password to get started
@@ -224,10 +216,10 @@ npm install convex convex-svelte
         },
         plugins: [
           // The Convex plugin is required for Convex compatibility
-          convex(),
+          convex({ authConfig }),
         ],
-      });
-    };
+      })
+    }
 
     // Example function for getting the current user
     // Feel free to edit, omit, etc.
@@ -357,7 +349,9 @@ usage. Below are usage notes specific to Sveltekit.
 
 ### Using Better Auth from the client
 
-Note: To add SSR support (`data.currentUser`) also add the `src/routes/+page.server.ts` file from the `Using Better Auth from the server` example.
+Note: To add SSR support (`data.currentUser`) also add the
+`src/routes/+page.server.ts` file from the `Using Better Auth from the server`
+example.
 
 ```svelte title="src/routes/+page.svelte"
 <script lang="ts">
@@ -537,12 +531,13 @@ Note: To add SSR support (`data.currentUser`) also add the `src/routes/+page.ser
 
 ### Using Better Auth from the server
 
-To use Better Auth's [server
-methods](https://www.better-auth.com/docs/concepts/api) in server rendering,
-server functions, or any other Sveltekit server code, use Convex functions
-and call the function from your server code.
+To use Better Auth's
+[server methods](https://www.better-auth.com/docs/concepts/api) in server
+rendering, server functions, or any other Sveltekit server code, use Convex
+functions and call the function from your server code.
 
-Here's an example server action that calls the Convex function `getCurrentUser` from `src/convex/auth.ts`.
+Here's an example server action that calls the Convex function `getCurrentUser`
+from `src/convex/auth.ts`.
 
 ```ts title="src/routes/+page.server.ts"
 import type { PageServerLoad } from "./$types";

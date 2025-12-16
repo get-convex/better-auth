@@ -16,7 +16,8 @@ It's important to use Convex's authentication state components or the
 when you need to check whether the user is logged in or not. Better Auth will
 reflect an authenticated user before Convex does, as the Convex client must
 subsequently validate the token provided by Better Auth. Convex functions that
-require authentication can throw if called before Convex has validated the token.
+require authentication can throw if called before Convex has validated the
+token.
 
 In the following example, the `<Content />` component is a child of
 `<Authenticated>`, so its content and any of its child components are guaranteed
@@ -54,7 +55,8 @@ export default App;
 If the client is authenticated, you can access the information stored in the JWT
 via `ctx.auth.getUserIdentity`.
 
-If the client is **not** authenticated, `ctx.auth.getUserIdentity` will return null.
+If the client is **not** authenticated, `ctx.auth.getUserIdentity` will return
+null.
 
 Make sure that the component calling this query is a child of `<Authenticated>`
 from `convex/react`, or that `isAuthenticated` from `useConvexAuth()` is `true`.
@@ -63,7 +65,7 @@ Otherwise, it will throw on page load.
 ```ts title="convex/messages.ts"
 import { query } from "./_generated/server";
 
-// You can get the current user from the auth component
+// You can get the current user from the auth component with session validation.
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
@@ -72,7 +74,8 @@ export const getCurrentUser = query({
 });
 
 // You can also just get the authenticated user id as you
-// normally would from ctx.auth.getUserIdentity
+// normally would from ctx.auth.getUserIdentity. Note that
+// this does not validate the session.
 export const getForCurrentUser = query({
   args: {},
   handler: async (ctx) => {

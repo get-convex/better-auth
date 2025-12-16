@@ -105,7 +105,7 @@ export const convexAdapter = <
 >(
   ctx: Ctx,
   api: {
-    adapter: SetOptional<ComponentApi["adapter"], "migrationRemoveUserId">;
+    adapter: ComponentApi["adapter"];
     adapterTest?: ComponentApi["adapterTest"];
   },
   config: {
@@ -130,10 +130,10 @@ export const convexAdapter = <
       mapKeysTransformOutput: {
         _id: "id",
       },
-      // With supportsDates: false, dates are stored as strings,
-      // we convert them to numbers here. This aligns with how
-      // Convex stores _creationTime, and avoids a breaking change.
+      // Dates provided as strings
       supportsDates: false,
+      // Convert dates to numbers. This aligns with how
+      // Convex stores _creationTime and avoids a breaking change.
       customTransformInput: ({ data, fieldAttributes }) => {
         if (data && fieldAttributes.type === "date") {
           return new Date(data).getTime();
@@ -156,7 +156,7 @@ export const convexAdapter = <
           isRunMutationCtx: isRunMutationCtx(ctx),
         },
         createSchema: async ({ file, tables }) => {
-          const { createSchema } = await import("./createSchema.js");
+          const { createSchema } = await import("./create-schema.js");
           return createSchema({ file, tables });
         },
         create: async ({ model, data, select }): Promise<any> => {

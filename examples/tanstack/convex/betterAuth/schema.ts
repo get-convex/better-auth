@@ -70,6 +70,7 @@ export const tables = {
     publicKey: v.string(),
     privateKey: v.string(),
     createdAt: v.number(),
+    expiresAt: v.optional(v.union(v.null(), v.number())),
   }),
 }
 

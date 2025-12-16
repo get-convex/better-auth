@@ -1,5 +1,3 @@
-"use client";
-
 import SignUp from "@/app/(unauth)/sign-up/SignUp";
 import Link from "next/link";
 

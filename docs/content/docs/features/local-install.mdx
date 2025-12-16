@@ -47,10 +47,9 @@ installed component.
 
     ```ts title="convex/betterAuth/auth.ts"
     import { createAuth } from '../auth'
-    import { getStaticAuth } from '@convex-dev/better-auth'
 
     // Export a static instance for Better Auth schema generation
-    export const auth = getStaticAuth(createAuth)
+    export const auth = createAuth({} as any)
 
     ```
 
@@ -64,6 +63,40 @@ installed component.
   </div>
 
   <div className="fd-step">
+    ### Split out `createAuthOptions` function
+
+    Code in your component directory needs access to your Better Auth options,
+    but running `createAuth()` inside of your component directory will trigger
+    errors from Better Auth due to lack of environment variable access.
+
+    To avoid this, you'll want to have a separate `createAuthOptions` function
+    that just returns the typed options object.
+
+    ```ts title="convex/auth.ts"
+    import {
+      betterAuth,
+      type BetterAuthOptions, // [!code ++]
+    } from "better-auth";
+
+    // [!code ++:5]
+    export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
+      return {
+        // ... auth config
+      } satisfies BetterAuthOptions;
+    };
+
+    export const createAuth = (ctx: GenericCtx<DataModel>) => {
+      // [!code --:3]
+      return betterAuth({
+        // ... auth config
+      });
+      return betterAuth(createAuthOptions(ctx)); // [!code ++]
+    };
+    ```
+
+  </div>
+
+  <div className="fd-step">
 
     ### Export adapter functions
 
@@ -72,7 +105,7 @@ installed component.
     ```ts title="convex/betterAuth/adapter.ts"
     import { createApi } from "@convex-dev/better-auth";
     import schema from "./schema";
-    import { createAuth } from "../auth";
+    import { createAuthOptions } from "../auth";
 
     export const {
       create,
@@ -82,7 +115,7 @@ installed component.
       updateMany,
       deleteOne,
       deleteMany,
-    } = createApi(schema, createAuth);
+    } = createApi(schema, createAuthOptions);
     ```
 
   </div>

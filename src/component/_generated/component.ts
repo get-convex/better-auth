@@ -1028,13 +1028,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
         any,
         Name
       >;
-      migrationRemoveUserId: FunctionReference<
-        "mutation",
-        "internal",
-        { userId: string },
-        any,
-        Name
-      >;
       updateMany: FunctionReference<
         "mutation",
         "internal",

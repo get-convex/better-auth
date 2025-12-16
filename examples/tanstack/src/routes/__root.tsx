@@ -7,30 +7,19 @@ import {
   Scripts,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { QueryClient } from '@tanstack/react-query'
 import * as React from 'react'
 import appCss from '@/styles/app.css?url'
 import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
 import { authClient } from '@/lib/auth-client'
-import {
-  fetchSession,
-  getCookieName,
-} from '@convex-dev/better-auth/react-start'
-import { getCookie, getRequest } from '@tanstack/react-start/server'
 import { seo } from '@/utils/seo'
 import { ConvexQueryClient } from '@convex-dev/react-query'
 import { createServerFn } from '@tanstack/react-start'
+import { getToken } from '@/lib/auth-server'
 
-// Get auth information for SSR using available cookies
-const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
-  const { createAuth } = await import('@convex/auth')
-  const { session } = await fetchSession(getRequest())
-  const sessionCookieName = getCookieName(createAuth)
-  const token = getCookie(sessionCookieName)
-  return {
-    userId: session?.user.id,
-    token,
-  }
+const getAuth = createServerFn({ method: 'GET' }).handler(async () => {
+  return await getToken()
 })
 
 export const Route = createRootRouteWithContext<{
@@ -57,16 +46,18 @@ export const Route = createRootRouteWithContext<{
     ],
   }),
   beforeLoad: async (ctx) => {
-    const { userId, token } = await fetchAuth()
+    const token = await getAuth()
 
-    // During SSR only (the only time serverHttpClient exists),
-    // set the auth token to make HTTP queries with.
+    // all queries, mutations and actions through TanStack Query will be
+    // authenticated during SSR if we have a valid token
     if (token) {
+      // During SSR only (the only time serverHttpClient exists),
+      // set the auth token to make HTTP queries with.
       ctx.context.convexQueryClient.serverHttpClient?.setAuth(token)
     }
 
     return {
-      userId,
+      isAuthenticated: !!token,
       token,
     }
   },
@@ -79,6 +70,7 @@ function RootComponent() {
     <ConvexBetterAuthProvider
       client={context.convexQueryClient.convexClient}
       authClient={authClient}
+      initialToken={context.token}
     >
       <RootDocument>
         <Outlet />
@@ -95,6 +87,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="bg-neutral-950 text-neutral-50">
         {children}
+        <ReactQueryDevtools />
         <TanStackRouterDevtools position="bottom-right" />
         <Scripts />
       </body>

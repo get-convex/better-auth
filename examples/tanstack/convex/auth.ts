@@ -1,4 +1,4 @@
-import { betterAuth } from 'better-auth'
+import { betterAuth, type BetterAuthOptions } from 'better-auth'
 import {
   AuthFunctions,
   createClient,
@@ -15,14 +15,11 @@ import {
 import { requireActionCtx } from '@convex-dev/better-auth/utils'
 import { components, internal } from './_generated/api'
 import betterAuthSchema from './betterAuth/schema'
-import { query, QueryCtx } from './_generated/server'
+import { internalAction, query, QueryCtx } from './_generated/server'
 import { DataModel, Id } from './_generated/dataModel'
 import { asyncMap, withoutSystemFields } from 'convex-helpers'
-
-// This implementation is upgraded to 0.8 Local Install with no
-// database migration required. It continues the pattern of writing
-// userId to the Better Auth users table and maintaining a separate
-// users table for application data.
+import authConfig from './auth.config'
+import { ConvexError } from 'convex/values'
 
 const siteUrl = process.env.SITE_URL
 
@@ -35,7 +32,7 @@ export const authComponent = createClient<DataModel, typeof betterAuthSchema>(
     local: {
       schema: betterAuthSchema,
     },
-    verbose: true,
+    verbose: false,
     triggers: {
       user: {
         onCreate: async (ctx, authUser) => {
@@ -73,15 +70,11 @@ export const authComponent = createClient<DataModel, typeof betterAuthSchema>(
 
 export const { onCreate, onUpdate, onDelete } = authComponent.triggersApi()
 
-export const createAuth = (
-  ctx: GenericCtx<DataModel>,
-  { optionsOnly } = { optionsOnly: false },
-) =>
-  betterAuth({
+export const { getAuthUser } = authComponent.clientApi()
+
+export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
+  ({
     baseURL: siteUrl,
-    logger: {
-      disabled: optionsOnly,
-    },
     database: authComponent.adapter(ctx),
     account: {
       accountLinking: {
@@ -146,9 +139,22 @@ export const createAuth = (
       }),
       twoFactor(),
       anonymous(),
-      convex(),
+      convex({
+        authConfig,
+      }),
     ],
-  })
+  }) satisfies BetterAuthOptions
+
+export const createAuth = (ctx: GenericCtx<DataModel>) =>
+  betterAuth(createAuthOptions(ctx))
+
+export const rotateKeys = internalAction({
+  args: {},
+  handler: async (ctx) => {
+    const auth = createAuth(ctx)
+    return auth.api.rotateKeys()
+  },
+})
 
 // Below are example functions for getting the current user
 // Feel free to edit, omit, etc.
@@ -167,7 +173,7 @@ export const safeGetUser = async (ctx: QueryCtx) => {
 export const getUser = async (ctx: QueryCtx) => {
   const user = await safeGetUser(ctx)
   if (!user) {
-    throw new Error('User not found')
+    throw new ConvexError('Unauthenticated')
   }
   return user
 }
@@ -175,6 +181,17 @@ export const getUser = async (ctx: QueryCtx) => {
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    return await safeGetUser(ctx)
+    return await getUser(ctx)
+  },
+})
+
+export const hasPassword = query({
+  args: {},
+  handler: async (ctx) => {
+    const { auth, headers } = await authComponent.getAuth(createAuth, ctx)
+    const accounts = await auth.api.listUserAccounts({
+      headers,
+    })
+    return accounts.some((account) => account.providerId === 'credential')
   },
 })

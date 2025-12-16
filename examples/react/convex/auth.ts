@@ -2,8 +2,8 @@ import { createClient, type GenericCtx } from "@convex-dev/better-auth";
 import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
 import { requireActionCtx } from "@convex-dev/better-auth/utils";
 import { components } from "./_generated/api";
-import { query, QueryCtx } from "./_generated/server";
-import { betterAuth } from "better-auth";
+import { query } from "./_generated/server";
+import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { emailOTP, magicLink } from "better-auth/plugins";
 import { DataModel } from "./_generated/dataModel";
 import {
@@ -12,6 +12,7 @@ import {
   sendOTPVerification,
   sendResetPassword,
 } from "./email";
+import authConfig from "convex/auth.config";
 
 const siteUrl = process.env.SITE_URL!;
 
@@ -19,15 +20,9 @@ export const authComponent = createClient<DataModel>(components.betterAuth, {
   verbose: false,
 });
 
-export const createAuth = (
-  ctx: GenericCtx<DataModel>,
-  { optionsOnly } = { optionsOnly: false }
-) => {
-  return betterAuth({
+export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
+  ({
     trustedOrigins: [siteUrl],
-    logger: {
-      disabled: optionsOnly,
-    },
     database: authComponent.adapter(ctx),
     emailVerification: {
       sendVerificationEmail: async ({ user, url }) => {
@@ -80,34 +75,22 @@ export const createAuth = (
         },
       }),
       crossDomain({ siteUrl }),
-      convex(),
+      convex({ authConfig }),
     ],
     account: {
       accountLinking: {
         enabled: true,
       },
     },
-  });
-};
+  }) satisfies BetterAuthOptions;
 
-// Below are example helpers and functions for getting the current user
-// Feel free to edit, omit, etc.
-export const safeGetUser = async (ctx: QueryCtx) => {
-  return authComponent.safeGetAuthUser(ctx);
-};
+export const createAuth = (ctx: GenericCtx<DataModel>) =>
+  betterAuth(createAuthOptions(ctx));
 
-export const getUserId = async (ctx: QueryCtx) => {
-  const identity = await ctx.auth.getUserIdentity();
-  return identity?.subject;
-};
-
-export const getUser = async (ctx: QueryCtx) => {
-  return authComponent.getAuthUser(ctx);
-};
-
+// Example function for getting the current user
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    return await safeGetUser(ctx);
+    return await authComponent.getAuthUser(ctx);
   },
 });

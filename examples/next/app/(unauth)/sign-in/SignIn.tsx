@@ -59,7 +59,7 @@ export default function SignIn() {
   const handleResetPassword = async () => {
     setForgotLoading(true);
     try {
-      await authClient.forgetPassword({
+      await authClient.requestPasswordReset({
         email,
         redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
       });
@@ -121,6 +121,9 @@ export default function SignIn() {
           setOtpLoading(true);
         },
         onResponse: () => setOtpLoading(false),
+        onSuccess: () => {
+          router.push("/");
+        },
         onError: (ctx) => {
           alert(ctx.error.message);
         },
@@ -201,7 +204,7 @@ export default function SignIn() {
           },
           onSuccess: () => {
             setOtpLoading(false);
-            router.push("/dashboard/client-only");
+            router.push("/");
           },
           onError: (ctx) => {
             setOtpLoading(false);

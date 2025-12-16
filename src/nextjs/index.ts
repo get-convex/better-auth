@@ -1,56 +1,149 @@
-import { createCookieGetter } from "better-auth/cookies";
-import { JWT_COOKIE_NAME } from "../plugins/convex/index.js";
-import { type CreateAuth, getStaticAuth } from "../client/index.js";
-import type { GenericDataModel } from "convex/server";
+import { stripIndent } from "common-tags";
+import {
+  fetchAction,
+  fetchMutation,
+  fetchQuery,
+  preloadQuery,
+} from "convex/nextjs";
+import type { Preloaded } from "convex/react";
+import {
+  type ArgsAndOptions,
+  type FunctionReference,
+  type FunctionReturnType,
+} from "convex/server";
+import React from "react";
+import { getToken, type GetTokenOptions } from "../utils/index.js";
+import type { EmptyObject } from "convex-helpers";
 
-export const getToken = async <DataModel extends GenericDataModel>(
-  createAuth: CreateAuth<DataModel>
-) => {
-  const options = getStaticAuth(createAuth).options;
-  const { cookies } = await import("next/headers.js");
-  const cookieStore = await cookies();
-  const createCookie = createCookieGetter(options);
-  const cookie = createCookie(JWT_COOKIE_NAME);
-  const tokenCookie = cookieStore.get(cookie.name);
+// Caching supported for React 19+ only
+const cache =
+  React.cache ||
+  ((fn: (...args: any[]) => any) => {
+    return (...args: any[]) => fn(...args);
+  });
 
-  // Warn if there's a secure cookie mismatch between Convex and Next.js
-  if (!tokenCookie?.value) {
-    const isSecure = cookie.name.startsWith("__Secure-");
-    const insecureCookieName = cookie.name.replace("__Secure-", "");
-    const insecureCookie = cookieStore.get(insecureCookieName);
-    const secureCookieName = isSecure
-      ? cookie.name
-      : `__Secure-${insecureCookieName}`;
-    const secureCookie = cookieStore.get(secureCookieName);
-    if (isSecure && insecureCookie) {
-      console.warn(
-        `Looking for secure cookie ${cookie.name} but found insecure cookie ${insecureCookie.name}`
-      );
-    }
-    if (!isSecure && secureCookie) {
-      console.warn(
-        `Looking for insecure cookie ${cookie.name} but found secure cookie ${secureCookie.name}`
-      );
-    }
+const parseConvexSiteUrl = (url: string) => {
+  if (!url) {
+    throw new Error(stripIndent`
+      CONVEX_SITE_URL is not set.
+      This is automatically set in the Convex backend, but must be set in the Next.js environment.
+      For local development, this can be set in the .env.local file.
+    `);
   }
-  return tokenCookie?.value;
+  if (url.endsWith(".convex.cloud")) {
+    throw new Error(stripIndent`
+      CONVEX_SITE_URL should be set to your Convex Site URL, which ends in .convex.site.
+      Currently set to ${url}.
+    `);
+  }
+  return url;
 };
 
-const handler = (request: Request, opts?: { convexSiteUrl?: string }) => {
+const handler = (request: Request, siteUrl: string) => {
   const requestUrl = new URL(request.url);
-  const convexSiteUrl =
-    opts?.convexSiteUrl ?? process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
-  if (!convexSiteUrl) {
-    throw new Error("NEXT_PUBLIC_CONVEX_SITE_URL is not set");
-  }
-  const nextUrl = `${convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
+  const nextUrl = `${siteUrl}${requestUrl.pathname}${requestUrl.search}`;
   const newRequest = new Request(nextUrl, request);
   newRequest.headers.set("accept-encoding", "application/json");
-  newRequest.headers.set("host", convexSiteUrl);
+  newRequest.headers.set("host", siteUrl);
   return fetch(newRequest, { method: request.method, redirect: "manual" });
 };
 
-export const nextJsHandler = (opts?: { convexSiteUrl?: string }) => ({
-  GET: (request: Request) => handler(request, opts),
-  POST: (request: Request) => handler(request, opts),
+const nextJsHandler = (siteUrl: string) => ({
+  GET: (request: Request) => handler(request, siteUrl),
+  POST: (request: Request) => handler(request, siteUrl),
 });
+
+type OptionalArgs<FuncRef extends FunctionReference<any, any>> =
+  FuncRef["_args"] extends EmptyObject
+    ? [args?: EmptyObject]
+    : [args: FuncRef["_args"]];
+
+const getArgsAndOptions = <FuncRef extends FunctionReference<any, any>>(
+  args: OptionalArgs<FuncRef>,
+  token?: string
+): ArgsAndOptions<FuncRef, { token?: string }> => {
+  return [args[0], { token }];
+};
+
+export const convexBetterAuthNextJs = (
+  opts: GetTokenOptions & { convexUrl: string; convexSiteUrl: string }
+) => {
+  const siteUrl = parseConvexSiteUrl(opts.convexSiteUrl);
+
+  const cachedGetToken = cache(
+    async ({ forceRefresh }: { forceRefresh?: boolean } = {}) => {
+      const headers = await (await import("next/headers.js")).headers();
+      return getToken(siteUrl, headers, { ...opts, forceRefresh });
+    }
+  );
+
+  const callWithToken = async <
+    FnType extends "query" | "mutation" | "action",
+    Fn extends FunctionReference<FnType>,
+  >(
+    fn: (token?: string) => Promise<FunctionReturnType<Fn>>
+  ): Promise<FunctionReturnType<Fn>> => {
+    const token = await cachedGetToken();
+    try {
+      return await fn(token?.token);
+    } catch (error) {
+      if (
+        !opts?.jwtCache?.enabled ||
+        token.isFresh ||
+        opts.jwtCache.isAuthError(error)
+      ) {
+        throw error;
+      }
+      const newToken = await cachedGetToken({ forceRefresh: true });
+      return await fn(newToken.token);
+    }
+  };
+
+  return {
+    getToken: async () => {
+      const token = await cachedGetToken();
+      return token.token;
+    },
+    handler: nextJsHandler(siteUrl),
+    isAuthenticated: async () => {
+      const token = await cachedGetToken();
+      return !!token.token;
+    },
+    preloadAuthQuery: async <Query extends FunctionReference<"query">>(
+      query: Query,
+      ...args: OptionalArgs<Query>
+    ): Promise<Preloaded<Query>> => {
+      return callWithToken((token?: string) => {
+        const argsAndOptions = getArgsAndOptions(args, token);
+        return preloadQuery(query, ...argsAndOptions);
+      });
+    },
+    fetchAuthQuery: async <Query extends FunctionReference<"query">>(
+      query: Query,
+      ...args: OptionalArgs<Query>
+    ): Promise<FunctionReturnType<Query>> => {
+      return callWithToken((token?: string) => {
+        const argsAndOptions = getArgsAndOptions(args, token);
+        return fetchQuery(query, ...argsAndOptions);
+      });
+    },
+    fetchAuthMutation: async <Mutation extends FunctionReference<"mutation">>(
+      mutation: Mutation,
+      ...args: OptionalArgs<Mutation>
+    ): Promise<FunctionReturnType<Mutation>> => {
+      return callWithToken((token?: string) => {
+        const argsAndOptions = getArgsAndOptions(args, token);
+        return fetchMutation(mutation, ...argsAndOptions);
+      });
+    },
+    fetchAuthAction: async <Action extends FunctionReference<"action">>(
+      action: Action,
+      ...args: OptionalArgs<Action>
+    ): Promise<FunctionReturnType<Action>> => {
+      return callWithToken((token?: string) => {
+        const argsAndOptions = getArgsAndOptions(args, token);
+        return fetchAction(action, ...argsAndOptions);
+      });
+    },
+  };
+};

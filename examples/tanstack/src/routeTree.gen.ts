@@ -13,10 +13,8 @@ import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthedRouteImport } from './routes/_authed'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthedServerRouteImport } from './routes/_authed/server'
-import { Route as AuthedClientOnlyRouteImport } from './routes/_authed/client-only'
-import { Route as AuthedClientOnlyIndexRouteImport } from './routes/_authed/client-only.index'
+import { Route as AuthedIndexRouteImport } from './routes/_authed/index'
+import { Route as AuthedSettingsRouteImport } from './routes/_authed/settings'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const SignUpRoute = SignUpRouteImport.update({
@@ -38,25 +36,15 @@ const AuthedRoute = AuthedRouteImport.update({
   id: '/_authed',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const AuthedIndexRoute = AuthedIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthedServerRoute = AuthedServerRouteImport.update({
-  id: '/server',
-  path: '/server',
   getParentRoute: () => AuthedRoute,
 } as any)
-const AuthedClientOnlyRoute = AuthedClientOnlyRouteImport.update({
-  id: '/client-only',
-  path: '/client-only',
+const AuthedSettingsRoute = AuthedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AuthedRoute,
-} as any)
-const AuthedClientOnlyIndexRoute = AuthedClientOnlyIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AuthedClientOnlyRoute,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
@@ -65,71 +53,60 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
-  '/client-only': typeof AuthedClientOnlyRouteWithChildren
-  '/server': typeof AuthedServerRoute
+  '/settings': typeof AuthedSettingsRoute
+  '/': typeof AuthedIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/client-only/': typeof AuthedClientOnlyIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
-  '/server': typeof AuthedServerRoute
+  '/settings': typeof AuthedSettingsRoute
+  '/': typeof AuthedIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/client-only': typeof AuthedClientOnlyIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_authed': typeof AuthedRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
-  '/_authed/client-only': typeof AuthedClientOnlyRouteWithChildren
-  '/_authed/server': typeof AuthedServerRoute
+  '/_authed/settings': typeof AuthedSettingsRoute
+  '/_authed/': typeof AuthedIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/_authed/client-only/': typeof AuthedClientOnlyIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/reset-password'
     | '/sign-in'
     | '/sign-up'
-    | '/client-only'
-    | '/server'
+    | '/settings'
+    | '/'
     | '/api/auth/$'
-    | '/client-only/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/reset-password'
     | '/sign-in'
     | '/sign-up'
-    | '/server'
+    | '/settings'
+    | '/'
     | '/api/auth/$'
-    | '/client-only'
   id:
     | '__root__'
-    | '/'
     | '/_authed'
     | '/reset-password'
     | '/sign-in'
     | '/sign-up'
-    | '/_authed/client-only'
-    | '/_authed/server'
+    | '/_authed/settings'
+    | '/_authed/'
     | '/api/auth/$'
-    | '/_authed/client-only/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   AuthedRoute: typeof AuthedRouteWithChildren
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignInRoute: typeof SignInRoute
@@ -167,33 +144,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/_authed/': {
+      id: '/_authed/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authed/server': {
-      id: '/_authed/server'
-      path: '/server'
-      fullPath: '/server'
-      preLoaderRoute: typeof AuthedServerRouteImport
+      preLoaderRoute: typeof AuthedIndexRouteImport
       parentRoute: typeof AuthedRoute
     }
-    '/_authed/client-only': {
-      id: '/_authed/client-only'
-      path: '/client-only'
-      fullPath: '/client-only'
-      preLoaderRoute: typeof AuthedClientOnlyRouteImport
+    '/_authed/settings': {
+      id: '/_authed/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthedSettingsRouteImport
       parentRoute: typeof AuthedRoute
-    }
-    '/_authed/client-only/': {
-      id: '/_authed/client-only/'
-      path: '/'
-      fullPath: '/client-only/'
-      preLoaderRoute: typeof AuthedClientOnlyIndexRouteImport
-      parentRoute: typeof AuthedClientOnlyRoute
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -205,32 +168,20 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthedClientOnlyRouteChildren {
-  AuthedClientOnlyIndexRoute: typeof AuthedClientOnlyIndexRoute
-}
-
-const AuthedClientOnlyRouteChildren: AuthedClientOnlyRouteChildren = {
-  AuthedClientOnlyIndexRoute: AuthedClientOnlyIndexRoute,
-}
-
-const AuthedClientOnlyRouteWithChildren =
-  AuthedClientOnlyRoute._addFileChildren(AuthedClientOnlyRouteChildren)
-
 interface AuthedRouteChildren {
-  AuthedClientOnlyRoute: typeof AuthedClientOnlyRouteWithChildren
-  AuthedServerRoute: typeof AuthedServerRoute
+  AuthedSettingsRoute: typeof AuthedSettingsRoute
+  AuthedIndexRoute: typeof AuthedIndexRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
-  AuthedClientOnlyRoute: AuthedClientOnlyRouteWithChildren,
-  AuthedServerRoute: AuthedServerRoute,
+  AuthedSettingsRoute: AuthedSettingsRoute,
+  AuthedIndexRoute: AuthedIndexRoute,
 }
 
 const AuthedRouteWithChildren =
   AuthedRoute._addFileChildren(AuthedRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   AuthedRoute: AuthedRouteWithChildren,
   ResetPasswordRoute: ResetPasswordRoute,
   SignInRoute: SignInRoute,

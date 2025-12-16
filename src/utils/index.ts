@@ -1,10 +1,34 @@
+import { betterFetch } from "@better-fetch/fetch";
+import { type Auth, betterAuth } from "better-auth";
+import { getSessionCookie } from "better-auth/cookies";
 import {
+  type AuthProvider,
+  type DefaultFunctionArgs,
+  type FunctionReference,
   type GenericActionCtx,
   type GenericDataModel,
   type GenericMutationCtx,
   type GenericQueryCtx,
 } from "convex/server";
-import { type GenericCtx } from "../client/index.js";
+import { JWT_COOKIE_NAME } from "../plugins/convex/index.js";
+import * as jose from "jose";
+import type { Jwk } from "better-auth/plugins/jwt";
+
+export type CreateAuth<
+  DataModel extends GenericDataModel,
+  A extends ReturnType<typeof betterAuth> = Auth,
+> = (ctx: GenericCtx<DataModel>) => A;
+
+export type EventFunction<T extends DefaultFunctionArgs> = FunctionReference<
+  "mutation",
+  "internal" | "public",
+  T
+>;
+
+export type GenericCtx<DataModel extends GenericDataModel = GenericDataModel> =
+  | GenericQueryCtx<DataModel>
+  | GenericMutationCtx<DataModel>
+  | GenericActionCtx<DataModel>;
 
 export type RunMutationCtx<DataModel extends GenericDataModel> = (
   | GenericMutationCtx<DataModel>
@@ -71,4 +95,75 @@ export const requireRunMutationCtx = <DataModel extends GenericDataModel>(
     throw new Error("Mutation or action context required");
   }
   return ctx;
+};
+
+export type GetTokenOptions = {
+  forceRefresh?: boolean;
+  cookiePrefix?: string;
+  jwtCache?: {
+    enabled: boolean;
+    expirationToleranceSeconds?: number;
+    isAuthError: (error: unknown) => boolean;
+  };
+};
+
+export const getToken = async (
+  siteUrl: string,
+  headers: Headers,
+  opts?: GetTokenOptions
+) => {
+  const fetchToken = async () => {
+    const { data } = await betterFetch<{ token: string }>(
+      "/api/auth/convex/token",
+      {
+        baseURL: siteUrl,
+        headers,
+      }
+    );
+    return { isFresh: true, token: data?.token };
+  };
+  if (!opts?.jwtCache?.enabled || opts.forceRefresh) {
+    return await fetchToken();
+  }
+  const token = getSessionCookie(new Headers(headers), {
+    cookieName: JWT_COOKIE_NAME,
+    cookiePrefix: opts?.cookiePrefix,
+  });
+  if (!token) {
+    return await fetchToken();
+  }
+  try {
+    const claims = jose.decodeJwt(token);
+    const exp = claims?.exp;
+    const now = Math.floor(new Date().getTime() / 1000);
+    const isExpired = exp
+      ? now > exp + (opts?.jwtCache?.expirationToleranceSeconds ?? 60)
+      : true;
+    if (!isExpired) {
+      return { isFresh: false, token };
+    }
+  } catch (error) {
+    console.error("Error decoding JWT", error);
+  }
+  return await fetchToken();
+};
+
+export const parseJwks = (providerConfig: AuthProvider) => {
+  const staticJwksString =
+    "jwks" in providerConfig && providerConfig.jwks?.startsWith("data:text/")
+      ? atob(providerConfig.jwks.split("base64,")[1])
+      : undefined;
+
+  if (!staticJwksString) {
+    return;
+  }
+  const parsed = JSON.parse(
+    staticJwksString?.slice(1, -1).replaceAll(/[\s\\]/g, "") || "{}"
+  );
+  const staticJwks = {
+    ...parsed,
+    privateKey: `"${parsed.privateKey}"`,
+    publicKey: `"${parsed.publicKey}"`,
+  } as Jwk;
+  return staticJwks;
 };

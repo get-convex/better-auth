@@ -1,5 +1,5 @@
 import { createApi } from "../client/index.js";
-import { auth } from "../auth.js";
+import { options } from "../auth-options.js";
 import schema from "./schema.js";
 
 export const {
@@ -10,5 +10,4 @@ export const {
   updateMany,
   deleteOne,
   deleteMany,
-  migrationRemoveUserId,
-} = createApi(schema, () => auth);
+} = createApi(schema, () => options);
