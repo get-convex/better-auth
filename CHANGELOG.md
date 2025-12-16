@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.10.0
+
+- feat: support Better Auth 1.4.7
+- feat: faster JWT validation for authenticated server calls using customJwt
+- feat: default auth configuration provided through utility function
+- feat: authenticated server utilities for TanStack Start and Next.js
+  (fetchAuthQuery, etc.)
+- feat: improved SSR support with patterns to prevent server data dropping
+  during client auth
+- feat: Next.js works without expectAuth for seamless rendering
+- feat: simplified session validation with authComponent.getAuthUser()
+- feat: initial token support in ConvexBetterAuthProvider for faster client
+  initialization
+- feat: explicit Convex URL configuration with runtime checks to reduce
+  environment variable issues
+- feat: remove optionsOnly complexity in createAuth()
+- feat(experimental): static JWKS support to reduce Convex backend token
+  validation time
+- feat(experimental): JWT caching to speed page loads and navigation for SSR
+
 ## 0.9.11
 
 - fix: drop stray troubleshooting logs
