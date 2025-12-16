@@ -1,12 +1,9 @@
 import "./globals.css";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 import { getToken } from "@/lib/auth-server";
+import { PropsWithChildren } from "react";
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function RootLayout({ children }: PropsWithChildren) {
   const token = await getToken();
   return (
     <html lang="en" className="dark">

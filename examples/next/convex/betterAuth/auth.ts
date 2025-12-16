@@ -2,11 +2,10 @@ import { query } from "./_generated/server";
 import { doc } from "convex-helpers/validators";
 import schema from "./schema";
 import { v } from "convex/values";
-import { createAuthOptions } from "../auth";
-import { betterAuth } from "better-auth";
+import { createAuth } from "../auth";
 
 // Export a static instance for Better Auth schema generation
-export const auth = betterAuth(createAuthOptions({} as any));
+export const auth = createAuth({} as any);
 
 // Example of an in-component function
 // Feel free to edit, omit, etc.

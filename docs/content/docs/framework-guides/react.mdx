@@ -128,9 +128,8 @@ description: Install and configure Convex + Better Auth for React.
     // as well as helper methods for general use.
     export const authComponent = createClient<DataModel>(components.betterAuth);
 
-    export const createAuthOptions = (
-      ctx: GenericCtx<DataModel>,
-    ) => ({
+    export const createAuth = (ctx: GenericCtx<DataModel>) => {
+      return betterAuth({
         trustedOrigins: [siteUrl],
         database: authComponent.adapter(ctx),
         // Configure simple, non-verified email/password to get started
@@ -144,10 +143,8 @@ description: Install and configure Convex + Better Auth for React.
           // The Convex plugin is required for Convex compatibility
           convex({ authConfig }),
         ],
-      }) satisfies BetterAuthOptions;
-
-    export const createAuth = (ctx: GenericCtx<DataModel>) =>
-      betterAuth(createAuthOptions(ctx));
+      });
+    }
 
     // Example function for getting the current user
     // Feel free to edit, omit, etc.

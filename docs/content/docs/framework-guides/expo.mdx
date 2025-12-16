@@ -122,24 +122,22 @@ description: Install and configure Convex + Better Auth for Expo.
     // as well as helper methods for general use.
     export const authComponent = createClient<DataModel>(components.betterAuth);
 
-    export const createAuthOptions = (ctx: GenericCtx<DataModel>) => ({
-      trustedOrigins: ["your-scheme://"],
-      database: authComponent.adapter(ctx),
-      // Configure simple, non-verified email/password to get started
-      emailAndPassword: {
-        enabled: true,
-        requireEmailVerification: false,
-      },
-      plugins: [
-        // The Expo and Convex plugins are required
-        expo(),
-        convex({ authConfig }),
-      ],
-    }) satisfies BetterAuthOptions;
-
-    export const createAuth = (ctx: GenericCtx<DataModel>) =>
-      betterAuth(createAuthOptions(ctx));
-
+    export const createAuth = (ctx: GenericCtx<DataModel>) => {
+      return betterAuth({
+        trustedOrigins: ["your-scheme://"],
+        database: authComponent.adapter(ctx),
+        // Configure simple, non-verified email/password to get started
+        emailAndPassword: {
+          enabled: true,
+          requireEmailVerification: false,
+        },
+        plugins: [
+          // The Expo and Convex plugins are required
+          expo(),
+          convex({ authConfig }),
+        ],
+      })
+    }
     // Example function for getting the current user
     // Feel free to edit, omit, etc.
     export const getCurrentUser = query({

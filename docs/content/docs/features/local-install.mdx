@@ -63,6 +63,40 @@ installed component.
   </div>
 
   <div className="fd-step">
+    ### Split out `createAuthOptions` function
+
+    Code in your component directory needs access to your Better Auth options,
+    but running `createAuth()` inside of your component directory will trigger
+    errors from Better Auth due to lack of environment variable access.
+
+    To avoid this, you'll want to have a separate `createAuthOptions` function
+    that just returns the typed options object.
+
+    ```ts title="convex/auth.ts"
+    import {
+      betterAuth,
+      type BetterAuthOptions, // [!code ++]
+    } from "better-auth";
+
+    // [!code ++:5]
+    export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
+      return {
+        // ... auth config
+      } satisfies BetterAuthOptions;
+    };
+
+    export const createAuth = (ctx: GenericCtx<DataModel>) => {
+      // [!code --:3]
+      return betterAuth({
+        // ... auth config
+      });
+      return betterAuth(createAuthOptions(ctx)); // [!code ++]
+    };
+    ```
+
+  </div>
+
+  <div className="fd-step">
 
     ### Export adapter functions
 
