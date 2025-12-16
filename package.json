@@ -120,7 +120,7 @@
     "eslint-plugin-react-hooks": "5.2.0",
     "eslint-plugin-react-refresh": "0.4.24",
     "globals": "15.14.0",
-    "next": "^15.1.8",
+    "next": "15.1.11",
     "npm-run-all2": "7.0.2",
     "pkg-pr-new": "0.0.60",
     "prettier": "3.6.2",
