@@ -22,7 +22,7 @@ description: Install and configure Convex + Better Auth for Next.js.
 
     ```npm
     npm install convex@latest @convex-dev/better-auth
-    npm install better-auth@1.3.34 --save-exact
+    npm install better-auth@1.4.7 --save-exact
     ```
 
   </div>
@@ -50,14 +50,12 @@ description: Install and configure Convex + Better Auth for Next.js.
     Add a `convex/auth.config.ts` file to configure Better Auth as an authentication provider.
 
     ```ts title="convex/auth.config.ts"
+    import { getAuthConfigProvider } from "@convex-dev/better-auth/auth-config";
+    import type { AuthConfig } from "convex/server";
+
     export default {
-      providers: [
-        {
-          domain: process.env.CONVEX_SITE_URL,
-          applicationID: "convex",
-        },
-      ],
-    };
+      providers: [getAuthConfigProvider()],
+    } satisfies AuthConfig;
     ```
 
   </div>
@@ -89,7 +87,7 @@ description: Install and configure Convex + Better Auth for Next.js.
     NEXT_PUBLIC_CONVEX_SITE_URL=https://adjective-animal-123.convex.site # [!code ++]
 
     # Your local site URL // [!code ++]
-    SITE_URL=http://localhost:3000 # [!code ++]
+    NEXT_PUBLIC_SITE_URL=http://localhost:3000 # [!code ++]
     ```
 
     ```shell title=".env.local" tab="Self hosted"
@@ -103,7 +101,7 @@ description: Install and configure Convex + Better Auth for Next.js.
     NEXT_PUBLIC_CONVEX_SITE_URL=http://127.0.0.1:3211 # [!code ++]
 
     # Your local site URL // [!code ++]
-    SITE_URL=http://localhost:3000 # [!code ++]
+    NEXT_PUBLIC_SITE_URL=http://localhost:3000 # [!code ++]
     ```
 
   </div>
@@ -122,6 +120,7 @@ description: Install and configure Convex + Better Auth for Next.js.
     import { DataModel } from "./_generated/dataModel";
     import { query } from "./_generated/server";
     import { betterAuth } from "better-auth";
+    import authConfig from "./auth.config";
 
     const siteUrl = process.env.SITE_URL!;
 
@@ -139,7 +138,7 @@ description: Install and configure Convex + Better Auth for Next.js.
         },
         plugins: [
           // The Convex plugin is required for Convex compatibility
-          convex(),
+          convex({ authConfig }),
         ],
       }) satisfies BetterAuthOptions;
 
@@ -169,6 +168,31 @@ description: Install and configure Convex + Better Auth for Next.js.
 
     export const authClient = createAuthClient({
       plugins: [convexClient()],
+    });
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    ### Configure Next.js server utilities
+
+    Configure a set of helper functions for authenticated SSR, server functions, and route handlers.
+
+    ```ts title="src/lib/auth-server.ts"
+    import { isAuthError } from "@/lib/utils";
+    import { convexBetterAuthNextJs } from "@convex-dev/better-auth/nextjs";
+
+    export const {
+      handler,
+      preloadQuery,
+      isAuthenticated,
+      getToken,
+      fetchQuery,
+      fetchMutation,
+      fetchAction,
+    } = convexBetterAuthNextJs({
+      convexUrl: process.env.NEXT_PUBLIC_CONVEX_URL!,
+      convexSiteUrl: process.env.NEXT_PUBLIC_CONVEX_SITE_URL!,
     });
     ```
 
