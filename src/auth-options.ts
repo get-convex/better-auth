@@ -1,4 +1,4 @@
-import { betterAuth, type BetterAuthOptions } from "better-auth";
+import { type BetterAuthOptions } from "better-auth";
 import {
   anonymous,
   bearer,
