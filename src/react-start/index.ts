@@ -1,7 +1,6 @@
 import { stripIndent } from "common-tags";
 import type { FunctionReference, FunctionReturnType } from "convex/server";
 import { ConvexHttpClient } from "convex/browser";
-import type { SetOptional } from "type-fest";
 import { getToken, type GetTokenOptions } from "../utils/index.js";
 import React from "react";
 
@@ -13,11 +12,6 @@ const cache =
   });
 
 type ClientOptions = {
-  /**
-   * The headers from the request.
-   * This is used to get the token from the request cookies.
-   */
-  headers: Headers;
   /**
    * The URL of the Convex deployment to use for the function call.
    */
@@ -32,8 +26,6 @@ type ClientOptions = {
    */
   token?: string;
 };
-
-type FetchOptions = SetOptional<ClientOptions, "convexUrl" | "convexSiteUrl">;
 
 function setupClient(options: ClientOptions) {
   const client = new ConvexHttpClient(options.convexUrl);
@@ -113,24 +105,19 @@ export const convexBetterAuthReactStart = (
 ) => {
   const siteUrl = parseConvexSiteUrl(opts.convexSiteUrl);
 
-  const cachedGetToken = cache(
-    (opts: GetTokenOptions & { headers: Headers }) => {
-      const { headers, ...rest } = opts;
-      return getToken(siteUrl, headers, rest);
-    }
-  );
+  const cachedGetToken = cache(async (opts: GetTokenOptions) => {
+    const { getRequestHeaders } = await import("@tanstack/react-start/server");
+    const headers = getRequestHeaders();
+    return getToken(siteUrl, headers, opts);
+  });
 
   const callWithToken = async <
     FnType extends "query" | "mutation" | "action",
     Fn extends FunctionReference<FnType>,
   >(
-    fn: (token?: string) => Promise<FunctionReturnType<Fn>>,
-    options: FetchOptions
+    fn: (token?: string) => Promise<FunctionReturnType<Fn>>
   ): Promise<FunctionReturnType<Fn>> => {
-    if (options.token) {
-      return fn(options.token);
-    }
-    const token = (await cachedGetToken({ ...opts, ...options })) ?? {};
+    const token = (await cachedGetToken(opts)) ?? {};
     try {
       return await fn(token?.token);
     } catch (error) {
@@ -141,58 +128,41 @@ export const convexBetterAuthReactStart = (
       ) {
         throw error;
       }
-      const newToken = await cachedGetToken({ ...options, forceRefresh: true });
+      const newToken = await cachedGetToken({
+        ...opts,
+        forceRefresh: true,
+      });
       return await fn(newToken.token);
     }
   };
 
   return {
-    getToken: async (headers: Headers) => {
-      const token = await cachedGetToken({ ...opts, headers });
+    getToken: async () => {
+      const token = await cachedGetToken({ ...opts });
       return token.token;
     },
     handler: (request: Request) => handler(request, opts),
     fetchQuery: async <Query extends FunctionReference<"query">>(
       query: Query,
-      args: Query["_args"],
-      options: FetchOptions
+      args: Query["_args"]
     ): Promise<FunctionReturnType<Query>> => {
-      return callWithToken(
-        (token?: string) =>
-          fetchQuery(query, args, {
-            convexUrl: opts.convexUrl,
-            convexSiteUrl: opts.convexSiteUrl,
-            ...options,
-            token,
-          }),
-        options
+      return callWithToken((token?: string) =>
+        fetchQuery(query, args, { ...opts, token })
       );
     },
     fetchMutation: async <Mutation extends FunctionReference<"mutation">>(
       mutation: Mutation,
-      args: Mutation["_args"],
-      options: FetchOptions
+      args: Mutation["_args"]
     ): Promise<FunctionReturnType<Mutation>> =>
       callWithToken((token?: string) => {
-        return fetchMutation(mutation, args, {
-          convexUrl: opts.convexUrl,
-          convexSiteUrl: opts.convexSiteUrl,
-          ...options,
-          token,
-        });
-      }, options),
+        return fetchMutation(mutation, args, { ...opts, token });
+      }),
     fetchAction: async <Action extends FunctionReference<"action">>(
       action: Action,
-      args: Action["_args"],
-      options: FetchOptions
+      args: Action["_args"]
     ): Promise<FunctionReturnType<Action>> =>
       callWithToken((token?: string) => {
-        return fetchAction(action, args, {
-          convexUrl: opts.convexUrl,
-          convexSiteUrl: opts.convexSiteUrl,
-          ...options,
-          token,
-        });
-      }, options),
+        return fetchAction(action, args, { ...opts, token });
+      }),
   };
 };

@@ -13,15 +13,13 @@ import * as React from 'react'
 import appCss from '@/styles/app.css?url'
 import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
 import { authClient } from '@/lib/auth-client'
-import { getRequestHeaders } from '@tanstack/react-start/server'
 import { seo } from '@/utils/seo'
 import { ConvexQueryClient } from '@convex-dev/react-query'
 import { createServerFn } from '@tanstack/react-start'
 import { getToken } from '@/lib/auth-server'
 
 const getAuth = createServerFn({ method: 'GET' }).handler(async () => {
-  const headers = getRequestHeaders()
-  return await getToken(headers)
+  return await getToken()
 })
 
 export const Route = createRootRouteWithContext<{
