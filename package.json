@@ -107,8 +107,6 @@
     "react-dom": "^18.3.1 || ^19.0.0"
   },
   "devDependencies": {
-    "@better-fetch/fetch": "^1.1.18",
-    "@better-auth/passkey": "1.4.7",
     "@edge-runtime/vm": "5.0.0",
     "@eslint/eslintrc": "3.3.1",
     "@eslint/js": "9.39.1",
@@ -141,6 +139,8 @@
   "types": "./dist/client/index.d.ts",
   "module": "./dist/client/index.js",
   "dependencies": {
+    "@better-auth/passkey": "1.4.7",
+    "@better-fetch/fetch": "^1.1.18",
     "common-tags": "^1.8.2",
     "convex-helpers": "^0.1.95",
     "jose": "^6.1.0",
