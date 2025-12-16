@@ -214,12 +214,13 @@ description: Install and configure Convex + Better Auth for Next.js.
     export default http;
     ```
 
-    Set up route handlers to proxy auth requests from your framework server to your Convex deployment.
+    Set up route handlers to proxy auth requests from Next.js to your Convex deployment.
 
     ```ts title="app/api/auth/[...all]/route.ts"
-    import { nextJsHandler } from "@convex-dev/better-auth/nextjs";
+    import { handler } from "@/lib/auth-server";
 
-    export const { GET, POST } = nextJsHandler();
+    export const { GET, POST } = handler;
+
     ```
 
   </div>
@@ -227,26 +228,33 @@ description: Install and configure Convex + Better Auth for Next.js.
   <div className="fd-step">
     ### Set up Convex client provider
 
-    Wrap your app with the `ConvexBetterAuthProvider` component.
+    Wrap your app with the `ConvexBetterAuthProvider` component. This replaces the `ConvexProvider` component.
 
     ```ts title="app/ConvexClientProvider.tsx"
     "use client";
 
     import { ReactNode } from "react";
     import { ConvexReactClient } from "convex/react";
-    import { authClient } from "@/lib/auth-client"; // [!code ++]
-    import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react"; // [!code ++]
+    import { authClient } from "@/lib/auth-client";
+    import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
 
-    const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!, {
-      // Optionally pause queries until the user is authenticated // [!code ++]
-      expectAuth: true, // [!code ++]
-    });
+    const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
-    export function ConvexClientProvider({ children }: { children: ReactNode }) {
+    export function ConvexClientProvider({
+      children,
+      initialToken,
+    }: {
+      children: ReactNode;
+      initialToken?: string | null;
+    }) {
       return (
-        <ConvexBetterAuthProvider client={convex} authClient={authClient}> // [!code ++]
+        <ConvexBetterAuthProvider
+          client={convex}
+          authClient={authClient}
+          initialToken={initialToken}
+        >
           {children}
-        </ConvexBetterAuthProvider> // [!code ++]
+        </ConvexBetterAuthProvider>
       );
     }
     ```
@@ -269,17 +277,6 @@ To use Better Auth's
 [server methods](https://www.better-auth.com/docs/concepts/api) in server
 rendering, server functions, or any other Next.js server code, use Convex
 functions and call the function from your server code.
-
-First, a token helper for calling Convex functions from your server code.
-
-```ts title="src/lib/auth-server.ts"
-import { createAuth } from "@/convex/auth";
-import { getToken as getTokenNextjs } from "@convex-dev/better-auth/nextjs";
-
-export const getToken = () => {
-  return getTokenNextjs(createAuth);
-};
-```
 
 Here's an example Convex function that uses Better Auth's server methods, and a
 server action that calls the Convex function.
@@ -310,9 +307,8 @@ export const updateUserPassword = mutation({
 ```ts title="app/actions.ts"
 "use server";
 
-import { fetchMutation } from "convex/nextjs";
+import { fetchMutation } from "@/lib/auth-server";
 import { api } from "../convex/_generated/api";
-import { getToken } from "../lib/auth-server";
 
 // Authenticated mutation via server function
 export async function updatePassword({
@@ -322,11 +318,9 @@ export async function updatePassword({
   currentPassword: string;
   newPassword: string;
 }) {
-  const token = await getToken();
-  await fetchMutation(
-    api.users.updatePassword,
-    { currentPassword, newPassword },
-    { token }
-  );
+  await fetchMutation(api.users.updatePassword, {
+    currentPassword,
+    newPassword,
+  });
 }
 ```
