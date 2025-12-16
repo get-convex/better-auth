@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.10.1
+
+- fix: make transient dependencies explicit
+
 ## 0.10.0
 
 - feat: support Better Auth 1.4.7
