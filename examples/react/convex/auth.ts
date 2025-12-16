@@ -57,8 +57,6 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
         enabled: true,
       },
     },
-
-    secret: "Zs4/lrLCVgUgEVFeKVrbJ5Y+FrodQL2DPJHN7nK16mU",
     plugins: [
       magicLink({
         sendMagicLink: async ({ email, url }) => {

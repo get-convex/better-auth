@@ -11,6 +11,7 @@ import {
   bearer as bearerPlugin,
   oidcProvider as oidcProviderPlugin,
   type JwtOptions,
+  type Jwk,
 } from "better-auth/plugins";
 import { omit } from "convex-helpers";
 import type { AuthConfig, AuthProvider } from "convex/server";
@@ -193,18 +194,39 @@ export const convex = (opts: {
   const jwks = opts.jwks ? JSON.parse(opts.jwks) : undefined;
   const jwt = jwtPlugin({
     ...jwtOptions,
-    ...(opts.jwks
-      ? {
-          adapter: {
-            createJwk: async () => {
-              throw new Error("Not implemented");
-            },
-            getJwks: async () => {
-              return jwks;
-            },
-          },
+    adapter: {
+      createJwk: async (webKey, ctx) => {
+        if (opts.jwks) {
+          throw new Error("Not implemented");
         }
-      : {}),
+        // TODO: remove when date parsing for jwks adapter is fixed upstream
+        return await ctx.context.adapter.create<Omit<Jwk, "id">, Jwk>({
+          model: "jwks",
+          data: {
+            ...webKey,
+            createdAt: new Date(),
+          },
+        });
+      },
+      getJwks: async (ctx) => {
+        if (opts.jwks) {
+          return jwks;
+        }
+        // TODO: remove when date parsing for jwks adapter is fixed upstream
+        const keys: Jwk[] = await ctx.context.adapter.findMany<Jwk>({
+          model: "jwks",
+          sortBy: {
+            field: "createdAt",
+            direction: "desc",
+          },
+        });
+        return keys.map((key) => ({
+          ...key,
+          createdAt: new Date(key.createdAt),
+          ...(key.expiresAt ? { expiresAt: new Date(key.expiresAt) } : {}),
+        }));
+      },
+    },
   });
   // Bearer plugin converts the session token to a cookie
   // for cross domain social login after code verification,
@@ -518,16 +540,18 @@ export const convex = (opts: {
           } catch (error: any) {
             // If alg config has changed and no longer matches one or more keys,
             // roll the keys
-            if (
-              opts.jwksRotateOnTokenGenerationError &&
-              !opts.jwks &&
-              error?.code === "ERR_JOSE_NOT_SUPPORTED"
-            ) {
-              await ctx.context.adapter.deleteMany({
-                model: "jwks",
-                where: [],
-              });
-              return await runEndpoint();
+            if (!opts.jwks && error?.code === "ERR_JOSE_NOT_SUPPORTED") {
+              if (opts.jwksRotateOnTokenGenerationError) {
+                await ctx.context.adapter.deleteMany({
+                  model: "jwks",
+                  where: [],
+                });
+                return await runEndpoint();
+              } else {
+                console.error(
+                  "Try temporarily setting jwksRotateOnTokenGenerationError: true on the Convex Better Auth plugin."
+                );
+              }
             }
             throw error;
           }
