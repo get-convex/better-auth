@@ -13,7 +13,7 @@ import {
   type WithoutSystemFields,
 } from "convex/server";
 import type { SetOptional } from "type-fest";
-import defaultSchema from "../component/schema.js";
+import type defaultSchema from "../component/schema.js";
 import type { Where } from "better-auth/types";
 import { asyncMap } from "convex-helpers";
 import { prop, sortBy, unique } from "remeda";

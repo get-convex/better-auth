@@ -1,5 +1,5 @@
 import { betterFetch } from "@better-fetch/fetch";
-import { type Auth, betterAuth } from "better-auth";
+import type { Auth, betterAuth } from "better-auth";
 import { getSessionCookie } from "better-auth/cookies";
 import {
   type AuthProvider,

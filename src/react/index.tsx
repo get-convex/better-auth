@@ -16,8 +16,11 @@ import {
 } from "convex/react";
 import type { FunctionReference } from "convex/server";
 import { type BetterAuthClientPlugin } from "better-auth";
-import { createAuthClient } from "better-auth/react";
-import { convexClient, crossDomainClient } from "../client/plugins/index.js";
+import type { createAuthClient } from "better-auth/react";
+import type {
+  convexClient,
+  crossDomainClient,
+} from "../client/plugins/index.js";
 import type { EmptyObject } from "convex-helpers";
 
 type CrossDomainClient = ReturnType<typeof crossDomainClient>;

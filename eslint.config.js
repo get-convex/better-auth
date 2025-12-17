@@ -26,6 +26,9 @@ export default [
         tsconfigRootDir: import.meta.dirname,
       },
     },
+    rules: {
+      "@typescript-eslint/consistent-type-imports": "error",
+    },
   },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,

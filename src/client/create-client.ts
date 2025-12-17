@@ -13,9 +13,9 @@ import {
 import { ConvexError, type Infer, v } from "convex/values";
 import { convexAdapter } from "./adapter.js";
 import { corsRouter } from "convex-helpers/server/cors";
-import defaultSchema from "../component/schema.js";
-import { type ComponentApi } from "../component/_generated/component.js";
-import { type CreateAuth, type GenericCtx } from "./index.js";
+import type defaultSchema from "../component/schema.js";
+import type { ComponentApi } from "../component/_generated/component.js";
+import type { CreateAuth, GenericCtx } from "./index.js";
 
 export type AuthFunctions = {
   onCreate?: FunctionReference<"mutation", "internal", { [key: string]: any }>;
