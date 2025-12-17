@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.10.4
+
+- fix(build): use outside type imports to avoid dead code in builds
+
 ## 0.10.3
 
 - fix(build): enforce type imports, tsc does not tree shake
