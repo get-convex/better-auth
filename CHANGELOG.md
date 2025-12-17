@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.10.3
+
+- fix(build): enforce type imports, tsc does not tree shake
+
 ## 0.10.2
 
 - fix(build): exclude cross-domain server plugin from client bundle
