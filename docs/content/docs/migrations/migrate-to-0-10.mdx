@@ -520,6 +520,25 @@ The following steps are only necessary for apps using
 
   <div className="fd-step">
 
+### Remove `getStaticAuth`
+
+Remove `getStaticAuth` in `convex/betterAuth/auth.ts` and replace it with a
+simple `createAuth`
+
+```ts title="convex/betterAuth/auth.ts"
+import { getStaticAuth } from "@convex-dev/better-auth"; // [!code --]
+import { v } from "convex/values";
+import { createAuth } from "../auth";
+
+// Export a static instance for Better Auth schema generation
+export const auth = getStaticAuth(createAuth); // [!code --]
+export const auth = createAuth({} as any); // [!code ++]
+```
+
+  </div>
+
+  <div className="fd-step">
+
 ### Regenerate schema
 
 Whenever updating Better Auth w/ Local Install, regenerate the schema.
