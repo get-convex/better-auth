@@ -6,13 +6,14 @@ import {
   preloadQuery,
 } from "convex/nextjs";
 import type { Preloaded } from "convex/react";
-import {
-  type ArgsAndOptions,
-  type FunctionReference,
-  type FunctionReturnType,
+import type {
+  ArgsAndOptions,
+  FunctionReference,
+  FunctionReturnType,
 } from "convex/server";
 import React from "react";
-import { getToken, type GetTokenOptions } from "../utils/index.js";
+import { getToken } from "../utils/index.js";
+import type { GetTokenOptions } from "../utils/index.js";
 import type { EmptyObject } from "convex-helpers";
 
 // Caching supported for React 19+ only

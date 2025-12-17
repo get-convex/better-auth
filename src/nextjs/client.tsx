@@ -1,5 +1,7 @@
-import { type Preloaded, useConvexAuth, useQuery } from "convex/react";
-import { type FunctionReference, makeFunctionReference } from "convex/server";
+import { useConvexAuth, useQuery } from "convex/react";
+import type { Preloaded } from "convex/react";
+import { makeFunctionReference } from "convex/server";
+import type { FunctionReference } from "convex/server";
 import { jsonToConvex } from "convex/values";
 import { useEffect, useMemo, useState } from "react";
 

@@ -1,16 +1,14 @@
-import {
-  createAdapterFactory,
-  type DBAdapterDebugLogOption,
-} from "better-auth/adapters";
-import {
-  createFunctionHandle,
-  type FunctionHandle,
-  type GenericActionCtx,
-  type GenericDataModel,
-  type PaginationOptions,
-  type PaginationResult,
-  type SchemaDefinition,
-  type WithoutSystemFields,
+import { createAdapterFactory } from "better-auth/adapters";
+import type { DBAdapterDebugLogOption } from "better-auth/adapters";
+import { createFunctionHandle } from "convex/server";
+import type {
+  FunctionHandle,
+  GenericActionCtx,
+  GenericDataModel,
+  PaginationOptions,
+  PaginationResult,
+  SchemaDefinition,
+  WithoutSystemFields,
 } from "convex/server";
 import type { SetOptional } from "type-fest";
 import type defaultSchema from "../component/schema.js";

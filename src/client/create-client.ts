@@ -1,16 +1,19 @@
 import {
-  type DataModelFromSchemaDefinition,
-  type FunctionReference,
-  type GenericDataModel,
-  type GenericMutationCtx,
-  type GenericSchema,
-  type HttpRouter,
-  type SchemaDefinition,
   httpActionGeneric,
   internalMutationGeneric,
   queryGeneric,
 } from "convex/server";
-import { ConvexError, type Infer, v } from "convex/values";
+import type {
+  DataModelFromSchemaDefinition,
+  FunctionReference,
+  GenericDataModel,
+  GenericMutationCtx,
+  GenericSchema,
+  HttpRouter,
+  SchemaDefinition,
+} from "convex/server";
+import { ConvexError, v } from "convex/values";
+import type { Infer } from "convex/values";
 import { convexAdapter } from "./adapter.js";
 import { corsRouter } from "convex-helpers/server/cors";
 import type defaultSchema from "../component/schema.js";

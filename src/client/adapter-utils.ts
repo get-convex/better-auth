@@ -1,13 +1,14 @@
 import { asyncMap } from "convex-helpers";
-import { type GenericId, type Infer, v } from "convex/values";
-import {
-  type DocumentByName,
-  type GenericDataModel,
-  type GenericQueryCtx,
-  type PaginationOptions,
-  type PaginationResult,
-  type SchemaDefinition,
-  type TableNamesInDataModel,
+import { v } from "convex/values";
+import type { GenericId, Infer } from "convex/values";
+import type {
+  DocumentByName,
+  GenericDataModel,
+  GenericQueryCtx,
+  PaginationOptions,
+  PaginationResult,
+  SchemaDefinition,
+  TableNamesInDataModel,
 } from "convex/server";
 import { stream } from "convex-helpers/server/stream";
 import { mergedStream } from "convex-helpers/server/stream";

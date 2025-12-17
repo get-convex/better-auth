@@ -5,7 +5,8 @@ import type {
   OptionalRestArgs,
 } from "convex/server";
 import { ConvexHttpClient } from "convex/browser";
-import { getToken, type GetTokenOptions } from "../utils/index.js";
+import { getToken } from "../utils/index.js";
+import type { GetTokenOptions } from "../utils/index.js";
 import React from "react";
 
 // Caching supported for React 19+ only

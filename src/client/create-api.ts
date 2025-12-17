@@ -1,11 +1,11 @@
 import {
-  type FunctionHandle,
-  type SchemaDefinition,
   mutationGeneric,
   paginationOptsValidator,
   queryGeneric,
 } from "convex/server";
-import { type GenericId, v } from "convex/values";
+import type { FunctionHandle, SchemaDefinition } from "convex/server";
+import { v } from "convex/values";
+import type { GenericId } from "convex/values";
 import { asyncMap } from "convex-helpers";
 import { partial } from "convex-helpers/validators";
 import {
@@ -17,7 +17,7 @@ import {
   selectFields,
 } from "./adapter-utils.js";
 import { getAuthTables } from "better-auth/db";
-import { type TableNames } from "../component/_generated/dataModel.js";
+import type { TableNames } from "../component/_generated/dataModel.js";
 import type { BetterAuthOptions } from "better-auth";
 
 const whereValidator = (

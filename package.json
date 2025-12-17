@@ -122,6 +122,7 @@
     "convex-test": "0.0.41",
     "cpy-cli": "6.0.0",
     "eslint": "9.39.1",
+    "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "5.2.0",
     "eslint-plugin-react-refresh": "0.4.24",

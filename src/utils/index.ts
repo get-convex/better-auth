@@ -1,14 +1,14 @@
 import { betterFetch } from "@better-fetch/fetch";
 import type { Auth, betterAuth } from "better-auth";
 import { getSessionCookie } from "better-auth/cookies";
-import {
-  type AuthProvider,
-  type DefaultFunctionArgs,
-  type FunctionReference,
-  type GenericActionCtx,
-  type GenericDataModel,
-  type GenericMutationCtx,
-  type GenericQueryCtx,
+import type {
+  AuthProvider,
+  DefaultFunctionArgs,
+  FunctionReference,
+  GenericActionCtx,
+  GenericDataModel,
+  GenericMutationCtx,
+  GenericQueryCtx,
 } from "convex/server";
 import { JWT_COOKIE_NAME } from "../plugins/convex/index.js";
 import * as jose from "jose";

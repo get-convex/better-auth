@@ -1,8 +1,8 @@
-import {
-  type BetterAuthOptions,
-  type BetterAuthPlugin,
-  type Session,
-  type User,
+import type {
+  BetterAuthOptions,
+  BetterAuthPlugin,
+  Session,
+  User,
 } from "better-auth";
 import { createAuthMiddleware, sessionMiddleware } from "better-auth/api";
 import {
@@ -10,9 +10,8 @@ import {
   jwt as jwtPlugin,
   bearer as bearerPlugin,
   oidcProvider as oidcProviderPlugin,
-  type JwtOptions,
-  type Jwk,
 } from "better-auth/plugins";
+import type { JwtOptions, Jwk } from "better-auth/plugins";
 import { omit } from "convex-helpers";
 import type { AuthConfig, AuthProvider } from "convex/server";
 

@@ -1,13 +1,6 @@
-import {
-  Component,
-  type PropsWithChildren,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { type AuthTokenFetcher } from "convex/browser";
+import type { PropsWithChildren, ReactNode } from "react";
+import { Component, useCallback, useEffect, useMemo, useState } from "react";
+import type { AuthTokenFetcher } from "convex/browser";
 import {
   Authenticated,
   ConvexProviderWithAuth,
@@ -15,7 +8,7 @@ import {
   useQuery,
 } from "convex/react";
 import type { FunctionReference } from "convex/server";
-import { type BetterAuthClientPlugin } from "better-auth";
+import type { BetterAuthClientPlugin } from "better-auth";
 import type { createAuthClient } from "better-auth/react";
 import type {
   convexClient,
