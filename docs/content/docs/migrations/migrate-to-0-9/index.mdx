@@ -43,9 +43,9 @@ npx @better-auth/cli generate -y
 
 <Callout title="Breaking change!" type="warning" />
 
-Any triggers using the `onUpdate` hook should be updated to expect the new
-doc as the second parameter, and the old doc as the third parameter. The old
-doc parameter can be left out of the signature if not needed.
+Any triggers using the `onUpdate` hook should be updated to expect the new doc
+as the second parameter, and the old doc as the third parameter. The old doc
+parameter can be left out of the signature if not needed.
 
 ```ts title="convex/auth.ts"
 export const authComponent = createClient<DataModel>(components.betterAuth, {
@@ -102,7 +102,7 @@ Storing your app user id in the Better Auth user table is no longer required,
 and built in support for it is deprecated.
 
 <Cards>
-  <Card title="Migration guide" href="/migrations/migrate-userid">
+  <Card title="Migration guide" href="migrate-to-0-9/migrate-userid">
     Migrate away from `user.userId` support
   </Card>
 </Cards>

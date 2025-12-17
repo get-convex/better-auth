@@ -6,7 +6,7 @@ description: Migrate user id reference from component to app table
 <Callout>
   This guide shows one of two recommended strategies for migrating away from
   maintaining a `user.userId` field in the Better Auth user table. Read [the
-  overview](/migrations/migrate-userid) for more information.
+  overview](./) for more information.
 </Callout>
 
 <Callout type="warning">
@@ -38,7 +38,8 @@ npx convex dev
 
 ### Install migrations component
 
-Install and configure the [migrations component](https://www.convex.dev/components/migrations).
+Install and configure the
+[migrations component](https://www.convex.dev/components/migrations).
 
 ```npm
 npm install @convex-dev/migrations
@@ -84,9 +85,9 @@ export default defineSchema({
 ### Add migration functions
 
 Create a `convex/migrations.ts` file and add migration functions. Two functions
-are added - one for adding the `authId` field to the app users table, and one for
-removing the `userId` field from the related Better Auth user. We'll run them in
-later steps.
+are added - one for adding the `authId` field to the app users table, and one
+for removing the `userId` field from the related Better Auth user. We'll run
+them in later steps.
 
 ```ts title="convex/migrations.ts"
 import { Migrations } from "@convex-dev/migrations";
@@ -136,7 +137,8 @@ export const removeUserId = migrations.runner(
   <div className="fd-step">
 ### Update adapter exports (Local Install only)
 
-If using [Local Install](/local-install), update the adapter exports to include the `migrationRemoveUserId` function.
+If using [Local Install](/local-install), update the adapter exports to include
+the `migrationRemoveUserId` function.
 
 ```ts title="convex/betterAuth/adapter.ts"
 export const {
@@ -223,8 +225,8 @@ functioning as it did prior to starting this guide, but is now also defining
 `authId` on every new user, so all new users moving forward will have an
 `authId` value.
 
-**This migration will backfill the `authId` field for previously existing
-users in your development deployment.**
+**This migration will backfill the `authId` field for previously existing users
+in your development deployment.**
 
 ```npm
 npx convex run migrations:addAuthId
@@ -268,7 +270,8 @@ npx convex run migrations:addAuthId --prod
 Now that all `authId` values are set, make the `authId` field required in the
 app user table. If the convex dev server errors after this change, you probably
 have one or more users in the app user table that don't have an `authId` value.
-This should only be possible for users that do not have a related Better Auth user.
+This should only be possible for users that do not have a related Better Auth
+user.
 
 ```ts title="convex/schema.ts"
 export default defineSchema({
@@ -285,7 +288,8 @@ export default defineSchema({
 <div className="fd-step">
 ### Remove `userId` writes
 
-Update the user onCreate trigger to stop setting the `userId` field on the Better Auth user.
+Update the user onCreate trigger to stop setting the `userId` field on the
+Better Auth user.
 
 ```ts title="convex/auth.ts"
 export const authComponent = createClient<DataModel>(components.betterAuth, {
@@ -340,8 +344,8 @@ export const getCurrentUser = query({
 <div className="fd-step">
   ### Run `removeUserId` migration
 
-The migration is now functionally complete, all that remains are unused
-`userId` values in the Better Auth user table.
+The migration is now functionally complete, all that remains are unused `userId`
+values in the Better Auth user table.
 
 Run the `removeUserId` migration to clear the unused values.
 
@@ -354,16 +358,17 @@ npx convex run migrations:removeUserId
 <div className="fd-step">
   ### Deploy to production
 
-After ensuring your application works after these changes, and that the
-`userId` field is no longer being set on the Better Auth user table, changes
-should be deployed to production.
+After ensuring your application works after these changes, and that the `userId`
+field is no longer being set on the Better Auth user table, changes should be
+deployed to production.
 
 </div>
 
 <div className="fd-step">
   ### Run `removeUserId` migration in production
 
-Once deployed, as we did previously, the second migration should also be run in production.
+Once deployed, as we did previously, the second migration should also be run in
+production.
 
 ```npm
 npx convex run migrations:removeUserId --prod

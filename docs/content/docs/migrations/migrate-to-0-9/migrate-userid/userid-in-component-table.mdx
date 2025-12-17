@@ -1,12 +1,13 @@
 ---
 title: App user id in component table
-description: Configure Better Auth to continue tracking app user id in component table
+description:
+  Configure Better Auth to continue tracking app user id in component table
 ---
 
 <Callout>
   This guide shows one of two recommended strategies for migrating away from
   maintaining a `user.userId` field in the Better Auth user table. Read [the
-  overview](/migrations/migrate-userid) for more information.
+  overview](./) for more information.
 </Callout>
 
 <Callout type="warning">
@@ -38,7 +39,8 @@ npx convex dev
 
 ### Migrate to Local Install
 
-If you haven't already, follow the guide to migrate to [Local Install](/local-install).
+If you haven't already, follow the guide to migrate to
+[Local Install](/local-install).
 
 </div>
 
@@ -109,7 +111,8 @@ export const setUserId = mutation({
 
 ### Update user onCreate trigger
 
-Update the user onCreate trigger to set the `userId` field on the Better Auth user.
+Update the user onCreate trigger to set the `userId` field on the Better Auth
+user.
 
 ```ts title="convex/auth.ts"
 export const authComponent = createClient<DataModel, typeof betterAuthSchema>(
@@ -143,7 +146,8 @@ export const authComponent = createClient<DataModel, typeof betterAuthSchema>(
 <div className="fd-step">
 ### All set 🎉
 
-Previous behavior is now configured manually, no changes in behavior should result.
+Previous behavior is now configured manually, no changes in behavior should
+result.
 
 </div>
 </div>
