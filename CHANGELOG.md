@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.10.2
+
+- fix(build): exclude cross-domain server plugin from client bundle
+
 ## 0.10.1
 
 - fix: make transient dependencies explicit
