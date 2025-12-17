@@ -30,6 +30,22 @@ description: Install and configure Convex + Better Auth for TanStack Start.
   </div>
 
   <div className="fd-step">
+    ### Configure Vite for SSR
+
+    Configure Vite to bundle `@convex-dev/better-auth` during SSR to avoid module resolution issues.
+
+    ```ts title="vite.config.ts"
+    export default defineConfig({
+      // ...other config
+      ssr: {
+        noExternal: ['@convex-dev/better-auth'],
+      },
+    });
+    ```
+
+  </div>
+
+  <div className="fd-step">
     ### Register the component
 
     Register the Better Auth component in your Convex project.
