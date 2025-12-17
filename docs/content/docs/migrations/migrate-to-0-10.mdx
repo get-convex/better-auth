@@ -354,6 +354,23 @@ export const TodoList = ({ preloadedUserQuery }) => {
 <div className="fd-steps">
 
 <div className="fd-step">
+  ### Update Vite configuration
+
+Update Vite configuration to bundle `@convex-dev/better-auth` during SSR to
+avoid module resolution issues.
+
+```ts title="vite.config.ts"
+export default defineConfig({
+  // ...other config
+  ssr: {
+    noExternal: ["@convex-dev/better-auth"],
+  },
+});
+```
+
+</div>
+
+<div className="fd-step">
 ### Update router config
 
 Update the router to set `expectAuth: true` on the ConvexQueryClient - without
