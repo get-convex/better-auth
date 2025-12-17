@@ -68,8 +68,8 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     Add a `convex/auth.config.ts` file to configure Better Auth as an authentication provider.
 
     ```ts title="convex/auth.config.ts"
-    import type { AuthConfig } from 'convex/server'
     import { getAuthConfigProvider } from '@convex-dev/better-auth/auth-config'
+    import type { AuthConfig } from 'convex/server'
 
     export default {
       providers: [getAuthConfigProvider()],
@@ -132,14 +132,14 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     <Callout>Some Typescript errors will show until you save the file.</Callout>
 
     ```ts title="convex/auth.ts"
+    import { betterAuth } from 'better-auth'
     import { createClient } from '@convex-dev/better-auth'
     import { convex } from '@convex-dev/better-auth/plugins'
+    import authConfig from './auth.config'
     import { components } from './_generated/api'
     import { query } from './_generated/server'
     import type { GenericCtx } from '@convex-dev/better-auth'
     import type { DataModel } from './_generated/dataModel'
-    import { authConfig } from './auth.config'
-    import { betterAuth, type BetterAuthOptions } from "better-auth";
 
     const siteUrl = process.env.SITE_URL!
 
@@ -168,7 +168,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     export const getCurrentUser = query({
       args: {},
       handler: async (ctx) => {
-        return authComponent.getAuthUser(ctx)
+        return await authComponent.getAuthUser(ctx)
       },
     })
     ```
@@ -252,7 +252,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
 
     Wrap your application root with `ConvexBetterAuthProvider` and make auth available in loaders.
 
-    ```ts title="src/routes/__root.tsx"
+    ```tsx title="src/routes/__root.tsx"
     /// <reference types="vite/client" />
     import {
       HeadContent,
@@ -262,13 +262,14 @@ description: Install and configure Convex + Better Auth for TanStack Start.
       useRouteContext,
     } from '@tanstack/react-router'
     import * as React from 'react'
-    // [!code ++:7]
+    // [!code ++:3]
     import { createServerFn } from '@tanstack/react-start'
     import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
     import type { ConvexQueryClient } from '@convex-dev/react-query'
     import type { QueryClient } from '@tanstack/react-query'
-    import { authClient } from '~/lib/auth-client'
     import appCss from '~/styles/app.css?url'
+    // [!code ++:2]
+    import { authClient } from '~/lib/auth-client'
     import { getToken } from '~/lib/auth-server'
 
     // [!code ++:4]
@@ -296,7 +297,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
           { rel: 'icon', href: '/favicon.ico' },
         ],
       }),
-      // [!code ++:13]
+      // [!code ++:16]
       beforeLoad: async (ctx) => {
         const token = await getAuth()
 
@@ -319,7 +320,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
     function RootComponent() {
       const context = useRouteContext({ from: Route.id }) // [!code ++]
       return (
-        // [!code ++:4]
+        // [!code ++:5]
         <ConvexBetterAuthProvider
           client={context.convexQueryClient.convexClient}
           authClient={authClient}
@@ -328,7 +329,8 @@ description: Install and configure Convex + Better Auth for TanStack Start.
           <RootDocument>
             <Outlet />
           </RootDocument>
-        </ConvexBetterAuthProvider> // [!code ++]
+        {/* [!code ++] */}
+        </ConvexBetterAuthProvider>
       )
     }
 
@@ -352,15 +354,19 @@ description: Install and configure Convex + Better Auth for TanStack Start.
   <div className="fd-step">
     ### Add route context
 
-    Provide context from Convex to your routes.
+    Provide context from Convex to your routes, and ensure correct setup for SSR -
+    this may replace some existing router setup in your code.
 
     ```ts title="src/routes/router.tsx"
     import { createRouter } from '@tanstack/react-router'
-    import { routeTree } from './routeTree.gen'
-    import { routerWithQueryClient } from '@tanstack/react-router-with-query'
-    import { ConvexProvider, ConvexReactClient } from 'convex/react'
-    import { ConvexQueryClient } from '@convex-dev/react-query'
     import { QueryClient } from '@tanstack/react-query'
+        // [!code ++:2]
+        // You may need to install this package if you haven't already
+    import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
+    import { routerWithQueryClient } from '@tanstack/react-router-with-query' // [!code --]
+    import { ConvexQueryClient } from '@convex-dev/react-query'
+    import { ConvexProvider } from 'convex/react' // [!code --]
+    import { routeTree } from './routeTree.gen'
 
     export function getRouter() {
       if (typeof document !== 'undefined') {
@@ -371,6 +377,8 @@ description: Install and configure Convex + Better Auth for TanStack Start.
       if (!convexUrl) {
         throw new Error('VITE_CONVEX_URL is not set')
       }
+      const convexQueryClient = new ConvexQueryClient(convexUrl) // [!code --]
+      // [!code ++:3]
       const convexQueryClient = new ConvexQueryClient(convexUrl, {
         expectAuth: true,
       })
@@ -384,16 +392,27 @@ description: Install and configure Convex + Better Auth for TanStack Start.
         },
       })
       convexQueryClient.connect(queryClient)
-
-      const router = createTanStackRouter({
+      // [!code --:2]
+      const router = routerWithQueryClient(
+        createRouter({
+      // [!code ++]
+      const router = createRouter({
         routeTree,
         defaultPreload: 'intent',
-        defaultErrorComponent: DefaultCatchBoundary,
-        defaultNotFoundComponent: () => <NotFound />,
         context: { queryClient }, // [!code --]
         context: { queryClient, convexQueryClient }, // [!code ++]
         scrollRestoration: true,
+        defaultErrorComponent: (err) => <p>{err.error.stack}</p>,
+        defaultNotFoundComponent: () => <p>not found</p>,
+        // [!code --:5]
+        Wrap: ({ children }) => (
+          <ConvexProvider client={convexQueryClient.convexClient}>
+            {children}
+          </ConvexProvider>
+        ),
       })
+
+      // [!code ++:4]
       setupRouterSsrQueryIntegration({
         router,
         queryClient,
