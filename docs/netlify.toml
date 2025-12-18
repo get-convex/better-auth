@@ -1,19 +1,4 @@
 [[redirects]]
-  from = "/"
-  to = "/better-auth"
-  status = 301
-
-[[redirects]]
-  from = "/local-install"
-  to = "/features/local-install"
-  status = 301
-
-[[redirects]]
-  from = "/authorization"
-  to = "/basic-usage/authorization"
-  status = 301
-
-[[redirects]]
-  from = "/triggers"
-  to = "/features/triggers"
+  from = "/*"
+  to = "https://labs.convex.dev/better-auth/:splat"
   status = 301
