@@ -1,0 +1,69 @@
+---
+title: Hono
+description: Using Hono with Convex + Better Auth
+---
+
+If you prefer to work with [Hono](https://hono.dev/) instead of the default
+HttpRouter, Hono can replace the default `authComponent.registerRoutes()`
+method. Check out the [Convex w/ Hono Stack
+article](https://stack.convex.dev/hono-with-convex#using-hono-with-convex) and
+the [Better Auth Hono docs](https://www.better-auth.com/docs/integrations/hono)
+for more details.
+
+<Callout>
+  You'll need to install the `convex-helpers` package if you haven't already.
+</Callout>
+
+## Configuration
+
+```ts title="convex/http.ts"
+import { Hono } from "hono";
+import { HonoWithConvex, HttpRouterWithHono } from "convex-helpers/server/hono";
+import { ActionCtx } from "./_generated/server";
+import { createAuth } from "./auth";
+
+const app: HonoWithConvex<ActionCtx> = new Hono();
+
+// Redirect root well-known to api well-known
+app.get("/.well-known/openid-configuration", async (c) => {
+  return c.redirect("/api/auth/convex/.well-known/openid-configuration");
+});
+
+app.on(["POST", "GET"], "/api/auth/*", async (c) => {
+  const auth = createAuth(c.env);
+  return auth.handler(c.req.raw);
+});
+
+const http = new HttpRouterWithHono(app);
+
+export default http;
+```
+
+## Add CORS support
+
+Required for client only / SPA installs like React/Vite.
+
+```ts title="convex/http.ts"
+import { Hono } from "hono";
+import { HonoWithConvex, HttpRouterWithHono } from "convex-helpers/server/hono";
+import { cors } from "hono/cors"; // [!code ++]
+import { ActionCtx } from "./_generated/server";
+import { createAuth } from "../lib/auth";
+
+const app: HonoWithConvex<ActionCtx> = new Hono();
+
+// [!code ++:11]
+app.use(
+  "/api/auth/*",
+  cors({
+    origin: process.env.SITE_URL,
+    allowHeaders: ["Content-Type", "Authorization", "Better-Auth-Cookie"],
+    allowMethods: ["GET", "POST", "OPTIONS"],
+    exposeHeaders: ["Content-Length", "Set-Better-Auth-Cookie"],
+    maxAge: 600,
+    credentials: true,
+  })
+);
+
+// ...
+```
