@@ -45,6 +45,12 @@ installed component.
 
     Add a static `auth` export to the `convex/betterAuth/auth.ts` file.
 
+    <Callout>
+      This file should _only_ have your `auth` export for schema generation, and no
+      other code. If this file is imported at runtime it will trigger errors due to
+      missing environment variables.
+    </Callout>
+
     ```ts title="convex/betterAuth/auth.ts"
     import { createAuth } from '../auth'
 
