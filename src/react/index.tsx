@@ -91,7 +91,7 @@ export function ConvexBetterAuthProvider({
   }, [authClient]);
   return (
     <ConvexProviderWithAuth client={client} useAuth={useBetterAuth}>
-      {children}
+      <>{children}</>
     </ConvexProviderWithAuth>
   );
 }

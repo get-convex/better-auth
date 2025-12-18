@@ -15,7 +15,12 @@ import {
 import { requireActionCtx } from '@convex-dev/better-auth/utils'
 import { components, internal } from './_generated/api'
 import betterAuthSchema from './betterAuth/schema'
-import { internalAction, query, QueryCtx } from './_generated/server'
+import {
+  internalAction,
+  internalMutation,
+  query,
+  QueryCtx,
+} from './_generated/server'
 import { DataModel, Id } from './_generated/dataModel'
 import { asyncMap, withoutSystemFields } from 'convex-helpers'
 import authConfig from './auth.config'

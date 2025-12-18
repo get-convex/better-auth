@@ -460,6 +460,9 @@ export const convex = (opts: {
         }
       ),
       getLatestJwks: createAuthEndpoint(
+        // This path is inaccessible due to SERVER_ONLY: true, it's here to
+        // avoid errors that occur in all matchers when path is undefined.
+        "/convex/latest-jwks",
         {
           isAction: true,
           method: "POST",
@@ -491,6 +494,9 @@ export const convex = (opts: {
         }
       ),
       rotateKeys: createAuthEndpoint(
+        // This path is inaccessible due to SERVER_ONLY: true, it's here to
+        // avoid errors that occur in all matchers when path is undefined.
+        "/convex/rotate-keys",
         {
           isAction: true,
           method: "POST",

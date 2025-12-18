@@ -98,7 +98,7 @@ First, add an internal mutation to get the latest JWKS. A new key may be
 written, so this must be a mutation.
 
 ```ts title="convex/auth.ts"
-export const getLatestJwks = internalMutation({
+export const getLatestJwks = internalAction({
   args: {},
   handler: async (ctx) => {
     const auth = createAuth(ctx);
