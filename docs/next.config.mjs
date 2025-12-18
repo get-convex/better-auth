@@ -9,11 +9,6 @@ const config = {
   redirects: async () => {
     return [
       {
-        source: "/",
-        destination: "/better-auth",
-        permanent: true,
-      },
-      {
         source: "/local-install",
         destination: "/features/local-install",
         permanent: true,
