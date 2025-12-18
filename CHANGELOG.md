@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.10.5
+
+- fix(plugin): avoid pathless route match errors
+
 ## 0.10.4
 
 - fix(build): use outside type imports to avoid dead code in builds
