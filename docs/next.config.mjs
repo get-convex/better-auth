@@ -4,9 +4,15 @@ const withMDX = createMDX();
 
 /** @type {import('next').NextConfig} */
 const config = {
+  basePath: "/better-auth",
   reactStrictMode: true,
   redirects: async () => {
     return [
+      {
+        source: "/",
+        destination: "/better-auth",
+        permanent: true,
+      },
       {
         source: "/local-install",
         destination: "/features/local-install",
