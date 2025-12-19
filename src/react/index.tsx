@@ -180,7 +180,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     return { error };
   }
   async componentDidCatch(error: Error) {
+    console.log("error", error);
     if (this.props.isAuthError(error)) {
+      console.log("unauth");
       await this.props.onUnauth();
     }
   }

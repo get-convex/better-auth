@@ -31,6 +31,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           input:
             | {
                 data: {
+                  arr?: null | Array<string>;
                   createdAt: number;
                   displayUsername?: null | string;
                   email: string;
@@ -93,6 +94,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             | {
                 data: {
                   createdAt: number;
+                  expiresAt?: null | number;
                   privateKey: string;
                   publicKey: string;
                 };
@@ -126,6 +128,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "twoFactorEnabled"
                     | "userId"
                     | "foo"
+                    | "arr"
                     | "test"
                     | "_id";
                   operator?:
@@ -284,7 +287,12 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 model: "jwks";
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "publicKey" | "privateKey" | "createdAt" | "_id";
+                  field:
+                    | "publicKey"
+                    | "privateKey"
+                    | "createdAt"
+                    | "expiresAt"
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -341,6 +349,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "twoFactorEnabled"
                     | "userId"
                     | "foo"
+                    | "arr"
                     | "test"
                     | "_id";
                   operator?:
@@ -499,7 +508,12 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 model: "jwks";
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "publicKey" | "privateKey" | "createdAt" | "_id";
+                  field:
+                    | "publicKey"
+                    | "privateKey"
+                    | "createdAt"
+                    | "expiresAt"
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -622,6 +636,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             | {
                 model: "user";
                 update: {
+                  arr?: null | Array<string>;
                   createdAt?: number;
                   displayUsername?: null | string;
                   email?: string;
@@ -651,6 +666,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "twoFactorEnabled"
                     | "userId"
                     | "foo"
+                    | "arr"
                     | "test"
                     | "_id";
                   operator?:
@@ -844,12 +860,18 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 model: "jwks";
                 update: {
                   createdAt?: number;
+                  expiresAt?: null | number;
                   privateKey?: string;
                   publicKey?: string;
                 };
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "publicKey" | "privateKey" | "createdAt" | "_id";
+                  field:
+                    | "publicKey"
+                    | "privateKey"
+                    | "createdAt"
+                    | "expiresAt"
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -892,6 +914,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             | {
                 model: "user";
                 update: {
+                  arr?: null | Array<string>;
                   createdAt?: number;
                   displayUsername?: null | string;
                   email?: string;
@@ -921,6 +944,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "twoFactorEnabled"
                     | "userId"
                     | "foo"
+                    | "arr"
                     | "test"
                     | "_id";
                   operator?:
@@ -1114,12 +1138,18 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 model: "jwks";
                 update: {
                   createdAt?: number;
+                  expiresAt?: null | number;
                   privateKey?: string;
                   publicKey?: string;
                 };
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "publicKey" | "privateKey" | "createdAt" | "_id";
+                  field:
+                    | "publicKey"
+                    | "privateKey"
+                    | "createdAt"
+                    | "expiresAt"
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1147,7 +1177,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
         Name
       >;
     };
-    auth: {
+    users: {
       getUser: FunctionReference<
         "query",
         "internal",
@@ -1155,6 +1185,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
         null | {
           _creationTime: number;
           _id: string;
+          arr?: null | Array<string>;
           createdAt: number;
           displayUsername?: null | string;
           email: string;

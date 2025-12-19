@@ -321,6 +321,7 @@ export const convex = (opts: {
         },
         {
           matcher: (ctx) => {
+            console.log(ctx.path, ctx.context.session);
             return (
               ctx.path?.startsWith("/sign-out") ||
               ctx.path?.startsWith("/delete-user") ||
@@ -328,6 +329,7 @@ export const convex = (opts: {
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
+            console.log("clearing jwt cookie");
             const jwtCookie = ctx.context.createAuthCookie(JWT_COOKIE_NAME, {
               maxAge: 0,
             });

@@ -83,10 +83,6 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
           type: "string",
           required: false,
         },
-        test: {
-          type: "json",
-          required: false,
-        },
       },
       deleteUser: {
         enabled: true,
