@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.10.6
+
+- fix(adapter): (re-)enable array support
+
 ## 0.10.5
 
 - fix(plugin): avoid pathless route match errors
