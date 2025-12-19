@@ -17,7 +17,7 @@ import {
   sendResetPassword,
 } from "../convex/email";
 import { magicLink } from "better-auth/plugins";
-import { betterAuth, type BetterAuthOptions } from "better-auth";
+import { betterAuth, type BetterAuthOptions } from "better-auth/minimal";
 import { requireActionCtx } from "@convex-dev/better-auth/utils";
 import { DataModel } from "./_generated/dataModel";
 import { v } from "convex/values";

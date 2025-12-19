@@ -3,7 +3,7 @@ import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
 import { requireActionCtx } from "@convex-dev/better-auth/utils";
 import { components } from "./_generated/api";
 import { query } from "./_generated/server";
-import { betterAuth, type BetterAuthOptions } from "better-auth";
+import { betterAuth, type BetterAuthOptions } from "better-auth/minimal";
 import { emailOTP, magicLink } from "better-auth/plugins";
 import { DataModel } from "./_generated/dataModel";
 import {
