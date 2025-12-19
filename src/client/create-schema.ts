@@ -87,7 +87,7 @@ export const createSchema = async ({
  * 
  * To customize the schema, generate to an alternate file and import
  * the table definitions to your schema file. See
- * https://convex-better-auth.netlify.app/features/local-install#adding-custom-indexes.
+ * https://labs.convex.dev/better-auth/features/local-install#adding-custom-indexes.
  */
 
 import { defineSchema, defineTable } from "convex/server";
