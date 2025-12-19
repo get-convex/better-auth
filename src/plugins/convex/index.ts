@@ -255,14 +255,6 @@ export const convex = (opts: {
           `Better Auth basePath ${options.basePath} does not match Convex plugin basePath ${opts.options?.basePath}. This is probably a mistake.`
         );
       }
-      if (
-        options.plugins?.every((p) => p.id !== "cross-domain") &&
-        !options.baseURL
-      ) {
-        logger.warn(
-          "Better Auth baseURL is undefined. This is probably a mistake."
-        );
-      }
     },
     hooks: {
       before: [
