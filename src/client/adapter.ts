@@ -129,8 +129,10 @@ export const convexAdapter = <
       mapKeysTransformOutput: {
         _id: "id",
       },
-      // Dates provided as strings
-      supportsDates: false,
+      // Convex does not support dates.
+      // We need to keep this true so that better-auth can use the custom transforms below to convert dates to numbers,
+      // instead of ISO strings.
+      supportsDates: true,
       // Convert dates to numbers. This aligns with how
       // Convex stores _creationTime and avoids a breaking change.
       customTransformInput: ({ data, fieldAttributes }) => {
