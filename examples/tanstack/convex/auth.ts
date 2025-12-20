@@ -1,4 +1,4 @@
-import { betterAuth, type BetterAuthOptions } from 'better-auth'
+import { betterAuth, type BetterAuthOptions } from 'better-auth/minimal'
 import {
   AuthFunctions,
   createClient,
@@ -15,12 +15,7 @@ import {
 import { requireActionCtx } from '@convex-dev/better-auth/utils'
 import { components, internal } from './_generated/api'
 import betterAuthSchema from './betterAuth/schema'
-import {
-  internalAction,
-  internalMutation,
-  query,
-  QueryCtx,
-} from './_generated/server'
+import { internalAction, query, QueryCtx } from './_generated/server'
 import { DataModel, Id } from './_generated/dataModel'
 import { asyncMap, withoutSystemFields } from 'convex-helpers'
 import authConfig from './auth.config'

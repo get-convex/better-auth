@@ -1,4 +1,4 @@
-import { betterAuth } from "better-auth";
+import { betterAuth } from "better-auth/minimal";
 import { options } from "./auth-options.js";
 
 export const auth = betterAuth(options);

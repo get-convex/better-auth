@@ -18,7 +18,7 @@ import {
 } from "./adapter-utils.js";
 import { getAuthTables } from "better-auth/db";
 import type { TableNames } from "../component/_generated/dataModel.js";
-import type { BetterAuthOptions } from "better-auth";
+import type { BetterAuthOptions } from "better-auth/minimal";
 
 const whereValidator = (
   schema: SchemaDefinition<any, any>,
