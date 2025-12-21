@@ -6,5 +6,6 @@ export default defineConfig({
     typecheck: {
       tsconfig: "./tsconfig.test.json",
     },
+    exclude: ["**/node_modules/**", "**/.git/**", "**/dist/**"],
   },
 });

@@ -101,8 +101,8 @@
     }
   },
   "peerDependencies": {
-    "better-auth": "1.4.7",
-    "convex": "^1.25.0",
+    "better-auth": "1.4.8-beta.7",
+    "convex": "file:../../../get-convex/convex/npm-packages/convex",
     "react": "^18.3.1 || ^19.0.0",
     "react-dom": "^18.3.1 || ^19.0.0"
   },
@@ -118,7 +118,7 @@
     "@types/semver": "^7.7.0",
     "chokidar-cli": "3.0.0",
     "concurrently": "^9.2.0",
-    "convex": "^1.31.2",
+    "convex": "file:../../../get-convex/convex/npm-packages/convex",
     "convex-test": "0.0.41",
     "cpy-cli": "6.0.0",
     "eslint": "9.39.1",
@@ -140,7 +140,7 @@
   "types": "./dist/client/index.d.ts",
   "module": "./dist/client/index.js",
   "dependencies": {
-    "@better-auth/passkey": "1.4.7",
+    "@better-auth/passkey": "1.4.8-beta.7",
     "@better-fetch/fetch": "^1.1.18",
     "common-tags": "^1.8.2",
     "convex-helpers": "^0.1.95",

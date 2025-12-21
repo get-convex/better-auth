@@ -349,7 +349,6 @@ const filterByWhere = <
         case "not_in": {
           const result =
             Array.isArray(w.value) && !(w.value as any[]).includes(value);
-          console.log(doc, "not_in", w, value, result);
           return result;
         }
         case "lt": {

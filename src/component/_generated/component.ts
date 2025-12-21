@@ -934,6 +934,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
         "query",
         "internal",
         {
+          join?: any;
           limit?: number;
           model:
             | "user"
@@ -988,6 +989,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
         "query",
         "internal",
         {
+          join?: any;
           model:
             | "user"
             | "session"
@@ -2000,13 +2002,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
       >;
     };
     adapterTest: {
-      count: FunctionReference<"query", "internal", any, any, Name>;
-      create: FunctionReference<"mutation", "internal", any, any, Name>;
-      delete: FunctionReference<"mutation", "internal", any, any, Name>;
-      deleteMany: FunctionReference<"mutation", "internal", any, any, Name>;
-      findMany: FunctionReference<"query", "internal", any, any, Name>;
-      findOne: FunctionReference<"query", "internal", any, any, Name>;
-      update: FunctionReference<"mutation", "internal", any, any, Name>;
-      updateMany: FunctionReference<"mutation", "internal", any, any, Name>;
+      runCustomTests: FunctionReference<"action", "internal", any, any, Name>;
+      runTests: FunctionReference<"action", "internal", any, any, Name>;
     };
   };
