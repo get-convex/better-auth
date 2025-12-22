@@ -37,6 +37,7 @@ export default [
       // dead empty brace imports in the build. This has caused server code
       // to be included in client files.
       "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+      "no-console": "error",
     },
   },
   pluginJs.configs.recommended,

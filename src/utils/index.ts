@@ -144,6 +144,7 @@ export const getToken = async (
       return { isFresh: false, token };
     }
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("Error decoding JWT", error);
   }
   return await fetchToken();

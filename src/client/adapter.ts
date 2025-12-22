@@ -87,7 +87,6 @@ type ConvexCleanedWhere<TableName extends TableNames = TableNames> = Where & {
 const parseWhere = (
   where?: (Where & { join?: undefined }) | (Where & { join?: undefined })[]
 ): ConvexCleanedWhere[] => {
-  console.log("where", where);
   if (!where) {
     return [];
   }
