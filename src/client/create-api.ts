@@ -136,9 +136,7 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
         paginationOpts: paginationOptsValidator,
       },
       handler: async (ctx, args) => {
-        const result = await paginate(ctx, schema, betterAuthSchema, args);
-        console.log("findMany function", args, result);
-        return result;
+        return await paginate(ctx, schema, betterAuthSchema, args);
       },
     }),
     updateOne: mutationGeneric({

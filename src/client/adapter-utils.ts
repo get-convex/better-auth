@@ -431,6 +431,7 @@ const generateQuery = (
     : indexedQuery;
   const filteredQuery = orderedQuery.filterWith(async (doc) => {
     if (!index && indexFields?.length) {
+      // eslint-disable-next-line no-console
       console.warn(
         stripIndent`
           Querying without an index on table "${args.model}".

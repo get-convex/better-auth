@@ -354,12 +354,15 @@ export const createClient = <
       const path = staticAuth.options.basePath ?? "/api/auth";
       const authRequestHandler = httpActionGeneric(async (ctx, request) => {
         if (config?.verbose) {
+          // eslint-disable-next-line no-console
           console.log("options.baseURL", staticAuth.options.baseURL);
+          // eslint-disable-next-line no-console
           console.log("request headers", request.headers);
         }
         const auth = createAuth(ctx as any);
         const response = await auth.handler(request);
         if (config?.verbose) {
+          // eslint-disable-next-line no-console
           console.log("response headers", response.headers);
         }
         return response;

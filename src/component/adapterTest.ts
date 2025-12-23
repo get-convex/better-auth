@@ -69,12 +69,6 @@ function runCustomAdapterTests({
   });
   test("should handle lone range operators", async () => {
     const adapter = await getAdapter();
-    console.log(
-      "all users",
-      await adapter.findMany({
-        model: "user",
-      })
-    );
     const user = await adapter.create({
       model: "user",
       data: {
