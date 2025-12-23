@@ -153,7 +153,7 @@ export const getCurrentUser = query({
 export const getUserById = query({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
-    return ctx.runQuery(components.betterAuth.user.getUser, {
+    return ctx.runQuery(components.betterAuth.users.getUser, {
       userId: args.userId,
     });
   },
