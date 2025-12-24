@@ -7,7 +7,11 @@ import type { GenericActionCtx } from "convex/server";
 import type { DataModel } from "./_generated/dataModel.js";
 import type { BetterAuthOptions } from "better-auth";
 import type { EmptyObject } from "convex-helpers";
-import { beforeEach, expect, test } from "vitest";
+import type {
+  beforeEach as beforeEachType,
+  expect as expectType,
+  test as testType,
+} from "vitest";
 
 export const getAdapter: (
   ctx: GenericCtx<DataModel>
@@ -45,16 +49,26 @@ export const runTests = action(
 
 export const runCustomTests = action(
   async (ctx: GenericActionCtx<DataModel>, _args: EmptyObject) => {
+    const { beforeEach, test, expect } = await import("vitest");
     runCustomAdapterTests({
+      beforeEach,
+      test,
+      expect,
       getAdapter: getAdapter(ctx),
     });
   }
 );
 
 function runCustomAdapterTests({
+  beforeEach,
+  test,
+  expect,
   getAdapter,
 }: {
   getAdapter: Parameters<typeof runAdapterTest>[0]["getAdapter"];
+  beforeEach: typeof beforeEachType;
+  test: typeof testType;
+  expect: typeof expectType;
 }) {
   beforeEach(async () => {
     const adapter = await getAdapter();
