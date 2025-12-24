@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.10.8
+
+- fix(adapter): avoid vitest import errors in bundle
+
 ## 0.10.7
 
 - feat: use better-auth/minimal for smaller bundle
