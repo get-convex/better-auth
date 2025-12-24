@@ -210,12 +210,13 @@ description: Install and configure Convex + Better Auth for Expo.
     import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react"; // [!code ++]
     import { authClient } from "@/lib/auth-client"; // [!code ++]
 
-    const convex = new ConvexReactClient(import.meta.env.EXPO_PUBLIC_CONVEX_URL as string, {
+    const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL as string, {
       // Optionally pause queries until the user is authenticated // [!code ++]
       expectAuth: true, // [!code ++]
       unsavedChangesWarning: false, // [!code ++]
     });
 
+  export default function MyLayout() {
     return (
       <StrictMode>
         <ConvexProvider client={convex}> // [!code --]
@@ -224,7 +225,8 @@ description: Install and configure Convex + Better Auth for Expo.
         </ConvexBetterAuthProvider> // [!code ++]
         </ConvexProvider> // [!code --]
       </StrictMode>
-    );
+    )
+  }
     ```
 
   </div>
