@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.10.9
+
+- fix(adapter): hide vitest imports from esbuild
+
 ## 0.10.8
 
 - fix(adapter): avoid vitest import errors in bundle
