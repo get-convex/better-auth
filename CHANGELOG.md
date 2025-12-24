@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.10.7
+
+- feat: use better-auth/minimal for smaller bundle
+- feat: update to better-auth 1.4.9
+- chore: drop extra logs, enforce via lint
+- fix: use correct host header format in framework route handlers
+
 ## 0.10.6
 
 - fix(adapter): (re-)enable array support
