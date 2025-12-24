@@ -1,4 +1,3 @@
-import { runAdapterTest } from "better-auth/adapters/test";
 import { createClient } from "../client/index.js";
 import type { GenericCtx } from "../client/index.js";
 import { api } from "./_generated/api.js";
@@ -7,15 +6,31 @@ import type { GenericActionCtx } from "convex/server";
 import type { DataModel } from "./_generated/dataModel.js";
 import type { BetterAuthOptions } from "better-auth";
 import type { EmptyObject } from "convex-helpers";
+
+// Hide vitest imports from esbuild, keep them out of the bundle
 import type {
   beforeEach as beforeEachType,
-  expect as expectType,
   test as testType,
+  expect as expectType,
 } from "vitest";
+import type { runAdapterTest as runAdapterTestType } from "better-auth/adapters/test";
+
+const getTestImports = async () => {
+  const vitestImportName = "vitest";
+  const { beforeEach, test, expect } = await import(vitestImportName);
+  const betterAuthAdaptersTestImportName = "better-auth/adapters/test";
+  const { runAdapterTest } = await import(betterAuthAdaptersTestImportName);
+  return { beforeEach, test, expect, runAdapterTest } as {
+    beforeEach: typeof beforeEachType;
+    test: typeof testType;
+    expect: typeof expectType;
+    runAdapterTest: typeof runAdapterTestType;
+  };
+};
 
 export const getAdapter: (
   ctx: GenericCtx<DataModel>
-) => Parameters<typeof runAdapterTest>[0]["getAdapter"] =
+) => Parameters<typeof runAdapterTestType>[0]["getAdapter"] =
   (ctx: GenericCtx<DataModel>) =>
   async (opts?: Omit<BetterAuthOptions, "database">) => {
     const authComponent = createClient<DataModel>(api as any, {
@@ -40,6 +55,7 @@ export const runTests = action(
     ctx: GenericActionCtx<DataModel>,
     args: { disableTests: Record<string, boolean> }
   ) => {
+    const { runAdapterTest } = await getTestImports();
     runAdapterTest({
       getAdapter: getAdapter(ctx),
       disableTests: args.disableTests,
@@ -49,7 +65,7 @@ export const runTests = action(
 
 export const runCustomTests = action(
   async (ctx: GenericActionCtx<DataModel>, _args: EmptyObject) => {
-    const { beforeEach, test, expect } = await import("vitest");
+    const { beforeEach, test, expect } = await getTestImports();
     runCustomAdapterTests({
       beforeEach,
       test,
@@ -65,7 +81,7 @@ function runCustomAdapterTests({
   expect,
   getAdapter,
 }: {
-  getAdapter: Parameters<typeof runAdapterTest>[0]["getAdapter"];
+  getAdapter: Parameters<typeof runAdapterTestType>[0]["getAdapter"];
   beforeEach: typeof beforeEachType;
   test: typeof testType;
   expect: typeof expectType;
