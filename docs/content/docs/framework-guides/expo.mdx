@@ -216,17 +216,17 @@ description: Install and configure Convex + Better Auth for Expo.
       unsavedChangesWarning: false, // [!code ++]
     });
 
-  export default function MyLayout() {
-    return (
-      <StrictMode>
-        <ConvexProvider client={convex}> // [!code --]
-        <ConvexBetterAuthProvider client={convex} authClient={authClient}> // [!code ++]
-          <Slot />
-        </ConvexBetterAuthProvider> // [!code ++]
-        </ConvexProvider> // [!code --]
-      </StrictMode>
-    )
-  }
+    export default function MyLayout() {
+      return (
+        <StrictMode>
+          <ConvexProvider client={convex}> // [!code --]
+          <ConvexBetterAuthProvider client={convex} authClient={authClient}> // [!code ++]
+            <Slot />
+          </ConvexBetterAuthProvider> // [!code ++]
+          </ConvexProvider> // [!code --]
+        </StrictMode>
+      )
+    }
     ```
 
   </div>
