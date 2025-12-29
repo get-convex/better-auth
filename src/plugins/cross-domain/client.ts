@@ -168,13 +168,16 @@ export const crossDomainClient = (
               "set-better-auth-cookie"
             );
             if (setCookie) {
-              const prevCookie = await storage.getItem(cookieName);
+              const prevCookie = storage.getItem(cookieName);
               const toSetCookie = getSetCookie(
                 setCookie || "",
                 prevCookie ?? undefined
               );
               await storage.setItem(cookieName, toSetCookie);
-              store?.notify("$sessionSignal");
+              // Only notify on session cookie set
+              if (setCookie.includes(".session_token=")) {
+                store?.notify("$sessionSignal");
+              }
             }
 
             if (
