@@ -78,7 +78,7 @@ export function getCookie(cookie: string) {
     // noop
   }
   const toSend = Object.entries(parsed).reduce((acc, [key, value]) => {
-    if (value.expires && value.expires < new Date()) {
+    if (value.expires && new Date(value.expires) < new Date()) {
       return acc;
     }
     return `${acc}; ${key}=${value.value}`;
@@ -167,6 +167,7 @@ export const crossDomainClient = (
             const setCookie = context.response.headers.get(
               "set-better-auth-cookie"
             );
+            const url = context.request.url.toString();
             if (setCookie) {
               const prevCookie = await storage.getItem(cookieName);
               const toSetCookie = getSetCookie(
@@ -174,15 +175,15 @@ export const crossDomainClient = (
                 prevCookie ?? undefined
               );
               await storage.setItem(cookieName, toSetCookie);
-              store?.notify("$sessionSignal");
+              if (!url.includes("/get-session") && !url.includes("/token")) {
+                store?.notify("$sessionSignal");
+              }
             }
-
-            if (
-              context.request.url.toString().includes("/get-session") &&
-              !opts?.disableCache
-            ) {
-              const data = context.data;
-              storage.setItem(localCacheName, JSON.stringify(data));
+            if (url.includes("/get-session") && !opts?.disableCache) {
+              storage.setItem(localCacheName, JSON.stringify(context.data));
+              if (context.data === null) {
+                storage.setItem(cookieName, "{}");
+              }
             }
           },
         },
@@ -208,7 +209,7 @@ export const crossDomainClient = (
               error: null,
               isPending: false,
             });
-            storage.setItem(localCacheName, "{}");
+            storage.setItem(localCacheName, "null");
           }
           return {
             url,
