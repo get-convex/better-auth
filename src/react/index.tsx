@@ -96,20 +96,13 @@ export function ConvexBetterAuthProvider({
   );
 }
 
-let initialTokenUsed = false;
-
 function useUseAuthFromBetterAuth(
   authClient: AuthClient,
   initialToken?: string | null
 ) {
   const [cachedToken, setCachedToken] = useState<string | null>(
-    initialTokenUsed ? (initialToken ?? null) : null
+    initialToken ?? null
   );
-  useEffect(() => {
-    if (!initialTokenUsed) {
-      initialTokenUsed = true;
-    }
-  }, []);
 
   return useMemo(
     () =>
@@ -146,12 +139,12 @@ function useUseAuthFromBetterAuth(
         );
         return useMemo(
           () => ({
-            isLoading: isSessionPending,
-            isAuthenticated: session !== null,
+            isLoading: isSessionPending && !cachedToken,
+            isAuthenticated: session !== null || cachedToken !== null,
             fetchAccessToken,
           }),
           // eslint-disable-next-line react-hooks/exhaustive-deps
-          [isSessionPending, sessionId, fetchAccessToken]
+          [isSessionPending, sessionId, fetchAccessToken, cachedToken]
         );
       },
     [authClient]
