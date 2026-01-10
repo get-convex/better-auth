@@ -78,7 +78,7 @@ export function getCookie(cookie: string) {
     // noop
   }
   const toSend = Object.entries(parsed).reduce((acc, [key, value]) => {
-    if (value.expires && value.expires < new Date()) {
+    if (value.expires && new Date(value.expires) < new Date()) {
       return acc;
     }
     return `${acc}; ${key}=${value.value}`;
