@@ -28,11 +28,12 @@
     "test:watch": "vitest --typecheck --clearScreen false",
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "test:coverage": "vitest run --coverage --coverage.reporter=text",
-    "prepublishOnly": "npm whoami && npm run build",
+    "check-npm-auth": "npm whoami 2>/dev/null || (echo 'Error: You must be logged in to npm to publish. Run `npm login` first.' && exit 1)",
+    "prepublishOnly": "npm run check-npm-auth && npm run build",
     "preversion": "npm run clean && npm ci && npm run build && run-p test lint typecheck",
     "alpha": "npm version prerelease --preid alpha && npm publish --tag alpha && git push --follow-tags",
     "release": "npm version patch && npm publish && git push --follow-tags",
-    "prerelease": "npm whoami",
+    "prerelease": "npm run check-npm-auth",
     "version": "vim -c 'normal o' -c 'normal o## '$npm_package_version CHANGELOG.md && prettier -w CHANGELOG.md && git add CHANGELOG.md"
   },
   "files": [
