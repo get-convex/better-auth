@@ -78,7 +78,7 @@ export function getCookie(cookie: string) {
     // noop
   }
   const toSend = Object.entries(parsed).reduce((acc, [key, value]) => {
-    if (value.expires && value.expires < new Date()) {
+    if (value.expires && new Date(value.expires) < new Date()) {
       return acc;
     }
     return `${acc}; ${key}=${value.value}`;
@@ -186,6 +186,9 @@ export const crossDomainClient = (
             ) {
               const data = context.data;
               storage.setItem(localCacheName, JSON.stringify(data));
+              if (data === null) {
+                storage.setItem(cookieName, "{}");
+              }
             }
           },
         },
@@ -211,7 +214,7 @@ export const crossDomainClient = (
               error: null,
               isPending: false,
             });
-            storage.setItem(localCacheName, "{}");
+            storage.setItem(localCacheName, "null");
           }
           return {
             url,
