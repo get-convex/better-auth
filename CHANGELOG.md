@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.10.10
+
+- fix(cross-domain): only notify session signal on session cookie set
+
 ## 0.10.9
 
 - fix(adapter): hide vitest imports from esbuild
