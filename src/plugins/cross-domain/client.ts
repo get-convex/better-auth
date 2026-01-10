@@ -214,7 +214,7 @@ export const crossDomainClient = (
               error: null,
               isPending: false,
             });
-            storage.setItem(localCacheName, "{}");
+            storage.setItem(localCacheName, "null");
           }
           return {
             url,
