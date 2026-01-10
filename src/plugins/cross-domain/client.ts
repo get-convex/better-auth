@@ -186,6 +186,9 @@ export const crossDomainClient = (
             ) {
               const data = context.data;
               storage.setItem(localCacheName, JSON.stringify(data));
+              if (data === null) {
+                storage.setItem(cookieName, "{}");
+              }
             }
           },
         },
