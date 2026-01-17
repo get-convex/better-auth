@@ -1,0 +1,371 @@
+---
+title: Nuxt
+description: Install and configure Convex + Better Auth for Nuxt.
+---
+
+<Callout>
+  Check out the [nuxt-better-auth playground](https://github.com/onmax/nuxt-better-auth/tree/main/playground)
+  for a complete working example, or try the [live demo](https://demo-nuxt-convex.onmax.me/).
+</Callout>
+
+## Installation
+
+<div className="fd-steps">
+
+  <div className="fd-step">
+    ### Install packages
+
+    Install the component, a pinned version of Better Auth, and ensure the latest version
+    of Convex.
+
+    <Callout>This component requires Convex `1.25.0` or later.</Callout>
+
+    ```npm
+    npm install convex@latest @convex-dev/better-auth nuxt-convex @onmax/nuxt-better-auth@alpha
+    npm install better-auth@1.4.9 --save-exact
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    ### Register the component
+
+    Register the Better Auth component in your Convex project.
+
+    ```ts title="convex/convex.config.ts"
+    import { defineApp } from "convex/server";
+    import betterAuth from "@convex-dev/better-auth/convex.config";
+
+    const app = defineApp();
+    app.use(betterAuth);
+
+    export default app;
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    ### Add Convex auth config
+
+    Add a `convex/auth.config.ts` file to configure Better Auth as an authentication provider.
+
+    ```ts title="convex/auth.config.ts"
+    import { getAuthConfigProvider } from "@convex-dev/better-auth/auth-config";
+    import type { AuthConfig } from "convex/server";
+
+    export default {
+      providers: [getAuthConfigProvider()],
+    } satisfies AuthConfig;
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    ### Set environment variables
+
+    Generate a secret for encryption and generating hashes. Use the command below if you have openssl installed, or generate your own however you like.
+
+    ```shell
+    npx convex env set BETTER_AUTH_SECRET=$(openssl rand -base64 32)
+    ```
+
+    Add your site URL to your Convex deployment.
+
+    ```shell
+    npx convex env set SITE_URL http://localhost:3000
+    ```
+
+    Add environment variables to the `.env` file. It will be picked up by your Nuxt dev server.
+
+    ```shell title=".env" tab="Cloud"
+    # Deployment used by \`npx convex dev\`
+    CONVEX_DEPLOYMENT=dev:adjective-animal-123 # team: team-name, project: project-name
+
+    NUXT_PUBLIC_CONVEX_URL=https://adjective-animal-123.convex.cloud
+
+    # Same as NUXT_PUBLIC_CONVEX_URL but ends in .site // [!code ++]
+    NUXT_PUBLIC_CONVEX_SITE_URL=https://adjective-animal-123.convex.site # [!code ++]
+
+    # Your local site URL // [!code ++]
+    NUXT_PUBLIC_SITE_URL=http://localhost:3000 # [!code ++]
+    ```
+
+    ```shell title=".env" tab="Self hosted"
+    # Deployment used by \`npx convex dev\`
+    CONVEX_DEPLOYMENT=dev:adjective-animal-123 # team: team-name, project: project-name
+
+    NUXT_PUBLIC_CONVEX_URL=http://127.0.0.1:3210
+
+    # Will generally be one number higher than NUXT_PUBLIC_CONVEX_URL,
+    # so if your convex url is :3212, your site url will be :3213
+    NUXT_PUBLIC_CONVEX_SITE_URL=http://127.0.0.1:3211 # [!code ++]
+
+    # Your local site URL // [!code ++]
+    NUXT_PUBLIC_SITE_URL=http://localhost:3000 # [!code ++]
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    ### Create a Better Auth instance
+
+    Create a Better Auth instance and initialize the component.
+
+    <Callout>Some Typescript errors will show until you save the file.</Callout>
+
+    ```ts title="convex/auth.ts"
+    import { createClient, type GenericCtx } from "@convex-dev/better-auth";
+    import { convex } from "@convex-dev/better-auth/plugins";
+    import { components } from "./_generated/api";
+    import { DataModel } from "./_generated/dataModel";
+    import { query } from "./_generated/server";
+    import { betterAuth } from "better-auth/minimal";
+    import authConfig from "./auth.config";
+
+    const siteUrl = process.env.SITE_URL!;
+
+    // The component client has methods needed for integrating Convex with Better Auth,
+    // as well as helper methods for general use.
+    export const authComponent = createClient<DataModel>(components.betterAuth);
+
+    export const createAuth = (ctx: GenericCtx<DataModel>) => {
+      return betterAuth({
+        baseURL: siteUrl,
+        database: authComponent.adapter(ctx),
+        // Configure simple, non-verified email/password to get started
+        emailAndPassword: {
+          enabled: true,
+          requireEmailVerification: false,
+        },
+        plugins: [
+          // The Convex plugin is required for Convex compatibility
+          convex({ authConfig }),
+        ],
+      })
+    }
+
+    // Example function for getting the current user
+    // Feel free to edit, omit, etc.
+    export const getCurrentUser = query({
+      args: {},
+      handler: async (ctx) => {
+        return authComponent.getAuthUser(ctx);
+      },
+    });
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    ### Configure Nuxt modules
+
+    Configure the `nuxt-convex` and `@onmax/nuxt-better-auth` modules in your Nuxt config.
+
+    ```ts title="nuxt.config.ts"
+    export default defineNuxtConfig({
+      modules: ['nuxt-convex', '@onmax/nuxt-better-auth'],
+      convex: {
+        url: process.env.NUXT_PUBLIC_CONVEX_URL,
+      },
+      betterAuth: {
+        baseURL: process.env.NUXT_PUBLIC_SITE_URL,
+      },
+    })
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    ### Configure Better Auth server
+
+    Create a `server/auth.config.ts` file to configure Better Auth on the server.
+
+    ```ts title="server/auth.config.ts"
+    export default defineServerAuth({
+      emailAndPassword: {
+        enabled: true,
+        requireEmailVerification: false,
+      },
+    })
+    ```
+
+  </div>
+
+  <div className="fd-step">
+    ### Mount handlers
+
+    Register Better Auth route handlers on your Convex deployment.
+
+    ```ts title="convex/http.ts"
+    import { httpRouter } from "convex/server";
+    import { authComponent, createAuth } from "./auth";
+
+    const http = httpRouter();
+
+    authComponent.registerRoutes(http, createAuth);
+
+    export default http;
+    ```
+
+    Set up route handlers to proxy auth requests from Nuxt to your Convex deployment.
+
+    ```ts title="server/routes/auth/[...all].ts"
+    export default defineEventHandler(async (event) => {
+      const { auth } = event.context
+      return auth.handler(toWebRequest(event))
+    })
+    ```
+
+  </div>
+
+</div>
+
+### You're done!
+
+You're now ready to start using Better Auth with Convex.
+
+## Usage
+
+Check out the [Basic Usage](/basic-usage) guide for more information on general
+usage. Below are usage notes specific to Nuxt.
+
+### Using Better Auth from the client
+
+The `@onmax/nuxt-better-auth` module provides the `useUserSession` composable for accessing auth state and methods.
+
+```vue title="pages/index.vue"
+<script setup lang="ts">
+const { user, signIn, signOut, signUp, isLoading } = useUserSession()
+
+const email = ref('')
+const password = ref('')
+const name = ref('')
+const showSignIn = ref(true)
+
+async function handleSubmit() {
+  if (showSignIn.value) {
+    await signIn.email({ email: email.value, password: password.value })
+  } else {
+    await signUp.email({ name: name.value, email: email.value, password: password.value })
+  }
+}
+</script>
+
+<template>
+  <div v-if="isLoading">Loading...</div>
+  <div v-else-if="!user">
+    <h2>{{ showSignIn ? 'Sign In' : 'Sign Up' }}</h2>
+    <form @submit.prevent="handleSubmit">
+      <input v-if="!showSignIn" v-model="name" placeholder="Name" required />
+      <input v-model="email" type="email" placeholder="Email" required />
+      <input v-model="password" type="password" placeholder="Password" required />
+      <button type="submit">{{ showSignIn ? 'Sign In' : 'Sign Up' }}</button>
+    </form>
+    <button @click="showSignIn = !showSignIn">
+      {{ showSignIn ? 'Need an account? Sign up' : 'Have an account? Sign in' }}
+    </button>
+  </div>
+  <div v-else>
+    <p>Hello {{ user.name }}!</p>
+    <button @click="signOut()">Sign Out</button>
+  </div>
+</template>
+```
+
+### Route protection
+
+Use Nuxt's `routeRules` to protect routes that require authentication.
+
+```ts title="nuxt.config.ts"
+export default defineNuxtConfig({
+  modules: ['nuxt-convex', '@onmax/nuxt-better-auth'],
+  convex: {
+    url: process.env.NUXT_PUBLIC_CONVEX_URL,
+  },
+  betterAuth: {
+    baseURL: process.env.NUXT_PUBLIC_SITE_URL,
+  },
+  routeRules: {
+    '/dashboard/**': { betterAuth: { requireAuth: true } },
+  },
+})
+```
+
+### Using Better Auth in Convex functions
+
+Better Auth's [API methods](https://www.better-auth.com/docs/concepts/api) need to run in Convex functions since Convex is your backend. You can then call these functions from your Nuxt client using the Convex hooks.
+
+Here's an example using the `changePassword` method:
+
+```ts title="convex/users.ts"
+import { mutation } from "./_generated/server";
+import { v } from "convex/values";
+import { createAuth, authComponent } from "./auth";
+
+export const updateUserPassword = mutation({
+  args: {
+    currentPassword: v.string(),
+    newPassword: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
+    await auth.api.changePassword({
+      body: {
+        currentPassword: args.currentPassword,
+        newPassword: args.newPassword,
+      },
+      headers,
+    });
+  },
+});
+```
+
+Call the mutation from your Vue component:
+
+```vue title="pages/settings.vue"
+<script setup lang="ts">
+import { useMutation } from 'nuxt-convex'
+import { api } from '~/convex/_generated/api'
+
+const currentPassword = ref('')
+const newPassword = ref('')
+
+const updatePassword = useMutation(api.users.updateUserPassword)
+
+async function handlePasswordChange() {
+  await updatePassword({
+    currentPassword: currentPassword.value,
+    newPassword: newPassword.value,
+  })
+}
+</script>
+
+<template>
+  <form @submit.prevent="handlePasswordChange">
+    <input v-model="currentPassword" type="password" placeholder="Current password" />
+    <input v-model="newPassword" type="password" placeholder="New password" />
+    <button type="submit">Update Password</button>
+  </form>
+</template>
+```
+
+### Using Convex queries
+
+Use the `useQuery` composable from `nuxt-convex` to fetch data from Convex functions.
+
+```vue title="pages/dashboard.vue"
+<script setup lang="ts">
+import { useQuery } from 'nuxt-convex'
+import { api } from '~/convex/_generated/api'
+
+const { user } = useUserSession()
+const currentUser = useQuery(api.auth.getCurrentUser, {})
+</script>
+
+<template>
+  <div>
+    <h1>Dashboard</h1>
+    <p v-if="currentUser">Welcome, {{ currentUser.name }}!</p>
+  </div>
+</template>
+```
