@@ -499,5 +499,6 @@ function runCustomAdapterTests({
         where: [{ field: "createdAt", value: new Date().toISOString() }],
       })
     ).toEqual(user);
+    expect(user.createdAt).toBeInstanceOf(Date);
   });
 }

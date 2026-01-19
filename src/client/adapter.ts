@@ -146,7 +146,7 @@ export const convexAdapter = <
       },
       customTransformOutput: ({ data, fieldAttributes }) => {
         if (data && fieldAttributes.type === "date") {
-          return new Date(data).getTime();
+          return new Date(data);
         }
         return data;
       },
