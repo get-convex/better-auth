@@ -294,6 +294,7 @@ export const convex = (opts: {
                 ctx.path.startsWith("/email-otp/verify-email") ||
                 ctx.path.startsWith("/phone-number/verify") ||
                 ctx.path.startsWith("/siwe/verify") ||
+                ctx.path.startsWith("/passkey/verify-authentication") ||
                 (ctx.path.startsWith("/get-session") && ctx.context.session)
             );
           },
