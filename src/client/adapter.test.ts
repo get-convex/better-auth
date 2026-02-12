@@ -1,26 +1,10 @@
 /// <reference types="vite/client" />
 
 import { describe } from "vitest";
-import type { runAdapterTest } from "better-auth/adapters/test";
 import { convexTest } from "convex-test";
 import { api } from "../component/_generated/api.js";
 import schema from "../component/schema.js";
-import { createClient } from "./create-client.js";
 import type { DataModel } from "../component/_generated/dataModel.js";
-import type { BetterAuthOptions } from "better-auth/types";
-import type { GenericCtx } from "./index.js";
-
-export const getAdapter: (
-  ctx: GenericCtx<DataModel>
-) => Parameters<typeof runAdapterTest>[0]["getAdapter"] =
-  (ctx: GenericCtx<DataModel>) =>
-  async (opts?: Omit<BetterAuthOptions, "database">) => {
-    const authComponent = createClient<DataModel>(api as any, {
-      verbose: false,
-    });
-    const adapterFactory = authComponent.adapter(ctx);
-    return adapterFactory(opts ?? {});
-  };
 
 describe("Better Auth Adapter Tests", async () => {
   const status = {

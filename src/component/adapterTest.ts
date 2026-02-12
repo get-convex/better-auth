@@ -13,24 +13,18 @@ import type {
   test as testType,
   expect as expectType,
 } from "vitest";
-import type { runAdapterTest as runAdapterTestType } from "better-auth/adapters/test";
 
 const getTestImports = async () => {
   const vitestImportName = "vitest";
   const { beforeEach, test, expect } = await import(vitestImportName);
-  const betterAuthAdaptersTestImportName = "better-auth/adapters/test";
-  const { runAdapterTest } = await import(betterAuthAdaptersTestImportName);
-  return { beforeEach, test, expect, runAdapterTest } as {
+  return { beforeEach, test, expect } as {
     beforeEach: typeof beforeEachType;
     test: typeof testType;
     expect: typeof expectType;
-    runAdapterTest: typeof runAdapterTestType;
   };
 };
 
-export const getAdapter: (
-  ctx: GenericCtx<DataModel>
-) => Parameters<typeof runAdapterTestType>[0]["getAdapter"] =
+export const getAdapter =
   (ctx: GenericCtx<DataModel>) =>
   async (opts?: Omit<BetterAuthOptions, "database">) => {
     const authComponent = createClient<DataModel>(api as any, {
@@ -55,11 +49,97 @@ export const runTests = action(
     ctx: GenericActionCtx<DataModel>,
     args: { disableTests: Record<string, boolean> }
   ) => {
-    const { runAdapterTest } = await getTestImports();
-    runAdapterTest({
-      getAdapter: getAdapter(ctx),
-      disableTests: args.disableTests,
-    });
+    const { test, expect } = await getTestImports();
+    const get = getAdapter(ctx);
+
+    const reset = async () => {
+      const adapter = await get();
+      await adapter.deleteMany({ model: "user", where: [] });
+      await adapter.deleteMany({ model: "session", where: [] });
+      await adapter.deleteMany({ model: "account", where: [] });
+      await adapter.deleteMany({ model: "verification", where: [] });
+      return adapter;
+    };
+
+    if (!args.disableTests.CREATE_MODEL) {
+      test("CREATE_MODEL", async () => {
+        const adapter = await reset();
+        const user = await adapter.create({
+          model: "user",
+          data: { name: "foo", email: "foo@bar.com" },
+        });
+        expect(user).toBeTruthy();
+        expect((user as any).id).toBeTruthy();
+      });
+    }
+
+    if (!args.disableTests.FIND_MODEL) {
+      test("FIND_MODEL", async () => {
+        const adapter = await reset();
+        const user = await adapter.create({
+          model: "user",
+          data: { name: "foo", email: "foo@bar.com" },
+        });
+        const found = await adapter.findOne({
+          model: "user",
+          where: [{ field: "id", value: (user as any).id }],
+        });
+        expect(found).toEqual(user);
+      });
+    }
+
+    if (!args.disableTests.SHOULD_FIND_MANY) {
+      test("SHOULD_FIND_MANY", async () => {
+        const adapter = await reset();
+        await adapter.create({
+          model: "user",
+          data: { name: "foo", email: "foo@bar.com" },
+        });
+        const users = await adapter.findMany({ model: "user", where: [] });
+        expect(Array.isArray(users)).toBe(true);
+        expect(users.length).toBeGreaterThan(0);
+      });
+    }
+
+    if (!args.disableTests.UPDATE_MODEL) {
+      test("UPDATE_MODEL", async () => {
+        const adapter = await reset();
+        const user = await adapter.create({
+          model: "user",
+          data: { name: "foo", email: "foo@bar.com" },
+        });
+        const updated = await adapter.update({
+          model: "user",
+          where: [{ field: "id", value: (user as any).id }],
+          update: { name: "bar" },
+        });
+        expect(updated).toBeTruthy();
+        const found = await adapter.findOne({
+          model: "user",
+          where: [{ field: "id", value: (user as any).id }],
+        });
+        expect((found as any)?.name).toBe("bar");
+      });
+    }
+
+    if (!args.disableTests.DELETE_MODEL) {
+      test("DELETE_MODEL", async () => {
+        const adapter = await reset();
+        const user = await adapter.create({
+          model: "user",
+          data: { name: "foo", email: "foo@bar.com" },
+        });
+        await adapter.delete({
+          model: "user",
+          where: [{ field: "id", value: (user as any).id }],
+        });
+        const found = await adapter.findOne({
+          model: "user",
+          where: [{ field: "id", value: (user as any).id }],
+        });
+        expect(found).toEqual(null);
+      });
+    }
   }
 );
 
@@ -81,7 +161,7 @@ function runCustomAdapterTests({
   expect,
   getAdapter,
 }: {
-  getAdapter: Parameters<typeof runAdapterTestType>[0]["getAdapter"];
+  getAdapter: typeof getAdapter;
   beforeEach: typeof beforeEachType;
   test: typeof testType;
   expect: typeof expectType;
@@ -485,18 +565,19 @@ function runCustomAdapterTests({
 
   test("should be able to compare against a date", async () => {
     const adapter = await getAdapter();
+    const createdAt = new Date().toISOString();
     const user = await adapter.create({
       model: "user",
       data: {
         name: "foo",
         email: "foo@bar.com",
-        createdAt: new Date().toISOString(),
+        createdAt,
       },
     });
     expect(
       await adapter.findOne({
         model: "user",
-        where: [{ field: "createdAt", value: new Date().toISOString() }],
+        where: [{ field: "createdAt", value: createdAt }],
       })
     ).toEqual(user);
   });
