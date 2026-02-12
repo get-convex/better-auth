@@ -401,19 +401,28 @@ export const createClient = <
         typeof opts.cors === "boolean"
           ? { allowedOrigins: [], allowedHeaders: [], exposedHeaders: [] }
           : opts.cors;
-      let trustedOriginsOption:
-        | string[]
-        | ((request: Request) => string[] | Promise<string[]>)
-        | undefined;
+      // Better Auth's `trustedOrigins` can be an array or a function (with
+      // slightly different signatures across versions). We normalize it here.
+      let trustedOriginsOption: unknown;
       const cors = corsRouter(http, {
         allowedOrigins: async (request) => {
           trustedOriginsOption =
             trustedOriginsOption ??
             (await staticAuth.$context).options.trustedOrigins ??
             [];
-          const trustedOrigins = Array.isArray(trustedOriginsOption)
-            ? trustedOriginsOption
-            : await trustedOriginsOption(request);
+          let trustedOrigins: string[] = [];
+          if (Array.isArray(trustedOriginsOption)) {
+            trustedOrigins = trustedOriginsOption.filter(
+              (origin): origin is string => typeof origin === "string"
+            );
+          } else if (typeof trustedOriginsOption === "function") {
+            const result = await (trustedOriginsOption as any)(request);
+            if (Array.isArray(result)) {
+              trustedOrigins = result.filter(
+                (origin): origin is string => typeof origin === "string"
+              );
+            }
+          }
           return trustedOrigins
             .map((origin) =>
               // Strip trailing wildcards, unsupported for allowedOrigins

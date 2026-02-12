@@ -18,10 +18,8 @@ describe("Better Auth Adapter Tests", async () => {
     FIND_MODEL: status.active,
     FIND_MODEL_WITHOUT_ID: status.active,
     FIND_MODEL_WITH_SELECT: status.active,
-    // Requires a custom schema - we fake success by overriding custom user
-    // schema in the test adapter because this test creates a user that other
-    // tests rely on.
-    FIND_MODEL_WITH_MODIFIED_FIELD_NAME: status.active,
+    // Requires schema overrides we don't currently support in this package.
+    FIND_MODEL_WITH_MODIFIED_FIELD_NAME: status.notSupported,
     UPDATE_MODEL: status.active,
     SHOULD_FIND_MANY: status.active,
     SHOULD_FIND_MANY_WITH_WHERE: status.active,

@@ -292,6 +292,25 @@ export const selectFields = async <
     return doc;
   }
   return select.reduce((acc, field) => {
+    // Convex stores ids in `_id`, but Better Auth's adapter interface expects `id`.
+    // The Better Auth adapter factory applies `_id -> id` mapping on output, so
+    // we must return `_id` here even when the caller selects `id`.
+    if (field === "id") {
+      (acc as any)._id =
+        (doc as any)["_id"] ??
+        (doc as any)._id ??
+        (doc as any)["id"] ??
+        (doc as any).id;
+      return acc;
+    }
+    if (field === "_id") {
+      (acc as any)._id =
+        (doc as any)["_id"] ??
+        (doc as any)["id"] ??
+        (doc as any)._id ??
+        (doc as any).id;
+      return acc;
+    }
     (acc as any)[field] = doc[field];
     return acc;
   }, {} as D);
