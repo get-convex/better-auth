@@ -96,20 +96,28 @@ export function ConvexBetterAuthProvider({
   );
 }
 
-let initialTokenUsed = false;
-
+/**
+ * Creates a React hook that exposes auth state and a token-fetching helper backed by a BetterAuth client.
+ *
+ * The produced hook subscribes to the provided auth client's session state and maintains an internal cached access
+ * token. Its loading and authenticated indicators reflect both the session and the cached token. The hook also
+ * provides a `fetchAccessToken` function that returns a cached token when available (unless `forceRefreshToken`
+ * is requested) or requests a fresh token via the auth client; the cache is updated or cleared accordingly.
+ *
+ * @param authClient - The authentication client used to observe session changes and request access tokens.
+ * @param initialToken - Optional initial cached access token to seed the hook's cache.
+ * @returns A hook function which, when called, returns an object with:
+ *   - `isLoading`: `true` when the session is pending and no cached token exists, `false` otherwise.
+ *   - `isAuthenticated`: `true` when a session exists or a cached token is present, `false` otherwise.
+ *   - `fetchAccessToken`: a function that returns the current access token string or `null`; accepts `{ forceRefreshToken?: boolean }` to force fetching a new token.
+ */
 function useUseAuthFromBetterAuth(
   authClient: AuthClient,
   initialToken?: string | null
 ) {
   const [cachedToken, setCachedToken] = useState<string | null>(
-    initialTokenUsed ? (initialToken ?? null) : null
+    initialToken ?? null
   );
-  useEffect(() => {
-    if (!initialTokenUsed) {
-      initialTokenUsed = true;
-    }
-  }, []);
 
   return useMemo(
     () =>
@@ -146,12 +154,12 @@ function useUseAuthFromBetterAuth(
         );
         return useMemo(
           () => ({
-            isLoading: isSessionPending,
-            isAuthenticated: session !== null,
+            isLoading: isSessionPending && !cachedToken,
+            isAuthenticated: session !== null || cachedToken !== null,
             fetchAccessToken,
           }),
           // eslint-disable-next-line react-hooks/exhaustive-deps
-          [isSessionPending, sessionId, fetchAccessToken]
+          [isSessionPending, sessionId, fetchAccessToken, cachedToken]
         );
       },
     [authClient]
