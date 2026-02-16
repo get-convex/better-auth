@@ -37,7 +37,7 @@ export function parseSetCookieHeader(
 
 interface StoredCookie {
   value: string;
-  expires: Date | null;
+  expires: string | null;
 }
 
 export function getSetCookie(header: string, prevCookie?: string) {
@@ -53,7 +53,7 @@ export function getSetCookie(header: string, prevCookie?: string) {
         : null;
     toSetCookie[key] = {
       value: cookie["value"],
-      expires,
+      expires: expires ? expires.toISOString() : null,
     };
   });
   if (prevCookie) {
@@ -149,9 +149,12 @@ export const crossDomainClient = (
          * const sessionData = client.getSessionData();
          * ```
          */
-        getSessionData: () => {
+        getSessionData: (): Record<string, unknown> | null => {
           const sessionData = storage?.getItem(localCacheName);
-          return sessionData ? JSON.parse(sessionData) : null;
+          if (!sessionData) return null;
+          const parsed = JSON.parse(sessionData);
+          if (parsed && typeof parsed === "object" && Object.keys(parsed).length === 0) return null;
+          return parsed;
         },
       };
     },
@@ -214,7 +217,7 @@ export const crossDomainClient = (
               error: null,
               isPending: false,
             });
-            storage.setItem(localCacheName, "null");
+            storage.setItem(localCacheName, "{}");
           }
           return {
             url,
