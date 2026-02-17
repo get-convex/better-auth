@@ -152,9 +152,13 @@ export const crossDomainClient = (
         getSessionData: (): Record<string, unknown> | null => {
           const sessionData = storage?.getItem(localCacheName);
           if (!sessionData) return null;
-          const parsed = JSON.parse(sessionData);
-          if (parsed && typeof parsed === "object" && Object.keys(parsed).length === 0) return null;
-          return parsed;
+          try {
+            const parsed = JSON.parse(sessionData);
+            if (parsed && typeof parsed === "object" && Object.keys(parsed).length === 0) return null;
+            return parsed;
+          } catch {
+            return null;
+          }
         },
       };
     },

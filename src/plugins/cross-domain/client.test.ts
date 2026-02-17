@@ -162,6 +162,12 @@ describe("crossDomainClient", () => {
       const actions = getActions();
       expect(actions.getSessionData()).toBeNull();
     });
+
+    it("returns null for corrupt JSON in storage", () => {
+      storage.set(localCacheName, "not-valid-json");
+      const actions = getActions();
+      expect(actions.getSessionData()).toBeNull();
+    });
   });
 
   describe("onSuccess handler", () => {
