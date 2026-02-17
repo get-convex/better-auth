@@ -25,7 +25,7 @@ describe("parseSetCookieHeader", () => {
 
 describe("getSetCookie", () => {
   it("stores expires as ISO string", () => {
-    const header = "session_token=abc; Expires=Wed 01 Jan 2030 00:00:00 GMT";
+    const header = "session_token=abc; Max-Age=3600";
     const result = JSON.parse(getSetCookie(header));
     expect(typeof result.session_token.expires).toBe("string");
     expect(result.session_token.expires).toMatch(/^\d{4}-\d{2}-\d{2}T/);
