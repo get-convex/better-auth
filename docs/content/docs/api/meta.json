@@ -1,5 +1,5 @@
 {
   "title": "API",
-  "pages": ["component-client", "type-utilities"],
+  "pages": ["component-client", "convex-plugin", "type-utilities"],
   "defaultOpen": true
 }

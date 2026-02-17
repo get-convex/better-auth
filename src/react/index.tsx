@@ -140,7 +140,7 @@ function useUseAuthFromBetterAuth(
         return useMemo(
           () => ({
             isLoading: isSessionPending && !cachedToken,
-            isAuthenticated: session !== null || cachedToken !== null,
+            isAuthenticated: Boolean(session?.session) || cachedToken !== null,
             fetchAccessToken,
           }),
           // eslint-disable-next-line react-hooks/exhaustive-deps

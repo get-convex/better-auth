@@ -1,0 +1,135 @@
+---
+title: Convex Plugin
+description: Configuration options for the Convex Better Auth plugin
+---
+
+The Convex plugin integrates Better Auth with Convex by managing JWT generation,
+cookie handling, and JWKS endpoints for token validation.
+
+## Server Plugin
+
+The server plugin is required for Convex + Better Auth integration. Add it to
+your Better Auth plugins array.
+
+```ts
+import { convex } from "@convex-dev/better-auth/plugins";
+import authConfig from "./auth.config";
+
+export const createAuth = (ctx: GenericCtx<DataModel>) => {
+  return betterAuth({
+    // ...other options
+    plugins: [
+      convex({
+        authConfig,
+      }),
+    ],
+  });
+};
+```
+
+### Options
+
+#### `authConfig` (required)
+
+The Convex auth config from your project, typically exported from
+`convex/auth.config.ts`.
+
+```ts
+import { type AuthConfig } from "convex/server";
+import { getAuthConfigProvider } from "@convex-dev/better-auth/auth-config";
+
+export default {
+  providers: [getAuthConfigProvider()],
+} satisfies AuthConfig;
+```
+
+#### `jwt`
+
+Optional JWT configuration options.
+
+| Property            | Type       | Default            | Description                           |
+| ------------------- | ---------- | ------------------ | ------------------------------------- |
+| `expirationSeconds` | `number`   | `900` (15 minutes) | JWT token expiration in seconds       |
+| `definePayload`     | `function` | See below          | Custom function to define JWT payload |
+
+The default `definePayload` function includes all user fields except `id` and
+`image`, plus the session ID and issued-at timestamp:
+
+```ts
+definePayload: ({ user, session }) => ({
+  ...omit(user, ["id", "image"]),
+  sessionId: session.id,
+  iat: Math.floor(new Date().getTime() / 1000),
+});
+```
+
+**Example: Custom payload**
+
+```ts
+convex({
+  authConfig,
+  jwt: {
+    expirationSeconds: 60 * 30, // 30 minutes
+    definePayload: ({ user, session }) => ({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      sessionId: session.id,
+    }),
+  },
+});
+```
+
+<Callout>
+  The `sessionId` and `iat` (issued-at) fields are always added automatically to
+  the JWT payload.
+</Callout>
+
+#### `jwks`
+
+Optional static JWKS string for performance optimization. When provided, the
+plugin uses the static JWKS instead of fetching from the database, eliminating
+network requests during token validation.
+
+See [Static JWKS](/docs/experimental#static-jwks) for setup instructions.
+
+```ts
+convex({
+  authConfig,
+  jwks: process.env.JWKS,
+});
+```
+
+#### `options`
+
+Optional Better Auth options, primarily used to pass the `basePath` when using a
+non-default path.
+
+```ts
+convex({
+  authConfig,
+  options: {
+    basePath: "/custom/auth/path",
+  },
+});
+```
+
+<Callout type="warn">
+  If your Better Auth configuration uses a custom `basePath`, you must pass the
+  same value in `options.basePath` for the JWKS endpoint to be configured
+  correctly.
+</Callout>
+
+## Client Plugin
+
+The client plugin provides type inference for the Better Auth client. It has no
+configuration options.
+
+```ts
+import { createAuthClient } from "better-auth/react";
+import { convexClient } from "@convex-dev/better-auth/plugins";
+
+export const authClient = createAuthClient({
+  plugins: [convexClient()],
+});
+```
