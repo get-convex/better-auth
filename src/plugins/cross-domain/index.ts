@@ -1,9 +1,8 @@
 import type { BetterAuthPlugin } from "better-auth";
 import { setSessionCookie } from "better-auth/cookies";
 import { generateRandomString } from "better-auth/crypto";
+import { createAuthEndpoint, createAuthMiddleware } from "better-auth/api";
 import {
-  createAuthEndpoint,
-  createAuthMiddleware,
   oneTimeToken as oneTimeTokenPlugin,
 } from "better-auth/plugins";
 import { z } from "zod";
@@ -83,9 +82,10 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         },
         {
           matcher: (ctx) => {
+            const path = ctx.path ?? "";
             return (
               ctx.method === "GET" &&
-              ctx.path.startsWith("/verify-email") &&
+              path.startsWith("/verify-email") &&
               !isExpoNative(ctx)
             );
           },
@@ -98,19 +98,20 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         },
         {
           matcher: (ctx) => {
+            const path = ctx.path ?? "";
             return (
-              ((ctx.method === "POST" && ctx.path.startsWith("/link-social")) ||
-                ctx.path.startsWith("/send-verification-email") ||
-                ctx.path.startsWith("/sign-in/email") ||
-                ctx.path.startsWith("/sign-in/social") ||
-                ctx.path.startsWith("/sign-in/magic-link") ||
-                ctx.path.startsWith("/delete-user") ||
-                ctx.path.startsWith("/change-email")) &&
+              ((ctx.method === "POST" && path.startsWith("/link-social")) ||
+                path.startsWith("/send-verification-email") ||
+                path.startsWith("/sign-in/email") ||
+                path.startsWith("/sign-in/social") ||
+                path.startsWith("/sign-in/magic-link") ||
+                path.startsWith("/delete-user") ||
+                path.startsWith("/change-email")) &&
               !isExpoNative(ctx)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
-            const isSignIn = ctx.path.startsWith("/sign-in");
+            const isSignIn = (ctx.path ?? "").startsWith("/sign-in");
             ctx.body.callbackURL = rewriteCallbackURL(ctx.body.callbackURL);
             if (isSignIn && ctx.body.newUserCallbackURL) {
               ctx.body.newUserCallbackURL = rewriteCallbackURL(
@@ -142,10 +143,11 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         },
         {
           matcher: (ctx) => {
+            const path = ctx.path ?? "";
             return (
-              (ctx.path?.startsWith("/callback") ||
-                ctx.path?.startsWith("/oauth2/callback") ||
-                ctx.path?.startsWith("/magic-link/verify")) &&
+              (path.startsWith("/callback") ||
+                path.startsWith("/oauth2/callback") ||
+                path.startsWith("/magic-link/verify")) &&
               !isExpoNative(ctx)
             );
           },

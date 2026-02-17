@@ -125,6 +125,7 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
         ),
         where: v.optional(v.array(adapterWhereValidator)),
         limit: v.optional(v.number()),
+        select: v.optional(v.array(v.string())),
         sortBy: v.optional(
           v.object({
             direction: v.union(v.literal("asc"), v.literal("desc")),

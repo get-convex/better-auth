@@ -13,7 +13,6 @@ import {
   twoFactor,
   username,
 } from "better-auth/plugins";
-import { passkey } from "@better-auth/passkey";
 import { convex } from "./plugins/convex/index.js";
 import { convexAdapter } from "./client/adapter.js";
 
@@ -30,7 +29,6 @@ export const options = {
     phoneNumber(),
     magicLink({ sendMagicLink: async () => {} }),
     emailOTP({ sendVerificationOTP: async () => {} }),
-    passkey(),
     genericOAuth({
       config: [
         {

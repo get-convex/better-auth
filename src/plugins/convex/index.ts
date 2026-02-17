@@ -4,9 +4,12 @@ import type {
   User,
 } from "better-auth";
 import type { BetterAuthOptions } from "better-auth/minimal";
-import { createAuthMiddleware, sessionMiddleware } from "better-auth/api";
 import {
   createAuthEndpoint,
+  createAuthMiddleware,
+  sessionMiddleware,
+} from "better-auth/api";
+import {
   jwt as jwtPlugin,
   bearer as bearerPlugin,
   oidcProvider as oidcProviderPlugin,
@@ -285,16 +288,17 @@ export const convex = (opts: {
         ...oidcProvider.hooks.after,
         {
           matcher: (ctx) => {
+            const path = ctx.path ?? "";
             return Boolean(
-              ctx.path.startsWith("/sign-in") ||
-                ctx.path.startsWith("/sign-up") ||
-                ctx.path.startsWith("/callback") ||
-                ctx.path.startsWith("/oauth2/callback") ||
-                ctx.path.startsWith("/magic-link/verify") ||
-                ctx.path.startsWith("/email-otp/verify-email") ||
-                ctx.path.startsWith("/phone-number/verify") ||
-                ctx.path.startsWith("/siwe/verify") ||
-                (ctx.path.startsWith("/get-session") && ctx.context.session)
+              path.startsWith("/sign-in") ||
+                path.startsWith("/sign-up") ||
+                path.startsWith("/callback") ||
+                path.startsWith("/oauth2/callback") ||
+                path.startsWith("/magic-link/verify") ||
+                path.startsWith("/email-otp/verify-email") ||
+                path.startsWith("/phone-number/verify") ||
+                path.startsWith("/siwe/verify") ||
+                (path.startsWith("/get-session") && ctx.context.session)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
@@ -324,10 +328,11 @@ export const convex = (opts: {
         },
         {
           matcher: (ctx) => {
+            const path = ctx.path ?? "";
             return (
-              ctx.path?.startsWith("/sign-out") ||
-              ctx.path?.startsWith("/delete-user") ||
-              (ctx.path?.startsWith("/get-session") && !ctx.context.session)
+              path.startsWith("/sign-out") ||
+              path.startsWith("/delete-user") ||
+              (path.startsWith("/get-session") && !ctx.context.session)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
