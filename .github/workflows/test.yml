@@ -29,10 +29,16 @@ jobs:
         run: |
           npm i
           npm run build
+      - name: Install example dependencies
+        run: |
+          cd examples/next && npm i &
+          cd examples/react && npm i &
+          cd examples/tanstack && npm i &
+          wait
       - name: Publish package for testing branch
         run: npx pkg-pr-new publish || echo "Have you set up pkg-pr-new for this repo?"
       - name: Test
         run: |
           npm run test
-          npm run typecheck:ci
+          npm run typecheck
           npm run lint
