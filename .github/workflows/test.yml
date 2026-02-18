@@ -34,5 +34,5 @@ jobs:
       - name: Test
         run: |
           npm run test
-          npm run typecheck
+          npm run typecheck:ci
           npm run lint
