@@ -349,7 +349,6 @@ const filterByWhere = <
         case "not_in": {
           const result =
             Array.isArray(w.value) && !(w.value as any[]).includes(value);
-          console.log(doc, "not_in", w, value, result);
           return result;
         }
         case "lt": {
@@ -432,6 +431,7 @@ const generateQuery = (
     : indexedQuery;
   const filteredQuery = orderedQuery.filterWith(async (doc) => {
     if (!index && indexFields?.length) {
+      // eslint-disable-next-line no-console
       console.warn(
         stripIndent`
           Querying without an index on table "${args.model}".

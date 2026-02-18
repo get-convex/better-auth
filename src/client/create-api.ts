@@ -112,6 +112,7 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
         ),
         where: v.optional(v.array(adapterWhereValidator)),
         select: v.optional(v.array(v.string())),
+        join: v.optional(v.any()),
       },
       handler: async (ctx, args) => {
         return await listOne(ctx, schema, betterAuthSchema, args);
@@ -131,6 +132,7 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
           })
         ),
         offset: v.optional(v.number()),
+        join: v.optional(v.any()),
         paginationOpts: paginationOptsValidator,
       },
       handler: async (ctx, args) => {

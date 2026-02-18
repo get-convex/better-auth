@@ -1,7 +1,7 @@
 "use client";
 
 import { api } from "@/convex/_generated/api";
-import { Preloaded } from "convex/react";
+import { Preloaded, useConvex, useMutation } from "convex/react";
 import { usePreloadedAuthQuery } from "@convex-dev/better-auth/nextjs/client";
 import { useToggleCompleted, useRemoveTodo } from "./mutations";
 import { TodoItem } from "./todo-item";
@@ -12,6 +12,10 @@ export const TodoList = ({
 }: {
   preloadedTodosQuery: Preloaded<typeof api.todos.get>;
 }) => {
+  const convex = useConvex();
+  console.log("convex", convex);
+  const mutation = useMutation(api.todos.toggle);
+  console.log("mutation", mutation);
   const toggleCompleted = useToggleCompleted();
   const removeTodo = useRemoveTodo();
   const todos = usePreloadedAuthQuery(preloadedTodosQuery);

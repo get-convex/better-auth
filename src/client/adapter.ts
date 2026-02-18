@@ -84,15 +84,21 @@ type ConvexCleanedWhere<TableName extends TableNames = TableNames> = Where & {
   field: keyof WithoutSystemFields<Doc<TableName>> & string;
 };
 
-const parseWhere = (where?: Where[]): ConvexCleanedWhere[] => {
-  return where?.map((where) => {
-    if (where.value instanceof Date) {
+const parseWhere = (
+  where?: (Where & { join?: undefined }) | (Where & { join?: undefined })[]
+): ConvexCleanedWhere[] => {
+  if (!where) {
+    return [];
+  }
+  const whereArray = Array.isArray(where) ? where : [where];
+  return whereArray.map((w) => {
+    if (w.value instanceof Date) {
       return {
-        ...where,
-        value: where.value.getTime(),
+        ...w,
+        value: w.value.getTime(),
       };
     }
-    return where;
+    return w;
   }) as ConvexCleanedWhere[];
 };
 
@@ -121,6 +127,7 @@ export const convexAdapter = <
       transaction: false,
       supportsNumericIds: false,
       supportsJSON: false,
+      supportsDates: false,
       supportsArrays: true,
       usePlural: false,
       mapKeysTransformInput: {
@@ -129,8 +136,6 @@ export const convexAdapter = <
       mapKeysTransformOutput: {
         _id: "id",
       },
-      // Dates provided as strings
-      supportsDates: false,
       // Convert dates to numbers. This aligns with how
       // Convex stores _creationTime and avoids a breaking change.
       customTransformInput: ({ data, fieldAttributes }) => {
@@ -141,7 +146,7 @@ export const convexAdapter = <
       },
       customTransformOutput: ({ data, fieldAttributes }) => {
         if (data && fieldAttributes.type === "date") {
-          return new Date(data).getTime();
+          return new Date(data);
         }
         return data;
       },
@@ -180,7 +185,7 @@ export const convexAdapter = <
               const result = await ctx.runQuery(api.adapter.findOne, {
                 ...data,
                 model: data.model as TableNames,
-                where: parseWhere([w]),
+                where: parseWhere(w),
               });
               if (result) {
                 return result;
@@ -197,6 +202,7 @@ export const convexAdapter = <
           if (data.offset) {
             throw new Error("offset not supported");
           }
+
           if (data.where?.some((w) => w.connector === "OR")) {
             const results = await asyncMap(data.where, async (w) =>
               handlePagination(
@@ -204,7 +210,7 @@ export const convexAdapter = <
                   return await ctx.runQuery(api.adapter.findMany, {
                     ...data,
                     model: data.model as TableNames,
-                    where: parseWhere([w]),
+                    where: parseWhere(w),
                     paginationOpts,
                   });
                 },
@@ -213,12 +219,10 @@ export const convexAdapter = <
             );
             const docs = unique(results.flatMap((r) => r.docs));
             if (data.sortBy) {
-              const result = sortBy(docs, [
+              return sortBy(docs, [
                 prop(data.sortBy.field),
                 data.sortBy.direction,
               ]);
-              console.log(result);
-              return result;
             }
             return docs;
           }
@@ -244,7 +248,7 @@ export const convexAdapter = <
                 return await ctx.runQuery(api.adapter.findMany, {
                   ...data,
                   model: data.model as TableNames,
-                  where: parseWhere([w]),
+                  where: parseWhere(w),
                   paginationOpts,
                 });
               })

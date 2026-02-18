@@ -45,7 +45,7 @@ const handler = (request: Request, siteUrl: string) => {
   const nextUrl = `${siteUrl}${requestUrl.pathname}${requestUrl.search}`;
   const newRequest = new Request(nextUrl, request);
   newRequest.headers.set("accept-encoding", "application/json");
-  newRequest.headers.set("host", siteUrl);
+  newRequest.headers.set("host", new URL(siteUrl).host);
   return fetch(newRequest, { method: request.method, redirect: "manual" });
 };
 

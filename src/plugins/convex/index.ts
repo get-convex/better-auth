@@ -53,6 +53,7 @@ const parseAuthConfig = (authConfig: AuthConfig, opts: { jwks?: string }) => {
     );
   }
   if (!isDataUriJwks && opts.jwks) {
+    // eslint-disable-next-line no-console
     console.warn(
       "Static JWKS provided to Convex plugin, but not to auth config. This adds an unnecessary network request for token verification."
     );
@@ -241,8 +242,9 @@ export const convex = (opts: {
   return {
     id: "convex",
     init: (ctx) => {
-      const { options, logger } = ctx;
+      const { options, logger: _logger } = ctx;
       if (options.basePath !== "/api/auth" && !opts.options?.basePath) {
+        // eslint-disable-next-line no-console
         console.warn(
           `Better Auth basePath set to ${options.basePath} but no basePath is set in the Convex plugin. This is probably a mistake.`
         );
@@ -251,6 +253,7 @@ export const convex = (opts: {
         opts.options?.basePath &&
         options.basePath !== opts.options?.basePath
       ) {
+        // eslint-disable-next-line no-console
         console.warn(
           `Better Auth basePath ${options.basePath} does not match Convex plugin basePath ${opts.options?.basePath}. This is probably a mistake.`
         );
@@ -321,7 +324,6 @@ export const convex = (opts: {
         },
         {
           matcher: (ctx) => {
-            console.log(ctx.path, ctx.context.session);
             return (
               ctx.path?.startsWith("/sign-out") ||
               ctx.path?.startsWith("/delete-user") ||
@@ -329,7 +331,6 @@ export const convex = (opts: {
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
-            console.log("clearing jwt cookie");
             const jwtCookie = ctx.context.createAuthCookie(JWT_COOKIE_NAME, {
               maxAge: 0,
             });
@@ -579,6 +580,7 @@ export const convex = (opts: {
                 });
                 return await runEndpoint();
               } else {
+                // eslint-disable-next-line no-console
                 console.error(
                   "Try temporarily setting jwksRotateOnTokenGenerationError: true on the Convex Better Auth plugin."
                 );

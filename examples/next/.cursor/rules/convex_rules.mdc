@@ -434,7 +434,7 @@ Internal Functions:
   "description": "This example shows how to build a chat app without authentication.",
   "version": "1.0.0",
   "dependencies": {
-    "convex": "^1.17.4",
+    "convex": "^1.31.2",
     "openai": "^4.79.0"
   },
   "devDependencies": {
@@ -665,6 +665,35 @@ export default defineSchema({
     content: v.string(),
   }).index("by_channel", ["channelId"]),
 });
+```
+
+#### convex/tsconfig.json
+```typescript
+{
+  /* This TypeScript project config describes the environment that
+   * Convex functions run in and is used to typecheck them.
+   * You can modify it, but some settings required to use Convex.
+   */
+  "compilerOptions": {
+    /* These settings are not required by Convex and can be modified. */
+    "allowJs": true,
+    "strict": true,
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+
+    /* These compiler options are required by Convex */
+    "target": "ESNext",
+    "lib": ["ES2021", "dom"],
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "isolatedModules": true,
+    "noEmit": true
+  },
+  "include": ["./**/*"],
+  "exclude": ["./_generated"]
+}
 ```
 
 #### src/App.tsx

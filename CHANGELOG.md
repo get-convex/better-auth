@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.10.10
+
+- fix(cross-domain): only notify session signal on session cookie set
+
+## 0.10.9
+
+- fix(adapter): hide vitest imports from esbuild
+
+## 0.10.8
+
+- fix(adapter): avoid vitest import errors in bundle
+
+## 0.10.7
+
+- feat: use better-auth/minimal for smaller bundle
+- feat: update to better-auth 1.4.9
+- chore: drop extra logs, enforce via lint
+- fix: use correct host header format in framework route handlers
+
 ## 0.10.6
 
 - fix(adapter): (re-)enable array support

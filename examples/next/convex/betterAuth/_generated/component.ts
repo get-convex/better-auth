@@ -31,7 +31,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           input:
             | {
                 data: {
-                  arr?: null | Array<string>;
                   createdAt: number;
                   displayUsername?: null | string;
                   email: string;
@@ -40,7 +39,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   image?: null | string;
                   isAnonymous?: null | boolean;
                   name: string;
-                  test?: null | string;
                   twoFactorEnabled?: null | boolean;
                   updatedAt: number;
                   userId?: null | string;
@@ -128,8 +126,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "twoFactorEnabled"
                     | "userId"
                     | "foo"
-                    | "arr"
-                    | "test"
                     | "_id";
                   operator?:
                     | "lt"
@@ -349,8 +345,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "twoFactorEnabled"
                     | "userId"
                     | "foo"
-                    | "arr"
-                    | "test"
                     | "_id";
                   operator?:
                     | "lt"
@@ -544,6 +538,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
         "query",
         "internal",
         {
+          join?: any;
           limit?: number;
           model:
             | "user"
@@ -593,6 +588,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
         "query",
         "internal",
         {
+          join?: any;
           model:
             | "user"
             | "session"
@@ -636,7 +632,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             | {
                 model: "user";
                 update: {
-                  arr?: null | Array<string>;
                   createdAt?: number;
                   displayUsername?: null | string;
                   email?: string;
@@ -645,7 +640,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   image?: null | string;
                   isAnonymous?: null | boolean;
                   name?: string;
-                  test?: null | string;
                   twoFactorEnabled?: null | boolean;
                   updatedAt?: number;
                   userId?: null | string;
@@ -666,8 +660,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "twoFactorEnabled"
                     | "userId"
                     | "foo"
-                    | "arr"
-                    | "test"
                     | "_id";
                   operator?:
                     | "lt"
@@ -914,7 +906,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             | {
                 model: "user";
                 update: {
-                  arr?: null | Array<string>;
                   createdAt?: number;
                   displayUsername?: null | string;
                   email?: string;
@@ -923,7 +914,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   image?: null | string;
                   isAnonymous?: null | boolean;
                   name?: string;
-                  test?: null | string;
                   twoFactorEnabled?: null | boolean;
                   updatedAt?: number;
                   userId?: null | string;
@@ -944,8 +934,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "twoFactorEnabled"
                     | "userId"
                     | "foo"
-                    | "arr"
-                    | "test"
                     | "_id";
                   operator?:
                     | "lt"
@@ -1185,7 +1173,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
         null | {
           _creationTime: number;
           _id: string;
-          arr?: null | Array<string>;
           createdAt: number;
           displayUsername?: null | string;
           email: string;
@@ -1194,7 +1181,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           image?: null | string;
           isAnonymous?: null | boolean;
           name: string;
-          test?: null | string;
           twoFactorEnabled?: null | boolean;
           updatedAt: number;
           userId?: null | string;

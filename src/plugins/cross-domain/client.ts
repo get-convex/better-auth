@@ -37,7 +37,7 @@ export function parseSetCookieHeader(
 
 interface StoredCookie {
   value: string;
-  expires: Date | null;
+  expires: string | null;
 }
 
 export function getSetCookie(header: string, prevCookie?: string) {
@@ -53,7 +53,7 @@ export function getSetCookie(header: string, prevCookie?: string) {
         : null;
     toSetCookie[key] = {
       value: cookie["value"],
-      expires,
+      expires: expires ? expires.toISOString() : null,
     };
   });
   if (prevCookie) {
@@ -78,7 +78,7 @@ export function getCookie(cookie: string) {
     // noop
   }
   const toSend = Object.entries(parsed).reduce((acc, [key, value]) => {
-    if (value.expires && value.expires < new Date()) {
+    if (value.expires && new Date(value.expires) < new Date()) {
       return acc;
     }
     return `${acc}; ${key}=${value.value}`;
@@ -149,9 +149,16 @@ export const crossDomainClient = (
          * const sessionData = client.getSessionData();
          * ```
          */
-        getSessionData: () => {
+        getSessionData: (): Record<string, unknown> | null => {
           const sessionData = storage?.getItem(localCacheName);
-          return sessionData ? JSON.parse(sessionData) : null;
+          if (!sessionData) return null;
+          try {
+            const parsed = JSON.parse(sessionData);
+            if (parsed && typeof parsed === "object" && Object.keys(parsed).length === 0) return null;
+            return parsed;
+          } catch {
+            return null;
+          }
         },
       };
     },
@@ -168,13 +175,16 @@ export const crossDomainClient = (
               "set-better-auth-cookie"
             );
             if (setCookie) {
-              const prevCookie = await storage.getItem(cookieName);
+              const prevCookie = storage.getItem(cookieName);
               const toSetCookie = getSetCookie(
                 setCookie || "",
                 prevCookie ?? undefined
               );
               await storage.setItem(cookieName, toSetCookie);
-              store?.notify("$sessionSignal");
+              // Only notify on session cookie set
+              if (setCookie.includes(".session_token=")) {
+                store?.notify("$sessionSignal");
+              }
             }
 
             if (
@@ -183,6 +193,9 @@ export const crossDomainClient = (
             ) {
               const data = context.data;
               storage.setItem(localCacheName, JSON.stringify(data));
+              if (data === null) {
+                storage.setItem(cookieName, "{}");
+              }
             }
           },
         },
