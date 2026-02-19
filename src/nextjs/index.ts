@@ -74,7 +74,10 @@ export const convexBetterAuthNextJs = (
   const cachedGetToken = cache(
     async ({ forceRefresh }: { forceRefresh?: boolean } = {}) => {
       const headers = await (await import("next/headers.js")).headers();
-      return getToken(siteUrl, headers, { ...opts, forceRefresh });
+      const mutableHeaders = new Headers(headers);
+      mutableHeaders.delete("content-length");
+      mutableHeaders.delete("transfer-encoding");
+      return getToken(siteUrl, mutableHeaders, { ...opts, forceRefresh });
     }
   );
 

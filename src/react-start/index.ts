@@ -86,7 +86,10 @@ export const convexBetterAuthReactStart = (
   const cachedGetToken = cache(async (opts: GetTokenOptions) => {
     const { getRequestHeaders } = await import("@tanstack/react-start/server");
     const headers = getRequestHeaders();
-    return getToken(siteUrl, headers, opts);
+    const mutableHeaders = new Headers(headers);
+    mutableHeaders.delete("content-length");
+    mutableHeaders.delete("transfer-encoding");
+    return getToken(siteUrl, mutableHeaders, opts);
   });
 
   const callWithToken = async <
