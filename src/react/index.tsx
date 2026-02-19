@@ -130,7 +130,9 @@ function useUseAuthFromBetterAuth(
               return cachedToken;
             }
             try {
-              const { data } = await authClient.convex.token();
+              const { data } = await authClient.convex.token({
+                fetchOptions: { throw: false },
+              });
               const token = data?.token || null;
               setCachedToken(token);
               return token;
