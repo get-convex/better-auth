@@ -103,7 +103,7 @@ function useUseAuthFromBetterAuth(
   initialToken?: string | null
 ) {
   const [cachedToken, setCachedToken] = useState<string | null>(
-    initialTokenUsed ? (initialToken ?? null) : null
+    initialTokenUsed ? null : (initialToken ?? null)
   );
   useEffect(() => {
     if (!initialTokenUsed) {
@@ -130,7 +130,9 @@ function useUseAuthFromBetterAuth(
               return cachedToken;
             }
             try {
-              const { data } = await authClient.convex.token();
+              const { data } = await authClient.convex.token({
+                fetchOptions: { throw: false },
+              });
               const token = data?.token || null;
               setCachedToken(token);
               return token;
@@ -146,12 +148,12 @@ function useUseAuthFromBetterAuth(
         );
         return useMemo(
           () => ({
-            isLoading: isSessionPending,
-            isAuthenticated: session !== null,
+            isLoading: isSessionPending && !cachedToken,
+            isAuthenticated: Boolean(session?.session) || cachedToken !== null,
             fetchAccessToken,
           }),
           // eslint-disable-next-line react-hooks/exhaustive-deps
-          [isSessionPending, sessionId, fetchAccessToken]
+          [isSessionPending, sessionId, fetchAccessToken, cachedToken]
         );
       },
     [authClient]
