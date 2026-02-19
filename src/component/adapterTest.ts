@@ -485,19 +485,21 @@ function runCustomAdapterTests({
 
   test("should be able to compare against a date", async () => {
     const adapter = await getAdapter();
+    const now = new Date().toISOString();
     const user = await adapter.create({
       model: "user",
       data: {
         name: "foo",
         email: "foo@bar.com",
-        createdAt: new Date().toISOString(),
+        createdAt: now,
       },
     });
     expect(
       await adapter.findOne({
         model: "user",
-        where: [{ field: "createdAt", value: new Date().toISOString() }],
+        where: [{ field: "createdAt", value: now }],
       })
     ).toEqual(user);
+    expect(user.createdAt).toBeInstanceOf(Date);
   });
 }
