@@ -1,5 +1,5 @@
 import type { PropsWithChildren, ReactNode } from "react";
-import { Component, useCallback, useEffect, useMemo, useState } from "react";
+import { Component, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AuthTokenFetcher } from "convex/browser";
 import {
   Authenticated,
@@ -105,6 +105,7 @@ function useUseAuthFromBetterAuth(
   const [cachedToken, setCachedToken] = useState<string | null>(
     initialTokenUsed ? null : (initialToken ?? null)
   );
+  const pendingTokenRef = useRef<Promise<string | null> | null>(null);
   useEffect(() => {
     if (!initialTokenUsed) {
       initialTokenUsed = true;
@@ -129,17 +130,24 @@ function useUseAuthFromBetterAuth(
             if (cachedToken && !forceRefreshToken) {
               return cachedToken;
             }
-            try {
-              const { data } = await authClient.convex.token({
-                fetchOptions: { throw: false },
-              });
-              const token = data?.token || null;
-              setCachedToken(token);
-              return token;
-            } catch {
-              setCachedToken(null);
-              return null;
+            if (!forceRefreshToken && pendingTokenRef.current) {
+              return pendingTokenRef.current;
             }
+            pendingTokenRef.current = authClient.convex
+              .token({ fetchOptions: { throw: false } })
+              .then(({ data }) => {
+                const token = data?.token || null;
+                setCachedToken(token);
+                return token;
+              })
+              .catch(() => {
+                setCachedToken(null);
+                return null;
+              })
+              .finally(() => {
+                pendingTokenRef.current = null;
+              });
+            return pendingTokenRef.current;
           },
           // Build a new fetchAccessToken to trigger setAuth() whenever the
           // session changes.
