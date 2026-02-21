@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.10.11
+
+- fix: stale credentials and incorrect auth state after session expiry (#218)
+  @ramonclaudio
+- fix(react): use initialToken on first render for SSR hydration (#223)
+  @nilskroe
+- fix(adapter): return Date objects from customTransformOutput (#236) @tomsiwik
+- fix(react): pass throw: false to internal token fetch (#241) @juliesaia
+- fix: prevent request hanging in Bun by selectively forwarding headers (#253)
+  @shrutikcs
+- fix: add optional chaining to ctx.path (#256) @bitojoe
+- fix: widen better-auth peer dependency to >=1.4.9 <1.5.0 (#245) @ramonclaudio
+
 ## 0.10.10
 
 - fix(cross-domain): only notify session signal on session cookie set
