@@ -233,7 +233,7 @@ description: Install and configure Convex + Better Auth for TanStack Start.
 
     ```ts title="src/routes/api/auth/$.ts"
     import { createFileRoute } from '@tanstack/react-router'
-    import { handler } from '~/lib/auth-server'
+    import { handler } from '@/lib/auth-server'
 
     export const Route = createFileRoute('/api/auth/$')({
       server: {
