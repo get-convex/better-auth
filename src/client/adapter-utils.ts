@@ -62,8 +62,9 @@ const isUniqueField = (
   model: string,
   field: string
 ) => {
-  const fields =
-    betterAuthSchema[model as keyof typeof betterAuthSchema]["fields"];
+  const fields = Object.values(betterAuthSchema).find(
+    (value) => value.modelName === model
+  )?.fields;
   if (!fields) {
     return false;
   }
