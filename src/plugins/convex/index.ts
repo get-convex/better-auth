@@ -277,12 +277,15 @@ export const convex = (opts: {
             ) => {
               //skip
             };
+            const knownSafePaths = ["/api-key/list", "/api-key/get"];
             const noopWrite = (method: string) => {
               return async (..._args: any[]) => {
-                // eslint-disable-next-line no-console
-                console.warn(
-                  `[convex-better-auth] Write operation "${method}" skipped in query context for ${ctx.path}`
-                );
+                if (!knownSafePaths.includes(ctx.path)) {
+                  // eslint-disable-next-line no-console
+                  console.warn(
+                    `[convex-better-auth] Write operation "${method}" skipped in query context for ${ctx.path}`
+                  );
+                }
                 return 0;
               };
             };
