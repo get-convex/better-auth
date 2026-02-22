@@ -64,37 +64,31 @@ export function ConvexBetterAuthProvider({
   const useBetterAuth = useUseAuthFromBetterAuth(authClient, initialToken);
   useEffect(() => {
     (async () => {
-      if (typeof window === "undefined") {
+      if (typeof window === "undefined" || !window.location?.href) {
         return;
       }
-      try {
-        const url = new URL(window.location?.href);
-        const token = url.searchParams.get("ott");
-        if (token) {
-          const authClientWithCrossDomain =
-            authClient as AuthClientWithPlugins<PluginsWithCrossDomain>;
-          url.searchParams.delete("ott");
-          const result =
-            await authClientWithCrossDomain.crossDomain.oneTimeToken.verify({
-              token,
-            });
-          const session = result.data?.session;
-          if (session) {
-            await authClient.getSession({
-              fetchOptions: {
-                headers: {
-                  Authorization: `Bearer ${session.token}`,
-                },
+      const url = new URL(window.location.href);
+      const token = url.searchParams.get("ott");
+      if (token) {
+        const authClientWithCrossDomain =
+          authClient as AuthClientWithPlugins<PluginsWithCrossDomain>;
+        url.searchParams.delete("ott");
+        window.history.replaceState({}, "", url);
+        const result =
+          await authClientWithCrossDomain.crossDomain.oneTimeToken.verify({
+            token,
+          });
+        const session = result.data?.session;
+        if (session) {
+          await authClient.getSession({
+            fetchOptions: {
+              headers: {
+                Authorization: `Bearer ${session.token}`,
               },
-            });
-            authClientWithCrossDomain.updateSession();
-          }
-          window.history.replaceState({}, "", url);
+            },
+          });
+          authClientWithCrossDomain.updateSession();
         }
-      } catch {
-        // OTT handling is only relevant in browser environments with
-        // the cross-domain plugin. Silently skip in React Native, SSR,
-        // or any environment where window.location is unavailable.
       }
     })();
   }, [authClient]);
