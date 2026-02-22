@@ -292,7 +292,7 @@ export const convex = (opts: {
             ctx.context.adapter.deleteMany = async (
               ..._args: any[]
             ) => {
-              //skip
+              return 0;
             };
             return { context: ctx };
           }),
