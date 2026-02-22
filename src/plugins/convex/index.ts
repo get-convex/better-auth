@@ -280,6 +280,23 @@ export const convex = (opts: {
             return { context: ctx };
           }),
         },
+        // Don't attempt to delete expired API keys in a query ctx
+        {
+          matcher: (ctx) => {
+            return (
+              !ctx.context.adapter.options?.isRunMutationCtx &&
+              (ctx.path === "/api-key/list" || ctx.path === "/api-key/get")
+            );
+          },
+          handler: createAuthMiddleware(async (ctx) => {
+            ctx.context.adapter.deleteMany = async (
+              ..._args: any[]
+            ) => {
+              //skip
+            };
+            return { context: ctx };
+          }),
+        },
       ],
       after: [
         ...oidcProvider.hooks.after,
