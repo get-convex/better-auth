@@ -64,12 +64,16 @@ export function ConvexBetterAuthProvider({
   const useBetterAuth = useUseAuthFromBetterAuth(authClient, initialToken);
   useEffect(() => {
     (async () => {
-      const url = new URL(window.location?.href);
+      if (typeof window === "undefined" || !window.location?.href) {
+        return;
+      }
+      const url = new URL(window.location.href);
       const token = url.searchParams.get("ott");
       if (token) {
         const authClientWithCrossDomain =
           authClient as AuthClientWithPlugins<PluginsWithCrossDomain>;
         url.searchParams.delete("ott");
+        window.history.replaceState({}, "", url);
         const result =
           await authClientWithCrossDomain.crossDomain.oneTimeToken.verify({
             token,
@@ -85,7 +89,6 @@ export function ConvexBetterAuthProvider({
           });
           authClientWithCrossDomain.updateSession();
         }
-        window.history.replaceState({}, "", url);
       }
     })();
   }, [authClient]);
