@@ -181,9 +181,27 @@ export const crossDomainClient = (
                 prevCookie ?? undefined
               );
               await storage.setItem(cookieName, toSetCookie);
-              // Only notify on session cookie set
+              // Only notify when the session token value actually changed.
+              // max-age recalculation with Date.now() causes the stored
+              // cookie JSON to always differ, so comparing values directly
+              // prevents infinite get-session polling loops.
               if (setCookie.includes(".session_token=")) {
-                store?.notify("$sessionSignal");
+                const parsed = parseSetCookieHeader(setCookie);
+                let prevParsed: Record<string, StoredCookie> = {};
+                try {
+                  prevParsed = JSON.parse(prevCookie || "{}");
+                } catch {
+                  // noop
+                }
+                const tokenKey = [...parsed.keys()].find((k) =>
+                  k.includes("session_token")
+                );
+                if (
+                  tokenKey &&
+                  prevParsed[tokenKey]?.value !== parsed.get(tokenKey)?.value
+                ) {
+                  store?.notify("$sessionSignal");
+                }
               }
             }
 
