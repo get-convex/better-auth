@@ -262,13 +262,13 @@ export const convex = (opts: {
     hooks: {
       before: [
         ...bearer.hooks.before,
-        // Don't attempt to refresh the session with a query ctx
+        // In query context, no writes can succeed. No-op adapter write
+        // methods and session refresh to prevent errors from fire-and-forget
+        // side effects in Better Auth plugins (session cleanup, expired
+        // api-key deletion, org state correction, etc.).
         {
           matcher: (ctx) => {
-            return (
-              !ctx.context.adapter.options?.isRunMutationCtx &&
-              ctx.path === "/get-session"
-            );
+            return !ctx.context.adapter.options?.isRunMutationCtx;
           },
           handler: createAuthMiddleware(async (ctx) => {
             ctx.query = { ...ctx.query, disableRefresh: true };
@@ -277,6 +277,20 @@ export const convex = (opts: {
             ) => {
               //skip
             };
+            const noopWrite = (method: string) => {
+              return async (..._args: any[]) => {
+                // eslint-disable-next-line no-console
+                console.warn(
+                  `[convex-better-auth] Write operation "${method}" skipped in query context for ${ctx.path}`
+                );
+                return 0;
+              };
+            };
+            ctx.context.adapter.create = noopWrite("create") as any;
+            ctx.context.adapter.update = noopWrite("update") as any;
+            ctx.context.adapter.updateMany = noopWrite("updateMany") as any;
+            ctx.context.adapter.delete = noopWrite("delete") as any;
+            ctx.context.adapter.deleteMany = noopWrite("deleteMany") as any;
             return { context: ctx };
           }),
         },
