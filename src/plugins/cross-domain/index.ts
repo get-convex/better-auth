@@ -129,7 +129,12 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
       after: [
         {
           matcher(ctx) {
-            return !isExpoNative(ctx);
+            return (
+              Boolean(
+                ctx.request?.headers.get("better-auth-cookie") ||
+                  ctx.headers?.get("better-auth-cookie")
+              ) && !isExpoNative(ctx)
+            );
           },
           handler: createAuthMiddleware(async (ctx) => {
             const setCookie = ctx.context.responseHeaders?.get("set-cookie");
