@@ -64,28 +64,37 @@ export function ConvexBetterAuthProvider({
   const useBetterAuth = useUseAuthFromBetterAuth(authClient, initialToken);
   useEffect(() => {
     (async () => {
-      const url = new URL(window.location?.href);
-      const token = url.searchParams.get("ott");
-      if (token) {
-        const authClientWithCrossDomain =
-          authClient as AuthClientWithPlugins<PluginsWithCrossDomain>;
-        url.searchParams.delete("ott");
-        const result =
-          await authClientWithCrossDomain.crossDomain.oneTimeToken.verify({
-            token,
-          });
-        const session = result.data?.session;
-        if (session) {
-          await authClient.getSession({
-            fetchOptions: {
-              headers: {
-                Authorization: `Bearer ${session.token}`,
+      if (typeof window === "undefined") {
+        return;
+      }
+      try {
+        const url = new URL(window.location?.href);
+        const token = url.searchParams.get("ott");
+        if (token) {
+          const authClientWithCrossDomain =
+            authClient as AuthClientWithPlugins<PluginsWithCrossDomain>;
+          url.searchParams.delete("ott");
+          const result =
+            await authClientWithCrossDomain.crossDomain.oneTimeToken.verify({
+              token,
+            });
+          const session = result.data?.session;
+          if (session) {
+            await authClient.getSession({
+              fetchOptions: {
+                headers: {
+                  Authorization: `Bearer ${session.token}`,
+                },
               },
-            },
-          });
-          authClientWithCrossDomain.updateSession();
+            });
+            authClientWithCrossDomain.updateSession();
+          }
+          window.history.replaceState({}, "", url);
         }
-        window.history.replaceState({}, "", url);
+      } catch {
+        // OTT handling is only relevant in browser environments with
+        // the cross-domain plugin. Silently skip in React Native, SSR,
+        // or any environment where window.location is unavailable.
       }
     })();
   }, [authClient]);
