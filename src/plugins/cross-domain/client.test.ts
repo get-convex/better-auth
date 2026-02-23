@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { getCookie, getSetCookie, parseSetCookieHeader, crossDomainClient } from "./client.js";
 
 describe("parseSetCookieHeader", () => {
@@ -138,6 +138,18 @@ describe("crossDomainClient", () => {
     return plugin.fetchPlugins[0].hooks!.onSuccess!;
   }
 
+  function getOnSuccessHookWithStore() {
+    const plugin = crossDomainClient({ storage: mockStorage });
+    const notify = vi.fn();
+    const mockStore = {
+      notify,
+      atoms: { session: { set: () => {}, get: () => ({}) } },
+    };
+    // getActions sets the internal store reference
+    plugin.getActions({} as any, mockStore as any);
+    return { onSuccess: plugin.fetchPlugins[0].hooks!.onSuccess!, notify };
+  }
+
   describe("getSessionData", () => {
     it("returns null when storage is empty", () => {
       const actions = getActions();
@@ -212,6 +224,92 @@ describe("crossDomainClient", () => {
       } as any);
 
       expect(storage.get(localCacheName)).toBe(JSON.stringify(sessionData));
+    });
+  });
+
+  describe("session signal notification", () => {
+    it("notifies when session token changes", async () => {
+      const { onSuccess, notify } = getOnSuccessHookWithStore();
+      await onSuccess({
+        data: null,
+        request: { url: new URL("https://example.com/api/auth/sign-in") },
+        response: {
+          headers: new Headers({
+            "set-better-auth-cookie":
+              "better-auth.session_token=new-token; Max-Age=3600",
+          }),
+        },
+      } as any);
+
+      expect(notify).toHaveBeenCalledWith("$sessionSignal");
+    });
+
+    it("does not notify when session token value is unchanged", async () => {
+      // Pre-populate storage with existing token
+      storage.set(
+        cookieName,
+        JSON.stringify({
+          "better-auth.session_token": {
+            value: "same-token",
+            expires: new Date(Date.now() + 3600000).toISOString(),
+          },
+        })
+      );
+
+      const { onSuccess, notify } = getOnSuccessHookWithStore();
+      await onSuccess({
+        data: null,
+        request: { url: new URL("https://example.com/api/auth/get-session") },
+        response: {
+          headers: new Headers({
+            "set-better-auth-cookie":
+              "better-auth.session_token=same-token; Max-Age=3600",
+          }),
+        },
+      } as any);
+
+      expect(notify).not.toHaveBeenCalled();
+    });
+
+    it("notifies when session token value differs from stored", async () => {
+      storage.set(
+        cookieName,
+        JSON.stringify({
+          "better-auth.session_token": {
+            value: "old-token",
+            expires: new Date(Date.now() + 3600000).toISOString(),
+          },
+        })
+      );
+
+      const { onSuccess, notify } = getOnSuccessHookWithStore();
+      await onSuccess({
+        data: null,
+        request: { url: new URL("https://example.com/api/auth/get-session") },
+        response: {
+          headers: new Headers({
+            "set-better-auth-cookie":
+              "better-auth.session_token=new-token; Max-Age=3600",
+          }),
+        },
+      } as any);
+
+      expect(notify).toHaveBeenCalledWith("$sessionSignal");
+    });
+
+    it("does not notify for non-session cookies", async () => {
+      const { onSuccess, notify } = getOnSuccessHookWithStore();
+      await onSuccess({
+        data: null,
+        request: { url: new URL("https://example.com/api/auth/something") },
+        response: {
+          headers: new Headers({
+            "set-better-auth-cookie": "other_cookie=value; Max-Age=3600",
+          }),
+        },
+      } as any);
+
+      expect(notify).not.toHaveBeenCalled();
     });
   });
 });
