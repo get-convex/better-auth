@@ -56,9 +56,10 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
           matcher(ctx) {
             return (
               Boolean(
-                ctx.request?.headers.get("better-auth-cookie") ||
-                  ctx.headers?.get("better-auth-cookie")
-              ) && !isExpoNative(ctx)
+                ctx.request?.headers.has("better-auth-cookie") ||
+                  ctx.headers?.has("better-auth-cookie")
+              ) &&
+              !isExpoNative(ctx)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
@@ -133,9 +134,10 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
           matcher(ctx) {
             return (
               Boolean(
-                ctx.request?.headers.get("better-auth-cookie") ||
-                  ctx.headers?.get("better-auth-cookie")
-              ) && !isExpoNative(ctx)
+                ctx.request?.headers.has("better-auth-cookie") ||
+                  ctx.headers?.has("better-auth-cookie")
+              ) &&
+              !isExpoNative(ctx)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
