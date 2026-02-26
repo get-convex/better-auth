@@ -12,11 +12,13 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
   const oneTimeToken = oneTimeTokenPlugin();
 
   const rewriteCallbackURL = (callbackURL?: string) => {
-    if (callbackURL && !callbackURL.startsWith("/")) {
+    if (!callbackURL) {
       return callbackURL;
     }
-    const relativeCallbackURL = callbackURL || "/";
-    return new URL(relativeCallbackURL, siteUrl).toString();
+    if (!callbackURL.startsWith("/")) {
+      return callbackURL;
+    }
+    return new URL(callbackURL, siteUrl).toString();
   };
 
   const isExpoNative = (ctx: { headers?: Headers }) => {
@@ -54,9 +56,10 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
           matcher(ctx) {
             return (
               Boolean(
-                ctx.request?.headers.get("better-auth-cookie") ||
-                  ctx.headers?.get("better-auth-cookie")
-              ) && !isExpoNative(ctx)
+                ctx.request?.headers.has("better-auth-cookie") ||
+                  ctx.headers?.has("better-auth-cookie")
+              ) &&
+              !isExpoNative(ctx)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
@@ -131,9 +134,10 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
           matcher(ctx) {
             return (
               Boolean(
-                ctx.request?.headers.get("better-auth-cookie") ||
-                  ctx.headers?.get("better-auth-cookie")
-              ) && !isExpoNative(ctx)
+                ctx.request?.headers.has("better-auth-cookie") ||
+                  ctx.headers?.has("better-auth-cookie")
+              ) &&
+              !isExpoNative(ctx)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {

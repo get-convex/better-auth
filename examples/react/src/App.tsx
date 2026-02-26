@@ -8,13 +8,17 @@ export default function App() {
   return (
     <>
       <AuthLoading>
-        <div>Loading...</div>
+        <div data-testid="auth-loading">Loading...</div>
       </AuthLoading>
       <Authenticated>
-        <Dashboard />
+        <div data-testid="auth-authenticated">
+          <Dashboard />
+        </div>
       </Authenticated>
       <Unauthenticated>
-        <SignInForm />
+        <div data-testid="auth-unauthenticated">
+          <SignInForm />
+        </div>
       </Unauthenticated>
     </>
   );
