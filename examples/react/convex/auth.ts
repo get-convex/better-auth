@@ -34,7 +34,7 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
     },
     emailAndPassword: {
       enabled: true,
-      requireEmailVerification: true,
+      requireEmailVerification: process.env.IS_TEST !== "true",
       sendResetPassword: async ({ user, url }) => {
         await sendResetPassword(requireActionCtx(ctx), {
           to: user.email,
@@ -42,16 +42,20 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
         });
       },
     },
-    socialProviders: {
-      github: {
-        clientId: process.env.GITHUB_CLIENT_ID as string,
-        clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-      },
-      google: {
-        clientId: process.env.GOOGLE_CLIENT_ID as string,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      },
-    },
+    ...(process.env.GITHUB_CLIENT_ID && process.env.GOOGLE_CLIENT_ID
+      ? {
+          socialProviders: {
+            github: {
+              clientId: process.env.GITHUB_CLIENT_ID as string,
+              clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+            },
+            google: {
+              clientId: process.env.GOOGLE_CLIENT_ID as string,
+              clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+            },
+          },
+        }
+      : {}),
     user: {
       deleteUser: {
         enabled: true,

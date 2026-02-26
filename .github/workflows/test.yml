@@ -42,3 +42,9 @@ jobs:
           npm run test
           npm run typecheck
           npm run lint
+      - name: Install e2e dependencies
+        run: cd e2e && npm i
+      - name: Install Playwright browsers
+        run: cd e2e && npx playwright install --with-deps chromium
+      - name: Run e2e tests
+        run: cd e2e && npm run test
