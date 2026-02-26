@@ -18,7 +18,7 @@
   ],
   "type": "module",
   "scripts": {
-    "dev": "cd examples/react && npm run dev",
+    "dev": "npm run build && cd examples/react && npm run dev",
     "build": "tsc --project tsconfig.build.json",
     "build:codegen": "npx convex codegen --component-dir ./src/component && npm run build",
     "build:clean": "rm -rf dist *.tsbuildinfo && npm run build:codegen",
