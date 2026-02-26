@@ -20,7 +20,7 @@
   "scripts": {
     "dev": "npm run build && cd examples/react && npm run dev",
     "build": "tsc --project tsconfig.build.json",
-    "build:codegen": "npx convex codegen --component-dir ./src/component && npm run build",
+    "build:codegen": "cd examples/react && npx convex codegen --component-dir ../../src/component && cd ../.. && npm run build",
     "build:clean": "rm -rf dist *.tsbuildinfo && npm run build:codegen",
     "typecheck": "tsc --noEmit && tsc -p examples/next && tsc -p examples/next/convex && tsc -p examples/react && tsc -p examples/react/convex && tsc -p examples/tanstack && tsc -p examples/tanstack/convex",
     "lint": "eslint .",
