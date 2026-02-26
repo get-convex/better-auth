@@ -21,7 +21,7 @@ npx convex env set IS_TEST "true" --url "$CONVEX_URL" --admin-key "$ADMIN_KEY"
 npx convex env set BETTER_AUTH_SECRET "e2e-test-secret-key-do-not-use-in-production" --url "$CONVEX_URL" --admin-key "$ADMIN_KEY"
 
 echo "Deploying functions to local backend..."
-npx convex deploy --cmd 'npm run build' --url "$CONVEX_URL" --admin-key "$ADMIN_KEY" --typecheck-components -y
+npx convex deploy --url "$CONVEX_URL" --admin-key "$ADMIN_KEY" -y
 
 popd > /dev/null
 
