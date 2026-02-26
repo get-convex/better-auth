@@ -28,7 +28,7 @@
     "test": "vitest run --typecheck",
     "test:watch": "vitest --typecheck --clearScreen false",
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
-    "test:e2e": "cd e2e && npm run test",
+    "test:e2e": "npm run build && cd e2e && npm run test",
     "test:coverage": "vitest run --coverage --coverage.reporter=text",
     "preversion": "npm ci && npm run build:clean && run-p test lint typecheck",
     "prepublishOnly": "npm whoami || npm login",
