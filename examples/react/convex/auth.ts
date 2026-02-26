@@ -42,20 +42,24 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
         });
       },
     },
-    ...(process.env.GITHUB_CLIENT_ID && process.env.GOOGLE_CLIENT_ID
-      ? {
-          socialProviders: {
+    socialProviders: {
+      ...(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET
+        ? {
             github: {
-              clientId: process.env.GITHUB_CLIENT_ID as string,
-              clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+              clientId: process.env.GITHUB_CLIENT_ID,
+              clientSecret: process.env.GITHUB_CLIENT_SECRET,
             },
+          }
+        : {}),
+      ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+        ? {
             google: {
-              clientId: process.env.GOOGLE_CLIENT_ID as string,
-              clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+              clientId: process.env.GOOGLE_CLIENT_ID,
+              clientSecret: process.env.GOOGLE_CLIENT_SECRET,
             },
-          },
-        }
-      : {}),
+          }
+        : {}),
+    },
     user: {
       deleteUser: {
         enabled: true,

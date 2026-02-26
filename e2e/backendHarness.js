@@ -5,8 +5,8 @@
 
 import http from "node:http";
 import fsPromises from "node:fs/promises";
-import { spawn, execFileSync } from "node:child_process";
-import { existsSync, unlinkSync } from "node:fs";
+import { spawn } from "node:child_process";
+import { existsSync, unlinkSync, rmSync, chmodSync } from "node:fs";
 import { Readable } from "node:stream";
 import { createRequire } from "node:module";
 
@@ -69,8 +69,8 @@ function cleanup() {
   if (backendProcess !== null) {
     logToStderr("Cleaning up running backend");
     backendProcess.kill("SIGTERM");
-    execFileSync("rm", ["-rf", "convex_local_storage"]);
-    execFileSync("rm", ["-f", "convex_local_backend.sqlite3"]);
+    rmSync("convex_local_storage", { recursive: true, force: true });
+    rmSync("convex_local_backend.sqlite3", { force: true });
   }
 }
 
@@ -134,7 +134,7 @@ async function downloadAndStartBackend() {
   const zip = new AdmZip(zipLocation);
   zip.extractAllTo(".", true);
   const binaryPath = "./convex-local-backend";
-  execFileSync("chmod", ["+x", binaryPath]);
+  chmodSync(binaryPath, 0o755);
   return spawn(
     binaryPath,
     ["--port", String(backendCloudPort), "--site-proxy-port", String(backendSitePort)],
@@ -151,8 +151,8 @@ async function runWithLocalBackend(command, backendUrl) {
     process.exit(1);
   }
 
-  execFileSync("rm", ["-rf", "convex_local_storage"]);
-  execFileSync("rm", ["-f", "convex_local_backend.sqlite3"]);
+  rmSync("convex_local_storage", { recursive: true, force: true });
+  rmSync("convex_local_backend.sqlite3", { force: true });
 
   backendProcess = await downloadAndStartBackend();
   backendProcess.stdout.pipe(process.stderr);
