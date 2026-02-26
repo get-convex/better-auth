@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.10.12
+
+- fix(cross-domain): don't inject callbackURL when not provided (#276)
+- fix(cross-domain): only notify session signal when token value changes (#273)
+- fix: skip session refresh/delete in query context for all paths (#272)
+- fix(react): handle missing window.location in React Native (#270)
+- fix(cross-domain): only rewrite set-cookie for cross-domain requests (#269)
+- fix(react): deduplicate concurrent fetchAccessToken calls (#267) @ramonclaudio
+- fix: Better Auth schema model lookup (#231) @potrepka
+
 ## 0.10.11
 
 - fix: stale credentials and incorrect auth state after session expiry (#218)
