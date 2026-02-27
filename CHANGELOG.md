@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.10.13
+
+- fix: add optional chaining for ctx.path in crossDomain before-hooks (#279)
+- fix(package): remove spurious react-dom peer dependency (#278) @ramonclaudio
+
 ## 0.10.12
 
 - fix(cross-domain): don't inject callbackURL when not provided (#276)
