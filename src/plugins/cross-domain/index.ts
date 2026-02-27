@@ -102,7 +102,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         {
           matcher: (ctx) => {
             return (
-              ((ctx.method === "POST" && ctx.path.startsWith("/link-social")) ||
+              ((ctx.method === "POST" && ctx.path?.startsWith("/link-social")) ||
                 ctx.path?.startsWith("/send-verification-email") ||
                 ctx.path?.startsWith("/sign-in/email") ||
                 ctx.path?.startsWith("/sign-in/social") ||
@@ -113,7 +113,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
-            const isSignIn = ctx.path.startsWith("/sign-in");
+            const isSignIn = ctx.path?.startsWith("/sign-in");
             ctx.body.callbackURL = rewriteCallbackURL(ctx.body.callbackURL);
             if (isSignIn && ctx.body.newUserCallbackURL) {
               ctx.body.newUserCallbackURL = rewriteCallbackURL(
