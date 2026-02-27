@@ -113,7 +113,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
-            const isSignIn = ctx.path?.startsWith("/sign-in");
+            const isSignIn = ctx.path.startsWith("/sign-in");
             ctx.body.callbackURL = rewriteCallbackURL(ctx.body.callbackURL);
             if (isSignIn && ctx.body.newUserCallbackURL) {
               ctx.body.newUserCallbackURL = rewriteCallbackURL(
