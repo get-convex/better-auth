@@ -700,8 +700,7 @@ const registerSSOProvider = (options?: SsoOidcOptions) => {
         userInfoEndpoint:
           hydratedOIDCConfig?.userInfoEndpoint ??
           body.oidcConfig.userInfoEndpoint,
-        overrideUserInfo:
-          body.overrideUserInfo ?? options?.trustEmailVerified ?? false,
+        overrideUserInfo: body.overrideUserInfo ?? false,
       });
 
       const provider = await ctx.context.adapter.create({
