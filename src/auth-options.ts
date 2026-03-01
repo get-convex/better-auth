@@ -14,6 +14,7 @@ import {
   username,
 } from "better-auth/plugins";
 import { passkey } from "@better-auth/passkey";
+import { ssoOidc } from "./plugins/sso-oidc.js";
 import { convex } from "./plugins/convex/index.js";
 import { convexAdapter } from "./client/adapter.js";
 
@@ -47,6 +48,7 @@ export const options = {
     bearer(),
     oneTimeToken(),
     jwt(),
+    ssoOidc(),
     convex({
       authConfig: { providers: [{ applicationID: "convex", domain: "" }] },
     }),

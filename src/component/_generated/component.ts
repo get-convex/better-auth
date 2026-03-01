@@ -161,6 +161,20 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   lastRequest?: null | number;
                 };
                 model: "rateLimit";
+              }
+            | {
+                data: {
+                  providerId: string;
+                  issuer: string;
+                  domain: string;
+                  oidcConfig?: null | string;
+                  samlConfig?: null | string;
+                  organizationId?: null | string;
+                  userId?: null | string;
+                  createdAt: number;
+                  updatedAt: number;
+                };
+                model: "ssoProvider";
               };
           onCreateHandle?: string;
           select?: Array<string>;
@@ -519,6 +533,42 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "key" | "count" | "lastRequest" | "_id";
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "not_in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                model: "ssoProvider";
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field:
+                    | "providerId"
+                    | "issuer"
+                    | "domain"
+                    | "oidcConfig"
+                    | "samlConfig"
+                    | "organizationId"
+                    | "userId"
+                    | "createdAt"
+                    | "updatedAt"
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -924,6 +974,42 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | Array<number>
                     | null;
                 }>;
+              }
+            | {
+                model: "ssoProvider";
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field:
+                    | "providerId"
+                    | "issuer"
+                    | "domain"
+                    | "oidcConfig"
+                    | "samlConfig"
+                    | "organizationId"
+                    | "userId"
+                    | "createdAt"
+                    | "updatedAt"
+                    | "_id";
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "not_in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
               };
           onDeleteHandle?: string;
         },
@@ -947,7 +1033,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             | "oauthAccessToken"
             | "oauthConsent"
             | "jwks"
-            | "rateLimit";
+            | "rateLimit"
+            | "ssoProvider";
           offset?: number;
           paginationOpts: {
             cursor: string | null;
@@ -1001,7 +1088,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             | "oauthAccessToken"
             | "oauthConsent"
             | "jwks"
-            | "rateLimit";
+            | "rateLimit"
+            | "ssoProvider";
           select?: Array<string>;
           where?: Array<{
             connector?: "AND" | "OR";
@@ -1505,6 +1593,53 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | Array<number>
                     | null;
                 }>;
+              }
+            | {
+                model: "ssoProvider";
+                update: {
+                  providerId?: string;
+                  issuer?: string;
+                  domain?: string;
+                  oidcConfig?: null | string;
+                  samlConfig?: null | string;
+                  organizationId?: null | string;
+                  userId?: null | string;
+                  createdAt?: number;
+                  updatedAt?: number;
+                };
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field:
+                    | "providerId"
+                    | "issuer"
+                    | "domain"
+                    | "oidcConfig"
+                    | "samlConfig"
+                    | "organizationId"
+                    | "userId"
+                    | "createdAt"
+                    | "updatedAt"
+                    | "_id";
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "not_in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
               };
           onUpdateHandle?: string;
           paginationOpts: {
@@ -1974,6 +2109,53 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field: "key" | "count" | "lastRequest" | "_id";
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "not_in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                model: "ssoProvider";
+                update: {
+                  providerId?: string;
+                  issuer?: string;
+                  domain?: string;
+                  oidcConfig?: null | string;
+                  samlConfig?: null | string;
+                  organizationId?: null | string;
+                  userId?: null | string;
+                  createdAt?: number;
+                  updatedAt?: number;
+                };
+                where?: Array<{
+                  connector?: "AND" | "OR";
+                  field:
+                    | "providerId"
+                    | "issuer"
+                    | "domain"
+                    | "oidcConfig"
+                    | "samlConfig"
+                    | "organizationId"
+                    | "userId"
+                    | "createdAt"
+                    | "updatedAt"
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
