@@ -1119,10 +1119,10 @@ const callbackSSO = (options?: SsoOidcOptions) => {
         );
       }
 
-      const isTrustedProvider = validateEmailDomain(
-        userInfo.email,
-        provider.domain
-      );
+      const isTrustedProvider =
+        "domainVerified" in provider &&
+        (provider as { domainVerified?: boolean }).domainVerified === true &&
+        validateEmailDomain(userInfo.email, provider.domain);
 
       const linked = await handleOAuthUserInfo(ctx, {
         userInfo: {
