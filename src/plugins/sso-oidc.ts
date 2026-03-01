@@ -19,7 +19,6 @@
 import {
   APIError,
   createAuthEndpoint,
-  createAuthMiddleware,
   sessionMiddleware,
 } from "better-auth/api";
 import { generateRandomString } from "better-auth/crypto";
@@ -1214,39 +1213,6 @@ export function ssoOidc(options?: SsoOidcOptions) {
       registerSSOProvider: registerSSOProvider(options),
       signInSSO: signInSSO(options),
       callbackSSO: callbackSSO(options),
-    },
-    hooks: {
-      after: [
-        {
-          matcher(context: any) {
-            return context.path?.startsWith("/callback/") ?? false;
-          },
-          handler: createAuthMiddleware(async (ctx: any) => {
-            const newSession = ctx.context.newSession;
-            if (!newSession?.user) return;
-            if (
-              !ctx.context.options.plugins?.find(
-                (p: any) => p.id === "organization"
-              )
-            )
-              return;
-            const domain = newSession.user.email?.split("@")[1];
-            if (!domain) return;
-            const ssoProvider = await ctx.context.adapter.findOne({
-              model: "ssoProvider",
-              where: [{ field: "domain", value: domain }],
-            });
-            if (!ssoProvider?.organizationId) return;
-            await assignOrganizationFromProvider(ctx, {
-              user: newSession.user,
-              provider: ssoProvider,
-              token: {},
-              userInfo: {},
-              provisioningOptions: options?.organizationProvisioning,
-            });
-          }),
-        },
-      ],
     },
     schema: {
       ssoProvider: {
