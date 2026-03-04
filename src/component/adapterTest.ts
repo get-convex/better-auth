@@ -5,6 +5,7 @@ import { action } from "./_generated/server.js";
 import type { GenericActionCtx } from "convex/server";
 import type { DataModel } from "./_generated/dataModel.js";
 import type { BetterAuthOptions } from "better-auth";
+import { admin } from "better-auth/plugins";
 import type { EmptyObject } from "convex-helpers";
 
 // Hide vitest imports from esbuild, keep them out of the bundle
@@ -481,6 +482,75 @@ function runCustomAdapterTests({
         data: { name: "foo", email: "foo@bar.com" },
       })
     ).rejects.toThrow("user email already exists");
+  });
+
+  test("should handle admin plugin user fields", async () => {
+    const adapter = await getAdapter({ plugins: [admin()] });
+    const banExpires = new Date(Date.now() + 60_000).toISOString();
+    const user = await adapter.create({
+      model: "user",
+      data: {
+        name: "admin user",
+        email: "admin@bar.com",
+        role: "user",
+        banned: false,
+        banReason: null,
+        banExpires: null,
+      },
+    });
+
+    expect(user.role).toEqual("user");
+    expect(user.banned).toEqual(false);
+
+    const updatedUser = await adapter.update({
+      model: "user",
+      where: [{ field: "id", value: user.id }],
+      update: {
+        role: "admin",
+        banned: true,
+        banReason: "test",
+        banExpires,
+      },
+    });
+
+    expect(updatedUser?.role).toEqual("admin");
+    expect(updatedUser?.banned).toEqual(true);
+    expect(updatedUser?.banReason).toEqual("test");
+    expect(updatedUser?.banExpires).toEqual(new Date(banExpires));
+  });
+
+  test("should handle admin plugin session impersonation field", async () => {
+    const adapter = await getAdapter({ plugins: [admin()] });
+    const user = await adapter.create({
+      model: "user",
+      data: {
+        name: "session user",
+        email: "session@bar.com",
+      },
+    });
+
+    const session = await adapter.create({
+      model: "session",
+      data: {
+        token: "token",
+        expiresAt: new Date(Date.now() + 60_000).toISOString(),
+        userId: user.id,
+        updatedAt: new Date().toISOString(),
+        impersonatedBy: "admin-user-id",
+      },
+    });
+
+    expect(session.impersonatedBy).toEqual("admin-user-id");
+
+    const updatedSession = await adapter.update({
+      model: "session",
+      where: [{ field: "id", value: session.id }],
+      update: {
+        impersonatedBy: "another-admin",
+      },
+    });
+
+    expect(updatedSession?.impersonatedBy).toEqual("another-admin");
   });
 
   test("should be able to compare against a date", async () => {

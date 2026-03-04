@@ -20,6 +20,10 @@ export const tables = {
     phoneNumber: v.optional(v.union(v.null(), v.string())),
     phoneNumberVerified: v.optional(v.union(v.null(), v.boolean())),
     userId: v.optional(v.union(v.null(), v.string())),
+    role: v.optional(v.union(v.null(), v.string())),
+    banned: v.optional(v.union(v.null(), v.boolean())),
+    banReason: v.optional(v.union(v.null(), v.string())),
+    banExpires: v.optional(v.union(v.null(), v.number())),
   })
     .index("email_name", ["email", "name"])
     .index("name", ["name"])
@@ -34,6 +38,7 @@ export const tables = {
     ipAddress: v.optional(v.union(v.null(), v.string())),
     userAgent: v.optional(v.union(v.null(), v.string())),
     userId: v.string(),
+    impersonatedBy: v.optional(v.union(v.null(), v.string())),
   })
     .index("expiresAt", ["expiresAt"])
     .index("expiresAt_userId", ["expiresAt", "userId"])

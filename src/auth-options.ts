@@ -1,5 +1,6 @@
 import type { BetterAuthOptions } from "better-auth/minimal";
 import {
+  admin,
   anonymous,
   bearer,
   emailOTP,
@@ -24,6 +25,7 @@ export const options = {
     storage: "database",
   },
   plugins: [
+    admin(),
     twoFactor(),
     anonymous(),
     username(),
