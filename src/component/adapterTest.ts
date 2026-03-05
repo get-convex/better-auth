@@ -4,7 +4,7 @@ import { api } from "./_generated/api.js";
 import { action } from "./_generated/server.js";
 import type { GenericActionCtx } from "convex/server";
 import type { DataModel } from "./_generated/dataModel.js";
-import type { BetterAuthOptions, DBAdapter } from "better-auth";
+import type { BetterAuthOptions, DBAdapter } from "better-auth/types";
 import type { EmptyObject } from "convex-helpers";
 
 // Hide vitest imports from esbuild, keep them out of the bundle
