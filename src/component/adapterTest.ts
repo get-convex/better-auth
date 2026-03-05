@@ -4,7 +4,7 @@ import { api } from "./_generated/api.js";
 import { action } from "./_generated/server.js";
 import type { GenericActionCtx } from "convex/server";
 import type { DataModel } from "./_generated/dataModel.js";
-import type { BetterAuthOptions } from "better-auth";
+import type { BetterAuthOptions, DBAdapter } from "better-auth";
 import type { EmptyObject } from "convex-helpers";
 
 // Hide vitest imports from esbuild, keep them out of the bundle
@@ -15,7 +15,7 @@ import type {
 } from "vitest";
 type AdapterGetter = (
   opts?: Omit<BetterAuthOptions, "database">
-) => Promise<import("better-auth").DBAdapter>;
+) => Promise<DBAdapter>;
 
 const getTestImports = async () => {
   const vitestImportName = "vitest";
@@ -323,11 +323,19 @@ function runCustomAdapterTests({
       select: ["email"],
     });
     expect(users).toHaveLength(1);
-    expect(users[0]).toMatchObject({
+    const user = users[0] as Record<string, unknown>;
+    expect(user).toMatchObject({
       email: "foo@bar.com",
     });
     // Better Auth currently hydrates non-selected fields as undefined on output.
-    // This regression test focuses on accepting `select` in findMany requests.
+    // Assert exact shape for defined fields while tolerating upstream undefined
+    // placeholders.
+    const definedFields = Object.fromEntries(
+      Object.entries(user).filter(([, value]) => value !== undefined)
+    );
+    expect(definedFields).toEqual({
+      email: "foo@bar.com",
+    });
   });
   test("should handle OR where clauses", async () => {
     const adapter = await getAdapter();

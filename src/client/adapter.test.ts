@@ -6,12 +6,12 @@ import { api } from "../component/_generated/api.js";
 import schema from "../component/schema.js";
 import { createClient } from "./create-client.js";
 import type { DataModel } from "../component/_generated/dataModel.js";
-import type { BetterAuthOptions } from "better-auth/types";
+import type { BetterAuthOptions, DBAdapter } from "better-auth/types";
 import type { GenericCtx } from "./index.js";
 
 type AdapterGetter = (
   opts?: Omit<BetterAuthOptions, "database">
-) => Promise<import("better-auth").DBAdapter>;
+) => Promise<DBAdapter>;
 
 export const getAdapter: (ctx: GenericCtx<DataModel>) => AdapterGetter =
   (ctx: GenericCtx<DataModel>) =>
