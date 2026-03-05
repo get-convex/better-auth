@@ -326,6 +326,8 @@ function runCustomAdapterTests({
     expect(users[0]).toMatchObject({
       email: "foo@bar.com",
     });
+    // Better Auth currently hydrates non-selected fields as undefined on output.
+    // This regression test focuses on accepting `select` in findMany requests.
   });
   test("should handle OR where clauses", async () => {
     const adapter = await getAdapter();
