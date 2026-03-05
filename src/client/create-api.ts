@@ -124,6 +124,7 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
           ...Object.keys(schema.tables).map((model) => v.literal(model))
         ),
         where: v.optional(v.array(adapterWhereValidator)),
+        select: v.optional(v.array(v.string())),
         limit: v.optional(v.number()),
         sortBy: v.optional(
           v.object({

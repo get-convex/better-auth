@@ -271,7 +271,7 @@ export const convexAdapter = <
           if (!("runMutation" in ctx)) {
             throw new Error("ctx is not a mutation ctx");
           }
-          if (data.where?.length === 1 && data.where[0].operator === "eq") {
+          if (data.where?.every((w) => !w.operator || w.operator === "eq")) {
             const onUpdateHandle =
               config.authFunctions?.onUpdate &&
               config.triggers?.[data.model]?.onUpdate

@@ -2003,6 +2003,5 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
     };
     adapterTest: {
       runCustomTests: FunctionReference<"action", "internal", any, any, Name>;
-      runTests: FunctionReference<"action", "internal", any, any, Name>;
     };
   };

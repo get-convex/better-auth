@@ -13,24 +13,21 @@ import type {
   test as testType,
   expect as expectType,
 } from "vitest";
-import type { runAdapterTest as runAdapterTestType } from "better-auth/adapters/test";
+type AdapterGetter = (
+  opts?: Omit<BetterAuthOptions, "database">
+) => Promise<import("better-auth").DBAdapter>;
 
 const getTestImports = async () => {
   const vitestImportName = "vitest";
   const { beforeEach, test, expect } = await import(vitestImportName);
-  const betterAuthAdaptersTestImportName = "better-auth/adapters/test";
-  const { runAdapterTest } = await import(betterAuthAdaptersTestImportName);
-  return { beforeEach, test, expect, runAdapterTest } as {
+  return { beforeEach, test, expect } as {
     beforeEach: typeof beforeEachType;
     test: typeof testType;
     expect: typeof expectType;
-    runAdapterTest: typeof runAdapterTestType;
   };
 };
 
-export const getAdapter: (
-  ctx: GenericCtx<DataModel>
-) => Parameters<typeof runAdapterTestType>[0]["getAdapter"] =
+export const getAdapter: (ctx: GenericCtx<DataModel>) => AdapterGetter =
   (ctx: GenericCtx<DataModel>) =>
   async (opts?: Omit<BetterAuthOptions, "database">) => {
     const authComponent = createClient<DataModel>(api as any, {
@@ -50,19 +47,6 @@ export const getAdapter: (
   };
 
 // Tests need to run inside of a Convex function to use the Convex adapter
-export const runTests = action(
-  async (
-    ctx: GenericActionCtx<DataModel>,
-    args: { disableTests: Record<string, boolean> }
-  ) => {
-    const { runAdapterTest } = await getTestImports();
-    runAdapterTest({
-      getAdapter: getAdapter(ctx),
-      disableTests: args.disableTests,
-    });
-  }
-);
-
 export const runCustomTests = action(
   async (ctx: GenericActionCtx<DataModel>, _args: EmptyObject) => {
     const { beforeEach, test, expect } = await getTestImports();
@@ -81,7 +65,7 @@ function runCustomAdapterTests({
   expect,
   getAdapter,
 }: {
-  getAdapter: Parameters<typeof runAdapterTestType>[0]["getAdapter"];
+  getAdapter: AdapterGetter;
   beforeEach: typeof beforeEachType;
   test: typeof testType;
   expect: typeof expectType;
@@ -324,6 +308,24 @@ function runCustomAdapterTests({
         limit: 350,
       })
     ).toHaveLength(300);
+  });
+  test("should support select in findMany", async () => {
+    const adapter = await getAdapter();
+    await adapter.create({
+      model: "user",
+      data: {
+        name: "foo",
+        email: "foo@bar.com",
+      },
+    });
+    const users = await adapter.findMany({
+      model: "user",
+      select: ["email"],
+    });
+    expect(users).toHaveLength(1);
+    expect(users[0]).toMatchObject({
+      email: "foo@bar.com",
+    });
   });
   test("should handle OR where clauses", async () => {
     const adapter = await getAdapter();

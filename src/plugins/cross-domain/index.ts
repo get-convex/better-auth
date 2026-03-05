@@ -1,11 +1,8 @@
 import type { BetterAuthPlugin } from "better-auth";
 import { setSessionCookie } from "better-auth/cookies";
 import { generateRandomString } from "better-auth/crypto";
-import {
-  createAuthEndpoint,
-  createAuthMiddleware,
-  oneTimeToken as oneTimeTokenPlugin,
-} from "better-auth/plugins";
+import { oneTimeToken as oneTimeTokenPlugin } from "better-auth/plugins";
+import { createAuthEndpoint, createAuthMiddleware } from "better-auth/api";
 import { z } from "zod";
 
 export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
@@ -58,8 +55,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
               Boolean(
                 ctx.request?.headers.has("better-auth-cookie") ||
                   ctx.headers?.has("better-auth-cookie")
-              ) &&
-              !isExpoNative(ctx)
+              ) && !isExpoNative(ctx)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
@@ -86,10 +82,10 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         },
         {
           matcher: (ctx) => {
-            return (
+            return Boolean(
               ctx.method === "GET" &&
-              ctx.path?.startsWith("/verify-email") &&
-              !isExpoNative(ctx)
+                ctx.path?.startsWith("/verify-email") &&
+                !isExpoNative(ctx)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
@@ -101,19 +97,20 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         },
         {
           matcher: (ctx) => {
-            return (
-              ((ctx.method === "POST" && ctx.path?.startsWith("/link-social")) ||
+            return Boolean(
+              ((ctx.method === "POST" &&
+                ctx.path?.startsWith("/link-social")) ||
                 ctx.path?.startsWith("/send-verification-email") ||
                 ctx.path?.startsWith("/sign-in/email") ||
                 ctx.path?.startsWith("/sign-in/social") ||
                 ctx.path?.startsWith("/sign-in/magic-link") ||
                 ctx.path?.startsWith("/delete-user") ||
                 ctx.path?.startsWith("/change-email")) &&
-              !isExpoNative(ctx)
+                !isExpoNative(ctx)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
-            const isSignIn = ctx.path.startsWith("/sign-in");
+            const isSignIn = ctx.path?.startsWith("/sign-in");
             ctx.body.callbackURL = rewriteCallbackURL(ctx.body.callbackURL);
             if (isSignIn && ctx.body.newUserCallbackURL) {
               ctx.body.newUserCallbackURL = rewriteCallbackURL(
@@ -136,8 +133,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
               Boolean(
                 ctx.request?.headers.has("better-auth-cookie") ||
                   ctx.headers?.has("better-auth-cookie")
-              ) &&
-              !isExpoNative(ctx)
+              ) && !isExpoNative(ctx)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
@@ -151,11 +147,11 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         },
         {
           matcher: (ctx) => {
-            return (
+            return Boolean(
               (ctx.path?.startsWith("/callback") ||
                 ctx.path?.startsWith("/oauth2/callback") ||
                 ctx.path?.startsWith("/magic-link/verify")) &&
-              !isExpoNative(ctx)
+                !isExpoNative(ctx)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {

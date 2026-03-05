@@ -1,12 +1,11 @@
-import type {
-  BetterAuthPlugin,
-  Session,
-  User,
-} from "better-auth";
+import type { BetterAuthPlugin, Session, User } from "better-auth";
 import type { BetterAuthOptions } from "better-auth/minimal";
-import { createAuthMiddleware, sessionMiddleware } from "better-auth/api";
 import {
+  createAuthMiddleware,
   createAuthEndpoint,
+  sessionMiddleware,
+} from "better-auth/api";
+import {
   jwt as jwtPlugin,
   bearer as bearerPlugin,
   oidcProvider as oidcProviderPlugin,
@@ -16,6 +15,26 @@ import { omit } from "convex-helpers";
 import type { AuthConfig, AuthProvider } from "convex/server";
 
 export const JWT_COOKIE_NAME = "convex_jwt";
+
+type BetterAuthAfterHooks = NonNullable<
+  NonNullable<BetterAuthPlugin["hooks"]>["after"]
+>;
+type BetterAuthAfterHook = BetterAuthAfterHooks[number];
+type BetterAuthHookContext = Parameters<BetterAuthAfterHook["matcher"]>[0];
+
+const normalizeAfterHooks = <
+  THook extends {
+    matcher: () => boolean;
+    handler: BetterAuthAfterHook["handler"];
+  },
+>(
+  hooks: THook[]
+): BetterAuthAfterHooks => {
+  return hooks.map((hook) => ({
+    ...hook,
+    matcher: (_ctx: BetterAuthHookContext) => hook.matcher(),
+  }));
+};
 
 const getJwksAlg = (authProvider: AuthProvider) => {
   const isCustomJwt =
@@ -280,7 +299,7 @@ export const convex = (opts: {
             const knownSafePaths = ["/api-key/list", "/api-key/get"];
             const noopWrite = (method: string) => {
               return async (..._args: any[]) => {
-                if (!knownSafePaths.includes(ctx.path)) {
+                if (ctx.path && !knownSafePaths.includes(ctx.path)) {
                   // eslint-disable-next-line no-console
                   console.warn(
                     `[convex-better-auth] Write operation "${method}" skipped in query context for ${ctx.path}`
@@ -299,7 +318,7 @@ export const convex = (opts: {
         },
       ],
       after: [
-        ...oidcProvider.hooks.after,
+        ...normalizeAfterHooks(oidcProvider.hooks.after),
         {
           matcher: (ctx) => {
             return Boolean(
@@ -341,10 +360,10 @@ export const convex = (opts: {
         },
         {
           matcher: (ctx) => {
-            return (
+            return Boolean(
               ctx.path?.startsWith("/sign-out") ||
-              ctx.path?.startsWith("/delete-user") ||
-              (ctx.path?.startsWith("/get-session") && !ctx.context.session)
+                ctx.path?.startsWith("/delete-user") ||
+                (ctx.path?.startsWith("/get-session") && !ctx.context.session)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {

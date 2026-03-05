@@ -103,7 +103,7 @@
     }
   },
   "peerDependencies": {
-    "better-auth": ">=1.4.9 <1.5.0",
+    "better-auth": ">=1.5.0",
     "convex": "^1.25.0",
     "react": "^18.3.1 || ^19.0.0"
   },
@@ -117,6 +117,7 @@
     "@types/react": "18.3.26",
     "@types/react-dom": "18.3.7",
     "@types/semver": "^7.7.0",
+    "better-auth": "^1.5.3",
     "chokidar-cli": "3.0.0",
     "concurrently": "^9.2.0",
     "convex": "^1.31.2",
@@ -141,7 +142,7 @@
   "types": "./dist/client/index.d.ts",
   "module": "./dist/client/index.js",
   "dependencies": {
-    "@better-auth/passkey": "1.4.9",
+    "@better-auth/passkey": "^1.5.3",
     "@better-fetch/fetch": "^1.1.18",
     "common-tags": "^1.8.2",
     "convex-helpers": "^0.1.95",
