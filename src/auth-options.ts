@@ -1,4 +1,5 @@
 import type { BetterAuthOptions } from "better-auth/minimal";
+import { passkey } from "@better-auth/passkey";
 import {
   anonymous,
   bearer,
@@ -13,7 +14,6 @@ import {
   twoFactor,
   username,
 } from "better-auth/plugins";
-import { passkey } from "@better-auth/passkey";
 import { convex } from "./plugins/convex/index.js";
 import { convexAdapter } from "./client/adapter.js";
 
