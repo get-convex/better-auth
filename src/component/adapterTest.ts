@@ -89,6 +89,54 @@ const pluginTableProfileApi = {
   },
 };
 
+const renameFieldProfileApi = {
+  adapter: {
+    create: (api as any).adapterRenameField.create,
+    findOne: (api as any).adapterRenameField.findOne,
+    findMany: (api as any).adapterRenameField.findMany,
+    updateOne: (api as any).adapterRenameField.updateOne,
+    updateMany: (api as any).adapterRenameField.updateMany,
+    deleteOne: (api as any).adapterRenameField.deleteOne,
+    deleteMany: (api as any).adapterRenameField.deleteMany,
+  },
+};
+
+const renameUserCustomProfileApi = {
+  adapter: {
+    create: (api as any).adapterRenameUserCustom.create,
+    findOne: (api as any).adapterRenameUserCustom.findOne,
+    findMany: (api as any).adapterRenameUserCustom.findMany,
+    updateOne: (api as any).adapterRenameUserCustom.updateOne,
+    updateMany: (api as any).adapterRenameUserCustom.updateMany,
+    deleteOne: (api as any).adapterRenameUserCustom.deleteOne,
+    deleteMany: (api as any).adapterRenameUserCustom.deleteMany,
+  },
+};
+
+const renameUserTableProfileApi = {
+  adapter: {
+    create: (api as any).adapterRenameUserTable.create,
+    findOne: (api as any).adapterRenameUserTable.findOne,
+    findMany: (api as any).adapterRenameUserTable.findMany,
+    updateOne: (api as any).adapterRenameUserTable.updateOne,
+    updateMany: (api as any).adapterRenameUserTable.updateMany,
+    deleteOne: (api as any).adapterRenameUserTable.deleteOne,
+    deleteMany: (api as any).adapterRenameUserTable.deleteMany,
+  },
+};
+
+const organizationJoinsProfileApi = {
+  adapter: {
+    create: (api as any).adapterOrganizationJoins.create,
+    findOne: (api as any).adapterOrganizationJoins.findOne,
+    findMany: (api as any).adapterOrganizationJoins.findMany,
+    updateOne: (api as any).adapterOrganizationJoins.updateOne,
+    updateMany: (api as any).adapterOrganizationJoins.updateMany,
+    deleteOne: (api as any).adapterOrganizationJoins.deleteOne,
+    deleteMany: (api as any).adapterOrganizationJoins.deleteMany,
+  },
+};
+
 export const runTests = action(
   async (ctx: GenericActionCtx<DataModel>, _args: EmptyObject) => {
     const testUtilsImport = "@better-auth/test-utils/adapter";
@@ -100,6 +148,10 @@ export const runTests = action(
       additionalFieldsNormalTestSuite,
       additionalFieldsAuthFlowTestSuite,
       pluginTableNormalTestSuite,
+      renameFieldAndJoinTestSuite,
+      renameModelUserCustomTestSuite,
+      renameModelUserTableTestSuite,
+      multiJoinsMissingRowsTestSuite,
       joinsTestSuite,
       transactionsTestSuite,
       uuidTestSuite,
@@ -117,6 +169,30 @@ export const runTests = action(
     );
     const pluginTableProfileClient = createClient<DataModel>(
       pluginTableProfileApi as any,
+      {
+        verbose: false,
+      }
+    );
+    const renameFieldProfileClient = createClient<DataModel>(
+      renameFieldProfileApi as any,
+      {
+        verbose: false,
+      }
+    );
+    const renameUserCustomProfileClient = createClient<DataModel>(
+      renameUserCustomProfileApi as any,
+      {
+        verbose: false,
+      }
+    );
+    const renameUserTableProfileClient = createClient<DataModel>(
+      renameUserTableProfileApi as any,
+      {
+        verbose: false,
+      }
+    );
+    const organizationJoinsProfileClient = createClient<DataModel>(
+      organizationJoinsProfileApi as any,
       {
         verbose: false,
       }
@@ -173,9 +249,61 @@ export const runTests = action(
       tests: [pluginTableNormalTestSuite()],
     });
 
+    const { execute: executeRenameFieldProfile } = await testAdapter({
+      adapter: () => {
+        return renameFieldProfileClient.adapter(ctx);
+      },
+      runMigrations: () => {
+        // Convex schema is static — no migrations needed.
+      },
+      overrideBetterAuthOptions: getOverrideBetterAuthOptions,
+      prefixTests: "profile:rename-field-join",
+      tests: [renameFieldAndJoinTestSuite()],
+    });
+
+    const { execute: executeRenameUserCustomProfile } = await testAdapter({
+      adapter: () => {
+        return renameUserCustomProfileClient.adapter(ctx);
+      },
+      runMigrations: () => {
+        // Convex schema is static — no migrations needed.
+      },
+      overrideBetterAuthOptions: getOverrideBetterAuthOptions,
+      prefixTests: "profile:rename-user-custom",
+      tests: [renameModelUserCustomTestSuite()],
+    });
+
+    const { execute: executeRenameUserTableProfile } = await testAdapter({
+      adapter: () => {
+        return renameUserTableProfileClient.adapter(ctx);
+      },
+      runMigrations: () => {
+        // Convex schema is static — no migrations needed.
+      },
+      overrideBetterAuthOptions: getOverrideBetterAuthOptions,
+      prefixTests: "profile:rename-user-table",
+      tests: [renameModelUserTableTestSuite()],
+    });
+
+    const { execute: executeOrganizationJoinsProfile } = await testAdapter({
+      adapter: () => {
+        return organizationJoinsProfileClient.adapter(ctx);
+      },
+      runMigrations: () => {
+        // Convex schema is static — no migrations needed.
+      },
+      overrideBetterAuthOptions: getOverrideBetterAuthOptions,
+      prefixTests: "profile:organization-joins",
+      tests: [multiJoinsMissingRowsTestSuite()],
+    });
+
     executeBaseProfile();
     executeAdditionalFieldsProfile();
     executePluginTableProfile();
+    executeRenameFieldProfile();
+    executeRenameUserCustomProfile();
+    executeRenameUserTableProfile();
+    executeOrganizationJoinsProfile();
   }
 );
 

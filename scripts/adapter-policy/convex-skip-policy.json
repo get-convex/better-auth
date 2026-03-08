@@ -17,12 +17,6 @@
     "dynamic-schema-additional-fields": {
       "reason": "These tests add additional fields at runtime via modifyBetterAuthOptions; static schema validators reject dynamic field changes."
     },
-    "dynamic-schema-rename": {
-      "reason": "These tests rename models/fields via Better Auth options; current Convex test harness cannot remap schema/validators at runtime."
-    },
-    "dynamic-schema-joins": {
-      "reason": "These join cases depend on runtime option/schema mutations (often org or plugin schema additions) unavailable in static harness."
-    },
     "transactions-unsupported": {
       "reason": "Adapter config sets transaction support to false for Convex adapter."
     },
@@ -70,30 +64,6 @@
     {
       "name": "findMany - should find many with join, where, limit, and offset",
       "category": "offset-unsupported"
-    },
-    {
-      "name": "findOne - backwards join with modified field name (session base, users-table join)",
-      "category": "dynamic-schema-rename"
-    },
-    {
-      "name": "findOne - multiple joins should return result even when some joined tables have no matching rows",
-      "category": "dynamic-schema-joins"
-    },
-    {
-      "name": "findOne - should find a model with modified field name",
-      "category": "dynamic-schema-rename"
-    },
-    {
-      "name": "findOne - should find a model with modified model name",
-      "category": "dynamic-schema-rename"
-    },
-    {
-      "name": "findOne - should join a model with modified field name",
-      "category": "dynamic-schema-rename"
-    },
-    {
-      "name": "findOne - should return null for failed base model lookup that has joins",
-      "category": "dynamic-schema-rename"
     },
     {
       "name": "findOne - should find a model using a uuid",
