@@ -39,6 +39,8 @@ jobs:
         run: npx pkg-pr-new publish || echo "Have you set up pkg-pr-new for this repo?"
       - name: Test
         run: |
+          npm run test:adapter-policy
+          npm run test -- src/client/adapter.test.ts
           npm run test
           npm run typecheck
           npm run lint

@@ -20,14 +20,11 @@ const NORMAL_DISABLED_TESTS = [
   "findMany - should be able to perform a complex limited join",
   "findMany - should find many models with limit and offset",
   "findMany - should find many models with offset",
-  "findMany - should find many models with sortBy",
-  "findMany - should find many models with sortBy and limit",
   "findMany - should find many models with sortBy and limit and offset",
   "findMany - should find many models with sortBy and limit and offset and where",
   "findMany - should find many models with sortBy and offset",
   "findMany - should find many with both one-to-one and one-to-many joins",
   "findMany - should find many with join and offset",
-  "findMany - should find many with join and sortBy",
   "findMany - should find many with join, where, limit, and offset",
   "findMany - should find many with one-to-one join",
   "findMany - should handle mixed joins correctly when some are missing",
@@ -36,7 +33,6 @@ const NORMAL_DISABLED_TESTS = [
   "findMany - should select fields with one-to-one join",
   "findOne - backwards join with modified field name (session base, users-table join)",
   "findOne - multiple joins should return result even when some joined tables have no matching rows",
-  "findOne - should find a model with additional fields",
   "findOne - should find a model with modified field name",
   "findOne - should find a model with modified model name",
   "findOne - should join a model with modified field name",
@@ -51,54 +47,88 @@ const NORMAL_DISABLED_TESTS = [
 const toDisableMap = (testNames: readonly string[]) =>
   Object.fromEntries(testNames.map((testName) => [testName, true]));
 
+const getOverrideBetterAuthOptions = (opts: any) => ({
+  ...opts,
+  advanced: {
+    ...opts.advanced,
+    database: {
+      ...opts.advanced?.database,
+      generateId: "uuid",
+    },
+  },
+});
+
+const additionalFieldsProfileApi = {
+  adapter: {
+    create: (api as any).adapterAdditionalFields.create,
+    findOne: (api as any).adapterAdditionalFields.findOne,
+    findMany: (api as any).adapterAdditionalFields.findMany,
+    updateOne: (api as any).adapterAdditionalFields.updateOne,
+    updateMany: (api as any).adapterAdditionalFields.updateMany,
+    deleteOne: (api as any).adapterAdditionalFields.deleteOne,
+    deleteMany: (api as any).adapterAdditionalFields.deleteMany,
+  },
+};
+
 export const runTests = action(
   async (ctx: GenericActionCtx<DataModel>, _args: EmptyObject) => {
     const testUtilsImport = "@better-auth/test-utils/adapter";
     const { testAdapter } = await import(testUtilsImport);
     const adapterFactoryImport = "../test/adapter-factory/index.js";
     const {
-      normalTestSuite,
-      authFlowTestSuite,
+      coreNormalTestSuite,
+      coreAuthFlowTestSuite,
+      additionalFieldsNormalTestSuite,
+      additionalFieldsAuthFlowTestSuite,
       transactionsTestSuite,
       convexCustomTestSuite,
     } = await import(adapterFactoryImport);
 
-    const authComponent = createClient<DataModel>(api as any, {
+    const baseProfileClient = createClient<DataModel>(api as any, {
       verbose: false,
     });
+    const additionalFieldsProfileClient = createClient<DataModel>(
+      additionalFieldsProfileApi as any,
+      {
+        verbose: false,
+      }
+    );
 
-    const { execute } = await testAdapter({
+    const { execute: executeBaseProfile } = await testAdapter({
       adapter: () => {
-        return authComponent.adapter(ctx);
+        return baseProfileClient.adapter(ctx);
       },
       runMigrations: () => {
         // Convex schema is static — no migrations needed.
       },
-      overrideBetterAuthOptions: (opts: any) => ({
-        ...opts,
-        advanced: {
-          ...opts.advanced,
-          database: {
-            ...opts.advanced?.database,
-            generateId: "uuid",
-          },
-        },
-      }),
+      overrideBetterAuthOptions: getOverrideBetterAuthOptions,
       tests: [
-        normalTestSuite({
+        coreNormalTestSuite({
           disableTests: toDisableMap(NORMAL_DISABLED_TESTS),
         }),
         transactionsTestSuite({ disableTests: { ALL: true } }),
-        authFlowTestSuite({
-          disableTests: {
-            "should sign up with additional fields": true,
-          },
-        }),
+        coreAuthFlowTestSuite(),
         convexCustomTestSuite(),
       ],
     });
 
-    execute();
+    const { execute: executeAdditionalFieldsProfile } = await testAdapter({
+      adapter: () => {
+        return additionalFieldsProfileClient.adapter(ctx);
+      },
+      runMigrations: () => {
+        // Convex schema is static — no migrations needed.
+      },
+      overrideBetterAuthOptions: getOverrideBetterAuthOptions,
+      prefixTests: "profile:additional-fields",
+      tests: [
+        additionalFieldsNormalTestSuite(),
+        additionalFieldsAuthFlowTestSuite(),
+      ],
+    });
+
+    executeBaseProfile();
+    executeAdditionalFieldsProfile();
   }
 );
 
@@ -118,16 +148,7 @@ export const runCustomTests = action(
         return authComponent.adapter(ctx);
       },
       runMigrations: () => {},
-      overrideBetterAuthOptions: (opts: any) => ({
-        ...opts,
-        advanced: {
-          ...opts.advanced,
-          database: {
-            ...opts.advanced?.database,
-            generateId: "uuid",
-          },
-        },
-      }),
+      overrideBetterAuthOptions: getOverrideBetterAuthOptions,
       tests: [convexCustomTestSuite()],
     });
     execute();

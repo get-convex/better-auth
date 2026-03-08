@@ -68,14 +68,6 @@
       "category": "offset-unsupported"
     },
     {
-      "name": "findMany - should find many models with sortBy",
-      "category": "dynamic-schema-additional-fields"
-    },
-    {
-      "name": "findMany - should find many models with sortBy and limit",
-      "category": "dynamic-schema-additional-fields"
-    },
-    {
       "name": "findMany - should find many models with sortBy and limit and offset",
       "category": "offset-unsupported"
     },
@@ -94,10 +86,6 @@
     {
       "name": "findMany - should find many with join and offset",
       "category": "offset-unsupported"
-    },
-    {
-      "name": "findMany - should find many with join and sortBy",
-      "category": "dynamic-schema-additional-fields"
     },
     {
       "name": "findMany - should find many with join, where, limit, and offset",
@@ -130,10 +118,6 @@
     {
       "name": "findOne - multiple joins should return result even when some joined tables have no matching rows",
       "category": "dynamic-schema-joins"
-    },
-    {
-      "name": "findOne - should find a model with additional fields",
-      "category": "dynamic-schema-additional-fields"
     },
     {
       "name": "findOne - should find a model with modified field name",
@@ -170,10 +154,6 @@
     {
       "name": "findOne - should work with both one-to-one and one-to-many joins",
       "category": "dynamic-schema-plugin-table"
-    },
-    {
-      "name": "should sign up with additional fields",
-      "category": "dynamic-schema-additional-fields"
     }
   ],
   "disabledSuites": [
