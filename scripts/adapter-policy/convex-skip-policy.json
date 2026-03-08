@@ -52,10 +52,6 @@
       "category": "convex-id-generation"
     },
     {
-      "name": "deleteMany - should delete many models with numeric values",
-      "category": "dynamic-schema-additional-fields"
-    },
-    {
       "name": "findMany - should be able to perform a complex limited join",
       "category": "offset-unsupported"
     },

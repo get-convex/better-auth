@@ -16,7 +16,6 @@ const NORMAL_DISABLED_TESTS = [
   "create - should support arrays",
   "create - should support json",
   "create - should use generateId if provided",
-  "deleteMany - should delete many models with numeric values",
   "findMany - should be able to perform a complex limited join",
   "findMany - should find many models with limit and offset",
   "findMany - should find many models with offset",

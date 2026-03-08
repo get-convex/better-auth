@@ -324,19 +324,19 @@ const filterByWhere = <
       typeof adapterWhereValidator
     >["value"];
     const isLessThan = (val: typeof value, wVal: typeof w.value) => {
-      if (!wVal) {
+      if (wVal === undefined || wVal === null) {
         return false;
       }
-      if (!val) {
+      if (val === undefined || val === null) {
         return true;
       }
       return val < wVal;
     };
     const isGreaterThan = (val: typeof value, wVal: typeof w.value) => {
-      if (!val) {
+      if (val === undefined || val === null) {
         return false;
       }
-      if (!wVal) {
+      if (wVal === undefined || wVal === null) {
         return true;
       }
       return val > wVal;
@@ -401,11 +401,11 @@ const generateQuery = (
     index?.indexDescriptor === "by_creation_time" ? undefined : index;
   const query = stream(ctx.db as any, schema).query(args.model as any);
   const hasValues =
-    values?.eq?.length ||
-    values?.lt ||
-    values?.lte ||
-    values?.gt ||
-    values?.gte;
+    (values?.eq?.length ?? 0) > 0 ||
+    values?.lt !== undefined ||
+    values?.lte !== undefined ||
+    values?.gt !== undefined ||
+    values?.gte !== undefined;
   const indexedQuery = usableIndex
     ? query.withIndex(
         usableIndex.indexDescriptor,
@@ -414,16 +414,16 @@ const generateQuery = (
               for (const [idx, value] of (values?.eq ?? []).entries()) {
                 q = q.eq(usableIndex.fields[idx], value);
               }
-              if (values?.lt && boundField) {
+              if (values?.lt !== undefined && boundField) {
                 q = q.lt(boundField, values.lt);
               }
-              if (values?.lte && boundField) {
+              if (values?.lte !== undefined && boundField) {
                 q = q.lte(boundField, values.lte);
               }
-              if (values?.gt && boundField) {
+              if (values?.gt !== undefined && boundField) {
                 q = q.gt(boundField, values.gt);
               }
-              if (values?.gte && boundField) {
+              if (values?.gte !== undefined && boundField) {
                 q = q.gte(boundField, values.gte);
               }
               return q;
