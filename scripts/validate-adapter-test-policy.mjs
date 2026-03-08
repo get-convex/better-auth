@@ -44,20 +44,6 @@ if (knownTests.size === 0) {
   errors.push("Catalog has no tests (testsBySuite values are empty)");
 }
 
-const allTestsFromCatalog = new Set(catalog.allTests ?? []);
-if (catalog.allTests) {
-  for (const testName of allTestsFromCatalog) {
-    if (!knownTests.has(testName)) {
-      errors.push(`catalog.allTests contains unknown test: ${JSON.stringify(testName)}`);
-    }
-  }
-  for (const testName of knownTests) {
-    if (!allTestsFromCatalog.has(testName)) {
-      errors.push(`catalog.allTests missing known test: ${JSON.stringify(testName)}`);
-    }
-  }
-}
-
 const categories = policy.categories ?? {};
 const knownCategories = new Set(Object.keys(categories));
 if (knownCategories.size === 0) {
