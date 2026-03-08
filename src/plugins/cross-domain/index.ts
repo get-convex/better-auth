@@ -1,11 +1,8 @@
 import type { BetterAuthPlugin } from "better-auth";
 import { setSessionCookie } from "better-auth/cookies";
 import { generateRandomString } from "better-auth/crypto";
-import {
-  createAuthEndpoint,
-  createAuthMiddleware,
-  oneTimeToken as oneTimeTokenPlugin,
-} from "better-auth/plugins";
+import { createAuthEndpoint, createAuthMiddleware } from "better-auth/api";
+import { oneTimeToken as oneTimeTokenPlugin } from "better-auth/plugins";
 import { z } from "zod";
 
 export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
@@ -113,7 +110,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
-            const isSignIn = ctx.path.startsWith("/sign-in");
+            const isSignIn = Boolean(ctx.path?.startsWith("/sign-in"));
             ctx.body.callbackURL = rewriteCallbackURL(ctx.body.callbackURL);
             if (isSignIn && ctx.body.newUserCallbackURL) {
               ctx.body.newUserCallbackURL = rewriteCallbackURL(
