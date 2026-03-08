@@ -77,6 +77,18 @@ const additionalFieldsProfileApi = {
   },
 };
 
+const pluginTableProfileApi = {
+  adapter: {
+    create: (api as any).adapterPluginTable.create,
+    findOne: (api as any).adapterPluginTable.findOne,
+    findMany: (api as any).adapterPluginTable.findMany,
+    updateOne: (api as any).adapterPluginTable.updateOne,
+    updateMany: (api as any).adapterPluginTable.updateMany,
+    deleteOne: (api as any).adapterPluginTable.deleteOne,
+    deleteMany: (api as any).adapterPluginTable.deleteMany,
+  },
+};
+
 export const runTests = action(
   async (ctx: GenericActionCtx<DataModel>, _args: EmptyObject) => {
     const testUtilsImport = "@better-auth/test-utils/adapter";
@@ -87,6 +99,7 @@ export const runTests = action(
       coreAuthFlowTestSuite,
       additionalFieldsNormalTestSuite,
       additionalFieldsAuthFlowTestSuite,
+      pluginTableNormalTestSuite,
       joinsTestSuite,
       transactionsTestSuite,
       uuidTestSuite,
@@ -98,6 +111,12 @@ export const runTests = action(
     });
     const additionalFieldsProfileClient = createClient<DataModel>(
       additionalFieldsProfileApi as any,
+      {
+        verbose: false,
+      }
+    );
+    const pluginTableProfileClient = createClient<DataModel>(
+      pluginTableProfileApi as any,
       {
         verbose: false,
       }
@@ -142,8 +161,21 @@ export const runTests = action(
       ],
     });
 
+    const { execute: executePluginTableProfile } = await testAdapter({
+      adapter: () => {
+        return pluginTableProfileClient.adapter(ctx);
+      },
+      runMigrations: () => {
+        // Convex schema is static — no migrations needed.
+      },
+      overrideBetterAuthOptions: getOverrideBetterAuthOptions,
+      prefixTests: "profile:plugin-table",
+      tests: [pluginTableNormalTestSuite()],
+    });
+
     executeBaseProfile();
     executeAdditionalFieldsProfile();
+    executePluginTableProfile();
   }
 );
 

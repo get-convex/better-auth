@@ -4,5 +4,6 @@ export * from "./convex-custom.js";
 export * from "./joins.js";
 export * from "./number-id.js";
 export * from "./profile-additional-fields.js";
+export * from "./profile-plugin-table.js";
 export * from "./transactions.js";
 export * from "./uuid.js";
