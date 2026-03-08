@@ -2,8 +2,11 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const baseDir = path.resolve("scripts/adapter-policy");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const baseDir = __dirname;
 const catalogPath = path.join(baseDir, "upstream-test-catalog.json");
 const policyPath = path.join(baseDir, "convex-skip-policy.json");
 

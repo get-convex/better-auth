@@ -30,7 +30,7 @@
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "test:e2e": "npm run build && cd e2e && npm run test",
     "test:coverage": "vitest run --coverage --coverage.reporter=text",
-    "test:adapter-policy": "node scripts/validate-adapter-test-policy.mjs",
+    "test:adapter-policy": "node test/adapter-policy/validate.mjs",
     "preversion": "npm ci && npm run build:clean && run-p test lint typecheck",
     "prepublishOnly": "npm whoami || npm login && sleep 1",
     "alpha": "npm version prerelease --preid alpha && npm publish --tag alpha && git push --follow-tags",
