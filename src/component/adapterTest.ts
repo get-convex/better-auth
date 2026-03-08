@@ -67,73 +67,73 @@ const getOverrideBetterAuthOptions = (opts: any) => ({
 
 const additionalFieldsProfileApi = {
   adapter: {
-    create: (api as any).adapterAdditionalFields.create,
-    findOne: (api as any).adapterAdditionalFields.findOne,
-    findMany: (api as any).adapterAdditionalFields.findMany,
-    updateOne: (api as any).adapterAdditionalFields.updateOne,
-    updateMany: (api as any).adapterAdditionalFields.updateMany,
-    deleteOne: (api as any).adapterAdditionalFields.deleteOne,
-    deleteMany: (api as any).adapterAdditionalFields.deleteMany,
+    create: (api as any).testProfiles.adapterAdditionalFields.create,
+    findOne: (api as any).testProfiles.adapterAdditionalFields.findOne,
+    findMany: (api as any).testProfiles.adapterAdditionalFields.findMany,
+    updateOne: (api as any).testProfiles.adapterAdditionalFields.updateOne,
+    updateMany: (api as any).testProfiles.adapterAdditionalFields.updateMany,
+    deleteOne: (api as any).testProfiles.adapterAdditionalFields.deleteOne,
+    deleteMany: (api as any).testProfiles.adapterAdditionalFields.deleteMany,
   },
 };
 
 const pluginTableProfileApi = {
   adapter: {
-    create: (api as any).adapterPluginTable.create,
-    findOne: (api as any).adapterPluginTable.findOne,
-    findMany: (api as any).adapterPluginTable.findMany,
-    updateOne: (api as any).adapterPluginTable.updateOne,
-    updateMany: (api as any).adapterPluginTable.updateMany,
-    deleteOne: (api as any).adapterPluginTable.deleteOne,
-    deleteMany: (api as any).adapterPluginTable.deleteMany,
+    create: (api as any).testProfiles.adapterPluginTable.create,
+    findOne: (api as any).testProfiles.adapterPluginTable.findOne,
+    findMany: (api as any).testProfiles.adapterPluginTable.findMany,
+    updateOne: (api as any).testProfiles.adapterPluginTable.updateOne,
+    updateMany: (api as any).testProfiles.adapterPluginTable.updateMany,
+    deleteOne: (api as any).testProfiles.adapterPluginTable.deleteOne,
+    deleteMany: (api as any).testProfiles.adapterPluginTable.deleteMany,
   },
 };
 
 const renameFieldProfileApi = {
   adapter: {
-    create: (api as any).adapterRenameField.create,
-    findOne: (api as any).adapterRenameField.findOne,
-    findMany: (api as any).adapterRenameField.findMany,
-    updateOne: (api as any).adapterRenameField.updateOne,
-    updateMany: (api as any).adapterRenameField.updateMany,
-    deleteOne: (api as any).adapterRenameField.deleteOne,
-    deleteMany: (api as any).adapterRenameField.deleteMany,
+    create: (api as any).testProfiles.adapterRenameField.create,
+    findOne: (api as any).testProfiles.adapterRenameField.findOne,
+    findMany: (api as any).testProfiles.adapterRenameField.findMany,
+    updateOne: (api as any).testProfiles.adapterRenameField.updateOne,
+    updateMany: (api as any).testProfiles.adapterRenameField.updateMany,
+    deleteOne: (api as any).testProfiles.adapterRenameField.deleteOne,
+    deleteMany: (api as any).testProfiles.adapterRenameField.deleteMany,
   },
 };
 
 const renameUserCustomProfileApi = {
   adapter: {
-    create: (api as any).adapterRenameUserCustom.create,
-    findOne: (api as any).adapterRenameUserCustom.findOne,
-    findMany: (api as any).adapterRenameUserCustom.findMany,
-    updateOne: (api as any).adapterRenameUserCustom.updateOne,
-    updateMany: (api as any).adapterRenameUserCustom.updateMany,
-    deleteOne: (api as any).adapterRenameUserCustom.deleteOne,
-    deleteMany: (api as any).adapterRenameUserCustom.deleteMany,
+    create: (api as any).testProfiles.adapterRenameUserCustom.create,
+    findOne: (api as any).testProfiles.adapterRenameUserCustom.findOne,
+    findMany: (api as any).testProfiles.adapterRenameUserCustom.findMany,
+    updateOne: (api as any).testProfiles.adapterRenameUserCustom.updateOne,
+    updateMany: (api as any).testProfiles.adapterRenameUserCustom.updateMany,
+    deleteOne: (api as any).testProfiles.adapterRenameUserCustom.deleteOne,
+    deleteMany: (api as any).testProfiles.adapterRenameUserCustom.deleteMany,
   },
 };
 
 const renameUserTableProfileApi = {
   adapter: {
-    create: (api as any).adapterRenameUserTable.create,
-    findOne: (api as any).adapterRenameUserTable.findOne,
-    findMany: (api as any).adapterRenameUserTable.findMany,
-    updateOne: (api as any).adapterRenameUserTable.updateOne,
-    updateMany: (api as any).adapterRenameUserTable.updateMany,
-    deleteOne: (api as any).adapterRenameUserTable.deleteOne,
-    deleteMany: (api as any).adapterRenameUserTable.deleteMany,
+    create: (api as any).testProfiles.adapterRenameUserTable.create,
+    findOne: (api as any).testProfiles.adapterRenameUserTable.findOne,
+    findMany: (api as any).testProfiles.adapterRenameUserTable.findMany,
+    updateOne: (api as any).testProfiles.adapterRenameUserTable.updateOne,
+    updateMany: (api as any).testProfiles.adapterRenameUserTable.updateMany,
+    deleteOne: (api as any).testProfiles.adapterRenameUserTable.deleteOne,
+    deleteMany: (api as any).testProfiles.adapterRenameUserTable.deleteMany,
   },
 };
 
 const organizationJoinsProfileApi = {
   adapter: {
-    create: (api as any).adapterOrganizationJoins.create,
-    findOne: (api as any).adapterOrganizationJoins.findOne,
-    findMany: (api as any).adapterOrganizationJoins.findMany,
-    updateOne: (api as any).adapterOrganizationJoins.updateOne,
-    updateMany: (api as any).adapterOrganizationJoins.updateMany,
-    deleteOne: (api as any).adapterOrganizationJoins.deleteOne,
-    deleteMany: (api as any).adapterOrganizationJoins.deleteMany,
+    create: (api as any).testProfiles.adapterOrganizationJoins.create,
+    findOne: (api as any).testProfiles.adapterOrganizationJoins.findOne,
+    findMany: (api as any).testProfiles.adapterOrganizationJoins.findMany,
+    updateOne: (api as any).testProfiles.adapterOrganizationJoins.updateOne,
+    updateMany: (api as any).testProfiles.adapterOrganizationJoins.updateMany,
+    deleteOne: (api as any).testProfiles.adapterOrganizationJoins.deleteOne,
+    deleteMany: (api as any).testProfiles.adapterOrganizationJoins.deleteMany,
   },
 };
 
