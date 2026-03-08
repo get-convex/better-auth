@@ -46,6 +46,14 @@ const NORMAL_DISABLED_TESTS = [
 const toDisableMap = (testNames: readonly string[]) =>
   Object.fromEntries(testNames.map((testName) => [testName, true]));
 
+const toEnableOnlyMap = (testNames: readonly string[]) => ({
+  ALL: true,
+  ...Object.fromEntries(testNames.map((testName) => [testName, false])),
+});
+
+const JOINS_SUITE_TESTS = ["init - tests"] as const;
+const UUID_SUITE_TESTS = ["init - tests"] as const;
+
 const getOverrideBetterAuthOptions = (opts: any) => ({
   ...opts,
   advanced: {
@@ -79,7 +87,9 @@ export const runTests = action(
       coreAuthFlowTestSuite,
       additionalFieldsNormalTestSuite,
       additionalFieldsAuthFlowTestSuite,
+      joinsTestSuite,
       transactionsTestSuite,
+      uuidTestSuite,
       convexCustomTestSuite,
     } = await import(adapterFactoryImport);
 
@@ -104,6 +114,12 @@ export const runTests = action(
       tests: [
         coreNormalTestSuite({
           disableTests: toDisableMap(NORMAL_DISABLED_TESTS),
+        }),
+        joinsTestSuite({
+          disableTests: toEnableOnlyMap(JOINS_SUITE_TESTS),
+        }),
+        uuidTestSuite({
+          disableTests: toEnableOnlyMap(UUID_SUITE_TESTS),
         }),
         transactionsTestSuite({ disableTests: { ALL: true } }),
         coreAuthFlowTestSuite(),

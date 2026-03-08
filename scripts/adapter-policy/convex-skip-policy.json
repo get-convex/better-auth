@@ -26,8 +26,8 @@
     "transactions-unsupported": {
       "reason": "Adapter config sets transaction support to false for Convex adapter."
     },
-    "profile-required": {
-      "reason": "Suite is valid but currently not wired into the Convex 1.5 bridge; requires profile-based harness support."
+    "numeric-id-unsupported": {
+      "reason": "Convex adapter declares supportsNumericIds=false and Better Auth rejects number-id mode for this adapter."
     }
   },
   "disabledTests": [
@@ -49,6 +49,10 @@
     },
     {
       "name": "create - should use generateId if provided",
+      "category": "convex-id-generation"
+    },
+    {
+      "name": "create - should return a uuid",
       "category": "convex-id-generation"
     },
     {
@@ -144,6 +148,10 @@
       "category": "dynamic-schema-plugin-table"
     },
     {
+      "name": "findOne - should find a model using a uuid",
+      "category": "convex-id-generation"
+    },
+    {
       "name": "findOne - should select fields with one-to-one join",
       "category": "dynamic-schema-plugin-table"
     },
@@ -156,20 +164,11 @@
     {
       "suite": "transactions",
       "category": "transactions-unsupported"
-    }
-  ],
-  "notRunSuites": [
-    {
-      "suite": "joins",
-      "category": "profile-required"
     },
     {
       "suite": "number-id",
-      "category": "profile-required"
-    },
-    {
-      "suite": "uuid",
-      "category": "profile-required"
+      "category": "numeric-id-unsupported"
     }
-  ]
+  ],
+  "notRunSuites": []
 }
