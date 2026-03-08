@@ -14,7 +14,7 @@ import type { SetOptional } from "type-fest";
 import type defaultSchema from "../component/schema.js";
 import type { Where } from "better-auth/types";
 import { asyncMap } from "convex-helpers";
-import { prop, sortBy, unique } from "remeda";
+import { prop, sortBy } from "remeda";
 import { isRunMutationCtx } from "../utils/index.js";
 import type { Doc, TableNames } from "../component/_generated/dataModel.js";
 import type { ComponentApi } from "../component/_generated/component.js";
@@ -102,6 +102,34 @@ const parseWhere = (
   }) as ConvexCleanedWhere[];
 };
 
+const getDocId = (doc: any) => {
+  if (doc?._id !== undefined && doc?._id !== null) {
+    return String(doc._id);
+  }
+  if (doc?.id !== undefined && doc?.id !== null) {
+    return String(doc.id);
+  }
+  return undefined;
+};
+
+const dedupeDocsById = <T extends Record<string, any>>(docs: T[]) => {
+  const seen = new Set<string>();
+  const deduped: T[] = [];
+  for (const doc of docs) {
+    const id = getDocId(doc);
+    if (!id) {
+      deduped.push(doc);
+      continue;
+    }
+    if (seen.has(id)) {
+      continue;
+    }
+    seen.add(id);
+    deduped.push(doc);
+  }
+  return deduped;
+};
+
 export const convexAdapter = <
   DataModel extends GenericDataModel,
   Ctx extends GenericCtx<DataModel> = GenericActionCtx<DataModel>,
@@ -154,6 +182,31 @@ export const convexAdapter = <
     adapter: ({ options }) => {
       // Disable telemetry in all cases because it requires Node
       options.telemetry = { enabled: false };
+
+      const collectIdsForOrWhere = async (data: {
+        model: string;
+        where: (Where & { join?: undefined })[];
+        limit?: number;
+      }) => {
+        const results = await asyncMap(data.where, async (w) =>
+          handlePagination(
+            async ({ paginationOpts }) => {
+              return await ctx.runQuery(api.adapter.findMany, {
+                model: data.model as TableNames,
+                where: parseWhere(w),
+                paginationOpts,
+                select: ["id"],
+              });
+            },
+            { limit: data.limit }
+          )
+        );
+        const ids = dedupeDocsById(results.flatMap((r) => r.docs))
+          .map((doc) => getDocId(doc))
+          .flatMap((id) => (id ? [id] : []));
+        return data.limit ? ids.slice(0, data.limit) : ids;
+      };
+
       return {
         id: "convex",
         options: {
@@ -217,7 +270,7 @@ export const convexAdapter = <
                 { limit: data.limit }
               )
             );
-            const docs = unique(results.flatMap((r) => r.docs));
+            const docs = dedupeDocsById(results.flatMap((r) => r.docs));
             if (data.sortBy) {
               return sortBy(docs, [
                 prop(data.sortBy.field),
@@ -253,7 +306,7 @@ export const convexAdapter = <
                 });
               })
             );
-            const docs = unique(results.flatMap((r) => r.docs));
+            const docs = dedupeDocsById(results.flatMap((r) => r.docs));
             return docs.length;
           }
 
@@ -271,7 +324,7 @@ export const convexAdapter = <
           if (!("runMutation" in ctx)) {
             throw new Error("ctx is not a mutation ctx");
           }
-          if (data.where?.length === 1 && data.where[0].operator === "eq") {
+          if (data.where?.length && !data.where.some((w) => w.connector === "OR")) {
             const onUpdateHandle =
               config.authFunctions?.onUpdate &&
               config.triggers?.[data.model]?.onUpdate
@@ -320,6 +373,23 @@ export const convexAdapter = <
                   config.authFunctions.onDelete
                 )) as FunctionHandle<"mutation">)
               : undefined;
+          if (data.where?.some((w) => w.connector === "OR")) {
+            const ids = await collectIdsForOrWhere({
+              model: data.model as string,
+              where: data.where,
+              limit: data.limit,
+            });
+            await asyncMap(ids, async (id) => {
+              await ctx.runMutation(api.adapter.deleteOne, {
+                input: {
+                  model: data.model as TableNames,
+                  where: [{ field: "_id", operator: "eq", value: id }],
+                },
+                onDeleteHandle: onDeleteHandle,
+              });
+            });
+            return ids.length;
+          }
           const result = await handlePagination(async ({ paginationOpts }) => {
             return await ctx.runMutation(api.adapter.deleteMany, {
               input: {
@@ -344,6 +414,24 @@ export const convexAdapter = <
                   config.authFunctions.onUpdate
                 )) as FunctionHandle<"mutation">)
               : undefined;
+          if (data.where?.some((w) => w.connector === "OR")) {
+            const ids = await collectIdsForOrWhere({
+              model: data.model as string,
+              where: data.where,
+              limit: data.limit,
+            });
+            await asyncMap(ids, async (id) => {
+              await ctx.runMutation(api.adapter.updateOne, {
+                input: {
+                  model: data.model as TableNames,
+                  where: [{ field: "_id", operator: "eq", value: id }],
+                  update: data.update as any,
+                },
+                onUpdateHandle: onUpdateHandle,
+              });
+            });
+            return ids.length;
+          }
           const result = await handlePagination(async ({ paginationOpts }) => {
             return await ctx.runMutation(api.adapter.updateMany, {
               input: {

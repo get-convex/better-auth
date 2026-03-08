@@ -293,7 +293,10 @@ export const selectFields = async <
     return doc;
   }
   return select.reduce((acc, field) => {
-    (acc as any)[field] = doc[field];
+    // Better Auth may request "id" while Convex stores it as "_id".
+    // Keep the raw field key here and let Better Auth map "_id" -> "id".
+    const sourceField = field === "id" && "_id" in doc ? "_id" : field;
+    (acc as any)[sourceField] = doc[sourceField as keyof typeof doc];
     return acc;
   }, {} as D);
 };
@@ -394,6 +397,8 @@ const generateQuery = (
 ) => {
   const { index, values, boundField, indexFields } =
     findIndex(schema, args) ?? {};
+  const usableIndex =
+    index?.indexDescriptor === "by_creation_time" ? undefined : index;
   const query = stream(ctx.db as any, schema).query(args.model as any);
   const hasValues =
     values?.eq?.length ||
@@ -401,47 +406,48 @@ const generateQuery = (
     values?.lte ||
     values?.gt ||
     values?.gte;
-  const indexedQuery =
-    index && index.indexDescriptor !== "by_creation_time"
-      ? query.withIndex(
-          index.indexDescriptor,
-          hasValues
-            ? (q: any) => {
-                for (const [idx, value] of (values?.eq ?? []).entries()) {
-                  q = q.eq(index.fields[idx], value);
-                }
-                if (values?.lt) {
-                  q = q.lt(boundField, values.lt);
-                }
-                if (values?.lte) {
-                  q = q.lte(boundField, values.lte);
-                }
-                if (values?.gt) {
-                  q = q.gt(boundField, values.gt);
-                }
-                if (values?.gte) {
-                  q = q.gte(boundField, values.gte);
-                }
-                return q;
+  const indexedQuery = usableIndex
+    ? query.withIndex(
+        usableIndex.indexDescriptor,
+        hasValues
+          ? (q: any) => {
+              for (const [idx, value] of (values?.eq ?? []).entries()) {
+                q = q.eq(usableIndex.fields[idx], value);
               }
-            : undefined
-        )
-      : query;
+              if (values?.lt && boundField) {
+                q = q.lt(boundField, values.lt);
+              }
+              if (values?.lte && boundField) {
+                q = q.lte(boundField, values.lte);
+              }
+              if (values?.gt && boundField) {
+                q = q.gt(boundField, values.gt);
+              }
+              if (values?.gte && boundField) {
+                q = q.gte(boundField, values.gte);
+              }
+              return q;
+            }
+          : undefined
+      )
+    : query;
   const orderedQuery = args.sortBy
     ? indexedQuery.order(args.sortBy.direction === "desc" ? "desc" : "asc")
     : indexedQuery;
   const filteredQuery = orderedQuery.filterWith(async (doc) => {
-    if (!index && indexFields?.length) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        stripIndent`
-          Querying without an index on table "${args.model}".
-          This can cause performance issues, and may hit the document read limit.
-          To fix, add an index that begins with the following fields in order:
-          [${indexFields.join(", ")}]
-        `
-      );
-      // No index, handle all where clauses statically.
+    if (!usableIndex) {
+      if (indexFields?.length) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          stripIndent`
+            Querying without an index on table "${args.model}".
+            This can cause performance issues, and may hit the document read limit.
+            To fix, add an index that begins with the following fields in order:
+            [${indexFields.join(", ")}]
+          `
+        );
+      }
+      // No usable index, handle all where clauses statically.
       return filterByWhere(doc, args.where);
     }
     return filterByWhere(
@@ -559,28 +565,31 @@ export const paginate = async <
         .filter((doc) => filterByWhere(doc, args.where, (w) => w !== inWhere));
 
       return {
-        page: filteredDocs.sort((a, b) => {
-          if (args.sortBy?.field === "createdAt") {
-            return args.sortBy.direction === "asc"
-              ? (a._creationTime as number) - (b._creationTime as number)
-              : (b._creationTime as number) - (a._creationTime as number);
-          }
-          if (args.sortBy) {
-            const aValue = a[args.sortBy.field as keyof typeof a];
-            const bValue = b[args.sortBy.field as keyof typeof b];
-            if (aValue === bValue) {
-              return 0;
+        page: await asyncMap(
+          filteredDocs.sort((a, b) => {
+            if (args.sortBy?.field === "createdAt") {
+              return args.sortBy.direction === "asc"
+                ? (a._creationTime as number) - (b._creationTime as number)
+                : (b._creationTime as number) - (a._creationTime as number);
             }
-            return args.sortBy.direction === "asc"
-              ? aValue! > bValue!
-                ? 1
-                : -1
-              : aValue! > bValue!
-                ? -1
-                : 1;
-          }
-          return 0;
-        }) as Doc[],
+            if (args.sortBy) {
+              const aValue = a[args.sortBy.field as keyof typeof a];
+              const bValue = b[args.sortBy.field as keyof typeof b];
+              if (aValue === bValue) {
+                return 0;
+              }
+              return args.sortBy.direction === "asc"
+                ? aValue! > bValue!
+                  ? 1
+                  : -1
+                : aValue! > bValue!
+                  ? -1
+                  : 1;
+            }
+            return 0;
+          }),
+          (doc) => selectFields(doc, args.select)
+        ),
         isDone: true,
         continueCursor: "",
       };

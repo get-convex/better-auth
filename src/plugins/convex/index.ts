@@ -4,9 +4,12 @@ import type {
   User,
 } from "better-auth";
 import type { BetterAuthOptions } from "better-auth/minimal";
-import { createAuthMiddleware, sessionMiddleware } from "better-auth/api";
 import {
   createAuthEndpoint,
+  createAuthMiddleware,
+  sessionMiddleware,
+} from "better-auth/api";
+import {
   jwt as jwtPlugin,
   bearer as bearerPlugin,
   oidcProvider as oidcProviderPlugin,
