@@ -565,31 +565,33 @@ export const paginate = async <
         .filter((doc) => filterByWhere(doc, args.where, (w) => w !== inWhere));
 
       return {
-        page: await asyncMap(
-          filteredDocs.sort((a, b) => {
-            if (args.sortBy?.field === "createdAt") {
-              return args.sortBy.direction === "asc"
-                ? (a._creationTime as number) - (b._creationTime as number)
-                : (b._creationTime as number) - (a._creationTime as number);
-            }
-            if (args.sortBy) {
-              const aValue = a[args.sortBy.field as keyof typeof a];
-              const bValue = b[args.sortBy.field as keyof typeof b];
-              if (aValue === bValue) {
-                return 0;
+        page: (
+          await asyncMap(
+            filteredDocs.sort((a, b) => {
+              if (args.sortBy?.field === "createdAt") {
+                return args.sortBy.direction === "asc"
+                  ? (a._creationTime as number) - (b._creationTime as number)
+                  : (b._creationTime as number) - (a._creationTime as number);
               }
-              return args.sortBy.direction === "asc"
-                ? aValue! > bValue!
-                  ? 1
-                  : -1
-                : aValue! > bValue!
-                  ? -1
-                  : 1;
-            }
-            return 0;
-          }),
-          (doc) => selectFields(doc, args.select)
-        ),
+              if (args.sortBy) {
+                const aValue = a[args.sortBy.field as keyof typeof a];
+                const bValue = b[args.sortBy.field as keyof typeof b];
+                if (aValue === bValue) {
+                  return 0;
+                }
+                return args.sortBy.direction === "asc"
+                  ? aValue! > bValue!
+                    ? 1
+                    : -1
+                  : aValue! > bValue!
+                    ? -1
+                    : 1;
+              }
+              return 0;
+            }),
+            (doc) => selectFields(doc, args.select)
+          )
+        ).flatMap((doc) => (doc ? [doc] : [])) as Doc[],
         isDone: true,
         continueCursor: "",
       };

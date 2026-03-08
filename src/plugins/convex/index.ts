@@ -27,16 +27,13 @@ type BetterAuthAfterHook = BetterAuthAfterHooks[number];
 type BetterAuthHookContext = Parameters<BetterAuthAfterHook["matcher"]>[0];
 
 const normalizeAfterHooks = <
-  THook extends {
-    matcher: () => boolean;
-    handler: BetterAuthAfterHook["handler"];
-  },
+  THook extends BetterAuthAfterHook,
 >(
   hooks: THook[]
 ): BetterAuthAfterHooks => {
   return hooks.map((hook) => ({
     ...hook,
-    matcher: (_ctx: BetterAuthHookContext) => hook.matcher(),
+    matcher: (ctx: BetterAuthHookContext) => Boolean(hook.matcher(ctx)),
   }));
 };
 
@@ -364,7 +361,7 @@ export const convex = (opts: {
         },
         {
           matcher: (ctx) => {
-            return (
+            return Boolean(
               ctx.path?.startsWith("/sign-out") ||
               ctx.path?.startsWith("/delete-user") ||
               (ctx.path?.startsWith("/get-session") && !ctx.context.session)

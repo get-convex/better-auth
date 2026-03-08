@@ -1,9 +1,11 @@
 import { createClient } from "../client/index.js";
-import { api } from "./_generated/api.js";
+import { internal } from "./_generated/api.js";
 import { action } from "./_generated/server.js";
 import type { GenericActionCtx } from "convex/server";
 import type { DataModel } from "./_generated/dataModel.js";
 import type { EmptyObject } from "convex-helpers";
+import type { BetterAuthOptions } from "better-auth";
+import type { ComponentApi } from "./_generated/component.js";
 
 // Tests need to run inside of a Convex function to use the Convex adapter.
 // Test dependencies are dynamically imported to keep them out of the
@@ -54,7 +56,7 @@ const toEnableOnlyMap = (testNames: readonly string[]) => ({
 const JOINS_SUITE_TESTS = ["init - tests"] as const;
 const UUID_SUITE_TESTS = ["init - tests"] as const;
 
-const getOverrideBetterAuthOptions = (opts: any) => ({
+const getOverrideBetterAuthOptions = (opts: BetterAuthOptions) => ({
   ...opts,
   advanced: {
     ...opts.advanced,
@@ -65,77 +67,38 @@ const getOverrideBetterAuthOptions = (opts: any) => ({
   },
 });
 
-const additionalFieldsProfileApi = {
-  adapter: {
-    create: (api as any).testProfiles.adapterAdditionalFields.create,
-    findOne: (api as any).testProfiles.adapterAdditionalFields.findOne,
-    findMany: (api as any).testProfiles.adapterAdditionalFields.findMany,
-    updateOne: (api as any).testProfiles.adapterAdditionalFields.updateOne,
-    updateMany: (api as any).testProfiles.adapterAdditionalFields.updateMany,
-    deleteOne: (api as any).testProfiles.adapterAdditionalFields.deleteOne,
-    deleteMany: (api as any).testProfiles.adapterAdditionalFields.deleteMany,
-  },
+type AdapterModule = ComponentApi["adapter"];
+type TestProfileName =
+  | "adapterAdditionalFields"
+  | "adapterPluginTable"
+  | "adapterRenameField"
+  | "adapterRenameUserCustom"
+  | "adapterRenameUserTable"
+  | "adapterOrganizationJoins";
+
+type InternalWithTestProfiles = {
+  adapter: AdapterModule;
+  adapterTest?: ComponentApi["adapterTest"];
+  testProfiles: Record<TestProfileName, AdapterModule>;
 };
 
-const pluginTableProfileApi = {
-  adapter: {
-    create: (api as any).testProfiles.adapterPluginTable.create,
-    findOne: (api as any).testProfiles.adapterPluginTable.findOne,
-    findMany: (api as any).testProfiles.adapterPluginTable.findMany,
-    updateOne: (api as any).testProfiles.adapterPluginTable.updateOne,
-    updateMany: (api as any).testProfiles.adapterPluginTable.updateMany,
-    deleteOne: (api as any).testProfiles.adapterPluginTable.deleteOne,
-    deleteMany: (api as any).testProfiles.adapterPluginTable.deleteMany,
-  },
+const internalWithTestProfiles = internal as unknown as InternalWithTestProfiles;
+
+const baseProfileApi = {
+  adapter: internalWithTestProfiles.adapter,
+  adapterTest: internalWithTestProfiles.adapterTest,
 };
 
-const renameFieldProfileApi = {
-  adapter: {
-    create: (api as any).testProfiles.adapterRenameField.create,
-    findOne: (api as any).testProfiles.adapterRenameField.findOne,
-    findMany: (api as any).testProfiles.adapterRenameField.findMany,
-    updateOne: (api as any).testProfiles.adapterRenameField.updateOne,
-    updateMany: (api as any).testProfiles.adapterRenameField.updateMany,
-    deleteOne: (api as any).testProfiles.adapterRenameField.deleteOne,
-    deleteMany: (api as any).testProfiles.adapterRenameField.deleteMany,
-  },
+const profileApi = (name: TestProfileName): { adapter: AdapterModule } => {
+  return { adapter: internalWithTestProfiles.testProfiles[name] };
 };
 
-const renameUserCustomProfileApi = {
-  adapter: {
-    create: (api as any).testProfiles.adapterRenameUserCustom.create,
-    findOne: (api as any).testProfiles.adapterRenameUserCustom.findOne,
-    findMany: (api as any).testProfiles.adapterRenameUserCustom.findMany,
-    updateOne: (api as any).testProfiles.adapterRenameUserCustom.updateOne,
-    updateMany: (api as any).testProfiles.adapterRenameUserCustom.updateMany,
-    deleteOne: (api as any).testProfiles.adapterRenameUserCustom.deleteOne,
-    deleteMany: (api as any).testProfiles.adapterRenameUserCustom.deleteMany,
-  },
-};
-
-const renameUserTableProfileApi = {
-  adapter: {
-    create: (api as any).testProfiles.adapterRenameUserTable.create,
-    findOne: (api as any).testProfiles.adapterRenameUserTable.findOne,
-    findMany: (api as any).testProfiles.adapterRenameUserTable.findMany,
-    updateOne: (api as any).testProfiles.adapterRenameUserTable.updateOne,
-    updateMany: (api as any).testProfiles.adapterRenameUserTable.updateMany,
-    deleteOne: (api as any).testProfiles.adapterRenameUserTable.deleteOne,
-    deleteMany: (api as any).testProfiles.adapterRenameUserTable.deleteMany,
-  },
-};
-
-const organizationJoinsProfileApi = {
-  adapter: {
-    create: (api as any).testProfiles.adapterOrganizationJoins.create,
-    findOne: (api as any).testProfiles.adapterOrganizationJoins.findOne,
-    findMany: (api as any).testProfiles.adapterOrganizationJoins.findMany,
-    updateOne: (api as any).testProfiles.adapterOrganizationJoins.updateOne,
-    updateMany: (api as any).testProfiles.adapterOrganizationJoins.updateMany,
-    deleteOne: (api as any).testProfiles.adapterOrganizationJoins.deleteOne,
-    deleteMany: (api as any).testProfiles.adapterOrganizationJoins.deleteMany,
-  },
-};
+const additionalFieldsProfileApi = profileApi("adapterAdditionalFields");
+const pluginTableProfileApi = profileApi("adapterPluginTable");
+const renameFieldProfileApi = profileApi("adapterRenameField");
+const renameUserCustomProfileApi = profileApi("adapterRenameUserCustom");
+const renameUserTableProfileApi = profileApi("adapterRenameUserTable");
+const organizationJoinsProfileApi = profileApi("adapterOrganizationJoins");
 
 export const runTests = action(
   async (ctx: GenericActionCtx<DataModel>, _args: EmptyObject) => {
@@ -158,41 +121,41 @@ export const runTests = action(
       convexCustomTestSuite,
     } = await import(adapterFactoryImport);
 
-    const baseProfileClient = createClient<DataModel>(api as any, {
+    const baseProfileClient = createClient<DataModel>(baseProfileApi, {
       verbose: false,
     });
     const additionalFieldsProfileClient = createClient<DataModel>(
-      additionalFieldsProfileApi as any,
+      additionalFieldsProfileApi,
       {
         verbose: false,
       }
     );
     const pluginTableProfileClient = createClient<DataModel>(
-      pluginTableProfileApi as any,
+      pluginTableProfileApi,
       {
         verbose: false,
       }
     );
     const renameFieldProfileClient = createClient<DataModel>(
-      renameFieldProfileApi as any,
+      renameFieldProfileApi,
       {
         verbose: false,
       }
     );
     const renameUserCustomProfileClient = createClient<DataModel>(
-      renameUserCustomProfileApi as any,
+      renameUserCustomProfileApi,
       {
         verbose: false,
       }
     );
     const renameUserTableProfileClient = createClient<DataModel>(
-      renameUserTableProfileApi as any,
+      renameUserTableProfileApi,
       {
         verbose: false,
       }
     );
     const organizationJoinsProfileClient = createClient<DataModel>(
-      organizationJoinsProfileApi as any,
+      organizationJoinsProfileApi,
       {
         verbose: false,
       }
@@ -314,7 +277,7 @@ export const runCustomTests = action(
     const { testAdapter } = await import(testUtilsImport);
     const adapterFactoryImport = "../test/adapter-factory/index.js";
     const { convexCustomTestSuite } = await import(adapterFactoryImport);
-    const authComponent = createClient<DataModel>(api as any, {
+    const authComponent = createClient<DataModel>(baseProfileApi, {
       verbose: false,
     });
 

@@ -102,7 +102,12 @@ const parseWhere = (
   }) as ConvexCleanedWhere[];
 };
 
-const getDocId = (doc: any) => {
+type DocWithFlexibleId = {
+  _id?: string | null;
+  id?: string | null;
+};
+
+const getDocId = (doc: DocWithFlexibleId) => {
   if (doc?._id !== undefined && doc?._id !== null) {
     return String(doc._id);
   }
@@ -112,7 +117,7 @@ const getDocId = (doc: any) => {
   return undefined;
 };
 
-const dedupeDocsById = <T extends Record<string, any>>(docs: T[]) => {
+const dedupeDocsById = <T extends DocWithFlexibleId>(docs: T[]) => {
   const seen = new Set<string>();
   const deduped: T[] = [];
   for (const doc of docs) {
@@ -186,7 +191,6 @@ export const convexAdapter = <
       const collectIdsForOrWhere = async (data: {
         model: string;
         where: (Where & { join?: undefined })[];
-        limit?: number;
       }) => {
         const results = await asyncMap(data.where, async (w) =>
           handlePagination(
@@ -195,16 +199,14 @@ export const convexAdapter = <
                 model: data.model as TableNames,
                 where: parseWhere(w),
                 paginationOpts,
-                select: ["id"],
               });
-            },
-            { limit: data.limit }
+            }
           )
         );
         const ids = dedupeDocsById(results.flatMap((r) => r.docs))
           .map((doc) => getDocId(doc))
           .flatMap((id) => (id ? [id] : []));
-        return data.limit ? ids.slice(0, data.limit) : ids;
+        return ids;
       };
 
       return {
@@ -377,7 +379,6 @@ export const convexAdapter = <
             const ids = await collectIdsForOrWhere({
               model: data.model as string,
               where: data.where,
-              limit: data.limit,
             });
             await asyncMap(ids, async (id) => {
               await ctx.runMutation(api.adapter.deleteOne, {
@@ -418,19 +419,25 @@ export const convexAdapter = <
             const ids = await collectIdsForOrWhere({
               model: data.model as string,
               where: data.where,
-              limit: data.limit,
             });
-            await asyncMap(ids, async (id) => {
-              await ctx.runMutation(api.adapter.updateOne, {
-                input: {
-                  model: data.model as TableNames,
-                  where: [{ field: "_id", operator: "eq", value: id }],
-                  update: data.update as any,
-                },
-                onUpdateHandle: onUpdateHandle,
-              });
-            });
-            return ids.length;
+            if (!ids.length) {
+              return 0;
+            }
+            const result = await handlePagination(
+              async ({ paginationOpts }) => {
+                return await ctx.runMutation(api.adapter.updateMany, {
+                  input: {
+                    model: data.model as TableNames,
+                    where: [{ field: "_id", operator: "in", value: ids }],
+                    update: data.update,
+                  },
+                  paginationOpts,
+                  onUpdateHandle: onUpdateHandle,
+                });
+              },
+              { limit: ids.length }
+            );
+            return result.count ?? 0;
           }
           const result = await handlePagination(async ({ paginationOpts }) => {
             return await ctx.runMutation(api.adapter.updateMany, {

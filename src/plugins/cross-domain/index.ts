@@ -83,7 +83,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         },
         {
           matcher: (ctx) => {
-            return (
+            return Boolean(
               ctx.method === "GET" &&
               ctx.path?.startsWith("/verify-email") &&
               !isExpoNative(ctx)
@@ -98,7 +98,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         },
         {
           matcher: (ctx) => {
-            return (
+            return Boolean(
               ((ctx.method === "POST" && ctx.path?.startsWith("/link-social")) ||
                 ctx.path?.startsWith("/send-verification-email") ||
                 ctx.path?.startsWith("/sign-in/email") ||
@@ -148,7 +148,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         },
         {
           matcher: (ctx) => {
-            return (
+            return Boolean(
               (ctx.path?.startsWith("/callback") ||
                 ctx.path?.startsWith("/oauth2/callback") ||
                 ctx.path?.startsWith("/magic-link/verify")) &&
