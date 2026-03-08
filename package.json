@@ -31,6 +31,7 @@
     "test:e2e": "npm run build && cd e2e && npm run test",
     "test:coverage": "vitest run --coverage --coverage.reporter=text",
     "test:adapter-policy": "node test/adapter-policy/validate.mjs",
+    "test:adapter-drift": "node test/adapter-policy/check-upstream-drift.mjs",
     "preversion": "npm ci && npm run build:clean && run-p test lint typecheck",
     "prepublishOnly": "npm whoami || npm login && sleep 1",
     "alpha": "npm version prerelease --preid alpha && npm publish --tag alpha && git push --follow-tags",
