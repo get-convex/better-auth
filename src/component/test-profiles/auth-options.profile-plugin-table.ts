@@ -1,5 +1,5 @@
 import type { BetterAuthOptions } from "better-auth/minimal";
-import { options } from "./auth-options.js";
+import { options } from "../../auth-options.js";
 
 // Test-only options used to provide static schema coverage for tests that
 // otherwise mutate plugin tables and user additional fields at runtime.

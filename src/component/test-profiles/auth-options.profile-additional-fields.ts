@@ -1,5 +1,5 @@
 import type { BetterAuthOptions } from "better-auth/minimal";
-import { options } from "./auth-options.js";
+import { options } from "../../auth-options.js";
 
 // Test-only options used to build a schema/validator profile that supports
 // additional-fields coverage in adapter tests.
