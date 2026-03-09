@@ -502,6 +502,116 @@ export const convexCustomTestSuite = createTestSuite(
         ).toEqual(null);
       },
 
+    "should preserve null to non-null range comparisons": async () => {
+      const now = Date.now();
+      const nullRangeAccountId = `null-range-${now}-null`;
+      const nonNullRangeAccountId = `null-range-${now}-non-null`;
+
+      const nullRangeAccount = await adapter.create({
+        model: "account",
+        data: {
+          accountId: nullRangeAccountId,
+          providerId: "null-range-provider",
+          userId: `null-range-user-${now}`,
+          accessTokenExpiresAt: null,
+          createdAt: now,
+          updatedAt: now,
+        },
+      });
+
+      const nonNullRangeAccount = await adapter.create({
+        model: "account",
+        data: {
+          accountId: nonNullRangeAccountId,
+          providerId: "non-null-range-provider",
+          userId: `non-null-range-user-${now}`,
+          accessTokenExpiresAt: now + 1_000,
+          createdAt: now,
+          updatedAt: now,
+        },
+      });
+
+      expect(
+        await adapter.findOne({
+          model: "account",
+          where: [
+            {
+              field: "accessTokenExpiresAt",
+              operator: "lt",
+              connector: "AND",
+              value: now,
+            },
+            {
+              field: "accountId",
+              operator: "eq",
+              connector: "AND",
+              value: nullRangeAccountId,
+            },
+          ],
+        }),
+      ).toEqual(nullRangeAccount);
+
+      expect(
+        await adapter.findOne({
+          model: "account",
+          where: [
+            {
+              field: "accessTokenExpiresAt",
+              operator: "lte",
+              connector: "AND",
+              value: now,
+            },
+            {
+              field: "accountId",
+              operator: "eq",
+              connector: "AND",
+              value: nullRangeAccountId,
+            },
+          ],
+        }),
+      ).toEqual(nullRangeAccount);
+
+      expect(
+        await adapter.findOne({
+          model: "account",
+          where: [
+            {
+              field: "accessTokenExpiresAt",
+              operator: "gt",
+              connector: "AND",
+              value: null,
+            },
+            {
+              field: "accountId",
+              operator: "eq",
+              connector: "AND",
+              value: nonNullRangeAccountId,
+            },
+          ],
+        }),
+      ).toEqual(nonNullRangeAccount);
+
+      expect(
+        await adapter.findOne({
+          model: "account",
+          where: [
+            {
+              field: "accessTokenExpiresAt",
+              operator: "gte",
+              connector: "AND",
+              value: null,
+            },
+            {
+              field: "accountId",
+              operator: "eq",
+              connector: "AND",
+              value: nonNullRangeAccountId,
+            },
+          ],
+        }),
+      ).toEqual(nonNullRangeAccount);
+    },
+
     "should fail to create a record with a unique field that already exists":
       async () => {
         await adapter.create({
