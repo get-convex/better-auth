@@ -20,6 +20,8 @@ import type { Doc, TableNames } from "../component/_generated/dataModel.js";
 import type { ComponentApi } from "../component/_generated/component.js";
 import type { AuthFunctions, GenericCtx, Triggers } from "./index.js";
 
+let didWarnExperimentalJoinsUnsupported = false;
+
 const handlePagination = async (
   next: ({
     paginationOpts,
@@ -187,6 +189,19 @@ export const convexAdapter = <
     adapter: ({ options }) => {
       // Disable telemetry in all cases because it requires Node
       options.telemetry = { enabled: false };
+      if (options.experimental?.joins) {
+        options.experimental = {
+          ...options.experimental,
+          joins: false,
+        };
+        if (!didWarnExperimentalJoinsUnsupported) {
+          didWarnExperimentalJoinsUnsupported = true;
+          // eslint-disable-next-line no-console
+          console.warn(
+            "[convex-better-auth] Better Auth experimental.joins is not supported by the Convex adapter yet. Forcing experimental.joins = false."
+          );
+        }
+      }
 
       const collectIdsForOrWhere = async (data: {
         model: string;

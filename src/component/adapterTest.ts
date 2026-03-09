@@ -53,7 +53,6 @@ const toEnableOnlyMap = (testNames: readonly string[]) => ({
   ...Object.fromEntries(testNames.map((testName) => [testName, false])),
 });
 
-const JOINS_SUITE_TESTS = ["init - tests"] as const;
 const UUID_SUITE_TESTS = ["init - tests"] as const;
 
 const getOverrideBetterAuthOptions = (opts: BetterAuthOptions) => ({
@@ -115,7 +114,6 @@ export const runTests = action(
       renameModelUserCustomTestSuite,
       renameModelUserTableTestSuite,
       multiJoinsMissingRowsTestSuite,
-      joinsTestSuite,
       transactionsTestSuite,
       uuidTestSuite,
       convexCustomTestSuite,
@@ -172,9 +170,6 @@ export const runTests = action(
       tests: [
         coreNormalTestSuite({
           disableTests: toDisableMap(NORMAL_DISABLED_TESTS),
-        }),
-        joinsTestSuite({
-          disableTests: toEnableOnlyMap(JOINS_SUITE_TESTS),
         }),
         uuidTestSuite({
           disableTests: toEnableOnlyMap(UUID_SUITE_TESTS),
