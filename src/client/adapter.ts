@@ -137,6 +137,25 @@ const dedupeDocsById = <T extends DocWithFlexibleId>(docs: T[]) => {
   return deduped;
 };
 
+const selectDocFields = (
+  doc: DocWithFlexibleId & Record<string, unknown>,
+  select?: string[]
+) => {
+  if (!select?.length) {
+    return doc;
+  }
+  return select.reduce(
+    (acc, field) => {
+      // Better Auth may request "id" while Convex stores it as "_id".
+      // Keep "_id" so Better Auth output mapping can translate to "id".
+      const sourceField = field === "id" && "_id" in doc ? "_id" : field;
+      acc[sourceField] = doc[sourceField];
+      return acc;
+    },
+    {} as Record<string, unknown>
+  );
+};
+
 export const convexAdapter = <
   DataModel extends GenericDataModel,
   Ctx extends GenericCtx<DataModel> = GenericActionCtx<DataModel>,
@@ -281,20 +300,26 @@ export const convexAdapter = <
                     ...data,
                     model: data.model as TableNames,
                     where: parseWhere(w),
+                    // Always fetch full docs for OR unions so we can dedupe
+                    // by id and sort/limit before trimming selected fields.
+                    select: undefined,
                     paginationOpts,
                   });
                 },
                 { limit: data.limit }
               )
             );
-            const docs = dedupeDocsById(results.flatMap((r) => r.docs));
+            let docs = dedupeDocsById(results.flatMap((r) => r.docs));
             if (data.sortBy) {
-              return sortBy(docs, [
+              docs = sortBy(docs, [
                 prop(data.sortBy.field),
                 data.sortBy.direction,
               ]);
             }
-            return docs;
+            if (data.limit !== undefined) {
+              docs = docs.slice(0, data.limit);
+            }
+            return docs.map((doc) => selectDocFields(doc, data.select));
           }
 
           const result = await handlePagination(

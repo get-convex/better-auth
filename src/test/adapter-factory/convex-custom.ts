@@ -312,6 +312,64 @@ export const convexCustomTestSuite = createTestSuite(
       ).toEqual([fooUser, barUser]);
     },
 
+    "should apply OR dedupe/sort/limit before select": async () => {
+      const suffix = Date.now();
+      const alphaOnly = await adapter.create({
+        model: "user",
+        data: {
+          name: "alpha-only",
+          email: `alpha-only-${suffix}@other.test`,
+        },
+      });
+      const alphaOverlap = await adapter.create({
+        model: "user",
+        data: {
+          name: "alpha-overlap",
+          email: `alpha-overlap-${suffix}@example.com`,
+        },
+      });
+      await adapter.create({
+        model: "user",
+        data: {
+          name: "beta-only",
+          email: `beta-only-${suffix}@example.com`,
+        },
+      });
+      await adapter.create({
+        model: "user",
+        data: {
+          name: "delta-only",
+          email: `delta-only-${suffix}@example.com`,
+        },
+      });
+
+      const result = await adapter.findMany<{ email: string }>({
+        model: "user",
+        where: [
+          {
+            field: "name",
+            operator: "starts_with",
+            value: "alpha",
+            connector: "OR",
+          },
+          {
+            field: "email",
+            operator: "contains",
+            value: "@example.com",
+            connector: "OR",
+          },
+        ],
+        sortBy: { field: "name", direction: "asc" },
+        limit: 2,
+        select: ["email"],
+      });
+
+      expect(result).toEqual([
+        { email: alphaOnly.email },
+        { email: alphaOverlap.email },
+      ]);
+    },
+
     "should reject update with an empty where clause": async () => {
       const user = await adapter.create({
         model: "user",

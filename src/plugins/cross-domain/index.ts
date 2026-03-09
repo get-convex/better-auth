@@ -99,7 +99,8 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         {
           matcher: (ctx) => {
             return Boolean(
-              ((ctx.method === "POST" && ctx.path?.startsWith("/link-social")) ||
+              ctx.method === "POST" &&
+              (ctx.path?.startsWith("/link-social") ||
                 ctx.path?.startsWith("/send-verification-email") ||
                 ctx.path?.startsWith("/sign-in/email") ||
                 ctx.path?.startsWith("/sign-in/social") ||
