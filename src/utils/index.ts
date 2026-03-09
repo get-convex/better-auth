@@ -1,6 +1,4 @@
 import { betterFetch } from "@better-fetch/fetch";
-import type { Auth } from "better-auth";
-import type { betterAuth } from "better-auth/minimal";
 import { getSessionCookie } from "better-auth/cookies";
 import type {
   AuthProvider,
@@ -15,9 +13,33 @@ import { JWT_COOKIE_NAME } from "../plugins/convex/index.js";
 import * as jose from "jose";
 import type { Jwk } from "better-auth/plugins/jwt";
 
+type TrustedOriginsOption =
+  | (string | null | undefined)[]
+  | ((
+      request?: Request
+    ) =>
+      | (string | null | undefined)[]
+      | Promise<(string | null | undefined)[]>);
+
+type RegisterableAuth = {
+  handler: (request: Request) => Promise<Response>;
+  options: {
+    baseURL?: string;
+    basePath?: string;
+    trustedOrigins?: TrustedOriginsOption;
+    [key: string]: unknown;
+  };
+  $context: Promise<{
+    options: {
+      trustedOrigins?: TrustedOriginsOption;
+      [key: string]: unknown;
+    };
+  }>;
+};
+
 export type CreateAuth<
   DataModel extends GenericDataModel,
-  A extends ReturnType<typeof betterAuth> = Auth,
+  A extends RegisterableAuth = RegisterableAuth,
 > = (ctx: GenericCtx<DataModel>) => A;
 
 export type EventFunction<T extends DefaultFunctionArgs> = FunctionReference<

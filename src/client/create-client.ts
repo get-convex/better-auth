@@ -411,13 +411,14 @@ export const createClient = <
         | undefined;
       const cors = corsRouter(http, {
         allowedOrigins: async (request) => {
-          trustedOriginsOption =
+          const resolvedTrustedOrigins =
             trustedOriginsOption ??
             (await staticAuth.$context).options.trustedOrigins ??
             [];
-          const rawOrigins = Array.isArray(trustedOriginsOption)
-            ? trustedOriginsOption
-            : await trustedOriginsOption(request);
+          trustedOriginsOption = resolvedTrustedOrigins;
+          const rawOrigins = Array.isArray(resolvedTrustedOrigins)
+            ? resolvedTrustedOrigins
+            : await resolvedTrustedOrigins(request);
           const trustedOrigins = rawOrigins.filter(
             (origin): origin is string => typeof origin === "string"
           );
