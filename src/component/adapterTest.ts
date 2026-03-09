@@ -260,13 +260,13 @@ export const runTests = action(
       tests: [multiJoinsMissingRowsTestSuite()],
     });
 
-    executeBaseProfile();
-    executeAdditionalFieldsProfile();
-    executePluginTableProfile();
-    executeRenameFieldProfile();
-    executeRenameUserCustomProfile();
-    executeRenameUserTableProfile();
-    executeOrganizationJoinsProfile();
+    await executeBaseProfile();
+    await executeAdditionalFieldsProfile();
+    await executePluginTableProfile();
+    await executeRenameFieldProfile();
+    await executeRenameUserCustomProfile();
+    await executeRenameUserTableProfile();
+    await executeOrganizationJoinsProfile();
   }
 );
 
@@ -289,6 +289,6 @@ export const runCustomTests = action(
       overrideBetterAuthOptions: getOverrideBetterAuthOptions,
       tests: [convexCustomTestSuite()],
     });
-    execute();
+    await execute();
   }
 );

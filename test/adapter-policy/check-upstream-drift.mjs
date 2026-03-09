@@ -56,11 +56,7 @@ async function fetchJson(url) {
 }
 
 async function fetchText(url) {
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": "convex-better-auth-adapter-drift-check",
-    },
-  });
+  const response = await fetch(url, { headers: githubHeaders() });
   const text = await response.text();
   return {
     ok: response.ok,

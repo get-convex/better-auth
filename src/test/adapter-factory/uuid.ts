@@ -44,7 +44,6 @@ export const uuidTestSuite = createTestSuite(
 				const uuidRegex =
 					/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 				expect(res.id).toMatch(uuidRegex);
-				console.log(res);
 			},
 			"findOne - should find a model using a uuid": async () => {
 				const { id: _, ...user } = await helpers.generate("user");

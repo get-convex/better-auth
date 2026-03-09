@@ -19,14 +19,12 @@ export const transactionsTestSuite = createTestSuite(
 			}
 
 			const user1 = await generate("user");
-			const user2 = await generate("user");
 			await expect(
 				adapter.transaction(async (tx) => {
 					await tx.create({ model: "user", data: user1, forceAllowId: true });
 					const users = await tx.findMany({ model: "user" });
 					expect(users).toHaveLength(1);
 					throw new Error("Simulated failure");
-					await tx.create({ model: "user", data: user2, forceAllowId: true });
 				}),
 			).rejects.toThrow("Simulated failure");
 			const result = await adapter.findMany<User>({

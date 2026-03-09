@@ -26,7 +26,6 @@ export const getAuthFlowSuiteTests = (
 	"should successfully sign up": async () => {
 		const auth = await getAuth();
 		const user = await generate("user");
-		const start = Date.now();
 		const result = await auth.api.signUpEmail({
 			body: {
 				email: user.email,
@@ -35,8 +34,6 @@ export const getAuthFlowSuiteTests = (
 				image: user.image || "",
 			},
 		});
-		const end = Date.now();
-		console.log(`signUpEmail took ${end - start}ms (without hashing)`);
 		expect(result.user).toBeDefined();
 		expect(result.user.email).toBe(user.email);
 		expect(result.user.name).toBe(user.name);
@@ -57,12 +54,9 @@ export const getAuthFlowSuiteTests = (
 				image: user.image || "",
 			},
 		});
-		const start = Date.now();
 		const result = await auth.api.signInEmail({
 			body: { email: user.email, password: password },
 		});
-		const end = Date.now();
-		console.log(`signInEmail took ${end - start}ms (without hashing)`);
 		expect(result.user).toBeDefined();
 		expect(result.user.id).toBe(signUpResult.user.id);
 	},
@@ -81,12 +75,9 @@ export const getAuthFlowSuiteTests = (
 		});
 		const headers = new Headers();
 		setCookieToHeader(headers)({ response });
-		const start = Date.now();
 		const result = await auth.api.getSession({
 			headers,
 		});
-		const end = Date.now();
-		console.log(`getSession took ${end - start}ms`);
 		const signUpResult = (await response.json()) as {
 			user: User;
 			session: Session;
