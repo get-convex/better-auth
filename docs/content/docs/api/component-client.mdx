@@ -72,3 +72,25 @@ export const getUser = query({
   },
 });
 ```
+
+## `registerRoutes()`
+
+Registers Better Auth HTTP handlers on your Convex `httpRouter`.
+
+By default, routes are mounted under `/api/auth`. If your Better Auth options
+use a custom `basePath`, pass the same value here.
+
+```ts
+import { httpRouter } from "convex/server";
+import { authComponent, createAuth } from "./auth";
+
+const http = httpRouter();
+
+authComponent.registerRoutes(http, createAuth, {
+  basePath: "/api/auth",
+  cors: true,
+  trustedOrigins: [process.env.SITE_URL!],
+});
+
+export default http;
+```

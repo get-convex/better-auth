@@ -5,12 +5,10 @@ import {
   createAuthMiddleware,
   sessionMiddleware,
 } from "better-auth/api";
-import {
-  jwt as jwtPlugin,
-  bearer as bearerPlugin,
-  oidcProvider as oidcProviderPlugin,
-} from "better-auth/plugins";
-import type { JwtOptions, Jwk } from "better-auth/plugins";
+import { bearer as bearerPlugin } from "better-auth/plugins/bearer";
+import { jwt as jwtPlugin } from "better-auth/plugins/jwt";
+import type { JwtOptions, Jwk } from "better-auth/plugins/jwt";
+import { oidcProvider as oidcProviderPlugin } from "better-auth/plugins/oidc-provider";
 import { omit } from "convex-helpers";
 import type { AuthConfig, AuthProvider } from "convex/server";
 

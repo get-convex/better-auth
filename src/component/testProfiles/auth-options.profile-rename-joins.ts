@@ -1,5 +1,5 @@
 import type { BetterAuthOptions } from "better-auth/minimal";
-import { organization } from "better-auth/plugins";
+import { organization } from "better-auth/plugins/organization";
 import { options } from "../../auth-options.js";
 
 const renamedOneToOnePlugin = {

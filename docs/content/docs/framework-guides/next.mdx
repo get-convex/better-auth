@@ -207,6 +207,8 @@ description: Install and configure Convex + Better Auth for Next.js.
 
     const http = httpRouter();
 
+    // If Better Auth uses a custom basePath, pass it here:
+    // authComponent.registerRoutes(http, createAuth, { basePath: "/custom/auth" });
     authComponent.registerRoutes(http, createAuth);
 
     export default http;

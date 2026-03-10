@@ -260,6 +260,8 @@ npm install convex @mmailaender/convex-svelte
 
     const http = httpRouter();
 
+    // If Better Auth uses a custom basePath, pass it here:
+    // authComponent.registerRoutes(http, createAuth, { basePath: "/custom/auth" });
     authComponent.registerRoutes(http, createAuth);
 
     export default http;

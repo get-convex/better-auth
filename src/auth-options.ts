@@ -1,18 +1,15 @@
 import type { BetterAuthOptions } from "better-auth/minimal";
-import {
-  anonymous,
-  bearer,
-  emailOTP,
-  genericOAuth,
-  jwt,
-  magicLink,
-  oidcProvider,
-  oneTap,
-  oneTimeToken,
-  phoneNumber,
-  twoFactor,
-  username,
-} from "better-auth/plugins";
+import { anonymous } from "better-auth/plugins/anonymous";
+import { bearer } from "better-auth/plugins/bearer";
+import { emailOTP } from "better-auth/plugins/email-otp";
+import { genericOAuth } from "better-auth/plugins/generic-oauth";
+import { jwt } from "better-auth/plugins/jwt";
+import { magicLink } from "better-auth/plugins/magic-link";
+import { oidcProvider } from "better-auth/plugins/oidc-provider";
+import { oneTimeToken } from "better-auth/plugins/one-time-token";
+import { phoneNumber } from "better-auth/plugins/phone-number";
+import { twoFactor } from "better-auth/plugins/two-factor";
+import { username } from "better-auth/plugins/username";
 import { convex } from "./plugins/convex/index.js";
 import { convexAdapter } from "./client/adapter.js";
 
@@ -38,7 +35,6 @@ export const options = {
         },
       ],
     }),
-    oneTap(),
     oidcProvider({
       loginPage: "/login",
     }),

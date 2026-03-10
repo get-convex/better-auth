@@ -32,3 +32,23 @@ const convex = new ConvexReactClient(convexUrl, {
   verbose: true, // [!code ++]
 });
 ```
+
+## Isolate memory pressure
+
+These checks are generally useful for Convex projects when isolate memory is
+tight:
+
+- Keep isolate entrypoints like `convex/http.ts` thin.
+- Avoid heavy top-level initialization in Convex runtime files.
+- Generate a debug bundle and inspect `isolate` vs `node` output:
+
+```sh
+npx convex dev --once --debug-bundle-path /tmp/convex-bundle
+```
+
+For Better Auth specifically, prefer plugin subpath imports in runtime code.
+
+```ts title="convex/auth.ts"
+import { magicLink } from "better-auth/plugins/magic-link";
+import { emailOTP } from "better-auth/plugins/email-otp";
+```

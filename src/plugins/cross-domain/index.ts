@@ -2,7 +2,7 @@ import type { BetterAuthPlugin } from "better-auth";
 import { setSessionCookie } from "better-auth/cookies";
 import { generateRandomString } from "better-auth/crypto";
 import { createAuthEndpoint, createAuthMiddleware } from "better-auth/api";
-import { oneTimeToken as oneTimeTokenPlugin } from "better-auth/plugins";
+import { oneTimeToken as oneTimeTokenPlugin } from "better-auth/plugins/one-time-token";
 import { z } from "zod";
 
 export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {

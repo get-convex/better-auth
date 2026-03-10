@@ -19,6 +19,7 @@ import { corsRouter } from "convex-helpers/server/cors";
 import type defaultSchema from "../component/schema.js";
 import type { ComponentApi } from "../component/_generated/component.js";
 import type { CreateAuth, GenericCtx } from "./index.js";
+import type { TrustedOriginsOption } from "../utils/index.js";
 
 export type AuthFunctions = {
   onCreate?: FunctionReference<"mutation", "internal", { [key: string]: any }>;
@@ -340,6 +341,18 @@ export const createClient = <
       http: HttpRouter,
       createAuth: CreateAuth<DataModel>,
       opts: {
+        /**
+         * Explicit Better Auth route prefix. Defaults to `/api/auth`.
+         *
+         * This is no longer inferred from `createAuth` at registration time,
+         * which keeps route registration lightweight for Convex isolate startup.
+         */
+        basePath?: string;
+        /**
+         * Trusted origins to use for CORS route handling. If omitted and CORS
+         * is enabled, this will be resolved lazily from `createAuth`.
+         */
+        trustedOrigins?: TrustedOriginsOption;
         cors?:
           | boolean
           | {
@@ -350,16 +363,38 @@ export const createClient = <
             };
       } = {}
     ) => {
-      const staticAuth = createAuth({} as any);
-      const path = staticAuth.options.basePath ?? "/api/auth";
+      const path = opts.basePath ?? "/api/auth";
+      let trustedOriginsOption = opts.trustedOrigins;
+      let trustedOriginsInitPromise: Promise<void> | undefined;
+      const ensureTrustedOrigins = async () => {
+        if (trustedOriginsOption !== undefined) {
+          return;
+        }
+        trustedOriginsInitPromise =
+          trustedOriginsInitPromise ??
+          (async () => {
+            const auth = createAuth({} as any);
+            trustedOriginsOption =
+              auth.options.trustedOrigins ??
+              (await auth.$context).options.trustedOrigins ??
+              [];
+          })();
+        await trustedOriginsInitPromise;
+      };
       const authRequestHandler = httpActionGeneric(async (ctx, request) => {
+        const auth = createAuth(ctx as any);
         if (config?.verbose) {
           // eslint-disable-next-line no-console
-          console.log("options.baseURL", staticAuth.options.baseURL);
+          console.log("options.baseURL", auth.options.baseURL);
           // eslint-disable-next-line no-console
           console.log("request headers", request.headers);
         }
-        const auth = createAuth(ctx as any);
+        if (trustedOriginsOption === undefined && opts.cors) {
+          trustedOriginsOption =
+            auth.options.trustedOrigins ??
+            (await auth.$context).options.trustedOrigins ??
+            [];
+        }
         const response = await auth.handler(request);
         if (config?.verbose) {
           // eslint-disable-next-line no-console
@@ -401,21 +436,10 @@ export const createClient = <
         typeof opts.cors === "boolean"
           ? { allowedOrigins: [], allowedHeaders: [], exposedHeaders: [] }
           : opts.cors;
-      let trustedOriginsOption:
-        | (string | null | undefined)[]
-        | ((
-            request?: Request
-          ) =>
-            | (string | null | undefined)[]
-            | Promise<(string | null | undefined)[]>)
-        | undefined;
       const cors = corsRouter(http, {
         allowedOrigins: async (request) => {
-          const resolvedTrustedOrigins =
-            trustedOriginsOption ??
-            (await staticAuth.$context).options.trustedOrigins ??
-            [];
-          trustedOriginsOption = resolvedTrustedOrigins;
+          await ensureTrustedOrigins();
+          const resolvedTrustedOrigins = trustedOriginsOption ?? [];
           const rawOrigins = Array.isArray(resolvedTrustedOrigins)
             ? resolvedTrustedOrigins
             : await resolvedTrustedOrigins(request);
