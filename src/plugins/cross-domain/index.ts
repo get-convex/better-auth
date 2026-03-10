@@ -98,27 +98,18 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         },
         {
           matcher: (ctx) => {
-            return Boolean(
-              ctx.method === "POST" &&
-              (ctx.path?.startsWith("/link-social") ||
-                ctx.path?.startsWith("/send-verification-email") ||
-                ctx.path?.startsWith("/sign-in/email") ||
-                ctx.path?.startsWith("/sign-in/social") ||
-                ctx.path?.startsWith("/sign-in/magic-link") ||
-                ctx.path?.startsWith("/delete-user") ||
-                ctx.path?.startsWith("/change-email")) &&
-              !isExpoNative(ctx)
-            );
+            return Boolean(ctx.method === "POST" && !isExpoNative(ctx));
           },
           handler: createAuthMiddleware(async (ctx) => {
-            const isSignIn = Boolean(ctx.path?.startsWith("/sign-in"));
-            ctx.body.callbackURL = rewriteCallbackURL(ctx.body.callbackURL);
-            if (isSignIn && ctx.body.newUserCallbackURL) {
+            if (ctx.body?.callbackURL) {
+              ctx.body.callbackURL = rewriteCallbackURL(ctx.body.callbackURL);
+            }
+            if (ctx.body?.newUserCallbackURL) {
               ctx.body.newUserCallbackURL = rewriteCallbackURL(
                 ctx.body.newUserCallbackURL
               );
             }
-            if (isSignIn && ctx.body.errorCallbackURL) {
+            if (ctx.body?.errorCallbackURL) {
               ctx.body.errorCallbackURL = rewriteCallbackURL(
                 ctx.body.errorCallbackURL
               );

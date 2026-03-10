@@ -293,16 +293,16 @@ export const convexAdapter = <
           }
 
           if (data.where?.some((w) => w.connector === "OR")) {
+            // Always fetch full docs for OR unions so we can dedupe
+            // by id and sort/limit before trimming selected fields.
+            const { select: _ignoredSelect, ...queryData } = data;
             const results = await asyncMap(data.where, async (w) =>
               handlePagination(
                 async ({ paginationOpts }) => {
                   return await ctx.runQuery(api.adapter.findMany, {
-                    ...data,
+                    ...queryData,
                     model: data.model as TableNames,
                     where: parseWhere(w),
-                    // Always fetch full docs for OR unions so we can dedupe
-                    // by id and sort/limit before trimming selected fields.
-                    select: undefined,
                     paginationOpts,
                   });
                 },

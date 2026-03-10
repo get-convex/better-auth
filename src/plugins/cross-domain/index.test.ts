@@ -11,20 +11,26 @@ const getPostRewriteMatcher = () => {
 };
 
 describe("crossDomain POST rewrite matcher", () => {
-  it("matches supported POST routes", () => {
+  it("matches POST requests regardless of route", () => {
     const matcher = getPostRewriteMatcher();
     type MatcherContext = Parameters<typeof matcher>[0];
 
-    const ctx = {
+    const knownPathCtx = {
       method: "POST",
       path: "/sign-in/email",
       headers: new Headers(),
     } satisfies Partial<MatcherContext>;
+    const unknownPathCtx = {
+      method: "POST",
+      path: "/custom-endpoint",
+      headers: new Headers(),
+    } satisfies Partial<MatcherContext>;
 
-    expect(matcher(ctx as MatcherContext)).toBe(true);
+    expect(matcher(knownPathCtx as MatcherContext)).toBe(true);
+    expect(matcher(unknownPathCtx as MatcherContext)).toBe(true);
   });
 
-  it("rejects non-POST methods for protected routes", () => {
+  it("rejects non-POST methods", () => {
     const matcher = getPostRewriteMatcher();
     type MatcherContext = Parameters<typeof matcher>[0];
 
