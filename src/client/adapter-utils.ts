@@ -279,7 +279,7 @@ export const checkUniqueFields = async <
 
 // This handles basic select (stripping out the other fields if there
 // is a select arg).
-export const selectFields = async <
+export const selectFields = <
   T extends TableNamesInDataModel<GenericDataModel>,
   D extends DocumentByName<GenericDataModel, T>,
 >(
@@ -414,16 +414,16 @@ const generateQuery = (
               for (const [idx, value] of (values?.eq ?? []).entries()) {
                 q = q.eq(usableIndex.fields[idx], value);
               }
-              if (values?.lt !== undefined && boundField) {
+              if (values?.lt !== undefined) {
                 q = q.lt(boundField, values.lt);
               }
-              if (values?.lte !== undefined && boundField) {
+              if (values?.lte !== undefined) {
                 q = q.lte(boundField, values.lte);
               }
-              if (values?.gt !== undefined && boundField) {
+              if (values?.gt !== undefined) {
                 q = q.gt(boundField, values.gt);
               }
-              if (values?.gte !== undefined && boundField) {
+              if (values?.gte !== undefined) {
                 q = q.gte(boundField, values.gte);
               }
               return q;
@@ -434,19 +434,19 @@ const generateQuery = (
   const orderedQuery = args.sortBy
     ? indexedQuery.order(args.sortBy.direction === "desc" ? "desc" : "asc")
     : indexedQuery;
+  if (!usableIndex && indexFields?.length) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      stripIndent`
+        Querying without an index on table "${args.model}".
+        This can cause performance issues, and may hit the document read limit.
+        To fix, add an index that begins with the following fields in order:
+        [${indexFields.join(", ")}]
+      `
+    );
+  }
   const filteredQuery = orderedQuery.filterWith(async (doc) => {
     if (!usableIndex) {
-      if (indexFields?.length) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          stripIndent`
-            Querying without an index on table "${args.model}".
-            This can cause performance issues, and may hit the document read limit.
-            To fix, add an index that begins with the following fields in order:
-            [${indexFields.join(", ")}]
-          `
-        );
-      }
       // No usable index, handle all where clauses statically.
       return filterByWhere(doc, args.where);
     }
@@ -527,7 +527,7 @@ export const paginate = async <
     // Apply all other clauses as static filters to our 0 or 1 result.
     if (filterByWhere(doc, args.where, (w) => w !== uniqueWhere)) {
       return {
-        page: [await selectFields(doc, args.select)].filter(Boolean) as Doc[],
+        page: [selectFields(doc, args.select)].filter(Boolean) as Doc[],
         isDone: true,
         continueCursor: "",
       };
@@ -565,33 +565,31 @@ export const paginate = async <
         .filter((doc) => filterByWhere(doc, args.where, (w) => w !== inWhere));
 
       return {
-        page: (
-          await asyncMap(
-            filteredDocs.sort((a, b) => {
-              if (args.sortBy?.field === "createdAt") {
-                return args.sortBy.direction === "asc"
-                  ? (a._creationTime as number) - (b._creationTime as number)
-                  : (b._creationTime as number) - (a._creationTime as number);
+        page: filteredDocs
+          .sort((a, b) => {
+            if (args.sortBy?.field === "createdAt") {
+              return args.sortBy.direction === "asc"
+                ? (a._creationTime as number) - (b._creationTime as number)
+                : (b._creationTime as number) - (a._creationTime as number);
+            }
+            if (args.sortBy) {
+              const aValue = a[args.sortBy.field as keyof typeof a];
+              const bValue = b[args.sortBy.field as keyof typeof b];
+              if (aValue === bValue) {
+                return 0;
               }
-              if (args.sortBy) {
-                const aValue = a[args.sortBy.field as keyof typeof a];
-                const bValue = b[args.sortBy.field as keyof typeof b];
-                if (aValue === bValue) {
-                  return 0;
-                }
-                return args.sortBy.direction === "asc"
-                  ? aValue! > bValue!
-                    ? 1
-                    : -1
-                  : aValue! > bValue!
-                    ? -1
-                    : 1;
-              }
-              return 0;
-            }),
-            (doc) => selectFields(doc, args.select)
-          )
-        ).flatMap((doc) => (doc ? [doc] : [])) as Doc[],
+              return args.sortBy.direction === "asc"
+                ? aValue! > bValue!
+                  ? 1
+                  : -1
+                : aValue! > bValue!
+                  ? -1
+                  : 1;
+            }
+            return 0;
+          })
+          .map((doc) => selectFields(doc, args.select))
+          .flatMap((doc) => (doc ? [doc] : [])) as Doc[],
         isDone: true,
         continueCursor: "",
       };
@@ -616,9 +614,7 @@ export const paginate = async <
     ).paginate(paginationOpts);
     return {
       ...result,
-      page: await asyncMap(result.page, (doc) =>
-        selectFields(doc, args.select)
-      ),
+      page: result.page.map((doc) => selectFields(doc, args.select)),
     };
   }
 
@@ -626,7 +622,7 @@ export const paginate = async <
   const result = await query.paginate(paginationOpts);
   return {
     ...result,
-    page: await asyncMap(result.page, (doc) => selectFields(doc, args.select)),
+    page: result.page.map((doc) => selectFields(doc, args.select)),
   };
 };
 
