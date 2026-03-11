@@ -135,6 +135,20 @@ export const tables = {
     count: v.optional(v.union(v.null(), v.number())),
     lastRequest: v.optional(v.union(v.null(), v.number())),
   }).index("key", ["key"]),
+  ssoProvider: defineTable({
+    providerId: v.string(),
+    issuer: v.string(),
+    domain: v.string(),
+    oidcConfig: v.optional(v.union(v.null(), v.string())),
+    samlConfig: v.optional(v.union(v.null(), v.string())),
+    organizationId: v.optional(v.union(v.null(), v.string())),
+    userId: v.optional(v.union(v.null(), v.string())),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("providerId", ["providerId"])
+    .index("domain", ["domain"])
+    .index("organizationId", ["organizationId"]),
 };
 
 const schema = defineSchema(tables);
