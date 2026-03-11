@@ -22,7 +22,7 @@ steps in prerequisites are completed.
 ### Install convex
 
 ```npm
-npm install convex convex-svelte
+npm install convex @mmailaender/convex-svelte
 ```
 
 </div>
@@ -279,7 +279,7 @@ npm install convex convex-svelte
     ### Set up Convex client provider
 
     Initialize the Convex client with auth in your app.
-    Note: `createSvelteAuthClient` includes already `setupConvex()` from convex-svelte.
+    Note: `createSvelteAuthClient` includes already `setupConvex()` from `@mmailaender/convex-svelte`.
 
     ```ts title="src/routes/+layout.svelte"
     <script lang="ts">
@@ -353,7 +353,7 @@ usage. Below are usage notes specific to SvelteKit.
 <script lang="ts">
 	import { authClient } from '$lib/auth-client';
 	import { api } from '$convex/_generated/api';
-	import { useQuery } from 'convex-svelte';
+	import { useQuery } from '@mmailaender/convex-svelte';
 	import { useAuth } from '@mmailaender/convex-better-auth-svelte/svelte';
 
 	let { data } = $props();
@@ -561,7 +561,7 @@ should only run once the user is authenticated.
 
 ```ts title="src/routes/+page.svelte"
 import { api } from "$convex/_generated/api";
-import { useQuery } from "convex-svelte";
+import { useQuery } from "@mmailaender/convex-svelte";
 import { useAuth } from "@mmailaender/convex-better-auth-svelte/svelte";
 
 const auth = useAuth();
@@ -694,7 +694,7 @@ load.
     ```ts title="src/routes/+page.svelte"
     <script lang="ts">
       import { api } from '$convex/_generated/api';
-      import { useQuery } from 'convex-svelte';
+      import { useQuery } from '@mmailaender/convex-svelte';
       import { useAuth } from '@mmailaender/convex-better-auth-svelte/svelte';
 
       let { data } = $props();
