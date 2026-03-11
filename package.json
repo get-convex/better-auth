@@ -146,7 +146,6 @@
   "types": "./dist/client/index.d.ts",
   "module": "./dist/client/index.js",
   "dependencies": {
-    "@better-auth/passkey": "^1.5.3",
     "@better-fetch/fetch": "^1.1.18",
     "common-tags": "^1.8.2",
     "convex-helpers": "^0.1.95",
