@@ -107,6 +107,11 @@ export const internalAction: ActionBuilder<DataModel, "internal"> =
  */
 export const httpAction: HttpActionBuilder = httpActionGeneric;
 
+type GenericCtx =
+  | GenericActionCtx<DataModel>
+  | GenericMutationCtx<DataModel>
+  | GenericQueryCtx<DataModel>;
+
 /**
  * A set of services for use within Convex query functions.
  *
