@@ -89,6 +89,7 @@ export const convexBetterAuthReactStart = (
     const mutableHeaders = new Headers(headers);
     mutableHeaders.delete("content-length");
     mutableHeaders.delete("transfer-encoding");
+    mutableHeaders.set("accept-encoding", "identity");
     return getToken(siteUrl, mutableHeaders, opts);
   });
 
