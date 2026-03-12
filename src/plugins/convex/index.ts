@@ -1,8 +1,4 @@
-import type {
-  BetterAuthPlugin,
-  Session,
-  User,
-} from "better-auth";
+import type { BetterAuthPlugin, Session, User } from "better-auth";
 import type { BetterAuthOptions } from "better-auth/minimal";
 import {
   createAuthEndpoint,
@@ -26,9 +22,7 @@ type BetterAuthAfterHooks = NonNullable<
 type BetterAuthAfterHook = BetterAuthAfterHooks[number];
 type BetterAuthHookContext = Parameters<BetterAuthAfterHook["matcher"]>[0];
 
-const normalizeAfterHooks = <
-  THook extends BetterAuthAfterHook,
->(
+const normalizeAfterHooks = <THook extends BetterAuthAfterHook>(
   hooks: THook[]
 ): BetterAuthAfterHooks => {
   return hooks.map((hook) => ({
@@ -331,6 +325,7 @@ export const convex = (opts: {
                 ctx.path?.startsWith("/email-otp/verify-email") ||
                 ctx.path?.startsWith("/phone-number/verify") ||
                 ctx.path?.startsWith("/siwe/verify") ||
+                ctx.path?.startsWith("/update-session") ||
                 (ctx.path?.startsWith("/get-session") && ctx.context.session)
             );
           },
@@ -363,8 +358,8 @@ export const convex = (opts: {
           matcher: (ctx) => {
             return Boolean(
               ctx.path?.startsWith("/sign-out") ||
-              ctx.path?.startsWith("/delete-user") ||
-              (ctx.path?.startsWith("/get-session") && !ctx.context.session)
+                ctx.path?.startsWith("/delete-user") ||
+                (ctx.path?.startsWith("/get-session") && !ctx.context.session)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
