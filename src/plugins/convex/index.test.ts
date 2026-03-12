@@ -14,11 +14,11 @@ const getJwtSetCookieMatcher = () => {
       hook.matcher({
         path: "/sign-in/email",
         context: { session: { id: "s1" } },
-      } as Parameters<typeof hook.matcher>[0]) &&
+      } as unknown as Parameters<typeof hook.matcher>[0]) &&
       !hook.matcher({
         path: "/sign-out",
         context: { session: null },
-      } as Parameters<typeof hook.matcher>[0])
+      } as unknown as Parameters<typeof hook.matcher>[0])
     );
   })?.matcher;
   if (!matcher) {
@@ -34,8 +34,8 @@ describe("convex plugin JWT cookie refresh matcher", () => {
     const ctx = {
       path: "/update-session",
       context: { session: { id: "s1" } },
-    } satisfies Partial<MatcherContext>;
-    expect(matcher(ctx as MatcherContext)).toBe(true);
+    };
+    expect(matcher(ctx as unknown as MatcherContext)).toBe(true);
   });
 
   it("matches get-session only when a session exists", () => {
@@ -44,12 +44,12 @@ describe("convex plugin JWT cookie refresh matcher", () => {
     const withSessionCtx = {
       path: "/get-session",
       context: { session: { id: "s1" } },
-    } satisfies Partial<MatcherContext>;
+    };
     const withoutSessionCtx = {
       path: "/get-session",
       context: { session: null },
-    } satisfies Partial<MatcherContext>;
-    expect(matcher(withSessionCtx as MatcherContext)).toBe(true);
-    expect(matcher(withoutSessionCtx as MatcherContext)).toBe(false);
+    };
+    expect(matcher(withSessionCtx as unknown as MatcherContext)).toBe(true);
+    expect(matcher(withoutSessionCtx as unknown as MatcherContext)).toBe(false);
   });
 });
