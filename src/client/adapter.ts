@@ -14,11 +14,13 @@ import type { SetOptional } from "type-fest";
 import type defaultSchema from "../component/schema.js";
 import type { Where } from "better-auth/types";
 import { asyncMap } from "convex-helpers";
-import { prop, sortBy, unique } from "remeda";
+import { prop, sortBy } from "remeda";
 import { isRunMutationCtx } from "../utils/index.js";
 import type { Doc, TableNames } from "../component/_generated/dataModel.js";
 import type { ComponentApi } from "../component/_generated/component.js";
 import type { AuthFunctions, GenericCtx, Triggers } from "./index.js";
+
+let didWarnExperimentalJoinsUnsupported = false;
 
 const handlePagination = async (
   next: ({
@@ -102,6 +104,58 @@ const parseWhere = (
   }) as ConvexCleanedWhere[];
 };
 
+type DocWithFlexibleId = {
+  _id?: string | null;
+  id?: string | null;
+};
+
+const getDocId = (doc: DocWithFlexibleId) => {
+  if (doc?._id !== undefined && doc?._id !== null) {
+    return String(doc._id);
+  }
+  if (doc?.id !== undefined && doc?.id !== null) {
+    return String(doc.id);
+  }
+  return undefined;
+};
+
+const dedupeDocsById = <T extends DocWithFlexibleId>(docs: T[]) => {
+  const seen = new Set<string>();
+  const deduped: T[] = [];
+  for (const doc of docs) {
+    const id = getDocId(doc);
+    if (!id) {
+      deduped.push(doc);
+      continue;
+    }
+    if (seen.has(id)) {
+      continue;
+    }
+    seen.add(id);
+    deduped.push(doc);
+  }
+  return deduped;
+};
+
+const selectDocFields = (
+  doc: DocWithFlexibleId & Record<string, unknown>,
+  select?: string[]
+) => {
+  if (!select?.length) {
+    return doc;
+  }
+  return select.reduce(
+    (acc, field) => {
+      // Better Auth may request "id" while Convex stores it as "_id".
+      // Keep "_id" so Better Auth output mapping can translate to "id".
+      const sourceField = field === "id" && "_id" in doc ? "_id" : field;
+      acc[sourceField] = doc[sourceField];
+      return acc;
+    },
+    {} as Record<string, unknown>
+  );
+};
+
 export const convexAdapter = <
   DataModel extends GenericDataModel,
   Ctx extends GenericCtx<DataModel> = GenericActionCtx<DataModel>,
@@ -154,6 +208,41 @@ export const convexAdapter = <
     adapter: ({ options }) => {
       // Disable telemetry in all cases because it requires Node
       options.telemetry = { enabled: false };
+      if (options.experimental?.joins) {
+        options.experimental = {
+          ...options.experimental,
+          joins: false,
+        };
+        if (!didWarnExperimentalJoinsUnsupported) {
+          didWarnExperimentalJoinsUnsupported = true;
+          // eslint-disable-next-line no-console
+          console.warn(
+            "[convex-better-auth] Better Auth experimental.joins is not supported by the Convex adapter yet. Forcing experimental.joins = false."
+          );
+        }
+      }
+
+      const collectIdsForOrWhere = async (data: {
+        model: string;
+        where: (Where & { join?: undefined })[];
+      }) => {
+        const results = await asyncMap(data.where, async (w) =>
+          handlePagination(
+            async ({ paginationOpts }) => {
+              return await ctx.runQuery(api.adapter.findMany, {
+                model: data.model as TableNames,
+                where: parseWhere(w),
+                paginationOpts,
+              });
+            }
+          )
+        );
+        const ids = dedupeDocsById(results.flatMap((r) => r.docs))
+          .map((doc) => getDocId(doc))
+          .flatMap((id) => (id ? [id] : []));
+        return ids;
+      };
+
       return {
         id: "convex",
         options: {
@@ -204,11 +293,14 @@ export const convexAdapter = <
           }
 
           if (data.where?.some((w) => w.connector === "OR")) {
+            // Always fetch full docs for OR unions so we can dedupe
+            // by id and sort/limit before trimming selected fields.
+            const { select: _ignoredSelect, ...queryData } = data;
             const results = await asyncMap(data.where, async (w) =>
               handlePagination(
                 async ({ paginationOpts }) => {
                   return await ctx.runQuery(api.adapter.findMany, {
-                    ...data,
+                    ...queryData,
                     model: data.model as TableNames,
                     where: parseWhere(w),
                     paginationOpts,
@@ -217,14 +309,17 @@ export const convexAdapter = <
                 { limit: data.limit }
               )
             );
-            const docs = unique(results.flatMap((r) => r.docs));
+            let docs = dedupeDocsById(results.flatMap((r) => r.docs));
             if (data.sortBy) {
-              return sortBy(docs, [
+              docs = sortBy(docs, [
                 prop(data.sortBy.field),
                 data.sortBy.direction,
               ]);
             }
-            return docs;
+            if (data.limit !== undefined) {
+              docs = docs.slice(0, data.limit);
+            }
+            return docs.map((doc) => selectDocFields(doc, data.select));
           }
 
           const result = await handlePagination(
@@ -253,7 +348,7 @@ export const convexAdapter = <
                 });
               })
             );
-            const docs = unique(results.flatMap((r) => r.docs));
+            const docs = dedupeDocsById(results.flatMap((r) => r.docs));
             return docs.length;
           }
 
@@ -271,7 +366,7 @@ export const convexAdapter = <
           if (!("runMutation" in ctx)) {
             throw new Error("ctx is not a mutation ctx");
           }
-          if (data.where?.length === 1 && data.where[0].operator === "eq") {
+          if (data.where?.length && !data.where.some((w) => w.connector === "OR")) {
             const onUpdateHandle =
               config.authFunctions?.onUpdate &&
               config.triggers?.[data.model]?.onUpdate
@@ -320,6 +415,22 @@ export const convexAdapter = <
                   config.authFunctions.onDelete
                 )) as FunctionHandle<"mutation">)
               : undefined;
+          if (data.where?.some((w) => w.connector === "OR")) {
+            const ids = await collectIdsForOrWhere({
+              model: data.model as string,
+              where: data.where,
+            });
+            await asyncMap(ids, async (id) => {
+              await ctx.runMutation(api.adapter.deleteOne, {
+                input: {
+                  model: data.model as TableNames,
+                  where: [{ field: "_id", operator: "eq", value: id }],
+                },
+                onDeleteHandle: onDeleteHandle,
+              });
+            });
+            return ids.length;
+          }
           const result = await handlePagination(async ({ paginationOpts }) => {
             return await ctx.runMutation(api.adapter.deleteMany, {
               input: {
@@ -344,6 +455,30 @@ export const convexAdapter = <
                   config.authFunctions.onUpdate
                 )) as FunctionHandle<"mutation">)
               : undefined;
+          if (data.where?.some((w) => w.connector === "OR")) {
+            const ids = await collectIdsForOrWhere({
+              model: data.model as string,
+              where: data.where,
+            });
+            if (!ids.length) {
+              return 0;
+            }
+            const result = await handlePagination(
+              async ({ paginationOpts }) => {
+                return await ctx.runMutation(api.adapter.updateMany, {
+                  input: {
+                    model: data.model as TableNames,
+                    where: [{ field: "_id", operator: "in", value: ids }],
+                    update: data.update,
+                  },
+                  paginationOpts,
+                  onUpdateHandle: onUpdateHandle,
+                });
+              },
+              { limit: ids.length }
+            );
+            return result.count ?? 0;
+          }
           const result = await handlePagination(async ({ paginationOpts }) => {
             return await ctx.runMutation(api.adapter.updateMany, {
               input: {

@@ -30,6 +30,8 @@
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "test:e2e": "npm run build && cd e2e && npm run test",
     "test:coverage": "vitest run --coverage --coverage.reporter=text",
+    "test:adapter-policy": "node test/adapter-policy/validate.mjs",
+    "test:adapter-drift": "node test/adapter-policy/check-upstream-drift.mjs",
     "preversion": "npm ci && npm run build:clean && run-p test lint typecheck",
     "prepublishOnly": "npm whoami || npm login && sleep 1",
     "alpha": "npm version prerelease --preid alpha && npm publish --tag alpha && git push --follow-tags",
@@ -103,11 +105,13 @@
     }
   },
   "peerDependencies": {
-    "better-auth": ">=1.4.9 <1.5.0",
+    "better-auth": ">=1.5.0 <1.6.0",
     "convex": "^1.25.0",
     "react": "^18.3.1 || ^19.0.0"
   },
   "devDependencies": {
+    "@better-auth/core": "^1.5.3",
+    "@better-auth/test-utils": "^1.5.3",
     "@edge-runtime/vm": "5.0.0",
     "@eslint/eslintrc": "3.3.1",
     "@eslint/js": "9.39.1",
@@ -117,6 +121,7 @@
     "@types/react": "18.3.26",
     "@types/react-dom": "18.3.7",
     "@types/semver": "^7.7.0",
+    "better-auth": "^1.5.3",
     "chokidar-cli": "3.0.0",
     "concurrently": "^9.2.0",
     "convex": "^1.31.2",
@@ -141,7 +146,6 @@
   "types": "./dist/client/index.d.ts",
   "module": "./dist/client/index.js",
   "dependencies": {
-    "@better-auth/passkey": "1.4.9",
     "@better-fetch/fetch": "^1.1.18",
     "common-tags": "^1.8.2",
     "convex-helpers": "^0.1.95",

@@ -1,0 +1,104 @@
+name: Adapter Drift Monitor
+
+on:
+  schedule:
+    - cron: "23 14 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  adapter-drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Node setup
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        with:
+          cache-dependency-path: package.json
+          node-version: "24.x"
+          cache: "npm"
+
+      - name: Check upstream drift
+        run: node test/adapter-policy/check-upstream-drift.mjs --output drift-result.json
+
+      - name: Add workflow summary
+        run: |
+          node -e 'const fs=require("node:fs"); const result=JSON.parse(fs.readFileSync("drift-result.json","utf8")); fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, result.markdownSummary + "\n");'
+
+      - name: Upload drift result artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: adapter-drift-result
+          path: drift-result.json
+
+      - name: Sync drift issue
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            const fs = require("node:fs");
+            const title = "Adapter test drift: upstream suite changed";
+            const result = JSON.parse(fs.readFileSync("drift-result.json", "utf8"));
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: "open",
+              per_page: 100,
+            });
+            const existing = issues.find((issue) => issue.title === title && !issue.pull_request);
+            if (result.status !== "ok") {
+              core.warning(`Drift monitor errored: ${result.errorMessage ?? "unknown error"}`);
+              return;
+            }
+            if (result.driftDetected) {
+              const body = [
+                "Automated drift monitor detected upstream adapter suite changes.",
+                "",
+                `Pinned commit: \`${result.pinnedCommit.slice(0, 12)}\``,
+                `Latest main: \`${result.latestCommit.slice(0, 12)}\``,
+                "",
+                result.markdownSummary,
+              ].join("\n");
+              if (existing) {
+                await github.rest.issues.update({
+                  owner,
+                  repo,
+                  issue_number: existing.number,
+                  body,
+                });
+              } else {
+                await github.rest.issues.create({
+                  owner,
+                  repo,
+                  title,
+                  body,
+                });
+              }
+              core.notice("Upstream drift detected; issue has been created or updated.");
+              return;
+            }
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: existing.number,
+                body: "No drift detected in the latest monitor run. Closing this issue.",
+              });
+              await github.rest.issues.update({
+                owner,
+                repo,
+                issue_number: existing.number,
+                state: "closed",
+              });
+              core.notice("No drift detected; closed existing drift issue.");
+            } else {
+              core.notice("No drift detected.");
+            }

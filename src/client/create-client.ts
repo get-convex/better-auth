@@ -402,18 +402,26 @@ export const createClient = <
           ? { allowedOrigins: [], allowedHeaders: [], exposedHeaders: [] }
           : opts.cors;
       let trustedOriginsOption:
-        | string[]
-        | ((request: Request) => string[] | Promise<string[]>)
+        | (string | null | undefined)[]
+        | ((
+            request?: Request
+          ) =>
+            | (string | null | undefined)[]
+            | Promise<(string | null | undefined)[]>)
         | undefined;
       const cors = corsRouter(http, {
         allowedOrigins: async (request) => {
-          trustedOriginsOption =
+          const resolvedTrustedOrigins =
             trustedOriginsOption ??
             (await staticAuth.$context).options.trustedOrigins ??
             [];
-          const trustedOrigins = Array.isArray(trustedOriginsOption)
-            ? trustedOriginsOption
-            : await trustedOriginsOption(request);
+          trustedOriginsOption = resolvedTrustedOrigins;
+          const rawOrigins = Array.isArray(resolvedTrustedOrigins)
+            ? resolvedTrustedOrigins
+            : await resolvedTrustedOrigins(request);
+          const trustedOrigins = rawOrigins.filter(
+            (origin): origin is string => typeof origin === "string"
+          );
           return trustedOrigins
             .map((origin) =>
               // Strip trailing wildcards, unsupported for allowedOrigins

@@ -1,0 +1,84 @@
+{
+  "source": {
+    "catalogFile": "upstream-test-catalog.json",
+    "updatedAt": "2026-03-07",
+    "notes": "Initial skip set seeded from local 1.5 experimentation and validated against the upstream catalog snapshot."
+  },
+  "categories": {
+    "convex-id-generation": {
+      "reason": "Convex generates IDs at insert time; generateId override semantics are not adapter-observable in this runtime."
+    },
+    "offset-unsupported": {
+      "reason": "Convex adapter rejects offset pagination; cursor pagination is supported instead."
+    },
+    "dynamic-schema-plugin-table": {
+      "reason": "These tests mutate Better Auth schema to add plugin tables/fields at runtime, but current Convex test harness binds schema validators statically."
+    },
+    "dynamic-schema-additional-fields": {
+      "reason": "These tests add additional fields at runtime via modifyBetterAuthOptions; static schema validators reject dynamic field changes."
+    },
+    "transactions-unsupported": {
+      "reason": "Adapter config sets transaction support to false for Convex adapter."
+    },
+    "numeric-id-unsupported": {
+      "reason": "Convex adapter declares supportsNumericIds=false and Better Auth rejects number-id mode for this adapter."
+    }
+  },
+  "disabledTests": [
+    {
+      "name": "create - should use generateId if provided",
+      "category": "convex-id-generation"
+    },
+    {
+      "name": "create - should return a uuid",
+      "category": "convex-id-generation"
+    },
+    {
+      "name": "findMany - should be able to perform a complex limited join",
+      "category": "offset-unsupported"
+    },
+    {
+      "name": "findMany - should find many models with limit and offset",
+      "category": "offset-unsupported"
+    },
+    {
+      "name": "findMany - should find many models with offset",
+      "category": "offset-unsupported"
+    },
+    {
+      "name": "findMany - should find many models with sortBy and limit and offset",
+      "category": "offset-unsupported"
+    },
+    {
+      "name": "findMany - should find many models with sortBy and limit and offset and where",
+      "category": "offset-unsupported"
+    },
+    {
+      "name": "findMany - should find many models with sortBy and offset",
+      "category": "offset-unsupported"
+    },
+    {
+      "name": "findMany - should find many with join and offset",
+      "category": "offset-unsupported"
+    },
+    {
+      "name": "findMany - should find many with join, where, limit, and offset",
+      "category": "offset-unsupported"
+    },
+    {
+      "name": "findOne - should find a model using a uuid",
+      "category": "convex-id-generation"
+    }
+  ],
+  "disabledSuites": [
+    {
+      "suite": "transactions",
+      "category": "transactions-unsupported"
+    },
+    {
+      "suite": "number-id",
+      "category": "numeric-id-unsupported"
+    }
+  ],
+  "notRunSuites": []
+}

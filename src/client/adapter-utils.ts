@@ -279,7 +279,7 @@ export const checkUniqueFields = async <
 
 // This handles basic select (stripping out the other fields if there
 // is a select arg).
-export const selectFields = async <
+export const selectFields = <
   T extends TableNamesInDataModel<GenericDataModel>,
   D extends DocumentByName<GenericDataModel, T>,
 >(
@@ -293,7 +293,10 @@ export const selectFields = async <
     return doc;
   }
   return select.reduce((acc, field) => {
-    (acc as any)[field] = doc[field];
+    // Better Auth may request "id" while Convex stores it as "_id".
+    // Keep the raw field key here and let Better Auth map "_id" -> "id".
+    const sourceField = field === "id" && "_id" in doc ? "_id" : field;
+    (acc as any)[sourceField] = doc[sourceField as keyof typeof doc];
     return acc;
   }, {} as D);
 };
@@ -321,19 +324,19 @@ const filterByWhere = <
       typeof adapterWhereValidator
     >["value"];
     const isLessThan = (val: typeof value, wVal: typeof w.value) => {
-      if (!wVal) {
+      if (wVal === undefined || wVal === null) {
         return false;
       }
-      if (!val) {
+      if (val === undefined || val === null) {
         return true;
       }
       return val < wVal;
     };
     const isGreaterThan = (val: typeof value, wVal: typeof w.value) => {
-      if (!val) {
+      if (val === undefined || val === null) {
         return false;
       }
-      if (!wVal) {
+      if (wVal === undefined || wVal === null) {
         return true;
       }
       return val > wVal;
@@ -394,54 +397,57 @@ const generateQuery = (
 ) => {
   const { index, values, boundField, indexFields } =
     findIndex(schema, args) ?? {};
+  const usableIndex =
+    index?.indexDescriptor === "by_creation_time" ? undefined : index;
   const query = stream(ctx.db as any, schema).query(args.model as any);
   const hasValues =
-    values?.eq?.length ||
-    values?.lt ||
-    values?.lte ||
-    values?.gt ||
-    values?.gte;
-  const indexedQuery =
-    index && index.indexDescriptor !== "by_creation_time"
-      ? query.withIndex(
-          index.indexDescriptor,
-          hasValues
-            ? (q: any) => {
-                for (const [idx, value] of (values?.eq ?? []).entries()) {
-                  q = q.eq(index.fields[idx], value);
-                }
-                if (values?.lt) {
-                  q = q.lt(boundField, values.lt);
-                }
-                if (values?.lte) {
-                  q = q.lte(boundField, values.lte);
-                }
-                if (values?.gt) {
-                  q = q.gt(boundField, values.gt);
-                }
-                if (values?.gte) {
-                  q = q.gte(boundField, values.gte);
-                }
-                return q;
+    (values?.eq?.length ?? 0) > 0 ||
+    values?.lt !== undefined ||
+    values?.lte !== undefined ||
+    values?.gt !== undefined ||
+    values?.gte !== undefined;
+  const indexedQuery = usableIndex
+    ? query.withIndex(
+        usableIndex.indexDescriptor,
+        hasValues
+          ? (q: any) => {
+              for (const [idx, value] of (values?.eq ?? []).entries()) {
+                q = q.eq(usableIndex.fields[idx], value);
               }
-            : undefined
-        )
-      : query;
+              if (values?.lt !== undefined) {
+                q = q.lt(boundField, values.lt);
+              }
+              if (values?.lte !== undefined) {
+                q = q.lte(boundField, values.lte);
+              }
+              if (values?.gt !== undefined) {
+                q = q.gt(boundField, values.gt);
+              }
+              if (values?.gte !== undefined) {
+                q = q.gte(boundField, values.gte);
+              }
+              return q;
+            }
+          : undefined
+      )
+    : query;
   const orderedQuery = args.sortBy
     ? indexedQuery.order(args.sortBy.direction === "desc" ? "desc" : "asc")
     : indexedQuery;
+  if (!usableIndex && indexFields?.length) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      stripIndent`
+        Querying without an index on table "${args.model}".
+        This can cause performance issues, and may hit the document read limit.
+        To fix, add an index that begins with the following fields in order:
+        [${indexFields.join(", ")}]
+      `
+    );
+  }
   const filteredQuery = orderedQuery.filterWith(async (doc) => {
-    if (!index && indexFields?.length) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        stripIndent`
-          Querying without an index on table "${args.model}".
-          This can cause performance issues, and may hit the document read limit.
-          To fix, add an index that begins with the following fields in order:
-          [${indexFields.join(", ")}]
-        `
-      );
-      // No index, handle all where clauses statically.
+    if (!usableIndex) {
+      // No usable index, handle all where clauses statically.
       return filterByWhere(doc, args.where);
     }
     return filterByWhere(
@@ -521,7 +527,7 @@ export const paginate = async <
     // Apply all other clauses as static filters to our 0 or 1 result.
     if (filterByWhere(doc, args.where, (w) => w !== uniqueWhere)) {
       return {
-        page: [await selectFields(doc, args.select)].filter(Boolean) as Doc[],
+        page: [selectFields(doc, args.select)].filter(Boolean) as Doc[],
         isDone: true,
         continueCursor: "",
       };
@@ -559,28 +565,31 @@ export const paginate = async <
         .filter((doc) => filterByWhere(doc, args.where, (w) => w !== inWhere));
 
       return {
-        page: filteredDocs.sort((a, b) => {
-          if (args.sortBy?.field === "createdAt") {
-            return args.sortBy.direction === "asc"
-              ? (a._creationTime as number) - (b._creationTime as number)
-              : (b._creationTime as number) - (a._creationTime as number);
-          }
-          if (args.sortBy) {
-            const aValue = a[args.sortBy.field as keyof typeof a];
-            const bValue = b[args.sortBy.field as keyof typeof b];
-            if (aValue === bValue) {
-              return 0;
+        page: filteredDocs
+          .sort((a, b) => {
+            if (args.sortBy?.field === "createdAt") {
+              return args.sortBy.direction === "asc"
+                ? (a._creationTime as number) - (b._creationTime as number)
+                : (b._creationTime as number) - (a._creationTime as number);
             }
-            return args.sortBy.direction === "asc"
-              ? aValue! > bValue!
-                ? 1
-                : -1
-              : aValue! > bValue!
-                ? -1
-                : 1;
-          }
-          return 0;
-        }) as Doc[],
+            if (args.sortBy) {
+              const aValue = a[args.sortBy.field as keyof typeof a];
+              const bValue = b[args.sortBy.field as keyof typeof b];
+              if (aValue === bValue) {
+                return 0;
+              }
+              return args.sortBy.direction === "asc"
+                ? aValue! > bValue!
+                  ? 1
+                  : -1
+                : aValue! > bValue!
+                  ? -1
+                  : 1;
+            }
+            return 0;
+          })
+          .map((doc) => selectFields(doc, args.select))
+          .flatMap((doc) => (doc ? [doc] : [])) as Doc[],
         isDone: true,
         continueCursor: "",
       };
@@ -605,9 +614,7 @@ export const paginate = async <
     ).paginate(paginationOpts);
     return {
       ...result,
-      page: await asyncMap(result.page, (doc) =>
-        selectFields(doc, args.select)
-      ),
+      page: result.page.map((doc) => selectFields(doc, args.select)),
     };
   }
 
@@ -615,7 +622,7 @@ export const paginate = async <
   const result = await query.paginate(paginationOpts);
   return {
     ...result,
-    page: await asyncMap(result.page, (doc) => selectFields(doc, args.select)),
+    page: result.page.map((doc) => selectFields(doc, args.select)),
   };
 };
 

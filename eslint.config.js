@@ -70,6 +70,12 @@ export default [
       ],
     },
   },
+  {
+    files: ["src/test/adapter-factory/**/*.{ts,tsx}"],
+    rules: {
+      "no-console": "off",
+    },
+  },
   // React app code - Browser environment
   {
     files: ["src/react/**/*.{ts,tsx}"],

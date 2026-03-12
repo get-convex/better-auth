@@ -1,11 +1,8 @@
 import type { BetterAuthPlugin } from "better-auth";
 import { setSessionCookie } from "better-auth/cookies";
 import { generateRandomString } from "better-auth/crypto";
-import {
-  createAuthEndpoint,
-  createAuthMiddleware,
-  oneTimeToken as oneTimeTokenPlugin,
-} from "better-auth/plugins";
+import { createAuthEndpoint, createAuthMiddleware } from "better-auth/api";
+import { oneTimeToken as oneTimeTokenPlugin } from "better-auth/plugins";
 import { z } from "zod";
 
 export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
@@ -86,7 +83,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         },
         {
           matcher: (ctx) => {
-            return (
+            return Boolean(
               ctx.method === "GET" &&
               ctx.path?.startsWith("/verify-email") &&
               !isExpoNative(ctx)
@@ -101,26 +98,18 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         },
         {
           matcher: (ctx) => {
-            return (
-              ((ctx.method === "POST" && ctx.path?.startsWith("/link-social")) ||
-                ctx.path?.startsWith("/send-verification-email") ||
-                ctx.path?.startsWith("/sign-in/email") ||
-                ctx.path?.startsWith("/sign-in/social") ||
-                ctx.path?.startsWith("/sign-in/magic-link") ||
-                ctx.path?.startsWith("/delete-user") ||
-                ctx.path?.startsWith("/change-email")) &&
-              !isExpoNative(ctx)
-            );
+            return Boolean(ctx.method === "POST" && !isExpoNative(ctx));
           },
           handler: createAuthMiddleware(async (ctx) => {
-            const isSignIn = ctx.path.startsWith("/sign-in");
-            ctx.body.callbackURL = rewriteCallbackURL(ctx.body.callbackURL);
-            if (isSignIn && ctx.body.newUserCallbackURL) {
+            if (ctx.body?.callbackURL) {
+              ctx.body.callbackURL = rewriteCallbackURL(ctx.body.callbackURL);
+            }
+            if (ctx.body?.newUserCallbackURL) {
               ctx.body.newUserCallbackURL = rewriteCallbackURL(
                 ctx.body.newUserCallbackURL
               );
             }
-            if (isSignIn && ctx.body.errorCallbackURL) {
+            if (ctx.body?.errorCallbackURL) {
               ctx.body.errorCallbackURL = rewriteCallbackURL(
                 ctx.body.errorCallbackURL
               );
@@ -151,7 +140,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         },
         {
           matcher: (ctx) => {
-            return (
+            return Boolean(
               (ctx.path?.startsWith("/callback") ||
                 ctx.path?.startsWith("/oauth2/callback") ||
                 ctx.path?.startsWith("/magic-link/verify")) &&

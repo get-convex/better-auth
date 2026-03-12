@@ -1,505 +1,289 @@
 import { createClient } from "../client/index.js";
-import type { GenericCtx } from "../client/index.js";
-import { api } from "./_generated/api.js";
+import { internal } from "./_generated/api.js";
 import { action } from "./_generated/server.js";
 import type { GenericActionCtx } from "convex/server";
 import type { DataModel } from "./_generated/dataModel.js";
-import type { BetterAuthOptions } from "better-auth";
 import type { EmptyObject } from "convex-helpers";
+import type { BetterAuthOptions } from "better-auth";
+import type { ComponentApi } from "./_generated/component.js";
 
-// Hide vitest imports from esbuild, keep them out of the bundle
-import type {
-  beforeEach as beforeEachType,
-  test as testType,
-  expect as expectType,
-} from "vitest";
-import type { runAdapterTest as runAdapterTestType } from "better-auth/adapters/test";
+// Tests need to run inside of a Convex function to use the Convex adapter.
+// Test dependencies are dynamically imported to keep them out of the
+// production bundle. convex-test runs in the vitest process, so vitest
+// globals are available through dynamic imports.
 
-const getTestImports = async () => {
-  const vitestImportName = "vitest";
-  const { beforeEach, test, expect } = await import(vitestImportName);
-  const betterAuthAdaptersTestImportName = "better-auth/adapters/test";
-  const { runAdapterTest } = await import(betterAuthAdaptersTestImportName);
-  return { beforeEach, test, expect, runAdapterTest } as {
-    beforeEach: typeof beforeEachType;
-    test: typeof testType;
-    expect: typeof expectType;
-    runAdapterTest: typeof runAdapterTestType;
-  };
+const NORMAL_DISABLED_TESTS = [
+  "create - should apply default values to fields",
+  "create - should return null for nullable foreign keys",
+  "create - should support arrays",
+  "create - should support json",
+  "create - should use generateId if provided",
+  "findMany - should be able to perform a complex limited join",
+  "findMany - should find many models with limit and offset",
+  "findMany - should find many models with offset",
+  "findMany - should find many models with sortBy and limit and offset",
+  "findMany - should find many models with sortBy and limit and offset and where",
+  "findMany - should find many models with sortBy and offset",
+  "findMany - should find many with both one-to-one and one-to-many joins",
+  "findMany - should find many with join and offset",
+  "findMany - should find many with join, where, limit, and offset",
+  "findMany - should find many with one-to-one join",
+  "findMany - should handle mixed joins correctly when some are missing",
+  "findMany - should return empty array when base records don't exist with joins",
+  "findMany - should return null for one-to-one join when joined records don't exist",
+  "findMany - should select fields with one-to-one join",
+  "findOne - backwards join with modified field name (session base, users-table join)",
+  "findOne - multiple joins should return result even when some joined tables have no matching rows",
+  "findOne - should find a model with modified field name",
+  "findOne - should find a model with modified model name",
+  "findOne - should join a model with modified field name",
+  "findOne - should not apply defaultValue if value not found",
+  "findOne - should return an object for one-to-one joins",
+  "findOne - should return null for failed base model lookup that has joins",
+  "findOne - should return null for one-to-one join when joined record doesn't exist",
+  "findOne - should select fields with one-to-one join",
+  "findOne - should work with both one-to-one and one-to-many joins",
+] as const;
+
+const toDisableMap = (testNames: readonly string[]) =>
+  Object.fromEntries(testNames.map((testName) => [testName, true]));
+
+const toEnableOnlyMap = (testNames: readonly string[]) => ({
+  ALL: true,
+  ...Object.fromEntries(testNames.map((testName) => [testName, false])),
+});
+
+const UUID_SUITE_TESTS = ["init - tests"] as const;
+
+const getOverrideBetterAuthOptions = (opts: BetterAuthOptions) => ({
+  ...opts,
+  advanced: {
+    ...opts.advanced,
+    database: {
+      ...opts.advanced?.database,
+      generateId: "uuid",
+    },
+  },
+});
+
+type AdapterModule = ComponentApi["adapter"];
+type TestProfileName =
+  | "adapterAdditionalFields"
+  | "adapterPluginTable"
+  | "adapterRenameField"
+  | "adapterRenameUserCustom"
+  | "adapterRenameUserTable"
+  | "adapterOrganizationJoins";
+
+type InternalWithTestProfiles = {
+  adapter: AdapterModule;
+  adapterTest?: ComponentApi["adapterTest"];
+  testProfiles: Record<TestProfileName, AdapterModule>;
 };
 
-export const getAdapter: (
-  ctx: GenericCtx<DataModel>
-) => Parameters<typeof runAdapterTestType>[0]["getAdapter"] =
-  (ctx: GenericCtx<DataModel>) =>
-  async (opts?: Omit<BetterAuthOptions, "database">) => {
-    const authComponent = createClient<DataModel>(api as any, {
+const internalWithTestProfiles = internal as unknown as InternalWithTestProfiles;
+
+const baseProfileApi = {
+  adapter: internalWithTestProfiles.adapter,
+  adapterTest: internalWithTestProfiles.adapterTest,
+};
+
+const profileApi = (name: TestProfileName): { adapter: AdapterModule } => {
+  return { adapter: internalWithTestProfiles.testProfiles[name] };
+};
+
+const additionalFieldsProfileApi = profileApi("adapterAdditionalFields");
+const pluginTableProfileApi = profileApi("adapterPluginTable");
+const renameFieldProfileApi = profileApi("adapterRenameField");
+const renameUserCustomProfileApi = profileApi("adapterRenameUserCustom");
+const renameUserTableProfileApi = profileApi("adapterRenameUserTable");
+const organizationJoinsProfileApi = profileApi("adapterOrganizationJoins");
+
+export const runTests = action(
+  async (ctx: GenericActionCtx<DataModel>, _args: EmptyObject) => {
+    const testUtilsImport = "@better-auth/test-utils/adapter";
+    const { testAdapter } = await import(testUtilsImport);
+    const adapterFactoryImport = "../test/adapter-factory/index.js";
+    const {
+      coreNormalTestSuite,
+      coreAuthFlowTestSuite,
+      additionalFieldsNormalTestSuite,
+      additionalFieldsAuthFlowTestSuite,
+      pluginTableNormalTestSuite,
+      renameFieldAndJoinTestSuite,
+      renameModelUserCustomTestSuite,
+      renameModelUserTableTestSuite,
+      multiJoinsMissingRowsTestSuite,
+      transactionsTestSuite,
+      uuidTestSuite,
+      convexCustomTestSuite,
+    } = await import(adapterFactoryImport);
+
+    const baseProfileClient = createClient<DataModel>(baseProfileApi, {
       verbose: false,
     });
-    const adapterFactory = authComponent.adapter(ctx);
-    const options = {
-      ...(opts ?? {}),
-      user: {
-        ...(opts?.user ?? {}),
-        // We don't currently support custom schema for tests, need to find a
-        // way to do this.
-        fields: undefined,
-      },
-    };
-    return adapterFactory(options);
-  };
+    const additionalFieldsProfileClient = createClient<DataModel>(
+      additionalFieldsProfileApi,
+      {
+        verbose: false,
+      }
+    );
+    const pluginTableProfileClient = createClient<DataModel>(
+      pluginTableProfileApi,
+      {
+        verbose: false,
+      }
+    );
+    const renameFieldProfileClient = createClient<DataModel>(
+      renameFieldProfileApi,
+      {
+        verbose: false,
+      }
+    );
+    const renameUserCustomProfileClient = createClient<DataModel>(
+      renameUserCustomProfileApi,
+      {
+        verbose: false,
+      }
+    );
+    const renameUserTableProfileClient = createClient<DataModel>(
+      renameUserTableProfileApi,
+      {
+        verbose: false,
+      }
+    );
+    const organizationJoinsProfileClient = createClient<DataModel>(
+      organizationJoinsProfileApi,
+      {
+        verbose: false,
+      }
+    );
 
-// Tests need to run inside of a Convex function to use the Convex adapter
-export const runTests = action(
-  async (
-    ctx: GenericActionCtx<DataModel>,
-    args: { disableTests: Record<string, boolean> }
-  ) => {
-    const { runAdapterTest } = await getTestImports();
-    runAdapterTest({
-      getAdapter: getAdapter(ctx),
-      disableTests: args.disableTests,
+    const { execute: executeBaseProfile } = await testAdapter({
+      adapter: () => {
+        return baseProfileClient.adapter(ctx);
+      },
+      runMigrations: () => {
+        // Convex schema is static — no migrations needed.
+      },
+      overrideBetterAuthOptions: getOverrideBetterAuthOptions,
+      tests: [
+        coreNormalTestSuite({
+          disableTests: toDisableMap(NORMAL_DISABLED_TESTS),
+        }),
+        uuidTestSuite({
+          disableTests: toEnableOnlyMap(UUID_SUITE_TESTS),
+        }),
+        transactionsTestSuite({ disableTests: { ALL: true } }),
+        coreAuthFlowTestSuite(),
+        convexCustomTestSuite(),
+      ],
     });
+
+    const { execute: executeAdditionalFieldsProfile } = await testAdapter({
+      adapter: () => {
+        return additionalFieldsProfileClient.adapter(ctx);
+      },
+      runMigrations: () => {
+        // Convex schema is static — no migrations needed.
+      },
+      overrideBetterAuthOptions: getOverrideBetterAuthOptions,
+      prefixTests: "profile:additional-fields",
+      tests: [
+        additionalFieldsNormalTestSuite(),
+        additionalFieldsAuthFlowTestSuite(),
+      ],
+    });
+
+    const { execute: executePluginTableProfile } = await testAdapter({
+      adapter: () => {
+        return pluginTableProfileClient.adapter(ctx);
+      },
+      runMigrations: () => {
+        // Convex schema is static — no migrations needed.
+      },
+      overrideBetterAuthOptions: getOverrideBetterAuthOptions,
+      prefixTests: "profile:plugin-table",
+      tests: [pluginTableNormalTestSuite()],
+    });
+
+    const { execute: executeRenameFieldProfile } = await testAdapter({
+      adapter: () => {
+        return renameFieldProfileClient.adapter(ctx);
+      },
+      runMigrations: () => {
+        // Convex schema is static — no migrations needed.
+      },
+      overrideBetterAuthOptions: getOverrideBetterAuthOptions,
+      prefixTests: "profile:rename-field-join",
+      tests: [renameFieldAndJoinTestSuite()],
+    });
+
+    const { execute: executeRenameUserCustomProfile } = await testAdapter({
+      adapter: () => {
+        return renameUserCustomProfileClient.adapter(ctx);
+      },
+      runMigrations: () => {
+        // Convex schema is static — no migrations needed.
+      },
+      overrideBetterAuthOptions: getOverrideBetterAuthOptions,
+      prefixTests: "profile:rename-user-custom",
+      tests: [renameModelUserCustomTestSuite()],
+    });
+
+    const { execute: executeRenameUserTableProfile } = await testAdapter({
+      adapter: () => {
+        return renameUserTableProfileClient.adapter(ctx);
+      },
+      runMigrations: () => {
+        // Convex schema is static — no migrations needed.
+      },
+      overrideBetterAuthOptions: getOverrideBetterAuthOptions,
+      prefixTests: "profile:rename-user-table",
+      tests: [renameModelUserTableTestSuite()],
+    });
+
+    const { execute: executeOrganizationJoinsProfile } = await testAdapter({
+      adapter: () => {
+        return organizationJoinsProfileClient.adapter(ctx);
+      },
+      runMigrations: () => {
+        // Convex schema is static — no migrations needed.
+      },
+      overrideBetterAuthOptions: getOverrideBetterAuthOptions,
+      prefixTests: "profile:organization-joins",
+      tests: [multiJoinsMissingRowsTestSuite()],
+    });
+
+    await executeBaseProfile();
+    await executeAdditionalFieldsProfile();
+    await executePluginTableProfile();
+    await executeRenameFieldProfile();
+    await executeRenameUserCustomProfile();
+    await executeRenameUserTableProfile();
+    await executeOrganizationJoinsProfile();
   }
 );
 
+// Keep this export during migration to avoid breaking generated component types.
 export const runCustomTests = action(
   async (ctx: GenericActionCtx<DataModel>, _args: EmptyObject) => {
-    const { beforeEach, test, expect } = await getTestImports();
-    runCustomAdapterTests({
-      beforeEach,
-      test,
-      expect,
-      getAdapter: getAdapter(ctx),
+    const testUtilsImport = "@better-auth/test-utils/adapter";
+    const { testAdapter } = await import(testUtilsImport);
+    const adapterFactoryImport = "../test/adapter-factory/index.js";
+    const { convexCustomTestSuite } = await import(adapterFactoryImport);
+    const authComponent = createClient<DataModel>(baseProfileApi, {
+      verbose: false,
     });
+
+    const { execute } = await testAdapter({
+      adapter: () => {
+        return authComponent.adapter(ctx);
+      },
+      runMigrations: () => {},
+      overrideBetterAuthOptions: getOverrideBetterAuthOptions,
+      tests: [convexCustomTestSuite()],
+    });
+    await execute();
   }
 );
-
-function runCustomAdapterTests({
-  beforeEach,
-  test,
-  expect,
-  getAdapter,
-}: {
-  getAdapter: Parameters<typeof runAdapterTestType>[0]["getAdapter"];
-  beforeEach: typeof beforeEachType;
-  test: typeof testType;
-  expect: typeof expectType;
-}) {
-  beforeEach(async () => {
-    const adapter = await getAdapter();
-    await adapter.deleteMany({
-      model: "user",
-      where: [],
-    });
-    await adapter.deleteMany({
-      model: "session",
-      where: [],
-    });
-  });
-  test("should handle lone range operators", async () => {
-    const adapter = await getAdapter();
-    const user = await adapter.create({
-      model: "user",
-      data: {
-        name: "ab",
-        email: "a@a.com",
-      },
-    });
-    expect(
-      await adapter.findMany({
-        model: "user",
-        where: [
-          {
-            field: "name",
-            operator: "lt",
-            value: "a",
-          },
-        ],
-      })
-    ).toEqual([]);
-    expect(
-      await adapter.findMany({
-        model: "user",
-        where: [
-          {
-            field: "name",
-            operator: "lte",
-            value: "a",
-          },
-        ],
-      })
-    ).toEqual([]);
-    expect(
-      await adapter.findMany({
-        model: "user",
-        where: [
-          {
-            field: "name",
-            operator: "gt",
-            value: "a",
-          },
-        ],
-      })
-    ).toEqual([user]);
-    expect(
-      await adapter.findMany({
-        model: "user",
-        where: [
-          {
-            field: "name",
-            operator: "gte",
-            value: "ab",
-          },
-        ],
-      })
-    ).toEqual([user]);
-  });
-
-  test("should handle compound indexes that include id field", async () => {
-    const adapter = await getAdapter();
-    const user = await adapter.create({
-      model: "user",
-      data: {
-        name: "foo",
-        email: "foo@bar.com",
-      },
-    });
-    expect(
-      await adapter.findOne({
-        model: "user",
-        where: [
-          {
-            field: "id",
-            value: user.id,
-          },
-          {
-            field: "name",
-            value: "wrong name",
-          },
-        ],
-      })
-    ).toEqual(null);
-    expect(
-      await adapter.findOne({
-        model: "user",
-        where: [
-          {
-            field: "id",
-            value: user.id,
-          },
-          {
-            field: "name",
-            value: "foo",
-          },
-        ],
-      })
-    ).toEqual(user);
-    expect(
-      await adapter.findOne({
-        model: "user",
-        where: [
-          {
-            field: "id",
-            value: user.id,
-          },
-          {
-            field: "name",
-            value: "foo",
-            operator: "lt",
-          },
-        ],
-      })
-    ).toEqual(null);
-    expect(
-      await adapter.findOne({
-        model: "user",
-        where: [
-          {
-            field: "id",
-            value: user.id,
-          },
-          {
-            field: "name",
-            value: "foo",
-            operator: "lte",
-          },
-        ],
-      })
-    ).toEqual(user);
-    expect(
-      await adapter.findOne({
-        model: "user",
-        where: [
-          {
-            field: "id",
-            value: user.id,
-          },
-          {
-            field: "name",
-            value: "foo",
-            operator: "gt",
-          },
-        ],
-      })
-    ).toEqual(null);
-    expect(
-      await adapter.findOne({
-        model: "user",
-        where: [
-          {
-            field: "id",
-            value: user.id,
-          },
-          {
-            field: "name",
-            value: "foo",
-            operator: "gte",
-          },
-        ],
-      })
-    ).toEqual(user);
-    expect(
-      await adapter.findOne({
-        model: "user",
-        where: [
-          {
-            field: "id",
-            value: user.id,
-          },
-          {
-            field: "name",
-            operator: "in",
-            value: ["wrong", "name"],
-          },
-        ],
-      })
-    ).toEqual(null);
-    expect(
-      await adapter.findOne({
-        model: "user",
-        where: [
-          {
-            field: "id",
-            value: user.id,
-          },
-          {
-            field: "name",
-            operator: "in",
-            value: ["foo"],
-          },
-        ],
-      })
-    ).toEqual(user);
-  });
-  test("should automatically paginate", async () => {
-    const adapter = await getAdapter();
-    for (let i = 0; i < 300; i++) {
-      await adapter.create({
-        model: "user",
-        data: {
-          name: `foo${i}`,
-          email: `foo${i}@bar.com`,
-        },
-      });
-    }
-    // Better Auth defaults to a limit of 100
-    expect(
-      await adapter.findMany({
-        model: "user",
-      })
-    ).toHaveLength(100);
-
-    // Pagination has a hardcoded numItems max of 200, this tests that it can handle
-    // specified limits beyond that
-    expect(
-      await adapter.findMany({
-        model: "user",
-        limit: 250,
-      })
-    ).toHaveLength(250);
-    expect(
-      await adapter.findMany({
-        model: "user",
-        limit: 350,
-      })
-    ).toHaveLength(300);
-  });
-  test("should handle OR where clauses", async () => {
-    const adapter = await getAdapter();
-    const user = await adapter.create({
-      model: "user",
-      data: {
-        name: "foo",
-        email: "foo@bar.com",
-      },
-    });
-    expect(
-      await adapter.findOne({
-        model: "user",
-        where: [
-          { field: "name", value: "bar", connector: "OR" },
-          { field: "name", value: "foo", connector: "OR" },
-        ],
-      })
-    ).toEqual(user);
-  });
-  test("should handle OR where clauses with sortBy", async () => {
-    const adapter = await getAdapter();
-    const fooUser = await adapter.create({
-      model: "user",
-      data: {
-        name: "foo",
-        email: "foo@bar.com",
-      },
-    });
-    const barUser = await adapter.create({
-      model: "user",
-      data: {
-        name: "bar",
-        email: "bar@bar.com",
-      },
-    });
-    await adapter.create({
-      model: "user",
-      data: {
-        name: "baz",
-        email: "baz@bar.com",
-      },
-    });
-    expect(
-      await adapter.findMany({
-        model: "user",
-        where: [
-          { field: "name", value: "bar", connector: "OR" },
-          { field: "name", value: "foo", connector: "OR" },
-        ],
-        sortBy: { field: "name", direction: "asc" },
-      })
-    ).toEqual([barUser, fooUser]);
-    expect(
-      await adapter.findMany({
-        model: "user",
-        where: [
-          { field: "name", value: "bar", connector: "OR" },
-          { field: "name", value: "foo", connector: "OR" },
-        ],
-        sortBy: { field: "name", direction: "desc" },
-      })
-    ).toEqual([fooUser, barUser]);
-  });
-  test("should handle count", async () => {
-    const adapter = await getAdapter();
-    await adapter.create({
-      model: "user",
-      data: {
-        name: "foo",
-        email: "foo@bar.com",
-      },
-    });
-    await adapter.create({
-      model: "user",
-      data: {
-        name: "bar",
-        email: "bar@bar.com",
-      },
-    });
-    expect(
-      await adapter.count({
-        model: "user",
-        where: [{ field: "name", value: "foo" }],
-      })
-    ).toEqual(1);
-  });
-  test("should handle queries with no index", async () => {
-    const adapter = await getAdapter();
-    const user = await adapter.create({
-      model: "user",
-      data: {
-        name: "foo",
-        email: "foo@bar.com",
-        emailVerified: true,
-      },
-    });
-    expect(
-      await adapter.findOne({
-        model: "user",
-        where: [{ field: "emailVerified", value: true }],
-      })
-    ).toEqual(user);
-    expect(
-      await adapter.findOne({
-        model: "user",
-        where: [{ field: "emailVerified", value: false }],
-      })
-    ).toEqual(null);
-  });
-
-  test("should handle compound operator on non-unique field without an index", async () => {
-    const adapter = await getAdapter();
-    await adapter.create({
-      model: "account",
-      data: {
-        accountId: "foo",
-        providerId: "bar",
-        userId: "baz",
-        accessTokenExpiresAt: null,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      },
-    });
-    expect(
-      await adapter.findOne({
-        model: "account",
-        where: [
-          {
-            operator: "lt",
-            connector: "AND",
-            field: "accessTokenExpiresAt",
-            value: Date.now(),
-          },
-          {
-            operator: "ne",
-            connector: "AND",
-            field: "accessTokenExpiresAt",
-            value: null,
-          },
-        ],
-      })
-    ).toEqual(null);
-  });
-
-  test("should fail to create a record with a unique field that already exists", async () => {
-    const adapter = await getAdapter();
-    await adapter.create({
-      model: "user",
-      data: { name: "foo", email: "foo@bar.com" },
-    });
-    await expect(
-      adapter.create({
-        model: "user",
-        data: { name: "foo", email: "foo@bar.com" },
-      })
-    ).rejects.toThrow("user email already exists");
-  });
-
-  test("should be able to compare against a date", async () => {
-    const adapter = await getAdapter();
-    const now = new Date().toISOString();
-    const user = await adapter.create({
-      model: "user",
-      data: {
-        name: "foo",
-        email: "foo@bar.com",
-        createdAt: now,
-      },
-    });
-    expect(
-      await adapter.findOne({
-        model: "user",
-        where: [{ field: "createdAt", value: now }],
-      })
-    ).toEqual(user);
-    expect(user.createdAt).toBeInstanceOf(Date);
-  });
-}
