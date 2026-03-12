@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.11.1
+
+- chore: add missing generated types
+
 ## 0.11.0
 
 - fix: prevent proxy compression from breaking server-side token fetch (#295)
