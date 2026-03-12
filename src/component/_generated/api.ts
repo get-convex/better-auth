@@ -10,6 +10,12 @@
 
 import type * as adapter from "../adapter.js";
 import type * as adapterTest from "../adapterTest.js";
+import type * as testProfiles_adapterAdditionalFields from "../testProfiles/adapterAdditionalFields.js";
+import type * as testProfiles_adapterOrganizationJoins from "../testProfiles/adapterOrganizationJoins.js";
+import type * as testProfiles_adapterPluginTable from "../testProfiles/adapterPluginTable.js";
+import type * as testProfiles_adapterRenameField from "../testProfiles/adapterRenameField.js";
+import type * as testProfiles_adapterRenameUserCustom from "../testProfiles/adapterRenameUserCustom.js";
+import type * as testProfiles_adapterRenameUserTable from "../testProfiles/adapterRenameUserTable.js";
 
 import type {
   ApiFromModules,
@@ -21,6 +27,12 @@ import { anyApi, componentsGeneric } from "convex/server";
 const fullApi: ApiFromModules<{
   adapter: typeof adapter;
   adapterTest: typeof adapterTest;
+  "testProfiles/adapterAdditionalFields": typeof testProfiles_adapterAdditionalFields;
+  "testProfiles/adapterOrganizationJoins": typeof testProfiles_adapterOrganizationJoins;
+  "testProfiles/adapterPluginTable": typeof testProfiles_adapterPluginTable;
+  "testProfiles/adapterRenameField": typeof testProfiles_adapterRenameField;
+  "testProfiles/adapterRenameUserCustom": typeof testProfiles_adapterRenameUserCustom;
+  "testProfiles/adapterRenameUserTable": typeof testProfiles_adapterRenameUserTable;
 }> = anyApi as any;
 
 /**
