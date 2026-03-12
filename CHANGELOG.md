@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.11.0
+
+- fix: prevent proxy compression from breaking server-side token fetch (#295)
+- feat: migrate to Better Auth 1.5 (#292) @wiesson @onmax
+
 ## 0.10.13
 
 - fix: add optional chaining for ctx.path in crossDomain before-hooks (#279)
