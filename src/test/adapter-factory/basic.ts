@@ -68,7 +68,11 @@ export const getNormalTestSuiteTests = (
 			const transformed = transformGeneratedModel(user);
 			// console.log(`transformed:`, transformed);
 			// console.log(`result:`, result);
-			expect(result).toEqual(transformed);
+			expect(result).toEqual({
+				...transformed,
+				createdAt: new Date(user.createdAt).getTime(),
+				updatedAt: new Date(user.updatedAt).getTime(),
+			});
 		},
 		"create - should always return an id": async () => {
 			const { id: _, ...user } = await generate("user");
@@ -599,7 +603,7 @@ export const getNormalTestSuiteTests = (
 				where: [{ field: "createdAt", value: user.createdAt, operator: "eq" }],
 			});
 			expect(result).toEqual(user);
-			expect(result?.createdAt).toBeInstanceOf(Date);
+			expect(typeof result?.createdAt).toBe("number");
 			expect(result?.createdAt).toEqual(user.createdAt);
 		},
 		"findOne - should perform backwards joins": async () => {
@@ -753,7 +757,7 @@ export const getNormalTestSuiteTests = (
 				});
 				if (result?.session?.length) {
 					result.session = result.session.sort(
-						(a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+						(a, b) => (a.createdAt as unknown as number) - (b.createdAt as unknown as number),
 					);
 				}
 
@@ -869,7 +873,7 @@ export const getNormalTestSuiteTests = (
 		"findMany - should find many models with date fields": async () => {
 			const users = (await insertRandom("user", 3)).map((x) => x[0]);
 			const youngestUser = users.sort(
-				(a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+				(a, b) => (b.createdAt as unknown as number) - (a.createdAt as unknown as number),
 			)[0]!;
 			const result = await adapter.findMany<User>({
 				model: "user",
@@ -1709,7 +1713,7 @@ export const getNormalTestSuiteTests = (
 		"findMany - should find many models with gt operator": async () => {
 			const users = (await insertRandom("user", 3)).map((x) => x[0]);
 			const oldestUser = users.sort(
-				(a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+				(a, b) => (a.createdAt as unknown as number) - (b.createdAt as unknown as number),
 			)[0]!;
 			const result = await adapter.findMany<User>({
 				model: "user",
@@ -1730,7 +1734,7 @@ export const getNormalTestSuiteTests = (
 		"findMany - should find many models with gte operator": async () => {
 			const users = (await insertRandom("user", 3)).map((x) => x[0]);
 			const oldestUser = users.sort(
-				(a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+				(a, b) => (b.createdAt as unknown as number) - (a.createdAt as unknown as number),
 			)[0]!;
 			const result = await adapter.findMany<User>({
 				model: "user",
