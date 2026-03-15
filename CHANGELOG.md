@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.11.2
+
+- fix: return dates as numbers from customTransformOutput (#298)
+- fix(adapter): match composite index fields by real names (#297)
+
 ## 0.11.1
 
 - chore: add missing generated types
