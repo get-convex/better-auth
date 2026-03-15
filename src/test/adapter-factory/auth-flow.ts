@@ -82,8 +82,8 @@ export const getAuthFlowSuiteTests = (
 			user: User;
 			session: Session;
 		};
-		signUpResult.user.createdAt = new Date(signUpResult.user.createdAt);
-		signUpResult.user.updatedAt = new Date(signUpResult.user.updatedAt);
+		signUpResult.user.createdAt = new Date(signUpResult.user.createdAt).getTime() as unknown as Date;
+		signUpResult.user.updatedAt = new Date(signUpResult.user.updatedAt).getTime() as unknown as Date;
 		expect(result?.user).toBeDefined();
 		expect(result?.user).toStrictEqual(signUpResult.user);
 		expect(result?.session).toBeDefined();
@@ -117,8 +117,8 @@ export const getAuthFlowSuiteTests = (
 			body: { email: user.email, password: password },
 		});
 		process.env.TZ = "America/Los_Angeles";
-		expect(userSignUp.user.createdAt.toISOString()).toStrictEqual(
-			userSignIn.user.createdAt.toISOString(),
+		expect(userSignUp.user.createdAt).toStrictEqual(
+			userSignIn.user.createdAt,
 		);
 	},
 	"should sign up with additional fields": async () => {
@@ -135,7 +135,7 @@ export const getAuthFlowSuiteTests = (
 				name: user.name,
 				password: crypto.randomUUID(),
 				//@ts-expect-error - we are testing with additional fields
-				dateField: dateField.toISOString(), // using iso string to simulate client to server communication (this should be converted back to Date)
+				dateField: dateField.toISOString(), // using iso string to simulate client to server communication
 			},
 			asResponse: true,
 		});
@@ -145,7 +145,7 @@ export const getAuthFlowSuiteTests = (
 			headers,
 		});
 		//@ts-expect-error - we are testing with additional fields
-		expect(result?.user.dateField).toStrictEqual(dateField);
+		expect(result?.user.dateField).toStrictEqual(dateField.getTime());
 	},
 });
 

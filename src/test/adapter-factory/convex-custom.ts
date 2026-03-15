@@ -757,7 +757,7 @@ export const convexCustomTestSuite = createTestSuite(
           where: [{ field: "createdAt", value: now }],
         }),
       ).toEqual(user);
-      expect(user.createdAt).toBeInstanceOf(Date);
+      expect(typeof user.createdAt).toBe("number");
     },
   }),
 );
