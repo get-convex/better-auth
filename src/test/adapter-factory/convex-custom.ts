@@ -199,6 +199,63 @@ export const convexCustomTestSuite = createTestSuite(
       ).toEqual(user);
     },
 
+    "should use composite index for eq + sortBy on second field": async () => {
+      const sharedExpiresAt = Date.now() + 60_000;
+      await adapter.create({
+        model: "session",
+        data: {
+          token: `tok-z-${sharedExpiresAt}`,
+          expiresAt: sharedExpiresAt,
+          userId: "zzz-user",
+          createdAt: sharedExpiresAt,
+          updatedAt: sharedExpiresAt,
+        },
+      });
+      await adapter.create({
+        model: "session",
+        data: {
+          token: `tok-a-${sharedExpiresAt}`,
+          expiresAt: sharedExpiresAt,
+          userId: "aaa-user",
+          createdAt: sharedExpiresAt,
+          updatedAt: sharedExpiresAt,
+        },
+      });
+      await adapter.create({
+        model: "session",
+        data: {
+          token: `tok-m-${sharedExpiresAt}`,
+          expiresAt: sharedExpiresAt,
+          userId: "mmm-user",
+          createdAt: sharedExpiresAt,
+          updatedAt: sharedExpiresAt,
+        },
+      });
+      await adapter.create({
+        model: "session",
+        data: {
+          token: `tok-non-matching-${sharedExpiresAt}`,
+          expiresAt: sharedExpiresAt + 60_000,
+          userId: "bbb-user",
+          createdAt: sharedExpiresAt,
+          updatedAt: sharedExpiresAt,
+        },
+      });
+
+      const result = await adapter.findMany<{ userId: string }>({
+        model: "session",
+        where: [{ field: "expiresAt", value: sharedExpiresAt }],
+        sortBy: { field: "userId", direction: "asc" },
+        select: ["userId"],
+      });
+
+      expect(result.map((session) => session.userId)).toEqual([
+        "aaa-user",
+        "mmm-user",
+        "zzz-user",
+      ]);
+    },
+
     "should automatically paginate": async () => {
       for (let i = 0; i < 300; i++) {
         await adapter.create({

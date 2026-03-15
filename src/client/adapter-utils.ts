@@ -187,12 +187,12 @@ const findIndex = (
     .map(([field]) => field)
     .concat(
       boundField && boundField !== "createdAt"
-        ? `${indexEqFields.length ? "_" : ""}${boundField}`
+        ? boundField
         : ""
     )
     .concat(
       sortField && sortField !== "createdAt" && boundField !== sortField
-        ? `${indexEqFields.length || boundField ? "_" : ""}${sortField}`
+        ? sortField
         : ""
     )
     .filter(Boolean);
