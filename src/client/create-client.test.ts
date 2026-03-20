@@ -28,8 +28,8 @@ const getRouteHandler = (
   };
 };
 
-describe("createClient.registerRoutes", () => {
-  it("does not call createAuth during route registration", () => {
+describe("createClient route registration", () => {
+  it("registerRoutes eagerly initializes auth and infers basePath", () => {
     const client = createClient(component);
     const http = httpRouter();
     const createAuth = vi.fn(() => ({
@@ -47,20 +47,27 @@ describe("createClient.registerRoutes", () => {
 
     client.registerRoutes(http, createAuth);
 
-    expect(createAuth).not.toHaveBeenCalled();
-    expect(getRouteHandler(http, "/api/auth/test", "GET")).toBeTruthy();
+    expect(createAuth).toHaveBeenCalledTimes(1);
+    expect(getRouteHandler(http, "/custom/auth/test", "GET")).toBeTruthy();
     expect(
       getRouteHandler(http, "/.well-known/openid-configuration", "GET")
     ).toBeTruthy();
   });
 
-  it("uses explicit basePath and trustedOrigins options", async () => {
+  it("registerRoutes accepts explicit basePath and trustedOrigins", async () => {
     const client = createClient(component);
     const http = httpRouter();
     const createAuth = vi.fn(() => ({
       handler: async () => new Response("ok"),
-      options: {},
-      $context: Promise.resolve({ options: {} }),
+      options: {
+        basePath: "/ignored",
+        trustedOrigins: ["https://ignored.example.com"],
+      },
+      $context: Promise.resolve({
+        options: {
+          trustedOrigins: ["https://ignored.example.com"],
+        },
+      }),
     }));
 
     client.registerRoutes(http, createAuth, {
@@ -69,11 +76,15 @@ describe("createClient.registerRoutes", () => {
       trustedOrigins: ["https://app.example.com"],
     });
 
-    expect(createAuth).not.toHaveBeenCalled();
+    expect(createAuth).toHaveBeenCalledTimes(1);
     expect(getRouteHandler(http, "/custom/auth/test", "GET")).toBeTruthy();
     expect(getRouteHandler(http, "/custom/auth/test", "OPTIONS")).toBeTruthy();
 
-    const optionsHandler = getRouteHandler(http, "/custom/auth/test", "OPTIONS");
+    const optionsHandler = getRouteHandler(
+      http,
+      "/custom/auth/test",
+      "OPTIONS"
+    );
     expect(optionsHandler).toBeTruthy();
     const response = await optionsHandler!._handler(
       {},
@@ -85,8 +96,72 @@ describe("createClient.registerRoutes", () => {
         },
       })
     );
+
     expect(response.headers.get("access-control-allow-origin")).toBe(
       "https://app.example.com"
+    );
+    expect(createAuth).toHaveBeenCalledTimes(1);
+
+    const getHandler = getRouteHandler(http, "/custom/auth/test", "GET");
+    expect(getHandler).toBeTruthy();
+    await getHandler!._handler(
+      {},
+      new Request("https://deployment.convex.site/custom/auth/test", {
+        method: "GET",
+      })
+    );
+    expect(createAuth).toHaveBeenCalledTimes(2);
+  });
+
+  it("registerRoutesLazy infers route settings from raw auth options", async () => {
+    const client = createClient(component);
+    const http = httpRouter();
+    const createAuthOptions = vi.fn(() => ({
+      basePath: "/custom/auth",
+      trustedOrigins: ["https://lazy.example.com"],
+    }));
+    const createAuth = vi.fn(() => ({
+      handler: async () => new Response("ok"),
+      options: {
+        basePath: "/custom/auth",
+        trustedOrigins: ["https://lazy.example.com"],
+      },
+      $context: Promise.resolve({
+        options: {
+          trustedOrigins: ["https://lazy.example.com"],
+        },
+      }),
+    }));
+
+    client.registerRoutesLazy(http, createAuth, {
+      options: createAuthOptions,
+      cors: true,
+    });
+
+    expect(createAuthOptions).toHaveBeenCalledTimes(1);
+    expect(createAuth).not.toHaveBeenCalled();
+    expect(getRouteHandler(http, "/custom/auth/test", "GET")).toBeTruthy();
+    expect(getRouteHandler(http, "/custom/auth/test", "OPTIONS")).toBeTruthy();
+
+    const optionsHandler = getRouteHandler(
+      http,
+      "/custom/auth/test",
+      "OPTIONS"
+    );
+    expect(optionsHandler).toBeTruthy();
+    const response = await optionsHandler!._handler(
+      {},
+      new Request("https://deployment.convex.site/custom/auth/test", {
+        method: "OPTIONS",
+        headers: {
+          origin: "https://lazy.example.com",
+          "access-control-request-method": "GET",
+        },
+      })
+    );
+
+    expect(response.headers.get("access-control-allow-origin")).toBe(
+      "https://lazy.example.com"
     );
     expect(createAuth).not.toHaveBeenCalled();
 
@@ -101,23 +176,24 @@ describe("createClient.registerRoutes", () => {
     expect(createAuth).toHaveBeenCalledTimes(1);
   });
 
-  it("resolves trustedOrigins lazily for cors when not provided", async () => {
+  it("registerRoutesLazy resolves trustedOrigins lazily when needed", async () => {
     const client = createClient(component);
     const http = httpRouter();
     const createAuth = vi.fn(() => ({
       handler: async () => new Response("ok"),
       options: {
-        trustedOrigins: ["https://lazy.example.com"],
+        trustedOrigins: ["https://fallback.example.com"],
       },
       $context: Promise.resolve({
         options: {
-          trustedOrigins: ["https://lazy.example.com"],
+          trustedOrigins: ["https://fallback.example.com"],
         },
       }),
     }));
 
-    client.registerRoutes(http, createAuth, { cors: true });
+    client.registerRoutesLazy(http, createAuth, { cors: true });
     expect(createAuth).not.toHaveBeenCalled();
+    expect(getRouteHandler(http, "/api/auth/test", "GET")).toBeTruthy();
 
     const optionsHandler = getRouteHandler(http, "/api/auth/test", "OPTIONS");
     expect(optionsHandler).toBeTruthy();
@@ -126,14 +202,14 @@ describe("createClient.registerRoutes", () => {
       new Request("https://deployment.convex.site/api/auth/test", {
         method: "OPTIONS",
         headers: {
-          origin: "https://lazy.example.com",
+          origin: "https://fallback.example.com",
           "access-control-request-method": "GET",
         },
       })
     );
 
     expect(response.headers.get("access-control-allow-origin")).toBe(
-      "https://lazy.example.com"
+      "https://fallback.example.com"
     );
     expect(createAuth).toHaveBeenCalledTimes(1);
   });

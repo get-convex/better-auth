@@ -27,9 +27,8 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
 
 ## `getAuth()`
 
-Better Auth [API
-endpoints](https://www.better-auth.com/docs/concepts/api)
-can be called directly from the server, and many require headers to be passed in
+Better Auth [API endpoints](https://www.better-auth.com/docs/concepts/api) can
+be called directly from the server, and many require headers to be passed in
 containing a session token for the current user. This method provides both the
 auth object and headers for convenience.
 
@@ -94,3 +93,30 @@ authComponent.registerRoutes(http, createAuth, {
 
 export default http;
 ```
+
+## `registerRoutesLazy()`
+
+Registers Better Auth HTTP handlers without calling `createAuth` during route
+registration. This is useful when Convex isolate startup is memory-sensitive,
+for example during code push analysis.
+
+If you already export a `createAuthOptions` helper, pass it here so
+`registerRoutesLazy()` can infer `basePath` and most `trustedOrigins` without
+repeating them.
+
+```ts
+import { httpRouter } from "convex/server";
+import { authComponent, createAuth, createAuthOptions } from "./auth";
+
+const http = httpRouter();
+
+authComponent.registerRoutesLazy(http, createAuth, {
+  options: createAuthOptions,
+  cors: true,
+});
+
+export default http;
+```
+
+You can still pass `basePath` and `trustedOrigins` explicitly to override the
+inferred values.
