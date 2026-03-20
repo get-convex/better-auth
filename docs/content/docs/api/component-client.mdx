@@ -117,3 +117,7 @@ export default http;
 
 If your Better Auth config uses the default `/api/auth` path, you can omit
 `basePath`.
+
+If you use CORS, pass `trustedOrigins` when you can. That lets the `OPTIONS`
+handler respond without first loading Better Auth, which makes preflight
+requests faster.
