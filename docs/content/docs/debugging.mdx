@@ -39,7 +39,7 @@ If `convex dev`, `convex deploy`, or code push fails with an error like
 `JavaScript execution ran out of memory (maximum memory usage: 64 MB)`, try
 these steps:
 
-- Use [`registerRoutesLazy()`](/docs/api/component-client#registerrouteslazy)
+- Use [`registerRoutesLazy()`](/api/component-client#registerrouteslazy)
   instead of `registerRoutes()` in `convex/http.ts`. This defers Better Auth
   initialization so it doesn't run during route registration.
 - Import Better Auth plugins from their subpaths (e.g.,
