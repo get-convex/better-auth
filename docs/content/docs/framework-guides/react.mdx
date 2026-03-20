@@ -190,7 +190,6 @@ description: Install and configure Convex + Better Auth for React.
     const http = httpRouter();
 
     // CORS handling is required for client side frameworks
-    // If Better Auth uses a custom basePath, pass it here as well.
     authComponent.registerRoutes(http, createAuth, { cors: true });
 
     export default http;

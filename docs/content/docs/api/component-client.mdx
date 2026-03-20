@@ -74,9 +74,9 @@ export const getUser = query({
 
 ## `registerRoutesLazy()`
 
-Registers Better Auth HTTP handlers without calling `createAuth` during route
-registration. This is useful when Convex isolate startup is memory-sensitive,
-for example during code push analysis.
+Registers Better Auth HTTP handlers without initializing Better Auth during
+route registration. This reduces memory usage in `convex/http.ts`, which can
+prevent out-of-memory errors during deploy.
 
 ```ts
 import { httpRouter } from "convex/server";
@@ -96,5 +96,5 @@ export default http;
 If your Better Auth config uses the default `/api/auth` path, you can omit
 `basePath`.
 
-If you use CORS, pass `trustedOrigins` when you can. That lets the `OPTIONS`
-handler respond without first loading Better Auth.
+If you use CORS, pass `trustedOrigins` so the `OPTIONS` handler can respond
+without loading Better Auth.

@@ -36,39 +36,25 @@ const convex = new ConvexReactClient(convexUrl, {
 ## Out of memory
 
 If `convex dev`, `convex deploy`, or code push fails with an error like
-`JavaScript execution ran out of memory (maximum memory usage: 64 MB)`, these
-checks usually help:
+`JavaScript execution ran out of memory (maximum memory usage: 64 MB)`, try
+these steps:
 
-- Keep entry files like `convex/http.ts` thin.
-- Avoid heavy top-level initialization in Convex runtime files.
-- Switch to `registerRoutesLazy()`.
-- Generate a debug bundle and compare the `isolate` and `node` outputs. For
-  files like `convex/http.ts`, start with the `isolate` bundle:
+- Use [`registerRoutesLazy()`](/docs/api/component-client#registerrouteslazy)
+  instead of `registerRoutes()` in `convex/http.ts`. This defers Better Auth
+  initialization so it doesn't run during route registration.
+- Import Better Auth plugins from their subpaths (e.g.,
+  `better-auth/plugins/magic-link` instead of `better-auth/plugins`). Subpath
+  imports pull in less code, reducing bundle size and memory usage.
+- Generate a debug bundle to see what's being included. The output contains an
+  `isolate` folder (what runs in the Convex runtime) and a `node` folder (what
+  runs in Node.js). Check the `isolate` bundle for `convex/http.ts` to see if
+  unexpected dependencies are inflating it.
 
 ```sh
 npx convex dev --once --debug-bundle-path /tmp/convex-bundle
 ```
 
-For Better Auth specifically, prefer plugin subpath imports in runtime code. If
-you use CORS, pass `trustedOrigins` so preflight `OPTIONS` requests can be
-answered without first loading Better Auth.
-
 ```ts title="convex/auth.ts"
 import { magicLink } from "better-auth/plugins/magic-link";
 import { emailOTP } from "better-auth/plugins/email-otp";
-```
-
-```ts title="convex/http.ts"
-import { httpRouter } from "convex/server";
-import { authComponent, createAuth } from "./auth";
-
-const http = httpRouter();
-
-authComponent.registerRoutesLazy(http, createAuth, {
-  basePath: "/api/auth",
-  cors: true,
-  trustedOrigins: [process.env.SITE_URL!],
-});
-
-export default http;
 ```
