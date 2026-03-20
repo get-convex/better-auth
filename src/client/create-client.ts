@@ -212,38 +212,14 @@ export const createClient = <
     };
 
     let trustedOriginsOption = routeConfig.trustedOrigins;
-    let trustedOriginsInitPromise: Promise<void> | undefined;
-    const ensureTrustedOrigins = async () => {
-      if (trustedOriginsOption !== undefined) {
-        return;
-      }
-
-      trustedOriginsInitPromise =
-        trustedOriginsInitPromise ??
-        (async () => {
-          const auth = getRegistrationAuth();
-          trustedOriginsOption =
-            auth.options.trustedOrigins ??
-            (await auth.$context).options.trustedOrigins ??
-            [];
-        })();
-      await trustedOriginsInitPromise;
-    };
-
     const authRequestHandler = httpActionGeneric(async (ctx, request) => {
-      const auth = createAuth(ctx as any);
       if (config?.verbose) {
         // eslint-disable-next-line no-console
-        console.log("options.baseURL", auth.options.baseURL);
+        console.log("options.baseURL", getRegistrationAuth().options.baseURL);
         // eslint-disable-next-line no-console
         console.log("request headers", request.headers);
       }
-      if (trustedOriginsOption === undefined && opts.cors) {
-        trustedOriginsOption =
-          auth.options.trustedOrigins ??
-          (await auth.$context).options.trustedOrigins ??
-          [];
-      }
+      const auth = createAuth(ctx as any);
       const response = await auth.handler(request);
       if (config?.verbose) {
         // eslint-disable-next-line no-console
@@ -253,7 +229,9 @@ export const createClient = <
     });
     const wellKnown = http.lookup("/.well-known/openid-configuration", "GET");
 
+    // If registerRoutes is used multiple times, this may already be defined
     if (!wellKnown) {
+      // Redirect root well-known to api well-known
       http.route({
         path: "/.well-known/openid-configuration",
         method: "GET",
@@ -286,8 +264,11 @@ export const createClient = <
         : opts.cors;
     const cors = corsRouter(http, {
       allowedOrigins: async (request) => {
-        await ensureTrustedOrigins();
-        const resolvedTrustedOrigins = trustedOriginsOption ?? [];
+        const resolvedTrustedOrigins =
+          trustedOriginsOption ??
+          (await getRegistrationAuth().$context).options.trustedOrigins ??
+          [];
+        trustedOriginsOption = resolvedTrustedOrigins;
         const rawOrigins = Array.isArray(resolvedTrustedOrigins)
           ? resolvedTrustedOrigins
           : await resolvedTrustedOrigins(request);
@@ -296,6 +277,7 @@ export const createClient = <
         );
         return trustedOrigins
           .map((origin) =>
+            // Strip trailing wildcards, unsupported for allowedOrigins
             origin.endsWith("*") && origin.length > 1
               ? origin.slice(0, -1)
               : origin

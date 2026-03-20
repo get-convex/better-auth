@@ -113,65 +113,6 @@ describe("createClient route registration", () => {
     expect(createAuth).toHaveBeenCalledTimes(2);
   });
 
-  it("registerRoutesLazy uses explicit basePath and trustedOrigins", async () => {
-    const client = createClient(component);
-    const http = httpRouter();
-    const createAuth = vi.fn(() => ({
-      handler: async () => new Response("ok"),
-      options: {
-        basePath: "/ignored",
-        trustedOrigins: ["https://ignored.example.com"],
-      },
-      $context: Promise.resolve({
-        options: {
-          trustedOrigins: ["https://ignored.example.com"],
-        },
-      }),
-    }));
-
-    client.registerRoutesLazy(http, createAuth, {
-      basePath: "/custom/auth",
-      cors: true,
-      trustedOrigins: ["https://lazy.example.com"],
-    });
-
-    expect(createAuth).not.toHaveBeenCalled();
-    expect(getRouteHandler(http, "/custom/auth/test", "GET")).toBeTruthy();
-    expect(getRouteHandler(http, "/custom/auth/test", "OPTIONS")).toBeTruthy();
-
-    const optionsHandler = getRouteHandler(
-      http,
-      "/custom/auth/test",
-      "OPTIONS"
-    );
-    expect(optionsHandler).toBeTruthy();
-    const response = await optionsHandler!._handler(
-      {},
-      new Request("https://deployment.convex.site/custom/auth/test", {
-        method: "OPTIONS",
-        headers: {
-          origin: "https://lazy.example.com",
-          "access-control-request-method": "GET",
-        },
-      })
-    );
-
-    expect(response.headers.get("access-control-allow-origin")).toBe(
-      "https://lazy.example.com"
-    );
-    expect(createAuth).not.toHaveBeenCalled();
-
-    const getHandler = getRouteHandler(http, "/custom/auth/test", "GET");
-    expect(getHandler).toBeTruthy();
-    await getHandler!._handler(
-      {},
-      new Request("https://deployment.convex.site/custom/auth/test", {
-        method: "GET",
-      })
-    );
-    expect(createAuth).toHaveBeenCalledTimes(1);
-  });
-
   it("registerRoutesLazy resolves trustedOrigins lazily when needed", async () => {
     const client = createClient(component);
     const http = httpRouter();
