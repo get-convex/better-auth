@@ -82,6 +82,10 @@ type RouteCorsOptions =
     };
 
 type RegisterRoutesOptions = {
+  cors?: RouteCorsOptions;
+};
+
+type RegisterRoutesLazyOptions = {
   basePath?: string;
   trustedOrigins?: TrustedOriginsOption;
   cors?: RouteCorsOptions;
@@ -357,8 +361,7 @@ export const createClient = <
       opts: RegisterRoutesOptions = {}
     ) => {
       const staticAuth = createAuth({} as any) as ReturnType<T>;
-      const path = opts.basePath ?? staticAuth.options.basePath ?? "/api/auth";
-      let trustedOriginsOption = opts.trustedOrigins;
+      const path = staticAuth.options.basePath ?? "/api/auth";
       const authRequestHandler = httpActionGeneric(async (ctx, request) => {
         if (config?.verbose) {
           // eslint-disable-next-line no-console
@@ -409,6 +412,7 @@ export const createClient = <
         typeof opts.cors === "boolean"
           ? { allowedOrigins: [], allowedHeaders: [], exposedHeaders: [] }
           : opts.cors;
+      let trustedOriginsOption: TrustedOriginsOption | undefined;
       const cors = corsRouter(http, {
         allowedOrigins: async (request) => {
           const resolvedTrustedOrigins =
@@ -460,7 +464,7 @@ export const createClient = <
     registerRoutesLazy: <T extends CreateAuth<DataModel>>(
       http: HttpRouter,
       createAuth: T,
-      opts: RegisterRoutesOptions = {}
+      opts: RegisterRoutesLazyOptions = {}
     ) => {
       let registrationAuth: ReturnType<T> | undefined;
       const getRegistrationAuth = (): ReturnType<T> => {

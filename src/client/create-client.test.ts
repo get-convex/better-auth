@@ -54,27 +54,23 @@ describe("createClient route registration", () => {
     ).toBeTruthy();
   });
 
-  it("registerRoutes accepts explicit basePath and trustedOrigins", async () => {
+  it("registerRoutes uses auth options for CORS and basePath", async () => {
     const client = createClient(component);
     const http = httpRouter();
     const createAuth = vi.fn(() => ({
       handler: async () => new Response("ok"),
       options: {
-        basePath: "/ignored",
-        trustedOrigins: ["https://ignored.example.com"],
+        basePath: "/custom/auth",
+        trustedOrigins: ["https://app.example.com"],
       },
       $context: Promise.resolve({
         options: {
-          trustedOrigins: ["https://ignored.example.com"],
+          trustedOrigins: ["https://app.example.com"],
         },
       }),
     }));
 
-    client.registerRoutes(http, createAuth, {
-      basePath: "/custom/auth",
-      cors: true,
-      trustedOrigins: ["https://app.example.com"],
-    });
+    client.registerRoutes(http, createAuth, { cors: true });
 
     expect(createAuth).toHaveBeenCalledTimes(1);
     expect(getRouteHandler(http, "/custom/auth/test", "GET")).toBeTruthy();
