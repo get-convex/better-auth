@@ -20,7 +20,7 @@ export const authComponent = createClient(
 );
 ```
 
-## Client side
+### Client side
 
 Verbose logs in the client can be enabled on the Convex client constructor.
 
@@ -33,7 +33,7 @@ const convex = new ConvexReactClient(convexUrl, {
 });
 ```
 
-## If Convex code push runs out of memory
+## Out of memory
 
 If `convex dev`, `convex deploy`, or code push fails with an error like
 `JavaScript execution ran out of memory (maximum memory usage: 64 MB)`, these
@@ -41,9 +41,7 @@ checks usually help:
 
 - Keep entry files like `convex/http.ts` thin.
 - Avoid heavy top-level initialization in Convex runtime files.
-- If route registration is the hot spot, switch to `registerRoutesLazy()`.
-- If you use CORS, pass `trustedOrigins` too so `OPTIONS` requests can be
-  answered without first loading Better Auth.
+- Switch to `registerRoutesLazy()`.
 - Generate a debug bundle and compare the `isolate` and `node` outputs. For
   files like `convex/http.ts`, start with the `isolate` bundle:
 
@@ -52,8 +50,8 @@ npx convex dev --once --debug-bundle-path /tmp/convex-bundle
 ```
 
 For Better Auth specifically, prefer plugin subpath imports in runtime code. If
-you use CORS, passing `trustedOrigins` also makes preflight `OPTIONS` requests
-faster.
+you use CORS, pass `trustedOrigins` so preflight `OPTIONS` requests can be
+answered without first loading Better Auth.
 
 ```ts title="convex/auth.ts"
 import { magicLink } from "better-auth/plugins/magic-link";
