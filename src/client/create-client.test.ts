@@ -113,32 +113,28 @@ describe("createClient route registration", () => {
     expect(createAuth).toHaveBeenCalledTimes(2);
   });
 
-  it("registerRoutesLazy infers route settings from raw auth options", async () => {
+  it("registerRoutesLazy uses explicit basePath and trustedOrigins", async () => {
     const client = createClient(component);
     const http = httpRouter();
-    const createAuthOptions = vi.fn(() => ({
-      basePath: "/custom/auth",
-      trustedOrigins: ["https://lazy.example.com"],
-    }));
     const createAuth = vi.fn(() => ({
       handler: async () => new Response("ok"),
       options: {
-        basePath: "/custom/auth",
-        trustedOrigins: ["https://lazy.example.com"],
+        basePath: "/ignored",
+        trustedOrigins: ["https://ignored.example.com"],
       },
       $context: Promise.resolve({
         options: {
-          trustedOrigins: ["https://lazy.example.com"],
+          trustedOrigins: ["https://ignored.example.com"],
         },
       }),
     }));
 
     client.registerRoutesLazy(http, createAuth, {
-      options: createAuthOptions,
+      basePath: "/custom/auth",
       cors: true,
+      trustedOrigins: ["https://lazy.example.com"],
     });
 
-    expect(createAuthOptions).toHaveBeenCalledTimes(1);
     expect(createAuth).not.toHaveBeenCalled();
     expect(getRouteHandler(http, "/custom/auth/test", "GET")).toBeTruthy();
     expect(getRouteHandler(http, "/custom/auth/test", "OPTIONS")).toBeTruthy();

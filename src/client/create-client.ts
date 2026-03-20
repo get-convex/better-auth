@@ -14,7 +14,6 @@ import type {
 } from "convex/server";
 import { ConvexError, v } from "convex/values";
 import type { Infer } from "convex/values";
-import type { BetterAuthOptions } from "better-auth/minimal";
 import { convexAdapter } from "./adapter.js";
 import { corsRouter } from "convex-helpers/server/cors";
 import type defaultSchema from "../component/schema.js";
@@ -86,117 +85,6 @@ type RegisterRoutesOptions = {
   basePath?: string;
   trustedOrigins?: TrustedOriginsOption;
   cors?: RouteCorsOptions;
-};
-
-type RouteInfoOptions = Pick<
-  BetterAuthOptions,
-  "basePath" | "baseURL" | "trustedOrigins"
->;
-
-type RouteInfoFactory<DataModel extends GenericDataModel> = (
-  ctx: GenericCtx<DataModel>
-) => RouteInfoOptions;
-
-type RegisterRoutesLazyOptions<DataModel extends GenericDataModel> =
-  RegisterRoutesOptions & {
-    options?: RouteInfoOptions | RouteInfoFactory<DataModel>;
-  };
-
-const isDynamicBaseURLConfig = (
-  baseURL: BetterAuthOptions["baseURL"]
-): baseURL is {
-  allowedHosts: string[];
-  fallback?: string;
-} => {
-  return (
-    typeof baseURL === "object" &&
-    baseURL !== null &&
-    "allowedHosts" in baseURL &&
-    Array.isArray(baseURL.allowedHosts)
-  );
-};
-
-const getOrigin = (url: string) => {
-  try {
-    const origin = new URL(url).origin;
-    return origin === "null" ? null : origin;
-  } catch {
-    return null;
-  }
-};
-
-const getEnvTrustedOrigins = () => {
-  return process.env.BETTER_AUTH_TRUSTED_ORIGINS?.split(",") ?? [];
-};
-
-const getTrustedOriginsFromOptions = (
-  options?: RouteInfoOptions
-): TrustedOriginsOption | undefined => {
-  const staticOrigins: (string | null | undefined)[] = getEnvTrustedOrigins();
-
-  if (isDynamicBaseURLConfig(options?.baseURL)) {
-    for (const host of options.baseURL.allowedHosts) {
-      if (!host.includes("://")) {
-        staticOrigins.push(`https://${host}`);
-        if (host.includes("localhost") || host.includes("127.0.0.1")) {
-          staticOrigins.push(`http://${host}`);
-        }
-        continue;
-      }
-      staticOrigins.push(host);
-    }
-
-    if (options.baseURL.fallback) {
-      staticOrigins.push(getOrigin(options.baseURL.fallback));
-    }
-  } else if (typeof options?.baseURL === "string") {
-    staticOrigins.push(getOrigin(options.baseURL));
-  }
-
-  if (Array.isArray(options?.trustedOrigins)) {
-    staticOrigins.push(...options.trustedOrigins);
-  }
-
-  const normalizedStaticOrigins = staticOrigins.filter(
-    (origin): origin is string =>
-      typeof origin === "string" && origin.length > 0
-  );
-
-  if (typeof options?.trustedOrigins === "function") {
-    const dynamicTrustedOrigins = options.trustedOrigins;
-    return async (request?: Request) => {
-      const dynamicOrigins = await dynamicTrustedOrigins(request);
-      const normalizedDynamicOrigins = dynamicOrigins.filter(
-        (origin): origin is string =>
-          typeof origin === "string" && origin.length > 0
-      );
-      return normalizedStaticOrigins.concat(normalizedDynamicOrigins);
-    };
-  }
-
-  return normalizedStaticOrigins.length > 0
-    ? normalizedStaticOrigins
-    : undefined;
-};
-
-const resolveRouteInfoOptions = <DataModel extends GenericDataModel>(
-  options?: RouteInfoOptions | RouteInfoFactory<DataModel>
-) => {
-  if (!options) {
-    return undefined;
-  }
-
-  if (typeof options === "function") {
-    try {
-      return options({} as any);
-    } catch {
-      throw new Error(
-        "Could not infer Better Auth route options for registerRoutesLazy(). Pass explicit basePath/trustedOrigins, or ensure the options factory can run without a live Convex context."
-      );
-    }
-  }
-
-  return options;
 };
 
 /**
@@ -615,13 +503,11 @@ export const createClient = <
     registerRoutesLazy: <T extends CreateAuth<DataModel>>(
       http: HttpRouter,
       createAuth: T,
-      opts: RegisterRoutesLazyOptions<DataModel> = {}
+      opts: RegisterRoutesOptions = {}
     ) => {
-      const routeInfoOptions = resolveRouteInfoOptions<DataModel>(opts.options);
       registerRoutesImpl(http, createAuth, opts, {
-        path: opts.basePath ?? (routeInfoOptions?.basePath || "/api/auth"),
-        trustedOrigins:
-          opts.trustedOrigins ?? getTrustedOriginsFromOptions(routeInfoOptions),
+        path: opts.basePath ?? "/api/auth",
+        trustedOrigins: opts.trustedOrigins,
       });
     },
   };

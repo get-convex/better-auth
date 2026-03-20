@@ -40,8 +40,7 @@ tight:
 
 - Keep isolate entrypoints like `convex/http.ts` thin.
 - Avoid heavy top-level initialization in Convex runtime files.
-- If route registration is the hot spot, switch to `registerRoutesLazy()` and
-  pass raw auth options when possible.
+- If route registration is the hot spot, switch to `registerRoutesLazy()`.
 - Generate a debug bundle and inspect `isolate` vs `node` output:
 
 ```sh
@@ -57,12 +56,12 @@ import { emailOTP } from "better-auth/plugins/email-otp";
 
 ```ts title="convex/http.ts"
 import { httpRouter } from "convex/server";
-import { authComponent, createAuth, createAuthOptions } from "./auth";
+import { authComponent, createAuth } from "./auth";
 
 const http = httpRouter();
 
 authComponent.registerRoutesLazy(http, createAuth, {
-  options: createAuthOptions,
+  basePath: "/api/auth",
   cors: true,
 });
 
