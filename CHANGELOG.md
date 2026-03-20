@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.11.3
+
+- Lazy route registration for reduced memory usage (#302)
+
 ## 0.11.2
 
 - fix: return dates as numbers from customTransformOutput (#298)
