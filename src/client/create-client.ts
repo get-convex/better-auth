@@ -81,10 +81,6 @@ type RouteCorsOptions =
       exposedHeaders?: string[];
     };
 
-type RegisterRoutesOptions = {
-  cors?: RouteCorsOptions;
-};
-
 type RegisterRoutesLazyOptions = {
   basePath?: string;
   trustedOrigins?: TrustedOriginsOption;
@@ -355,12 +351,21 @@ export const createClient = <
       }),
     }),
 
-    registerRoutes: <T extends CreateAuth<DataModel>>(
+    registerRoutes: (
       http: HttpRouter,
-      createAuth: T,
-      opts: RegisterRoutesOptions = {}
+      createAuth: CreateAuth<DataModel>,
+      opts: {
+        cors?:
+          | boolean
+          | {
+              // These values are appended to the default values
+              allowedOrigins?: string[];
+              allowedHeaders?: string[];
+              exposedHeaders?: string[];
+            };
+      } = {}
     ) => {
-      const staticAuth = createAuth({} as any) as ReturnType<T>;
+      const staticAuth = createAuth({} as any);
       const path = staticAuth.options.basePath ?? "/api/auth";
       const authRequestHandler = httpActionGeneric(async (ctx, request) => {
         if (config?.verbose) {
@@ -407,12 +412,18 @@ export const createClient = <
 
         return;
       }
-
       const corsOpts =
         typeof opts.cors === "boolean"
           ? { allowedOrigins: [], allowedHeaders: [], exposedHeaders: [] }
           : opts.cors;
-      let trustedOriginsOption: TrustedOriginsOption | undefined;
+      let trustedOriginsOption:
+        | (string | null | undefined)[]
+        | ((
+            request?: Request
+          ) =>
+            | (string | null | undefined)[]
+            | Promise<(string | null | undefined)[]>)
+        | undefined;
       const cors = corsRouter(http, {
         allowedOrigins: async (request) => {
           const resolvedTrustedOrigins =
