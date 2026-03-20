@@ -4,7 +4,10 @@ import {
   createClient,
   GenericCtx,
 } from '@convex-dev/better-auth'
-import { anonymous, emailOTP, magicLink, twoFactor } from 'better-auth/plugins'
+import { anonymous } from 'better-auth/plugins/anonymous'
+import { emailOTP } from 'better-auth/plugins/email-otp'
+import { magicLink } from 'better-auth/plugins/magic-link'
+import { twoFactor } from 'better-auth/plugins/two-factor'
 import { convex } from '@convex-dev/better-auth/plugins'
 import {
   sendEmailVerification,

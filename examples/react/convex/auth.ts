@@ -4,7 +4,8 @@ import { requireActionCtx } from "@convex-dev/better-auth/utils";
 import { components } from "./_generated/api";
 import { query } from "./_generated/server";
 import { betterAuth, type BetterAuthOptions } from "better-auth/minimal";
-import { emailOTP, magicLink } from "better-auth/plugins";
+import { emailOTP } from "better-auth/plugins/email-otp";
+import { magicLink } from "better-auth/plugins/magic-link";
 import { DataModel } from "./_generated/dataModel";
 import {
   sendEmailVerification,

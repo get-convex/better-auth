@@ -13,7 +13,7 @@ import { JWT_COOKIE_NAME } from "../plugins/convex/index.js";
 import * as jose from "jose";
 import type { Jwk } from "better-auth/plugins/jwt";
 
-type TrustedOriginsOption =
+export type TrustedOriginsOption =
   | (string | null | undefined)[]
   | ((
       request?: Request

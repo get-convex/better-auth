@@ -20,7 +20,7 @@ export const authComponent = createClient(
 );
 ```
 
-## Client side
+### Client side
 
 Verbose logs in the client can be enabled on the Convex client constructor.
 
@@ -32,3 +32,30 @@ const convex = new ConvexReactClient(convexUrl, {
   verbose: true, // [!code ++]
 });
 ```
+
+## Out of memory
+
+If `convex dev`, `convex deploy`, or code push fails with an error like
+`JavaScript execution ran out of memory (maximum memory usage: 64 MB)`, try
+these steps:
+
+- Use [`registerRoutesLazy()`](/docs/api/component-client#registerrouteslazy)
+  instead of `registerRoutes()` in `convex/http.ts`. This defers Better Auth
+  initialization so it doesn't run during route registration.
+- Import Better Auth plugins from their subpaths (e.g.,
+  `better-auth/plugins/magic-link` instead of `better-auth/plugins`). Subpath
+  imports pull in less code, reducing bundle size and memory usage.
+
+  ```ts title="convex/auth.ts"
+  import { magicLink } from "better-auth/plugins/magic-link";
+  import { emailOTP } from "better-auth/plugins/email-otp";
+  ```
+
+- Generate a debug bundle to see what's being included. The output contains an
+  `isolate` folder (what runs in the Convex runtime) and a `node` folder (what
+  runs in Node.js). Check the `isolate` bundle for `convex/http.ts` to see if
+  unexpected dependencies are inflating it.
+
+  ```sh
+  npx convex dev --once --debug-bundle-path /tmp/convex-bundle
+  ```

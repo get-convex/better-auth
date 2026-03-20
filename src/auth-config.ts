@@ -1,4 +1,4 @@
-import type { JwtOptions } from "better-auth/plugins";
+import type { JwtOptions } from "better-auth/plugins/jwt";
 import type { AuthProvider } from "convex/server";
 import type { JSONWebKeySet } from "jose";
 
