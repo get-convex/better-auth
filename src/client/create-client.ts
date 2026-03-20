@@ -192,124 +192,6 @@ export const createClient = <
     });
   };
 
-  const registerRoutesImpl = <T extends CreateAuth<DataModel>>(
-    http: HttpRouter,
-    createAuth: T,
-    opts: RegisterRoutesOptions,
-    routeConfig: {
-      path: string;
-      trustedOrigins?: TrustedOriginsOption;
-      getRegistrationAuth?: () => ReturnType<CreateAuth<DataModel>>;
-    }
-  ) => {
-    let registrationAuth: ReturnType<CreateAuth<DataModel>> | undefined;
-    const getRegistrationAuth = (): ReturnType<CreateAuth<DataModel>> => {
-      registrationAuth =
-        registrationAuth ??
-        routeConfig.getRegistrationAuth?.() ??
-        (createAuth({} as any) as ReturnType<CreateAuth<DataModel>>);
-      return registrationAuth;
-    };
-
-    let trustedOriginsOption = routeConfig.trustedOrigins;
-    const authRequestHandler = httpActionGeneric(async (ctx, request) => {
-      if (config?.verbose) {
-        // eslint-disable-next-line no-console
-        console.log("options.baseURL", getRegistrationAuth().options.baseURL);
-        // eslint-disable-next-line no-console
-        console.log("request headers", request.headers);
-      }
-      const auth = createAuth(ctx as any);
-      const response = await auth.handler(request);
-      if (config?.verbose) {
-        // eslint-disable-next-line no-console
-        console.log("response headers", response.headers);
-      }
-      return response;
-    });
-    const wellKnown = http.lookup("/.well-known/openid-configuration", "GET");
-
-    // If registerRoutes is used multiple times, this may already be defined
-    if (!wellKnown) {
-      // Redirect root well-known to api well-known
-      http.route({
-        path: "/.well-known/openid-configuration",
-        method: "GET",
-        handler: httpActionGeneric(async () => {
-          const url = `${process.env.CONVEX_SITE_URL}${routeConfig.path}/convex/.well-known/openid-configuration`;
-          return Response.redirect(url);
-        }),
-      });
-    }
-
-    if (!opts.cors) {
-      http.route({
-        pathPrefix: `${routeConfig.path}/`,
-        method: "GET",
-        handler: authRequestHandler,
-      });
-
-      http.route({
-        pathPrefix: `${routeConfig.path}/`,
-        method: "POST",
-        handler: authRequestHandler,
-      });
-
-      return;
-    }
-
-    const corsOpts =
-      typeof opts.cors === "boolean"
-        ? { allowedOrigins: [], allowedHeaders: [], exposedHeaders: [] }
-        : opts.cors;
-    const cors = corsRouter(http, {
-      allowedOrigins: async (request) => {
-        const resolvedTrustedOrigins =
-          trustedOriginsOption ??
-          (await getRegistrationAuth().$context).options.trustedOrigins ??
-          [];
-        trustedOriginsOption = resolvedTrustedOrigins;
-        const rawOrigins = Array.isArray(resolvedTrustedOrigins)
-          ? resolvedTrustedOrigins
-          : await resolvedTrustedOrigins(request);
-        const trustedOrigins = rawOrigins.filter(
-          (origin): origin is string => typeof origin === "string"
-        );
-        return trustedOrigins
-          .map((origin) =>
-            // Strip trailing wildcards, unsupported for allowedOrigins
-            origin.endsWith("*") && origin.length > 1
-              ? origin.slice(0, -1)
-              : origin
-          )
-          .concat(corsOpts.allowedOrigins ?? []);
-      },
-      allowCredentials: true,
-      allowedHeaders: [
-        "Content-Type",
-        "Better-Auth-Cookie",
-        "Authorization",
-      ].concat(corsOpts.allowedHeaders ?? []),
-      exposedHeaders: ["Set-Better-Auth-Cookie"].concat(
-        corsOpts.exposedHeaders ?? []
-      ),
-      debug: config?.verbose,
-      enforceAllowOrigins: false,
-    });
-
-    cors.route({
-      pathPrefix: `${routeConfig.path}/`,
-      method: "GET",
-      handler: authRequestHandler,
-    });
-
-    cors.route({
-      pathPrefix: `${routeConfig.path}/`,
-      method: "POST",
-      handler: authRequestHandler,
-    });
-  };
-
   return {
     /**
      * Returns the Convex database adapter for use in Better Auth options.
@@ -474,11 +356,104 @@ export const createClient = <
       createAuth: T,
       opts: RegisterRoutesOptions = {}
     ) => {
-      const staticAuth = createAuth({} as any);
-      registerRoutesImpl(http, createAuth, opts, {
-        path: opts.basePath ?? staticAuth.options.basePath ?? "/api/auth",
-        trustedOrigins: opts.trustedOrigins,
-        getRegistrationAuth: () => staticAuth,
+      const staticAuth = createAuth({} as any) as ReturnType<T>;
+      const path = opts.basePath ?? staticAuth.options.basePath ?? "/api/auth";
+      let trustedOriginsOption = opts.trustedOrigins;
+      const authRequestHandler = httpActionGeneric(async (ctx, request) => {
+        if (config?.verbose) {
+          // eslint-disable-next-line no-console
+          console.log("options.baseURL", staticAuth.options.baseURL);
+          // eslint-disable-next-line no-console
+          console.log("request headers", request.headers);
+        }
+        const auth = createAuth(ctx as any);
+        const response = await auth.handler(request);
+        if (config?.verbose) {
+          // eslint-disable-next-line no-console
+          console.log("response headers", response.headers);
+        }
+        return response;
+      });
+      const wellKnown = http.lookup("/.well-known/openid-configuration", "GET");
+
+      // If registerRoutes is used multiple times, this may already be defined
+      if (!wellKnown) {
+        // Redirect root well-known to api well-known
+        http.route({
+          path: "/.well-known/openid-configuration",
+          method: "GET",
+          handler: httpActionGeneric(async () => {
+            const url = `${process.env.CONVEX_SITE_URL}${path}/convex/.well-known/openid-configuration`;
+            return Response.redirect(url);
+          }),
+        });
+      }
+
+      if (!opts.cors) {
+        http.route({
+          pathPrefix: `${path}/`,
+          method: "GET",
+          handler: authRequestHandler,
+        });
+
+        http.route({
+          pathPrefix: `${path}/`,
+          method: "POST",
+          handler: authRequestHandler,
+        });
+
+        return;
+      }
+
+      const corsOpts =
+        typeof opts.cors === "boolean"
+          ? { allowedOrigins: [], allowedHeaders: [], exposedHeaders: [] }
+          : opts.cors;
+      const cors = corsRouter(http, {
+        allowedOrigins: async (request) => {
+          const resolvedTrustedOrigins =
+            trustedOriginsOption ??
+            (await staticAuth.$context).options.trustedOrigins ??
+            [];
+          trustedOriginsOption = resolvedTrustedOrigins;
+          const rawOrigins = Array.isArray(resolvedTrustedOrigins)
+            ? resolvedTrustedOrigins
+            : await resolvedTrustedOrigins(request);
+          const trustedOrigins = rawOrigins.filter(
+            (origin): origin is string => typeof origin === "string"
+          );
+          return trustedOrigins
+            .map((origin) =>
+              // Strip trailing wildcards, unsupported for allowedOrigins
+              origin.endsWith("*") && origin.length > 1
+                ? origin.slice(0, -1)
+                : origin
+            )
+            .concat(corsOpts.allowedOrigins ?? []);
+        },
+        allowCredentials: true,
+        allowedHeaders: [
+          "Content-Type",
+          "Better-Auth-Cookie",
+          "Authorization",
+        ].concat(corsOpts.allowedHeaders ?? []),
+        exposedHeaders: ["Set-Better-Auth-Cookie"].concat(
+          corsOpts.exposedHeaders ?? []
+        ),
+        debug: config?.verbose,
+        enforceAllowOrigins: false,
+      });
+
+      cors.route({
+        pathPrefix: `${path}/`,
+        method: "GET",
+        handler: authRequestHandler,
+      });
+
+      cors.route({
+        pathPrefix: `${path}/`,
+        method: "POST",
+        handler: authRequestHandler,
       });
     },
 
@@ -487,9 +462,110 @@ export const createClient = <
       createAuth: T,
       opts: RegisterRoutesOptions = {}
     ) => {
-      registerRoutesImpl(http, createAuth, opts, {
-        path: opts.basePath ?? "/api/auth",
-        trustedOrigins: opts.trustedOrigins,
+      let registrationAuth: ReturnType<T> | undefined;
+      const getRegistrationAuth = (): ReturnType<T> => {
+        registrationAuth =
+          registrationAuth ?? (createAuth({} as any) as ReturnType<T>);
+        return registrationAuth;
+      };
+
+      const path = opts.basePath ?? "/api/auth";
+      let trustedOriginsOption = opts.trustedOrigins;
+      const authRequestHandler = httpActionGeneric(async (ctx, request) => {
+        if (config?.verbose) {
+          // eslint-disable-next-line no-console
+          console.log("options.baseURL", getRegistrationAuth().options.baseURL);
+          // eslint-disable-next-line no-console
+          console.log("request headers", request.headers);
+        }
+        const auth = createAuth(ctx as any);
+        const response = await auth.handler(request);
+        if (config?.verbose) {
+          // eslint-disable-next-line no-console
+          console.log("response headers", response.headers);
+        }
+        return response;
+      });
+      const wellKnown = http.lookup("/.well-known/openid-configuration", "GET");
+
+      // If registerRoutes is used multiple times, this may already be defined
+      if (!wellKnown) {
+        // Redirect root well-known to api well-known
+        http.route({
+          path: "/.well-known/openid-configuration",
+          method: "GET",
+          handler: httpActionGeneric(async () => {
+            const url = `${process.env.CONVEX_SITE_URL}${path}/convex/.well-known/openid-configuration`;
+            return Response.redirect(url);
+          }),
+        });
+      }
+
+      if (!opts.cors) {
+        http.route({
+          pathPrefix: `${path}/`,
+          method: "GET",
+          handler: authRequestHandler,
+        });
+
+        http.route({
+          pathPrefix: `${path}/`,
+          method: "POST",
+          handler: authRequestHandler,
+        });
+
+        return;
+      }
+
+      const corsOpts =
+        typeof opts.cors === "boolean"
+          ? { allowedOrigins: [], allowedHeaders: [], exposedHeaders: [] }
+          : opts.cors;
+      const cors = corsRouter(http, {
+        allowedOrigins: async (request) => {
+          const resolvedTrustedOrigins =
+            trustedOriginsOption ??
+            (await getRegistrationAuth().$context).options.trustedOrigins ??
+            [];
+          trustedOriginsOption = resolvedTrustedOrigins;
+          const rawOrigins = Array.isArray(resolvedTrustedOrigins)
+            ? resolvedTrustedOrigins
+            : await resolvedTrustedOrigins(request);
+          const trustedOrigins = rawOrigins.filter(
+            (origin): origin is string => typeof origin === "string"
+          );
+          return trustedOrigins
+            .map((origin) =>
+              // Strip trailing wildcards, unsupported for allowedOrigins
+              origin.endsWith("*") && origin.length > 1
+                ? origin.slice(0, -1)
+                : origin
+            )
+            .concat(corsOpts.allowedOrigins ?? []);
+        },
+        allowCredentials: true,
+        allowedHeaders: [
+          "Content-Type",
+          "Better-Auth-Cookie",
+          "Authorization",
+        ].concat(corsOpts.allowedHeaders ?? []),
+        exposedHeaders: ["Set-Better-Auth-Cookie"].concat(
+          corsOpts.exposedHeaders ?? []
+        ),
+        debug: config?.verbose,
+        enforceAllowOrigins: false,
+      });
+
+      cors.route({
+        pathPrefix: `${path}/`,
+        method: "GET",
+        handler: authRequestHandler,
+      });
+
+      cors.route({
+        pathPrefix: `${path}/`,
+        method: "POST",
+        handler: authRequestHandler,
       });
     },
   };
