@@ -1,5 +1,4 @@
-import { createTestSuite } from "@better-auth/test-utils/adapter";
-import { getNormalTestSuiteTests } from "./basic.js";
+import { normalTestSuite } from "@better-auth/test-utils/adapter";
 
 export const PLUGIN_TABLE_NORMAL_TESTS = [
   "create - should apply default values to fields",
@@ -19,19 +18,12 @@ export const PLUGIN_TABLE_NORMAL_TESTS = [
   "findOne - should work with both one-to-one and one-to-many joins",
 ] as const;
 
-const pickTests = (
-  tests: ReturnType<typeof getNormalTestSuiteTests>,
-  testNames: readonly string[],
-) =>
-  Object.fromEntries(
-    Object.entries(tests).filter(([testName]) => testNames.includes(testName)),
-  );
+const toEnableOnlyMap = (testNames: readonly string[]) => ({
+  ALL: true,
+  ...Object.fromEntries(testNames.map((testName) => [testName, false])),
+});
 
-export const pluginTableNormalTestSuite = createTestSuite(
-  "normal-plugin-table",
-  {},
-  (helpers, debugTools) => {
-    const tests = getNormalTestSuiteTests(helpers, debugTools);
-    return pickTests(tests, PLUGIN_TABLE_NORMAL_TESTS);
-  },
-);
+export const pluginTableNormalTestSuite = () =>
+  normalTestSuite({
+    disableTests: toEnableOnlyMap(PLUGIN_TABLE_NORMAL_TESTS),
+  });

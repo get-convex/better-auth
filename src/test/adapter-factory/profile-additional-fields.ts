@@ -1,9 +1,7 @@
-import { createTestSuite } from "@better-auth/test-utils/adapter";
-import { expect } from "vitest";
-import { getNormalTestSuiteTests } from "./basic.js";
+import { createTestSuite, normalTestSuite } from "@better-auth/test-utils/adapter";
 import {
-	AUTH_FLOW_DEFAULT_BETTER_AUTH_OPTIONS,
-	getAuthFlowSuiteTests,
+  AUTH_FLOW_DEFAULT_BETTER_AUTH_OPTIONS,
+  getAuthFlowSuiteTests,
 } from "./auth-flow.js";
 
 export const ADDITIONAL_FIELDS_NORMAL_TESTS = [
@@ -17,68 +15,54 @@ export const ADDITIONAL_FIELDS_NORMAL_TESTS = [
 export const ADDITIONAL_FIELDS_AUTH_FLOW_TEST =
 	"should sign up with additional fields" as const;
 
-const pickTests = (
-	tests: ReturnType<typeof getNormalTestSuiteTests>,
-	testNames: readonly string[],
-) =>
-	Object.fromEntries(
-		Object.entries(tests).filter(([testName]) => testNames.includes(testName)),
-	);
+const toDisableMap = (testNames: readonly string[]) =>
+  Object.fromEntries(testNames.map((testName) => [testName, true]));
 
-const omitTests = (
-	tests: ReturnType<typeof getNormalTestSuiteTests>,
-	testNames: readonly string[],
-) =>
-	Object.fromEntries(
-		Object.entries(tests).filter(([testName]) => !testNames.includes(testName)),
-	);
+const toEnableOnlyMap = (testNames: readonly string[]) => ({
+  ALL: true,
+  ...Object.fromEntries(testNames.map((testName) => [testName, false])),
+});
 
-export const coreNormalTestSuite = createTestSuite(
-	"normal",
-	{},
-	(helpers, debugTools) => {
-		const tests = getNormalTestSuiteTests(helpers, debugTools);
-		return {
-			"init - tests": async () => {
-				const opts = helpers.getBetterAuthOptions();
-				expect(opts.advanced?.database?.generateId !== "serial").toBeTruthy();
-			},
-			...omitTests(tests, ADDITIONAL_FIELDS_NORMAL_TESTS),
-		};
-	},
-);
+type SuiteOptions = {
+  disableTests?: Record<string, boolean>;
+  showDB?: () => Promise<void>;
+};
 
-export const additionalFieldsNormalTestSuite = createTestSuite(
-	"normal-additional-fields",
-	{},
-	(helpers, debugTools) => {
-		const tests = getNormalTestSuiteTests(helpers, debugTools);
-		return pickTests(tests, ADDITIONAL_FIELDS_NORMAL_TESTS);
-	},
-);
+export const coreNormalTestSuite = (options: SuiteOptions = {}) =>
+  normalTestSuite({
+    ...options,
+    disableTests: {
+      ...toDisableMap(ADDITIONAL_FIELDS_NORMAL_TESTS),
+      ...(options.disableTests ?? {}),
+    },
+  });
+
+export const additionalFieldsNormalTestSuite = () =>
+  normalTestSuite({
+    disableTests: toEnableOnlyMap(ADDITIONAL_FIELDS_NORMAL_TESTS),
+  });
 
 export const coreAuthFlowTestSuite = createTestSuite(
-	"auth-flow",
-	{
-		defaultBetterAuthOptions: AUTH_FLOW_DEFAULT_BETTER_AUTH_OPTIONS,
-	},
-	(helpers) => {
-		const tests = getAuthFlowSuiteTests(helpers);
-		const { [ADDITIONAL_FIELDS_AUTH_FLOW_TEST]: _skip, ...remaining } = tests;
-		return remaining;
-	},
+  "auth-flow",
+  {
+    defaultBetterAuthOptions: AUTH_FLOW_DEFAULT_BETTER_AUTH_OPTIONS,
+  },
+  (helpers) => {
+    const tests = getAuthFlowSuiteTests(helpers);
+    const { [ADDITIONAL_FIELDS_AUTH_FLOW_TEST]: _skip, ...remaining } = tests;
+    return remaining;
+  },
 );
 
 export const additionalFieldsAuthFlowTestSuite = createTestSuite(
-	"auth-flow-additional-fields",
-	{
-		defaultBetterAuthOptions: AUTH_FLOW_DEFAULT_BETTER_AUTH_OPTIONS,
-	},
-	(helpers) => {
-		const tests = getAuthFlowSuiteTests(helpers);
-		return {
-			[ADDITIONAL_FIELDS_AUTH_FLOW_TEST]:
-				tests[ADDITIONAL_FIELDS_AUTH_FLOW_TEST],
-		};
-	},
+  "auth-flow-additional-fields",
+  {
+    defaultBetterAuthOptions: AUTH_FLOW_DEFAULT_BETTER_AUTH_OPTIONS,
+  },
+  (helpers) => {
+    const tests = getAuthFlowSuiteTests(helpers);
+    return {
+      [ADDITIONAL_FIELDS_AUTH_FLOW_TEST]: tests[ADDITIONAL_FIELDS_AUTH_FLOW_TEST],
+    };
+  },
 );
