@@ -121,6 +121,7 @@ export const requireRunMutationCtx = <DataModel extends GenericDataModel>(
 };
 
 export type GetTokenOptions = {
+  basePath?: string;
   forceRefresh?: boolean;
   cookiePrefix?: string;
   jwtCache?: {
@@ -137,7 +138,7 @@ export const getToken = async (
 ) => {
   const fetchToken = async () => {
     const { data } = await betterFetch<{ token: string }>(
-      "/api/auth/convex/token",
+      `${opts?.basePath ?? "/api/auth"}/convex/token`,
       {
         baseURL: siteUrl,
         headers,
