@@ -273,26 +273,3 @@ export const runTests = action(
     await executeOrganizationJoinsProfile();
   }
 );
-
-// Keep this export during migration to avoid breaking generated component types.
-export const runCustomTests = action(
-  async (ctx: GenericActionCtx<DataModel>, _args: EmptyObject) => {
-    const testUtilsImport = "@better-auth/test-utils/adapter";
-    const { testAdapter } = await import(testUtilsImport);
-    const adapterFactoryImport = "../test/adapter-factory/index.js";
-    const { convexCustomTestSuite } = await import(adapterFactoryImport);
-    const authComponent = createClient<DataModel>(baseProfileApi, {
-      verbose: false,
-    });
-
-    const { execute } = await testAdapter({
-      adapter: () => {
-        return authComponent.adapter(ctx);
-      },
-      runMigrations: () => {},
-      overrideBetterAuthOptions: getOverrideBetterAuthOptions,
-      tests: [convexCustomTestSuite()],
-    });
-    await execute();
-  }
-);

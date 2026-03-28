@@ -20,10 +20,18 @@ export const ADDITIONAL_FIELDS_AUTH_FLOW_TEST =
 const pickTests = (
   tests: ReturnType<typeof getNormalTestSuiteTests>,
   testNames: readonly string[],
-) =>
-  Object.fromEntries(
+) => {
+  const picked = Object.fromEntries(
     Object.entries(tests).filter(([testName]) => testNames.includes(testName)),
   );
+  const missing = testNames.filter((name) => !(name in picked));
+  if (missing.length > 0) {
+    throw new Error(
+      `Upstream test name drift: ${missing.length} test(s) not found: ${missing.join(", ")}`,
+    );
+  }
+  return picked;
+};
 
 const omitTests = (
   tests: ReturnType<typeof getNormalTestSuiteTests>,
@@ -64,6 +72,11 @@ export const coreAuthFlowTestSuite = createTestSuite(
   },
   (helpers) => {
     const tests = getAuthFlowSuiteTests(helpers);
+    if (!(ADDITIONAL_FIELDS_AUTH_FLOW_TEST in tests)) {
+      throw new Error(
+        `Upstream test name drift: auth-flow test not found: ${ADDITIONAL_FIELDS_AUTH_FLOW_TEST}`,
+      );
+    }
     const { [ADDITIONAL_FIELDS_AUTH_FLOW_TEST]: _skip, ...remaining } = tests;
     return remaining;
   },
@@ -76,6 +89,11 @@ export const additionalFieldsAuthFlowTestSuite = createTestSuite(
   },
   (helpers) => {
     const tests = getAuthFlowSuiteTests(helpers);
+    if (!(ADDITIONAL_FIELDS_AUTH_FLOW_TEST in tests)) {
+      throw new Error(
+        `Upstream test name drift: auth-flow test not found: ${ADDITIONAL_FIELDS_AUTH_FLOW_TEST}`,
+      );
+    }
     return {
       [ADDITIONAL_FIELDS_AUTH_FLOW_TEST]:
         tests[ADDITIONAL_FIELDS_AUTH_FLOW_TEST],
