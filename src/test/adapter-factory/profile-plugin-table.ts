@@ -22,10 +22,18 @@ export const PLUGIN_TABLE_NORMAL_TESTS = [
 const pickTests = (
   tests: ReturnType<typeof getNormalTestSuiteTests>,
   testNames: readonly string[],
-) =>
-  Object.fromEntries(
+) => {
+  const picked = Object.fromEntries(
     Object.entries(tests).filter(([testName]) => testNames.includes(testName)),
   );
+  const missing = testNames.filter((name) => !(name in picked));
+  if (missing.length > 0) {
+    throw new Error(
+      `Upstream test name drift: ${missing.length} test(s) not found: ${missing.join(", ")}`,
+    );
+  }
+  return picked;
+};
 
 export const pluginTableNormalTestSuite = createTestSuite(
   "normal-plugin-table",

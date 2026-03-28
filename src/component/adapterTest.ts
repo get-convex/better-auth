@@ -13,11 +13,18 @@ import type { ComponentApi } from "./_generated/component.js";
 // globals are available through dynamic imports.
 
 const NORMAL_DISABLED_TESTS = [
+  // dynamic-schema-plugin-table/dynamic-schema-additional-fields:
+  // Convex validators are static in this harness, so runtime schema mutation
+  // tests are validated in dedicated profiles instead.
   "create - should apply default values to fields",
   "create - should return null for nullable foreign keys",
   "create - should support arrays",
   "create - should support json",
+  // convex-id-generation:
+  // Convex controls generated IDs at write time.
   "create - should use generateId if provided",
+  // offset-unsupported:
+  // Convex adapter rejects offset pagination.
   "findMany - should be able to perform a complex limited join",
   "findMany - should find many models with limit and offset",
   "findMany - should find many models with offset",
@@ -32,6 +39,8 @@ const NORMAL_DISABLED_TESTS = [
   "findMany - should return empty array when base records don't exist with joins",
   "findMany - should return null for one-to-one join when joined records don't exist",
   "findMany - should select fields with one-to-one join",
+  // profile-specific coverage:
+  // These are intentionally exercised in dedicated profile suites.
   "findOne - backwards join with modified field name (session base, users-table join)",
   "findOne - multiple joins should return result even when some joined tables have no matching rows",
   "findOne - should find a model with modified field name",
@@ -102,7 +111,9 @@ const organizationJoinsProfileApi = profileApi("adapterOrganizationJoins");
 export const runTests = action(
   async (ctx: GenericActionCtx<DataModel>, _args: EmptyObject) => {
     const testUtilsImport = "@better-auth/test-utils/adapter";
-    const { testAdapter } = await import(testUtilsImport);
+    const { testAdapter, transactionsTestSuite, uuidTestSuite } = await import(
+      testUtilsImport
+    );
     const adapterFactoryImport = "../test/adapter-factory/index.js";
     const {
       coreNormalTestSuite,
@@ -114,8 +125,6 @@ export const runTests = action(
       renameModelUserCustomTestSuite,
       renameModelUserTableTestSuite,
       multiJoinsMissingRowsTestSuite,
-      transactionsTestSuite,
-      uuidTestSuite,
       convexCustomTestSuite,
     } = await import(adapterFactoryImport);
 
@@ -262,28 +271,5 @@ export const runTests = action(
     await executeRenameUserCustomProfile();
     await executeRenameUserTableProfile();
     await executeOrganizationJoinsProfile();
-  }
-);
-
-// Keep this export during migration to avoid breaking generated component types.
-export const runCustomTests = action(
-  async (ctx: GenericActionCtx<DataModel>, _args: EmptyObject) => {
-    const testUtilsImport = "@better-auth/test-utils/adapter";
-    const { testAdapter } = await import(testUtilsImport);
-    const adapterFactoryImport = "../test/adapter-factory/index.js";
-    const { convexCustomTestSuite } = await import(adapterFactoryImport);
-    const authComponent = createClient<DataModel>(baseProfileApi, {
-      verbose: false,
-    });
-
-    const { execute } = await testAdapter({
-      adapter: () => {
-        return authComponent.adapter(ctx);
-      },
-      runMigrations: () => {},
-      overrideBetterAuthOptions: getOverrideBetterAuthOptions,
-      tests: [convexCustomTestSuite()],
-    });
-    await execute();
   }
 );

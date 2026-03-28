@@ -4,10 +4,18 @@ import { getNormalTestSuiteTests } from "./basic.js";
 const pickTests = (
   tests: ReturnType<typeof getNormalTestSuiteTests>,
   testNames: readonly string[],
-) =>
-  Object.fromEntries(
+) => {
+  const picked = Object.fromEntries(
     Object.entries(tests).filter(([testName]) => testNames.includes(testName)),
   );
+  const missing = testNames.filter((name) => !(name in picked));
+  if (missing.length > 0) {
+    throw new Error(
+      `Upstream test name drift: ${missing.length} test(s) not found: ${missing.join(", ")}`,
+    );
+  }
+  return picked;
+};
 
 export const RENAME_FIELD_AND_JOIN_TESTS = [
   "findOne - should find a model with modified field name",
@@ -38,9 +46,7 @@ export const renameModelUserCustomTestSuite = createTestSuite(
   {},
   (helpers, debugTools) => {
     const tests = getNormalTestSuiteTests(helpers, debugTools);
-    return {
-      [RENAME_MODEL_USER_CUSTOM_TEST]: tests[RENAME_MODEL_USER_CUSTOM_TEST],
-    };
+    return pickTests(tests, [RENAME_MODEL_USER_CUSTOM_TEST]);
   },
 );
 
@@ -49,9 +55,7 @@ export const renameModelUserTableTestSuite = createTestSuite(
   {},
   (helpers, debugTools) => {
     const tests = getNormalTestSuiteTests(helpers, debugTools);
-    return {
-      [RENAME_MODEL_USER_TABLE_TEST]: tests[RENAME_MODEL_USER_TABLE_TEST],
-    };
+    return pickTests(tests, [RENAME_MODEL_USER_TABLE_TEST]);
   },
 );
 
@@ -60,8 +64,6 @@ export const multiJoinsMissingRowsTestSuite = createTestSuite(
   {},
   (helpers, debugTools) => {
     const tests = getNormalTestSuiteTests(helpers, debugTools);
-    return {
-      [MULTI_JOINS_MISSING_ROWS_TEST]: tests[MULTI_JOINS_MISSING_ROWS_TEST],
-    };
+    return pickTests(tests, [MULTI_JOINS_MISSING_ROWS_TEST]);
   },
 );
