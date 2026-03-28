@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.11.4
+
+- fix: accept BaseURLConfig type for baseURL option (#310)
+
 ## 0.11.3
 
 - Lazy route registration for reduced memory usage (#302)
