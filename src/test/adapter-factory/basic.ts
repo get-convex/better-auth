@@ -1,9 +1,7 @@
 import type { BetterAuthPlugin } from "@better-auth/core";
 import type { Session, User } from "@better-auth/core/db";
-import {
-  createTestSuite,
-  getNormalTestSuiteTests as getUpstreamNormalTestSuiteTests,
-} from "@better-auth/test-utils/adapter";
+import type { createTestSuite } from "@better-auth/test-utils/adapter";
+import { getNormalTestSuiteTests as getUpstreamNormalTestSuiteTests } from "@better-auth/test-utils/adapter";
 import { expect } from "vitest";
 
 type Helpers = Parameters<Parameters<typeof createTestSuite>[2]>[0];
