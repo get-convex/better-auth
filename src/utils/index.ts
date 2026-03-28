@@ -12,6 +12,7 @@ import type {
 import { JWT_COOKIE_NAME } from "../plugins/convex/index.js";
 import * as jose from "jose";
 import type { Jwk } from "better-auth/plugins/jwt";
+import type { BaseURLConfig } from "@better-auth/core";
 
 export type TrustedOriginsOption =
   | (string | null | undefined)[]
@@ -24,7 +25,7 @@ export type TrustedOriginsOption =
 type RegisterableAuth = {
   handler: (request: Request) => Promise<Response>;
   options: {
-    baseURL?: string;
+    baseURL?: BaseURLConfig;
     basePath?: string;
     trustedOrigins?: TrustedOriginsOption;
     [key: string]: unknown;
