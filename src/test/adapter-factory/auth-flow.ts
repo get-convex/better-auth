@@ -154,14 +154,3 @@ export const getAuthFlowSuiteTests = (
     expect(result?.user.dateField).toStrictEqual(dateField.getTime());
   },
 });
-
-/**
- * This test suite tests basic authentication flow using the adapter.
- */
-export const authFlowTestSuite = createTestSuite(
-  "auth-flow",
-  {
-    defaultBetterAuthOptions: AUTH_FLOW_DEFAULT_BETTER_AUTH_OPTIONS,
-  },
-  (helpers) => getAuthFlowSuiteTests(helpers),
-);

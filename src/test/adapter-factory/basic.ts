@@ -192,15 +192,3 @@ export const getNormalTestSuiteTests = (
     },
   };
 };
-
-export const normalTestSuite = createTestSuite(
-  "normal",
-  {},
-  (helpers, debugTools?: DebugTools) => ({
-    "init - tests": async () => {
-      const opts = helpers.getBetterAuthOptions();
-      expect(opts.advanced?.database?.generateId !== "serial").toBeTruthy();
-    },
-    ...getNormalTestSuiteTests(helpers, debugTools),
-  }),
-);
