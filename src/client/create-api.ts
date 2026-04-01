@@ -77,6 +77,34 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
         onCreateHandle: v.optional(v.string()),
       },
       handler: async (ctx, args) => {
+        // For rateLimit entries, use upsert semantics: the rate limiter's
+        // `set(key, value, _update)` can race or pass _update=false even
+        // when a record with the same key already exists, causing a unique
+        // constraint violation. Instead of throwing, find the existing
+        // record and patch it.
+        if (args.input.model === "rateLimit" && "key" in args.input.data) {
+          const existing = await listOne(ctx, schema, betterAuthSchema, {
+            model: args.input.model,
+            where: [
+              {
+                field: "key",
+                operator: "eq",
+                value: args.input.data.key as string,
+              },
+            ],
+          });
+          if (existing) {
+            await ctx.db.patch(
+              existing._id as GenericId<string>,
+              args.input.data
+            );
+            const updatedDoc = await ctx.db.get(
+              existing._id as GenericId<string>
+            );
+            return selectFields(updatedDoc, args.select);
+          }
+        }
+
         await checkUniqueFields(
           ctx,
           schema,
