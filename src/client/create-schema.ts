@@ -5,7 +5,7 @@ import type { BetterAuthDBSchema, DBFieldAttribute } from "better-auth/db";
 export const indexFields = {
   account: ["accountId", ["accountId", "providerId"], ["providerId", "userId"]],
   rateLimit: ["key"],
-  session: ["expiresAt", ["expiresAt", "userId"]],
+  session: ["expiresAt", ["expiresAt", "userId"], ["token", "expiresAt"]],
   verification: ["expiresAt", "identifier"],
   user: [["email", "name"], "name", "userId"],
   oauthConsent: [["clientId", "userId"]],
