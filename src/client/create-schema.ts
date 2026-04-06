@@ -129,8 +129,8 @@ export const tables = {
       mergedIndexFields(tables)[
         tableKey as keyof typeof mergedIndexFields
       ]?.map((index) => {
-        const indexArray = Array.isArray(index) ? index.sort() : [index];
-        const indexName = indexArray.join("_");
+        const indexArray = Array.isArray(index) ? index : [index];
+        const indexName = [...indexArray].sort().join("_");
         return `.index("${indexName}", ${JSON.stringify(indexArray)})`;
       }) || [];
 
