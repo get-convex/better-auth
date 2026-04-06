@@ -1,9 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:best-practices"],
-  "schedule": ["* 0-4 * * 1"],
+  "schedule": ["* * * * 1-5"],
   "timezone": "America/Los_Angeles",
-  "minimumReleaseAge": "30 days",
+  "minimumReleaseAge": "14 days",
   "packageRules": [
     {
       "groupName": "Routine updates",
@@ -11,7 +11,6 @@
       "automerge": true
     },
     {
-      "groupName": "Major updates",
       "matchUpdateTypes": ["major"],
       "automerge": false
     },
@@ -19,5 +18,8 @@
       "matchDepTypes": ["devDependencies"],
       "automerge": true
     }
-  ]
+  ],
+  "constraints": {
+    "npm": "^10"
+  }
 }
