@@ -311,16 +311,22 @@ npm install convex @mmailaender/convex-svelte
 
     ```ts title="src/hooks.server.ts"
     import type { Handle } from "@sveltejs/kit";
-    import { createAuth } from "$convex/auth.js";
     import { getToken } from '@mmailaender/convex-better-auth-svelte/sveltekit';
     import { withServerConvexToken } from '@mmailaender/convex-svelte/sveltekit/server'; // [!code ++]
 
     export const handle: Handle = async ({ event, resolve }) => {
-      const token = await getToken(createAuth, event.cookies); // [!code ++]
+      const token = getToken(event.cookies); // [!code ++]
       event.locals.token = token; // [!code ++]
       return withServerConvexToken(token, () => resolve(event)); // [!code ++]
     };
     ```
+
+    <Callout>
+      Prefer `getToken(event.cookies)` over the legacy
+      `getToken(createAuth, event.cookies)` overload. The cookie-only helper
+      avoids constructing `createAuth()` in the SvelteKit SSR runtime, which is
+      important for split-runtime or reverse-proxy deployments.
+    </Callout>
 
     Add the token type to your app's type definitions. This enables TypeScript support for `event.locals.token` in your server code.
 
