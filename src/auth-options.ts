@@ -37,6 +37,7 @@ export const options = {
     }),
     oidcProvider({
       loginPage: "/login",
+      __skipDeprecationWarning: true,
     }),
     bearer(),
     oneTimeToken(),

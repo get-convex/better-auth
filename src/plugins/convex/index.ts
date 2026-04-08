@@ -182,6 +182,7 @@ export const convex = (opts: {
       issuer: `${process.env.CONVEX_SITE_URL}`,
       jwks_uri: `${process.env.CONVEX_SITE_URL}${opts.options?.basePath ?? "/api/auth"}/convex/jwks`,
     },
+    __skipDeprecationWarning: true,
   });
   const providerConfig = parseAuthConfig(opts.authConfig, opts);
 
