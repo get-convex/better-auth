@@ -4,6 +4,7 @@ import { generateRandomString } from "better-auth/crypto";
 import { createAuthEndpoint, createAuthMiddleware } from "better-auth/api";
 import { oneTimeToken as oneTimeTokenPlugin } from "better-auth/plugins/one-time-token";
 import { z } from "zod";
+import { VERSION } from "../../version.js";
 
 export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
   const oneTimeToken = oneTimeTokenPlugin();
@@ -24,6 +25,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
 
   return {
     id: "cross-domain",
+    version: VERSION,
     // TODO: remove this in the next minor release, it doesn't
     // actually affect ctx.trustedOrigins. cors allowedOrigins
     // is using it, via options.trustedOrigins, though, so it's

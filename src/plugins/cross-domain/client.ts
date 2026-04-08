@@ -1,6 +1,7 @@
 import type { BetterAuthClientPlugin, ClientStore } from "better-auth";
 import type { BetterFetchOption } from "@better-fetch/fetch";
 import type { crossDomain } from "./index.js";
+import { VERSION } from "../../version.js";
 
 interface CookieAttributes {
   value: string;
@@ -104,6 +105,7 @@ export const crossDomainClient = (
 
   return {
     id: "cross-domain",
+    version: VERSION,
     $InferServerPlugin: {} as ReturnType<typeof crossDomain>,
     getActions(_, $store) {
       store = $store;
