@@ -185,6 +185,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
         async (ctx) => {
           const response = await oneTimeToken.endpoints.verifyOneTimeToken({
             ...ctx,
+            asResponse: false,
             returnHeaders: false,
             returnStatus: false,
           });
