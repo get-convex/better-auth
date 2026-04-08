@@ -111,9 +111,12 @@ const organizationJoinsProfileApi = profileApi("adapterOrganizationJoins");
 export const runTests = action(
   async (ctx: GenericActionCtx<DataModel>, _args: EmptyObject) => {
     const testUtilsImport = "@better-auth/test-utils/adapter";
-    const { testAdapter, transactionsTestSuite, uuidTestSuite } = await import(
-      testUtilsImport
-    );
+    const {
+      testAdapter,
+      transactionsTestSuite,
+      uuidTestSuite,
+      caseInsensitiveTestSuite,
+    } = await import(testUtilsImport);
     const adapterFactoryImport = "../test/adapter-factory/index.js";
     const {
       coreNormalTestSuite,
@@ -186,6 +189,7 @@ export const runTests = action(
         transactionsTestSuite({ disableTests: { ALL: true } }),
         coreAuthFlowTestSuite(),
         convexCustomTestSuite(),
+        caseInsensitiveTestSuite(),
       ],
     });
 
