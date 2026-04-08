@@ -337,6 +337,7 @@ export const convex = (opts: {
                 ...ctx,
                 headers: {},
                 method: "GET",
+                asResponse: false,
                 returnHeaders: false,
                 returnStatus: false,
               });
@@ -382,6 +383,7 @@ export const convex = (opts: {
         async (ctx) => {
           const response = await oidcProvider.endpoints.getOpenIdConfig({
             ...ctx,
+            asResponse: false,
             returnHeaders: false,
             returnStatus: false,
           });
@@ -478,6 +480,7 @@ export const convex = (opts: {
         async (ctx) => {
           const response = await jwt.endpoints.getJwks({
             ...ctx,
+            asResponse: false,
             returnHeaders: false,
             returnStatus: false,
           });
@@ -504,6 +507,7 @@ export const convex = (opts: {
           await jwtPlugin(jwtOptions).endpoints.getJwks({
             ...ctx,
             method: "GET",
+            asResponse: false,
           });
           const jwks: any[] = await ctx.context.adapter.findMany({
             model: "jwks",
@@ -542,6 +546,7 @@ export const convex = (opts: {
           await jwtPlugin(jwtOptions).endpoints.getJwks({
             ...ctx,
             method: "GET",
+            asResponse: false,
           });
           const jwks: any[] = await ctx.context.adapter.findMany({
             model: "jwks",
@@ -588,6 +593,7 @@ export const convex = (opts: {
           const runEndpoint = async () => {
             const response = await jwt.endpoints.getToken({
               ...ctx,
+              asResponse: false,
               returnHeaders: false,
               returnStatus: false,
             });
