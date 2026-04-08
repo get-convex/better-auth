@@ -118,6 +118,10 @@ describe("crossDomain verifyOneTimeToken asResponse regression", () => {
       throw new Error("expected cross-domain verifyOneTimeToken endpoint");
     }
 
+    // Pre-set the outer flags to true so the spread inside the handler
+    // would carry true forward unless the production code explicitly
+    // overrides them. If a refactor drops the override, the inner mock
+    // sees true, returns a Response, and both assertions below fail.
     const inputCtx = {
       body: { token: "ott-abc" },
       method: "POST",
@@ -126,9 +130,9 @@ describe("crossDomain verifyOneTimeToken asResponse regression", () => {
         { method: "POST" }
       ),
       headers: new Headers(),
-      asResponse: false,
-      returnHeaders: false,
-      returnStatus: false,
+      asResponse: true,
+      returnHeaders: true,
+      returnStatus: true,
       context: {},
     };
     await endpoint(
