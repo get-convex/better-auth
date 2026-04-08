@@ -243,6 +243,10 @@ const findIndex = (
   };
 };
 
+// Convex indexes are byte-compared, so unique-field enforcement here is
+// always case-sensitive. If Better Auth ever marks a unique field as
+// case-insensitive, this check would silently miss case-folded duplicates
+// and uniqueness must be enforced via a separate normalized field.
 export const checkUniqueFields = async <
   Schema extends SchemaDefinition<any, any>,
 >(
