@@ -202,6 +202,7 @@ describe("crossDomainClient", () => {
       storage.set(cookieName, JSON.stringify({
         "better-auth.session_token": { value: "stale", expires: null },
         "better-auth.session_data": { value: "data", expires: null },
+        "better-auth.convex_jwt": { value: "jwt", expires: null },
         "better-auth.two_factor": { value: "2fa-challenge-token", expires: null },
       }));
 
@@ -216,6 +217,7 @@ describe("crossDomainClient", () => {
       expect(result["better-auth.two_factor"]).toEqual({ value: "2fa-challenge-token", expires: null });
       expect(result["better-auth.session_token"]).toBeUndefined();
       expect(result["better-auth.session_data"]).toBeUndefined();
+      expect(result["better-auth.convex_jwt"]).toBeUndefined();
     });
 
     it("preserves cookies when get-session returns data", async () => {
