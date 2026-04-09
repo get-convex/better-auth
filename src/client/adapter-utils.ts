@@ -41,6 +41,7 @@ export const adapterWhereValidator = v.object({
     v.null()
   ),
   connector: v.optional(v.union(v.literal("AND"), v.literal("OR"))),
+  mode: v.optional(v.union(v.literal("sensitive"), v.literal("insensitive"))),
 });
 
 export const adapterArgsValidator = v.object({
