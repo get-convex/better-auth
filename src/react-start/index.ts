@@ -65,6 +65,10 @@ const handler = (request: Request, opts: { convexSiteUrl: string }) => {
   const headers = new Headers(request.headers);
   headers.set("accept-encoding", "application/json");
   headers.set("host", new URL(opts.convexSiteUrl).host);
+  headers.set("x-forwarded-host", requestUrl.host);
+  headers.set("x-forwarded-proto", requestUrl.protocol.replace(/:$/, ""));
+  headers.set("x-better-auth-forwarded-host", requestUrl.host);
+  headers.set("x-better-auth-forwarded-proto", requestUrl.protocol.replace(/:$/, ""));
   return fetch(nextUrl, {
     method: request.method,
     headers,
