@@ -76,6 +76,7 @@ export const tables = {
     secret: v.string(),
     backupCodes: v.string(),
     userId: v.string(),
+    verified: v.optional(v.union(v.null(), v.boolean())),
   })
     .index("userId", ["userId"]),
   oauthApplication: defineTable({
