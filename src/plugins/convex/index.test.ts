@@ -124,8 +124,12 @@ describe("convex plugin JWT cookie after-hook asResponse regression (ITEM 21)", 
     expect(getTokenMock).toHaveBeenCalled();
     const innerCtx = getTokenMock.mock.calls[0]?.[0] as {
       asResponse?: boolean;
+      returnHeaders?: boolean;
+      returnStatus?: boolean;
     };
     expect(innerCtx?.asResponse).toBe(false);
+    expect(innerCtx?.returnHeaders).toBe(false);
+    expect(innerCtx?.returnStatus).toBe(false);
 
     // Internal better-call setCookie writes set-cookie headers on the
     // middleware's responseHeaders. Inspect them to verify the cookie
