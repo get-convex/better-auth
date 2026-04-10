@@ -2,7 +2,7 @@
 
 ## 0.12.0
 
-- BREAKING: require better-auth `>=1.6.0 <1.7.0`
+- BREAKING: require better-auth `>=1.6.2 <1.7.0`
 - feat(adapter): honor `mode: "sensitive" | "insensitive"` on where clauses. Index-backed paths bail out to scan-filter for insensitive clauses since Convex indexes are byte-compared
 - fix(adapter): normalize undefined as null for `eq null` / `ne null` comparisons so upstream IS NULL / IS NOT NULL tests pass
 - fix(plugins): pass `asResponse: false` to 7 internal `.endpoints.*` calls so v1.6.0's new `shouldReturnResponse` default doesn't silently wrap results in Response objects (would have broken JWT cookies after sign-in and cross-domain one-time-token verification)
@@ -19,12 +19,13 @@ npm install @convex-dev/better-auth@latest better-auth@latest
 npx auth upgrade
 ```
 
-Bump `better-auth` in your own `package.json` to `^1.6.0`. The `better-auth` package itself is ~46% smaller in 1.6.
+Bump `better-auth` in your own `package.json` to `^1.6.2`. The `better-auth` package itself is ~46% smaller in 1.6.
 
 ### Inherited behavior changes from better-auth 1.6.0 / 1.6.1
 
 No code change in this component; users on Convex deployments will observe:
 
+- `twoFactor` table gains a `verified` boolean column (defaults to `true`). New TOTP enrollments are created with `verified: false` and promoted on successful code verification, preventing abandoned enrollments from blocking sign-in. Convex users must regenerate their schema to pick up the new field
 - `session.freshAge` now measured from `session.createdAt`, not `session.updatedAt`. Sensitive endpoints (`deleteUser`, `changePassword`, 2FA management) reject sessions older than `freshAge` from creation regardless of recent activity. Boundary tightened from strict `<` to `>=`
 - `requestPasswordReset` now runs `originCheck` on `redirectTo`. Reset URLs not in `trustedOrigins` will return 403. Add your reset destination to `trustedOrigins` if you hit this
 - `checkPassword` now throws `INVALID_PASSWORD` instead of `CREDENTIAL_ACCOUNT_NOT_FOUND` when no credential account exists. UI catching the old code in `deleteUser`, `changePassword`, or 2FA flows must switch to `INVALID_PASSWORD`
