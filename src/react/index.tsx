@@ -121,11 +121,27 @@ function useUseAuthFromBetterAuth(
         const { data: session, isPending: isSessionPending } =
           authClient.useSession();
         const sessionId = session?.session?.id;
+        const lastSessionIdRef = useRef<string | null | undefined>(sessionId);
         useEffect(() => {
           if (!session && !isSessionPending && cachedToken) {
             setCachedToken(null);
           }
         }, [session, isSessionPending]);
+        useEffect(() => {
+          // Session rotated (e.g. changePassword({ revokeOtherSessions: true })).
+          // The cached JWT carries the old sessionId claim and will pass
+          // signature validation but fail the component's session lookup, so
+          // drop it and any in-flight fetch keyed to the old session.
+          if (
+            sessionId !== undefined &&
+            lastSessionIdRef.current !== undefined &&
+            sessionId !== lastSessionIdRef.current
+          ) {
+            setCachedToken(null);
+            pendingTokenRef.current = null;
+          }
+          lastSessionIdRef.current = sessionId;
+        }, [sessionId]);
         const fetchAccessToken = useCallback(
           async ({
             forceRefreshToken = false,
