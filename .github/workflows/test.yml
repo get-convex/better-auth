@@ -27,7 +27,7 @@ jobs:
 
       - name: Install and build
         run: |
-          npm i
+          npm i --min-release-age=0
           npm run build
       - name: Install example dependencies
         run: |
