@@ -109,6 +109,46 @@ describe("createClient route registration", () => {
     expect(createAuth).toHaveBeenCalledTimes(2);
   });
 
+  it("restores preserved forwarded host headers before calling auth.handler", async () => {
+    const client = createClient(component);
+    const http = httpRouter();
+    const handler = vi.fn(async (_request: Request) => new Response("ok"));
+    const createAuth = vi.fn(() => ({
+      handler,
+      options: {
+        trustedOrigins: ["https://app.example.com"],
+      },
+      $context: Promise.resolve({
+        options: {
+          trustedOrigins: ["https://app.example.com"],
+        },
+      }),
+    }));
+
+    client.registerRoutes(http, createAuth);
+
+    const getHandler = getRouteHandler(http, "/api/auth/test", "GET");
+    expect(getHandler).toBeTruthy();
+    await getHandler!._handler(
+      {},
+      new Request("https://adjective-animal-123.convex.site/api/auth/test", {
+        method: "GET",
+        headers: {
+          host: "deployment.convex.site",
+          "x-forwarded-host": "deployment.convex.site",
+          "x-forwarded-proto": "https",
+          "x-better-auth-forwarded-host": "app.example.com",
+          "x-better-auth-forwarded-proto": "https",
+        },
+      })
+    );
+
+    const forwardedRequest = handler.mock.calls[0]?.[0];
+    expect(forwardedRequest).toBeInstanceOf(Request);
+    expect(forwardedRequest.headers.get("x-forwarded-host")).toBe("app.example.com");
+    expect(forwardedRequest.headers.get("x-forwarded-proto")).toBe("https");
+  });
+
   it("registerRoutesLazy resolves trustedOrigins lazily when needed", async () => {
     const client = createClient(component);
     const http = httpRouter();
