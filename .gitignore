@@ -10,10 +10,6 @@ dist-ssr
 explorations
 node_modules
 .eslintcache
-# components are libraries!
-package-lock.json
-
-!examples/**/package-lock.json
 
 # npm pack output
 *.tgz
