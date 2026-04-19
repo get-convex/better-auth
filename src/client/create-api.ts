@@ -55,6 +55,7 @@ const whereValidator = (
       v.null()
     ),
     connector: v.optional(v.union(v.literal("AND"), v.literal("OR"))),
+    mode: v.optional(v.union(v.literal("sensitive"), v.literal("insensitive"))),
   });
 
 export const createApi = <Schema extends SchemaDefinition<any, any>>(
