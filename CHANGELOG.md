@@ -1,5 +1,44 @@
 # Changelog
 
+## 0.12.0
+
+- BREAKING: require better-auth `>=1.6.2 <1.7.0`
+- feat(adapter): honor `mode: "sensitive" | "insensitive"` on where clauses. Index-backed paths bail out to scan-filter for insensitive clauses since Convex indexes are byte-compared
+- fix(adapter): normalize undefined as null for `eq null` / `ne null` comparisons so upstream IS NULL / IS NOT NULL tests pass
+- fix(plugins): pass `asResponse: false` to 7 internal `.endpoints.*` calls so v1.6.0's new `shouldReturnResponse` default doesn't silently wrap results in Response objects (would have broken JWT cookies after sign-in and cross-domain one-time-token verification)
+- feat(plugins): expose `version` field on `convex`, `convexClient`, `crossDomain`, `crossDomainClient` matching the new `BetterAuthPlugin.version` / `BetterAuthClientPlugin.version` convention
+- fix: suppress oidc-provider deprecation warning via `__skipDeprecationWarning: true` at both call sites (internal use only; migration to `@better-auth/oauth-provider` tracked separately)
+- test: wire upstream `caseInsensitiveTestSuite` (12 tests) into the base adapter profile
+- test: add after-hook regression test that catches silent JWT cookie breakage if `asResponse: false` is ever removed
+- test: add cross-domain `verifyOneTimeToken` regression test mirroring the convex pattern
+
+### Migration
+
+```bash
+npm install @convex-dev/better-auth@latest better-auth@latest
+npx auth upgrade
+```
+
+Bump `better-auth` in your own `package.json` to `^1.6.2`. The `better-auth` package itself is ~46% smaller in 1.6.
+
+### Inherited behavior changes from better-auth 1.6.0 / 1.6.1
+
+No code change in this component; users on Convex deployments will observe:
+
+- `twoFactor` table gains a `verified` boolean column (defaults to `true`). New TOTP enrollments are created with `verified: false` and promoted on successful code verification, preventing abandoned enrollments from blocking sign-in. Convex users must regenerate their schema to pick up the new field
+- `session.freshAge` now measured from `session.createdAt`, not `session.updatedAt`. Sensitive endpoints (`deleteUser`, `changePassword`, 2FA management) reject sessions older than `freshAge` from creation regardless of recent activity. Boundary tightened from strict `<` to `>=`
+- `requestPasswordReset` now runs `originCheck` on `redirectTo`. Reset URLs not in `trustedOrigins` will return 403. Add your reset destination to `trustedOrigins` if you hit this
+- `checkPassword` now throws `INVALID_PASSWORD` instead of `CREDENTIAL_ACCOUNT_NOT_FOUND` when no credential account exists. UI catching the old code in `deleteUser`, `changePassword`, or 2FA flows must switch to `INVALID_PASSWORD`
+- `genericOAuth` with `verification.storeIdentifier: "hashed"` no longer double-hashes state. One-time deterministic flow change on upgrade
+- `auth.$Infer` and `auth.$ERROR_CODES` no longer collapse to `any` when generic options bleed through. Strict TS users may see new compile errors on `auth.ts` configs that relied on `any`-coercion
+- Stateless `cookieCache.maxAge` now defaults to `session.expiresIn || 7 days`. Cookies persist longer across browser restarts on stateless setups
+- Existing account cookies from 1.5 miss the cookie fast-path once post-upgrade and fall back to the DB query. No data loss; transient cache miss
+- `phoneNumber({ sendOTP })` errors now bubble up instead of being silently swallowed (only matters if you set `advanced.backgroundTasks.handler`)
+- `updateUser({ username })` with the same username now succeeds; with a taken username now errors `USERNAME_IS_ALREADY_TAKEN`; partial updates no longer rewrite `displayUsername`
+- `/magic-link/verify` response gained a `session` field in the token-flow branch (additive)
+- Password hashing delegates to `@better-auth/utils/password`. Convex bundler resolves to the pure-JS fallback (`@noble/hashes`) since `node:crypto` is unavailable in the V8 isolate. Existing hashes remain compatible
+- `oidc-provider` plugin is deprecated and will be removed in the next major better-auth release. This component suppresses the warning for its internal use only
+
 ## 0.11.4
 
 - fix: accept BaseURLConfig type for baseURL option (#310)
