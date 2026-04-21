@@ -2,7 +2,7 @@
 
 ## 0.12.0
 
-- BREAKING: require better-auth `>=1.6.2 <1.7.0`
+- BREAKING: require better-auth `>=1.6.5 <1.7.0`
 - feat(adapter): honor `mode: "sensitive" | "insensitive"` on where clauses. Index-backed paths bail out to scan-filter for insensitive clauses since Convex indexes are byte-compared
 - fix(adapter): normalize undefined as null for `eq null` / `ne null` comparisons so upstream IS NULL / IS NOT NULL tests pass
 - fix(plugins): pass `asResponse: false` to 7 internal `.endpoints.*` calls so v1.6.0's new `shouldReturnResponse` default doesn't silently wrap results in Response objects (would have broken JWT cookies after sign-in and cross-domain one-time-token verification)
@@ -19,9 +19,9 @@ npm install @convex-dev/better-auth@latest better-auth@latest
 npx auth upgrade
 ```
 
-Bump `better-auth` in your own `package.json` to `^1.6.2`. The `better-auth` package itself is ~46% smaller in 1.6.
+Bump `better-auth` in your own `package.json` to `^1.6.5`. The `better-auth` package itself is ~46% smaller in 1.6.
 
-### Inherited behavior changes from better-auth 1.6.0 / 1.6.1
+### Inherited behavior changes from better-auth 1.6.0 through 1.6.5
 
 No code change in this component; users on Convex deployments will observe:
 
@@ -38,6 +38,21 @@ No code change in this component; users on Convex deployments will observe:
 - `/magic-link/verify` response gained a `session` field in the token-flow branch (additive)
 - Password hashing delegates to `@better-auth/utils/password`. Convex bundler resolves to the pure-JS fallback (`@noble/hashes`) since `node:crypto` is unavailable in the V8 isolate. Existing hashes remain compatible
 - `oidc-provider` plugin is deprecated and will be removed in the next major better-auth release. This component suppresses the warning for its internal use only
+
+From 1.6.3:
+
+- Direct `auth.api.*` calls now throw `APIError` with a clear message when the baseURL can't be resolved. Previously it silently left `ctx.context.baseURL = ""` and downstream plugins crashed with confusing errors. Convex users unaffected on the happy path (the component sets `baseURL: siteUrl` internally), but misconfigurations now surface cleanly
+- `allowedHosts` mismatches on the direct-API path now throw `APIError`. The dynamic path honors `advanced.trustedProxyHeaders` (default still `true`) so `x-forwarded-host` / `x-forwarded-proto` go through the same gate as the static path. Heads-up: the default flip to `false` ships in a future better-auth release
+- `resolveRequestContext` rehydrates `trustedProviders` and `cookies` per call (in addition to `trustedOrigins`). User-defined `trustedOrigins(req)` / `trustedProviders(req)` callbacks receive a `Request` synthesized from forwarded headers when no full `Request` is available
+- Loopback hosts (`localhost`, `127.0.0.1`, `[::1]`, `0.0.0.0`) resolve to `http://` on the headers-only protocol fallback. Local-dev calls no longer silently resolve to `https://localhost:3000`
+- `hasRequest` uses `isRequestLike`, which rejects objects that spoof `Symbol.toStringTag` without a real `url` / `headers.get` shape
+- Plugin metadata helpers (`oauthProviderAuthServerMetadata`, `oauthProviderOpenIdConfigMetadata`, `oAuthDiscoveryMetadata`, `oAuthProtectedResourceMetadata`) forward the incoming request to their chained `auth.api` calls, so issuer and discovery URLs reflect the request host on dynamic configs
+- `withMcpAuth` forwards the incoming request to `getMcpSession`, threads `trustedProxyHeaders`, and emits a bare `Bearer` challenge when baseURL can't be resolved (was `Bearer resource_metadata="undefined/..."`)
+- `@better-auth/oauth-provider` `metadataResponse` normalizes headers via `new Headers()`. Callers can pass `Headers`, tuple arrays, or records without silently dropping entries
+- `@better-auth/oauth-provider` unauthenticated DCR with `allowUnauthenticatedClientRegistration` now overrides confidential auth methods (`client_secret_post`, `client_secret_basic`, or omitted `token_endpoint_auth_method` which defaults to `client_secret_basic` per RFC 7591 §2) to `"none"` instead of rejecting with HTTP 401. Per RFC 7591 §3.2.1. Fixes interop with MCP clients (Claude, Codex, Factory Droid) that send `client_secret_post` because the server metadata advertises it in `token_endpoint_auth_methods_supported`
+- `@better-auth/oauth-provider` gains `customTokenResponseFields` on `OAuthOptions` for injecting custom fields into token endpoint responses across all grant types. Standard OAuth fields (`access_token`, `token_type`, etc.) cannot be overridden. Follows the `customAccessTokenClaims` / `customIdTokenClaims` pattern
+- Authorization code verification values are validated with a Zod schema at deserialization. Malformed or corrupted values consistently return `invalid_verification` errors instead of potential 500s
+- `serializeAuthorizationQuery` uses `params.append()` for array values instead of `String(array)`. Multi-valued query params survive through prompt redirects instead of collapsing into a single comma-joined entry. `deleteFromPrompt` return type widens from `Record<string, string>` to `Record<string, string | string[]>`
 
 ## 0.11.5
 
