@@ -3,15 +3,15 @@
 ## 0.12.0
 
 - BREAKING: require better-auth `>=1.6.5 <1.7.0`
-- feat(adapter): honor `mode: "sensitive" | "insensitive"` on where clauses. Index-backed paths bail out to scan-filter for insensitive clauses since Convex indexes are byte-compared
-- fix(adapter): normalize undefined as null for `eq null` / `ne null` comparisons so upstream IS NULL / IS NOT NULL tests pass
-- fix(plugins): pass `asResponse: false` to 7 internal `.endpoints.*` calls so v1.6.0's new `shouldReturnResponse` default doesn't silently wrap results in Response objects (would have broken JWT cookies after sign-in and cross-domain one-time-token verification)
-- feat(plugins): expose `version` field on `convex`, `convexClient`, `crossDomain`, `crossDomainClient` matching the new `BetterAuthPlugin.version` / `BetterAuthClientPlugin.version` convention
-- fix: suppress oidc-provider deprecation warning via `__skipDeprecationWarning: true` at both call sites (internal use only; migration to `@better-auth/oauth-provider` tracked separately)
-- test: wire upstream `caseInsensitiveTestSuite` (12 tests) into the base adapter profile
-- test: add after-hook regression test that catches silent JWT cookie breakage if `asResponse: false` is ever removed
-- test: add cross-domain `verifyOneTimeToken` regression test mirroring the convex pattern
-- fix(cross-domain): delegate `parseSetCookieHeader` to `better-auth/cookies` so cookies with `Expires=Wed, 21 Oct 2015 07:28:00 GMT` no longer shatter into four garbage entries on the client (local copy pre-dated better-auth 1.6.0's `splitSetCookieHeader` lookahead fix, #8301). Regression test pins the behavior
+- feat(adapter): honor `mode: "sensitive" | "insensitive"` on where clauses. Index-backed paths fall back to scan-filter for insensitive clauses since Convex indexes are byte-compared
+- fix(adapter): normalize `undefined` as `null` for `eq null` / `ne null` so upstream IS NULL / IS NOT NULL tests pass
+- fix(plugins): pass `asResponse: false` to 7 internal `.endpoints.*` calls so v1.6.0's new `shouldReturnResponse` default does not silently wrap results in `Response` objects (would have broken JWT cookies after sign-in and cross-domain one-time-token verification)
+- fix(cross-domain): delegate `parseSetCookieHeader` to `better-auth/cookies` so cookies with RFC-1123 `Expires` dates no longer shatter into garbage entries on the client (local copy pre-dated better-auth's 1.6.0 lookahead fix, #8301)
+- fix(schema): add `twoFactor.verified` column for 1.6.2 compat (#8711)
+- feat(plugins): expose `version` field on `convex`, `convexClient`, `crossDomain`, `crossDomainClient`
+- chore: suppress `oidc-provider` deprecation warning via `__skipDeprecationWarning: true`. Migration to `@better-auth/oauth-provider` tracked separately
+- test: wire upstream `caseInsensitiveTestSuite` into the base adapter profile, add hook-level regression tests for `asResponse` and Set-Cookie splitting
+- Picks up `@better-auth/oauth-provider` GHSA-xr8f-h2gw-9xh6 (high-severity authz bypass, patched in 1.6.5), 1.6.2 OAuth state CSRF fix (#8949), and 1.6.3 baseURL hardening (#9113, #9131) via the new peer range
 
 ### Migration
 
@@ -20,84 +20,7 @@ npm install @convex-dev/better-auth@latest better-auth@latest
 npx auth upgrade
 ```
 
-Bump `better-auth` in your own `package.json` to `^1.6.5`. The `better-auth` package itself is ~46% smaller in 1.6.
-
-### Inherited behavior changes from better-auth 1.6.0 through 1.6.5
-
-No code change in this component; users on Convex deployments will observe:
-
-#### Security
-
-- **GHSA-xr8f-h2gw-9xh6** (@better-auth/oauth-provider, 1.6.5): high-severity authorization bypass where unprivileged authenticated users could create OAuth clients when a deployment relied on `clientPrivileges` to restrict creation. First patched stable is `@better-auth/oauth-provider@1.6.5`. The 1.7.0 beta line (`1.7.0-beta.0`, `1.7.0-beta.1`) remains affected until a fixed beta is published. Convex users pick up the fix automatically via the new peer range
-- OAuth state verification against cookie-stored nonce (1.6.2, #8949) closes a CSRF gap in the generic OAuth flow
-- `@better-auth/stripe` prototype pollution when merging user-supplied metadata (1.6.3, #9164). Not applicable on Convex — use `@convex-dev/stripe`, not `@better-auth/stripe`
-
-#### From 1.6.0
-
-- `twoFactor` table gains a `verified` boolean column (defaults to `true`). New TOTP enrollments are created with `verified: false` and promoted on successful code verification, preventing abandoned enrollments from blocking sign-in. Convex users must regenerate their schema to pick up the new field
-- `session.freshAge` now measured from `session.createdAt`, not `session.updatedAt`. Sensitive endpoints (`deleteUser`, `changePassword`, 2FA management) reject sessions older than `freshAge` from creation regardless of recent activity. Boundary tightened from strict `<` to `>=`
-- `requestPasswordReset` now runs `originCheck` on `redirectTo`. Reset URLs not in `trustedOrigins` will return 403. Add your reset destination to `trustedOrigins` if you hit this
-- `genericOAuth` with `verification.storeIdentifier: "hashed"` no longer double-hashes state. One-time deterministic flow change on upgrade
-- `auth.$Infer` and `auth.$ERROR_CODES` no longer collapse to `any` when generic options bleed through. Strict TS users may see new compile errors on `auth.ts` configs that relied on `any`-coercion
-- Stateless `cookieCache.maxAge` now defaults to `session.expiresIn || 7 days`. Cookies persist longer across browser restarts on stateless setups
-- Existing account cookies from 1.5 miss the cookie fast-path once post-upgrade and fall back to the DB query (cookie comparison switched from internal id to provider `accountId`). No data loss; transient cache miss
-- `phoneNumber({ sendOTP })` errors now bubble up instead of being silently swallowed (only matters if you set `advanced.backgroundTasks.handler`)
-- `updateUser({ username })` with the same username now succeeds; with a taken username now errors `USERNAME_IS_ALREADY_TAKEN`; partial updates no longer rewrite `displayUsername`
-- `/magic-link/verify` response gained a `session` field in the token-flow branch (additive)
-- Password hashing delegates to `@better-auth/utils/password` and uses non-blocking scrypt. Convex bundler resolves to the pure-JS fallback (`@noble/hashes`) since `node:crypto` is unavailable in the V8 isolate. Existing hashes remain compatible
-- Experimental OpenTelemetry instrumentation covers endpoints, hooks, middleware, and database operations (#8027). Opt in to observe auth flows end-to-end
-- `email-otp` plugin gains `resendStrategy` to reuse an existing OTP instead of generating a new one on resend (#8560)
-- `haveIBeenPwned` plugin gains an `enable` option (#8728)
-- OAuth proxy gains a dedicated `secret` option to reduce shared-key exposure (#8699)
-- `oidc-provider` plugin is deprecated in favor of `@better-auth/oauth-provider` and will be removed in the next major better-auth release. This component suppresses the warning for its internal use only (#8985)
-- SSO-specific (only matters if you use `@better-auth/sso`):
-  - **BREAKING:** `InResponseTo` validation is enabled by default for SP-initiated SAML flows (#8736). Set `sso({ saml: { enableInResponseToValidation: false } })` to restore prior behavior
-  - `provisionUserOnEveryLogin` option added (#8818); bare domain handling in domain verification fixed (#8369); UserInfo preferred over ID token with correct `sub` mapping (#8276); state cookie check skipped for SAML ACS cross-site POST (#8735)
-- OAuth-provider additions (only matters if you use `@better-auth/oauth-provider`): pairwise subject identifiers per OIDC Core §8 (#8292); public client prelogin endpoint (#8214); localhost subdomains allowed in `isLocalhost` (#8286); DB-backed sessions enforced when secondary storage is enabled (#8894); `customIdTokenClaims` may override standard claims (#7865)
-
-#### From 1.6.1
-
-- `checkPassword` now throws `INVALID_PASSWORD` instead of `CREDENTIAL_ACCOUNT_NOT_FOUND` for all failures, including the no-credential-account case (#8902). UI catching the old code in `deleteUser`, `changePassword`, or 2FA flows must switch to `INVALID_PASSWORD`
-- `getSession` accessibility restored in generic `Auth<O>` context (#9017)
-- Endpoint instrumentation always uses the route template so spans group correctly (#9023)
-
-#### From 1.6.2
-
-- `nextCookies()` no longer triggers infinite router refresh loops in the Next.js client. The cookie probe is replaced with header-based RSC detection (#9059)
-- `link-social` callback cross-provider account collisions are resolved (#8983)
-- `@better-auth/oauth-provider`: `serializeAuthorizationQuery` uses `params.append()` for array values instead of `String(array)`. Multi-valued query params survive prompt redirects instead of collapsing to a single comma-joined entry (#9060). `deleteFromPrompt` return type widens from `Record<string, string>` to `Record<string, string | string[]>`
-- `@better-auth/oauth-provider`: `skip_consent` is now rejected at the schema level in dynamic client registration (#8998)
-- Sign-in response now includes the enabled 2FA methods so clients can route correctly without a second call (#8772)
-- SSO: signed SAML `AuthnRequest` includes `RelayState` (#9058; only matters if you use `@better-auth/sso`)
-
-#### From 1.6.3
-
-- Direct `auth.api.*` calls now throw `APIError` with a clear message when the baseURL can't be resolved (#9113). Previously it silently left `ctx.context.baseURL = ""` and downstream plugins crashed with confusing errors. Convex users unaffected on the happy path (the component sets `baseURL: siteUrl` internally), but misconfigurations now surface cleanly
-- `allowedHosts` mismatches on the direct-API path now throw `APIError`. The dynamic path honors `advanced.trustedProxyHeaders` (default still `true`) so `x-forwarded-host` / `x-forwarded-proto` go through the same gate as the static path. Heads-up: the default flip to `false` ships in a future better-auth release
-- `resolveRequestContext` rehydrates `trustedProviders` and `cookies` per call (in addition to `trustedOrigins`). User-defined `trustedOrigins(req)` / `trustedProviders(req)` callbacks receive a `Request` synthesized from forwarded headers when no full `Request` is available
-- Loopback hosts (`localhost`, `127.0.0.1`, `[::1]`, `0.0.0.0`) resolve to `http://` on the headers-only protocol fallback. Local-dev calls no longer silently resolve to `https://localhost:3000`
-- `hasRequest` uses `isRequestLike`, which rejects objects that spoof `Symbol.toStringTag` without a real `url` / `headers.get` shape
-- Client `isMounted` race condition that caused excessive requests per second is fixed (#9078)
-- Backup code updates respect the configured `storeBackupCodes` storage strategy after verification (#7231)
-- 2FA enforcement was broadened to all sign-in paths (magic-link, OAuth, passkey, email-OTP, SIWE) in this release (#9122). **This was reverted in 1.6.4.** Users who jump straight from 1.5.6 to 1.6.5 see no net change; users who pin to exactly 1.6.3 will see the broadened scope
-- `@better-auth/oauth-provider` metadata helpers (`oauthProviderAuthServerMetadata`, `oauthProviderOpenIdConfigMetadata`, `oAuthDiscoveryMetadata`, `oAuthProtectedResourceMetadata`) forward the incoming request to their chained `auth.api` calls, so issuer and discovery URLs reflect the request host on dynamic configs (#9131)
-- `withMcpAuth` forwards the incoming request to `getMcpSession`, threads `trustedProxyHeaders`, and emits a bare `Bearer` challenge when baseURL can't be resolved (was `Bearer resource_metadata="undefined/..."`) (#9131)
-- `@better-auth/oauth-provider` `metadataResponse` normalizes headers via `new Headers()`. Callers can pass `Headers`, tuple arrays, or records without silently dropping entries (#9131)
-- `@better-auth/oauth-provider` unauthenticated DCR with `allowUnauthenticatedClientRegistration` now overrides confidential auth methods (`client_secret_post`, `client_secret_basic`, or omitted `token_endpoint_auth_method` which defaults to `client_secret_basic` per RFC 7591 §2) to `"none"` instead of rejecting with HTTP 401 (#9123). Per RFC 7591 §3.2.1. Fixes interop with MCP clients (Claude, Codex, Factory Droid) that send `client_secret_post` because the server metadata advertises it in `token_endpoint_auth_methods_supported`
-- `@better-auth/oauth-provider` gains `customTokenResponseFields` on `OAuthOptions` for injecting custom fields into token endpoint responses across all grant types (#9118). Standard OAuth fields (`access_token`, `token_type`, etc.) cannot be overridden. Follows the `customAccessTokenClaims` / `customIdTokenClaims` pattern
-- Authorization code verification values validated with a Zod schema at deserialization (#9118). Malformed or corrupted values consistently return `invalid_verification` errors instead of potential 500s
-- `@better-auth/sso` SAML processing fixes: ACS URL generation, encryption field handling, provider config parsing (#9097). Only matters if you use `@better-auth/sso`
-- Stripe SDK v21 and v22 support (#9084). Not applicable on Convex — use `@convex-dev/stripe`
-
-#### From 1.6.4
-
-- 2FA enforcement reverted to credential sign-in paths only (#9205). Magic-link, email-OTP, OAuth, SSO, passkey, and other non-credential flows no longer trigger a 2FA challenge. Reverses the 1.6.3 broadening described above
-
-#### From 1.6.5
-
-- Session now refreshes after `/change-password` and `/revoke-other-sessions` so cached session state matches the server (#9087)
-- Test utils plugin documentation clarified recommended production usage (#9119). Documentation-only
-- See **Security** above for the `@better-auth/oauth-provider` GHSA-xr8f-h2gw-9xh6 fix
+Bump `better-auth` in your own `package.json` to `^1.6.5`. Regenerate your schema to pick up `twoFactor.verified`. UI catching `CREDENTIAL_ACCOUNT_NOT_FOUND` on password flows must switch to `INVALID_PASSWORD` (1.6.1 #8902). See [better-auth's 1.6.x release notes](https://github.com/better-auth/better-auth/releases) for the full inherited behavior delta.
 
 ## 0.11.5
 
