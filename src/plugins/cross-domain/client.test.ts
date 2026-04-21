@@ -21,6 +21,32 @@ describe("parseSetCookieHeader", () => {
     expect(map.get("a")?.value).toBe("1");
     expect(map.get("b")?.value).toBe("2");
   });
+
+  /**
+   * @see https://github.com/better-auth/better-auth/pull/8301
+   *
+   * Regression: our previous local splitter used a naive `split(", ")`
+   * which shattered `Expires=Wed, 21 Oct 2015 07:28:00 GMT` into four
+   * garbage entries. Now delegating to better-auth's lookahead-aware
+   * `parseSetCookieHeader` (via `better-auth/cookies`), which scans for
+   * `<name>=` after each comma before splitting.
+   */
+  it("does not split on commas inside Expires dates", () => {
+    const header =
+      "session_token=abc; Path=/; Expires=Wed, 21 Oct 2015 07:28:00 GMT, other=xyz; Path=/";
+    const map = parseSetCookieHeader(header);
+    expect(map.size).toBe(2);
+    expect(map.get("session_token")?.value).toBe("abc");
+    expect(map.get("other")?.value).toBe("xyz");
+    expect(map.get("session_token")?.expires).toBeInstanceOf(Date);
+  });
+
+  it("does not split on commas inside Expires dates for a single cookie", () => {
+    const header = "session_token=abc; Expires=Wed, 21 Oct 2015 07:28:00 GMT";
+    const map = parseSetCookieHeader(header);
+    expect(map.size).toBe(1);
+    expect(map.get("session_token")?.value).toBe("abc");
+  });
 });
 
 describe("getSetCookie", () => {

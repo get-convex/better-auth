@@ -1,40 +1,10 @@
 import type { BetterAuthClientPlugin, ClientStore } from "better-auth";
+import { parseSetCookieHeader } from "better-auth/cookies";
 import type { BetterFetchOption } from "@better-fetch/fetch";
 import type { crossDomain } from "./index.js";
 import { VERSION } from "../../version.js";
 
-interface CookieAttributes {
-  value: string;
-  expires?: Date;
-  "max-age"?: number;
-  domain?: string;
-  path?: string;
-  secure?: boolean;
-  httpOnly?: boolean;
-  sameSite?: "Strict" | "Lax" | "None";
-}
-
-export function parseSetCookieHeader(
-  header: string
-): Map<string, CookieAttributes> {
-  const cookieMap = new Map<string, CookieAttributes>();
-  const cookies = header.split(", ");
-  cookies.forEach((cookie) => {
-    const [nameValue, ...attributes] = cookie.split("; ");
-    const [name, value] = nameValue.split("=");
-
-    const cookieObj: CookieAttributes = { value };
-
-    attributes.forEach((attr) => {
-      const [attrName, attrValue] = attr.split("=");
-      cookieObj[attrName.toLowerCase() as "value"] = attrValue;
-    });
-
-    cookieMap.set(name, cookieObj);
-  });
-
-  return cookieMap;
-}
+export { parseSetCookieHeader };
 
 interface StoredCookie {
   value: string;

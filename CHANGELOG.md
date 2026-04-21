@@ -11,6 +11,7 @@
 - test: wire upstream `caseInsensitiveTestSuite` (12 tests) into the base adapter profile
 - test: add after-hook regression test that catches silent JWT cookie breakage if `asResponse: false` is ever removed
 - test: add cross-domain `verifyOneTimeToken` regression test mirroring the convex pattern
+- fix(cross-domain): delegate `parseSetCookieHeader` to `better-auth/cookies` so cookies with `Expires=Wed, 21 Oct 2015 07:28:00 GMT` no longer shatter into four garbage entries on the client (local copy pre-dated better-auth 1.6.0's `splitSetCookieHeader` lookahead fix, #8301). Regression test pins the behavior
 
 ### Migration
 
