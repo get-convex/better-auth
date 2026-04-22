@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.11.5
+
+- Preserve and restore forwarded host headers in framework adapters (#327)
+  @mmailaender
+
 ## 0.11.4
 
 - fix: accept BaseURLConfig type for baseURL option (#310)
