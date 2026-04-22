@@ -41,9 +41,7 @@ export const adapterWhereValidator = v.object({
     v.null()
   ),
   connector: v.optional(v.union(v.literal("AND"), v.literal("OR"))),
-  mode: v.optional(
-    v.union(v.literal("sensitive"), v.literal("insensitive"))
-  ),
+  mode: v.optional(v.union(v.literal("sensitive"), v.literal("insensitive"))),
 });
 
 export const adapterArgsValidator = v.object({
@@ -127,7 +125,6 @@ const findIndex = (
   }
   const where = args.where?.filter((w) => {
     return (
-      w.mode !== "insensitive" &&
       (!w.operator ||
         ["lt", "lte", "gt", "gte", "eq", "in", "not_in"].includes(
           w.operator
@@ -190,11 +187,7 @@ const findIndex = (
   // We internally use _creationTime in place of Better Auth's createdAt
   const indexFields = indexEqFields
     .map(([field]) => field)
-    .concat(
-      boundField && boundField !== "createdAt"
-        ? boundField
-        : ""
-    )
+    .concat(boundField && boundField !== "createdAt" ? boundField : "")
     .concat(
       sortField && sortField !== "createdAt" && boundField !== sortField
         ? sortField
@@ -243,10 +236,6 @@ const findIndex = (
   };
 };
 
-// Convex indexes are byte-compared, so unique-field enforcement here is
-// always case-sensitive. If Better Auth ever marks a unique field as
-// case-insensitive, this check would silently miss case-folded duplicates
-// and uniqueness must be enforced via a separate normalized field.
 export const checkUniqueFields = async <
   Schema extends SchemaDefinition<any, any>,
 >(
@@ -351,30 +340,18 @@ const filterByWhere = <
       return val > wVal;
     };
     const filter = (w: Infer<typeof adapterWhereValidator>) => {
-      const insensitive = w.mode === "insensitive";
-      const lc = (s: unknown) =>
-        insensitive && typeof s === "string" ? s.toLowerCase() : s;
       switch (w.operator) {
         case undefined:
         case "eq": {
-          if (w.value === null) {
-            return value === null || value === undefined;
-          }
-          return lc(value) === lc(w.value);
+          return value === w.value;
         }
         case "in": {
-          if (!Array.isArray(w.value)) return false;
-          if (insensitive) {
-            return (w.value as any[]).some((v) => lc(v) === lc(value));
-          }
-          return (w.value as any[]).includes(value);
+          return Array.isArray(w.value) && (w.value as any[]).includes(value);
         }
         case "not_in": {
-          if (!Array.isArray(w.value)) return false;
-          if (insensitive) {
-            return !(w.value as any[]).some((v) => lc(v) === lc(value));
-          }
-          return !(w.value as any[]).includes(value);
+          const result =
+            Array.isArray(w.value) && !(w.value as any[]).includes(value);
+          return result;
         }
         case "lt": {
           return isLessThan(value, w.value);
@@ -389,34 +366,18 @@ const filterByWhere = <
           return value === w.value || isGreaterThan(value, w.value);
         }
         case "ne": {
-          if (w.value === null) {
-            return value !== null && value !== undefined;
-          }
-          return lc(value) !== lc(w.value);
+          return value !== w.value;
         }
         case "contains": {
-          if (typeof value !== "string" || typeof w.value !== "string") {
-            return false;
-          }
-          return insensitive
-            ? value.toLowerCase().includes(w.value.toLowerCase())
-            : value.includes(w.value);
+          return typeof value === "string" && value.includes(w.value as string);
         }
         case "starts_with": {
-          if (typeof value !== "string" || typeof w.value !== "string") {
-            return false;
-          }
-          return insensitive
-            ? value.toLowerCase().startsWith(w.value.toLowerCase())
-            : value.startsWith(w.value);
+          return (
+            typeof value === "string" && value.startsWith(w.value as string)
+          );
         }
         case "ends_with": {
-          if (typeof value !== "string" || typeof w.value !== "string") {
-            return false;
-          }
-          return insensitive
-            ? value.toLowerCase().endsWith(w.value.toLowerCase())
-            : value.endsWith(w.value);
+          return typeof value === "string" && value.endsWith(w.value as string);
         }
       }
     };
@@ -491,14 +452,12 @@ const generateQuery = (
       doc,
       args.where,
       // Index used for all eq and range clauses, apply remaining clauses
-      // incompatible with Convex statically. Case-insensitive clauses are
-      // also re-applied here since Convex indexes are byte-compared.
+      // incompatible with Convex statically.
       (w) =>
-        w.mode === "insensitive" ||
-        (!!w.operator &&
-          ["contains", "starts_with", "ends_with", "ne", "not_in"].includes(
-            w.operator
-          ))
+        w.operator &&
+        ["contains", "starts_with", "ends_with", "ne", "not_in"].includes(
+          w.operator
+        )
     );
   });
   return filteredQuery;
@@ -538,13 +497,16 @@ export const paginate = async <
       `_id can only be used with eq, in, or not_in operator: ${JSON.stringify(args.where)}`
     );
   }
+  if (args.where?.some((w) => w.mode === "insensitive")) {
+    throw new Error(
+      `Case-insensitive queries (mode: "insensitive") are not supported by the Convex adapter. Store values in a normalized form (e.g. lowercase on write) and query against the normalized value.`
+    );
+  }
   // If any where clause is "eq" (or missing operator) on a unique field,
   // we can only return a single document, so we get it and use any other
-  // where clauses as static filters. Insensitive mode can't use the indexed
-  // fast-path since Convex indexes are byte-compared.
+  // where clauses as static filters.
   const uniqueWhere = args.where?.find(
     (w) =>
-      w.mode !== "insensitive" &&
       (!w.operator || w.operator === "eq") &&
       (isUniqueField(betterAuthSchema, args.model, w.field) ||
         w.field === "_id")
@@ -590,12 +552,8 @@ export const paginate = async <
   // Large queries using "in" clause will crash, but these are only currently
   // possible with the organization plugin listing all members with a high
   // limit. For cases like this we need to create proper convex queries in
-  // the component as an alternative to using Better Auth api's. Insensitive
-  // mode falls through to the single-scan path so we don't merge duplicated
-  // results from N case-folded split streams.
-  const inWhere = args.where?.find(
-    (w) => w.operator === "in" && w.mode !== "insensitive"
-  );
+  // the component as an alternative to using Better Auth api's.
+  const inWhere = args.where?.find((w) => w.operator === "in");
   if (inWhere) {
     if (!Array.isArray(inWhere.value)) {
       throw new Error("in clause value must be an array");

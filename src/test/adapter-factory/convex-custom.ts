@@ -759,5 +759,28 @@ export const convexCustomTestSuite = createTestSuite(
       ).toEqual(user);
       expect(typeof user.createdAt).toBe("number");
     },
+
+    "should reject case-insensitive where clauses": async () => {
+      await adapter.create({
+        model: "user",
+        data: {
+          name: "foo",
+          email: "foo@bar.com",
+        },
+      });
+      await expect(
+        adapter.findOne({
+          model: "user",
+          where: [
+            {
+              field: "email",
+              value: "FOO@BAR.COM",
+              operator: "eq",
+              mode: "insensitive",
+            },
+          ],
+        }),
+      ).rejects.toThrow(/mode: "insensitive"/);
+    },
   }),
 );

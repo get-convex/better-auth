@@ -1,55 +1,23 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { getCookie, getSetCookie, parseSetCookieHeader, crossDomainClient } from "./client.js";
-
-describe("parseSetCookieHeader", () => {
-  it("parses a simple cookie", () => {
-    const header = "session_token=abc123";
-    const map = parseSetCookieHeader(header);
-    expect(map.get("session_token")?.value).toBe("abc123");
-  });
-
-  it("parses cookie with attributes", () => {
-    const header = "session_token=abc123; Path=/; Secure; HttpOnly";
-    const map = parseSetCookieHeader(header);
-    const cookie = map.get("session_token");
-    expect(cookie?.value).toBe("abc123");
-  });
-
-  it("parses multiple cookies", () => {
-    const header = "a=1, b=2";
-    const map = parseSetCookieHeader(header);
-    expect(map.get("a")?.value).toBe("1");
-    expect(map.get("b")?.value).toBe("2");
-  });
-
-  /**
-   * @see https://github.com/better-auth/better-auth/pull/8301
-   *
-   * Regression: our previous local splitter used a naive `split(", ")`
-   * which shattered `Expires=Wed, 21 Oct 2015 07:28:00 GMT` into four
-   * garbage entries. Now delegating to better-auth's lookahead-aware
-   * `parseSetCookieHeader` (via `better-auth/cookies`), which scans for
-   * `<name>=` after each comma before splitting.
-   */
-  it("does not split on commas inside Expires dates", () => {
-    const header =
-      "session_token=abc; Path=/; Expires=Wed, 21 Oct 2015 07:28:00 GMT, other=xyz; Path=/";
-    const map = parseSetCookieHeader(header);
-    expect(map.size).toBe(2);
-    expect(map.get("session_token")?.value).toBe("abc");
-    expect(map.get("other")?.value).toBe("xyz");
-    expect(map.get("session_token")?.expires).toBeInstanceOf(Date);
-  });
-
-  it("does not split on commas inside Expires dates for a single cookie", () => {
-    const header = "session_token=abc; Expires=Wed, 21 Oct 2015 07:28:00 GMT";
-    const map = parseSetCookieHeader(header);
-    expect(map.size).toBe(1);
-    expect(map.get("session_token")?.value).toBe("abc");
-  });
-});
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { crossDomainClient, getCookie, getSetCookie } from "./client.js";
 
 describe("getSetCookie", () => {
+  it("stores cookies from RFC-1123 Expires headers without splitting the date", () => {
+    const header =
+      "session_token=abc; Path=/; Expires=Wed, 21 Oct 2030 07:28:00 GMT, other_cookie=xyz; Path=/";
+
+    const result = JSON.parse(getSetCookie(header));
+
+    expect(result.session_token).toEqual({
+      value: "abc",
+      expires: "2030-10-21T07:28:00.000Z",
+    });
+    expect(result.other_cookie).toEqual({
+      value: "xyz",
+      expires: null,
+    });
+  });
+
   it("stores expires as ISO string", () => {
     const header = "session_token=abc; Max-Age=3600";
     const result = JSON.parse(getSetCookie(header));
@@ -92,7 +60,10 @@ describe("getSetCookie", () => {
 describe("getCookie", () => {
   it("returns cookie string for valid cookies", () => {
     const stored = JSON.stringify({
-      session: { value: "abc", expires: new Date(Date.now() + 60000).toISOString() },
+      session: {
+        value: "abc",
+        expires: new Date(Date.now() + 60000).toISOString(),
+      },
     });
     const result = getCookie(stored);
     expect(result).toContain("session=abc");
@@ -100,8 +71,14 @@ describe("getCookie", () => {
 
   it("filters out expired cookies", () => {
     const stored = JSON.stringify({
-      expired: { value: "old", expires: new Date(Date.now() - 60000).toISOString() },
-      valid: { value: "new", expires: new Date(Date.now() + 60000).toISOString() },
+      expired: {
+        value: "old",
+        expires: new Date(Date.now() - 60000).toISOString(),
+      },
+      valid: {
+        value: "new",
+        expires: new Date(Date.now() + 60000).toISOString(),
+      },
     });
     const result = getCookie(stored);
     expect(result).not.toContain("expired=old");
@@ -138,7 +115,10 @@ describe("getCookie", () => {
 
 describe("crossDomainClient", () => {
   let storage: Map<string, string>;
-  let mockStorage: { getItem: (key: string) => string | null; setItem: (key: string, value: string) => void };
+  let mockStorage: {
+    getItem: (key: string) => string | null;
+    setItem: (key: string, value: string) => void;
+  };
   const cookieName = "better-auth_cookie";
   const localCacheName = "better-auth_session_data";
 
@@ -146,7 +126,9 @@ describe("crossDomainClient", () => {
     storage = new Map<string, string>();
     mockStorage = {
       getItem: (key) => storage.get(key) ?? null,
-      setItem: (key, value) => { storage.set(key, value); },
+      setItem: (key, value) => {
+        storage.set(key, value);
+      },
     };
   });
 
@@ -210,9 +192,12 @@ describe("crossDomainClient", () => {
 
   describe("onSuccess handler", () => {
     it("clears cookies when get-session returns null", async () => {
-      storage.set(cookieName, JSON.stringify({
-        "better-auth.session_token": { value: "stale", expires: null },
-      }));
+      storage.set(
+        cookieName,
+        JSON.stringify({
+          "better-auth.session_token": { value: "stale", expires: null },
+        })
+      );
 
       const onSuccess = getOnSuccessHook();
       await onSuccess({

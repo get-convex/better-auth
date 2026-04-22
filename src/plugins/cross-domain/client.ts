@@ -4,8 +4,6 @@ import type { BetterFetchOption } from "@better-fetch/fetch";
 import type { crossDomain } from "./index.js";
 import { VERSION } from "../../version.js";
 
-export { parseSetCookieHeader };
-
 interface StoredCookie {
   value: string;
   expires: string | null;
@@ -126,7 +124,13 @@ export const crossDomainClient = (
           if (!sessionData) return null;
           try {
             const parsed = JSON.parse(sessionData);
-            if (parsed && typeof parsed === "object" && Object.keys(parsed).length === 0) return null;
+            if (
+              parsed &&
+              typeof parsed === "object" &&
+              Object.keys(parsed).length === 0
+            ) {
+              return null;
+            }
             return parsed;
           } catch {
             return null;

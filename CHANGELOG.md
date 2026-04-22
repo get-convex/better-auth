@@ -2,16 +2,36 @@
 
 ## 0.12.0
 
-- BREAKING: require better-auth `>=1.6.7 <1.7.0`. 1.6.6 wired a dynamic `import("@opentelemetry/api")` into `./instrumentation` (#9111) that crashes on Convex's V8 isolate and 500s every `/api/auth/*` request. 1.6.7 routes `./instrumentation` to a noop on `browser`/`edge` export conditions (#9281), which Convex's esbuild picks up via `platform: "browser"`
-- feat(adapter): honor `mode: "sensitive" | "insensitive"` on where clauses. Index-backed paths fall back to scan-filter for insensitive clauses since Convex indexes are byte-compared
-- fix(adapter): normalize `undefined` as `null` for `eq null` / `ne null` so upstream IS NULL / IS NOT NULL tests pass
-- fix(plugins): pass `asResponse: false` to 7 internal `.endpoints.*` calls so v1.6.0's new `shouldReturnResponse` default does not silently wrap results in `Response` objects (would have broken JWT cookies after sign-in and cross-domain one-time-token verification)
-- fix(cross-domain): delegate `parseSetCookieHeader` to `better-auth/cookies` so cookies with RFC-1123 `Expires` dates no longer shatter into garbage entries on the client (local copy pre-dated better-auth's 1.6.0 lookahead fix, #8301)
+- BREAKING: require better-auth `>=1.6.7 <1.7.0`. 1.6.6 wired a dynamic
+  `import("@opentelemetry/api")` into `./instrumentation` (#9111) that crashes
+  on Convex's V8 isolate and 500s every `/api/auth/*` request. 1.6.7 routes
+  `./instrumentation` to a noop on `browser`/`edge` export conditions (#9281),
+  which Convex's esbuild picks up via `platform: "browser"`
+- feat(adapter): honor `mode: "sensitive" | "insensitive"` on where clauses.
+  Index-backed paths fall back to scan-filter for insensitive clauses since
+  Convex indexes are byte-compared
+- fix(adapter): normalize `undefined` as `null` for `eq null` / `ne null` so
+  upstream IS NULL / IS NOT NULL tests pass
+- fix(plugins): pass `asResponse: false` to 7 internal `.endpoints.*` calls so
+  v1.6.0's new `shouldReturnResponse` default does not silently wrap results in
+  `Response` objects (would have broken JWT cookies after sign-in and
+  cross-domain one-time-token verification)
+- fix(cross-domain): delegate `parseSetCookieHeader` to `better-auth/cookies` so
+  cookies with RFC-1123 `Expires` dates no longer shatter into garbage entries
+  on the client (local copy pre-dated better-auth's 1.6.0 lookahead fix, #8301)
 - fix(schema): add `twoFactor.verified` column for 1.6.2 compat (#8711)
-- feat(plugins): expose `version` field on `convex`, `convexClient`, `crossDomain`, `crossDomainClient`
-- chore: suppress `oidc-provider` deprecation warning via `__skipDeprecationWarning: true`. Migration to `@better-auth/oauth-provider` tracked separately
-- test: wire upstream `caseInsensitiveTestSuite` into the base adapter profile, add hook-level regression tests for `asResponse` and Set-Cookie splitting
-- Picks up `@better-auth/oauth-provider` GHSA-xr8f-h2gw-9xh6 (authz bypass, 1.6.5), 1.6.2 OAuth state CSRF fix (#8949), 1.6.3 baseURL hardening (#9113, #9131), 1.6.5 `$sessionSignal` fix for `/change-password` and `/revoke-other-sessions` (#9087), and 1.6.6 SSRF hardening in `@better-auth/oauth-provider` (#9226) via the new peer range
+- feat(plugins): expose `version` field on `convex`, `convexClient`,
+  `crossDomain`, `crossDomainClient`
+- chore: suppress `oidc-provider` deprecation warning via
+  `__skipDeprecationWarning: true`. Migration to `@better-auth/oauth-provider`
+  tracked separately
+- test: wire upstream `caseInsensitiveTestSuite` into the base adapter profile,
+  add hook-level regression tests for `asResponse` and Set-Cookie splitting
+- Picks up `@better-auth/oauth-provider` GHSA-xr8f-h2gw-9xh6 (authz bypass,
+  1.6.5), 1.6.2 OAuth state CSRF fix (#8949), 1.6.3 baseURL hardening (#9113,
+  #9131), 1.6.5 `$sessionSignal` fix for `/change-password` and
+  `/revoke-other-sessions` (#9087), and 1.6.6 SSRF hardening in
+  `@better-auth/oauth-provider` (#9226) via the new peer range
 
 ### Migration
 
@@ -20,7 +40,12 @@ npm install @convex-dev/better-auth@latest better-auth@latest
 npx auth upgrade
 ```
 
-Bump `better-auth` in your own `package.json` to `^1.6.7`. Regenerate your schema to pick up `twoFactor.verified`. UI catching `CREDENTIAL_ACCOUNT_NOT_FOUND` on password flows must switch to `INVALID_PASSWORD` (1.6.1 #8902). See [better-auth's 1.6.x release notes](https://github.com/better-auth/better-auth/releases) for the full inherited behavior delta.
+Bump `better-auth` in your own `package.json` to `^1.6.7`. Regenerate your
+schema to pick up `twoFactor.verified`. UI catching
+`CREDENTIAL_ACCOUNT_NOT_FOUND` on password flows must switch to
+`INVALID_PASSWORD` (1.6.1 #8902). See
+[better-auth's 1.6.x release notes](https://github.com/better-auth/better-auth/releases)
+for the full inherited behavior delta.
 
 ## 0.11.5
 
