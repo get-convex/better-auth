@@ -136,20 +136,29 @@ function useUseAuthFromBetterAuth(
             if (!forceRefreshToken && pendingTokenRef.current) {
               return pendingTokenRef.current;
             }
-            pendingTokenRef.current = authClient.convex
-              .token({ fetchOptions: { throw: false } })
-              .then(({ data }) => {
-                const token = data?.token || null;
-                setCachedToken(token);
-                return token;
-              })
-              .catch(() => {
-                setCachedToken(null);
-                return null;
-              })
-              .finally(() => {
-                pendingTokenRef.current = null;
-              });
+            pendingTokenRef.current = (async () => {
+              const maxRetries = 3;
+              for (let attempt = 0; attempt <= maxRetries; attempt++) {
+                try {
+                  const { data } = await authClient.convex.token({
+                    fetchOptions: { throw: false },
+                  });
+                  const token = data?.token || null;
+                  setCachedToken(token);
+                  return token;
+                } catch (e) {
+                  if (attempt < maxRetries) {
+                    await new Promise((r) =>
+                      setTimeout(r, 100 * 2 ** attempt)
+                    );
+                  }
+                }
+              }
+              setCachedToken(null);
+              return null;
+            })().finally(() => {
+              pendingTokenRef.current = null;
+            });
             return pendingTokenRef.current;
           },
           // Build a new fetchAccessToken to trigger setAuth() whenever the
