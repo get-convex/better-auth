@@ -137,8 +137,12 @@ export const getToken = async (
   opts?: GetTokenOptions
 ) => {
   const fetchToken = async () => {
+    const basePath = opts?.basePath
+      ? (opts.basePath.startsWith("/") ? opts.basePath : `/${opts.basePath}`)
+          .replace(/\/+$/, "")
+      : "/api/auth";
     const { data } = await betterFetch<{ token: string }>(
-      `${opts?.basePath ?? "/api/auth"}/convex/token`,
+      `${basePath}/convex/token`,
       {
         baseURL: siteUrl,
         headers,
