@@ -1,0 +1,14 @@
+diff --git a/node_modules/@better-auth/core/dist/db/adapter/factory.mjs b/node_modules/@better-auth/core/dist/db/adapter/factory.mjs
+index c5cf03e..cc3f475 100644
+--- a/node_modules/@better-auth/core/dist/db/adapter/factory.mjs
++++ b/node_modules/@better-auth/core/dist/db/adapter/factory.mjs
+@@ -2,8 +2,7 @@ import { BetterAuthError } from "../../error/index.mjs";
+ import { getAuthTables } from "../get-tables.mjs";
+ import { getColorDepth } from "../../env/color-depth.mjs";
+ import { TTY_COLORS, createLogger } from "../../env/logger.mjs";
+-import { ATTR_DB_COLLECTION_NAME, ATTR_DB_OPERATION_NAME } from "../../instrumentation/attributes.mjs";
+-import { withSpan } from "../../instrumentation/tracer.mjs";
++import { ATTR_DB_COLLECTION_NAME, ATTR_DB_OPERATION_NAME, withSpan } from "@better-auth/core/instrumentation";
+ import { safeJSONParse } from "../../utils/json.mjs";
+ import { initGetDefaultModelName } from "./get-default-model-name.mjs";
+ import { initGetDefaultFieldName } from "./get-default-field-name.mjs";

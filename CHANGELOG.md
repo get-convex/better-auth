@@ -7,6 +7,11 @@
   on Convex's V8 isolate and 500s every `/api/auth/*` request. 1.6.7 routes
   `./instrumentation` to a noop on `browser`/`edge` export conditions (#9281),
   which Convex's esbuild picks up via `platform: "browser"`
+- fix: ship a `patch-package` patch of `@better-auth/core@1.6.7`
+  `dist/db/adapter/factory.mjs` so its `instrumentation` import flows
+  through the package name. The upstream relative path bypasses the
+  exports map and re-introduces the Convex crash that the 1.6.7 pure
+  variant was meant to prevent. Upstream fix pending
 - feat(adapter): honor `mode: "sensitive" | "insensitive"` on where clauses.
   Index-backed paths fall back to scan-filter for insensitive clauses since
   Convex indexes are byte-compared

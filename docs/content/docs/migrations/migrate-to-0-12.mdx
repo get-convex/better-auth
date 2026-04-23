@@ -1,0 +1,58 @@
+---
+title: Migrate to 0.12
+description: Migrate to @convex-dev/better-auth@0.12
+---
+
+## Upgrade
+
+<div className="fd-steps">
+
+  <div className="fd-step">
+    ### Install dependencies
+
+    Update Better Auth and the component. Better Auth must be on `1.6.7` or
+    later in the `1.6.x` line.
+
+    <Callout>
+      Be sure to review [breaking changes in Better Auth 1.6](https://better-auth.com/blog/1-6).
+    </Callout>
+
+    ```npm
+    npm install @convex-dev/better-auth@^0.12.0
+    npm install better-auth@~1.6.7 --save-exact
+    ```
+
+  </div>
+
+</div>
+
+## Breaking changes
+
+No Convex-specific breaking changes. Review the
+[Better Auth 1.6 release post](https://better-auth.com/blog/1-6) for breaking
+change details.
+
+## Local Install additional steps
+
+The following steps are only necessary for apps using
+[Local Install](/local-install).
+
+<div className="fd-steps">
+
+  <div className="fd-step">
+
+### Regenerate schema
+
+Whenever updating Better Auth with Local Install, regenerate the schema.
+
+The Better Auth CLI is now invoked as `npx auth generate` instead of
+`npx @better-auth/cli generate`.
+
+```npm
+cd convex/betterAuth
+npx auth generate
+```
+
+  </div>
+
+</div>
