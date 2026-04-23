@@ -130,6 +130,7 @@ description: Install and configure Convex + Better Auth for React.
 
     export const createAuth = (ctx: GenericCtx<DataModel>) => {
       return betterAuth({
+        baseURL: process.env.CONVEX_SITE_URL, // [!code ++]
         trustedOrigins: [siteUrl],
         database: authComponent.adapter(ctx),
         // Configure simple, non-verified email/password to get started

@@ -28,9 +28,38 @@ description: Migrate to @convex-dev/better-auth@0.12
 
 ## Breaking changes
 
-No Convex-specific breaking changes. Review the
-[Better Auth 1.6 release post](https://better-auth.com/blog/1-6) for breaking
-change details.
+<div className="fd-steps">
+
+  <div className="fd-step">
+
+### set `baseURL` for client-side frameworks
+
+If your app uses the cross-domain plugin (e.g., Vite SPA, Expo Web), add
+`baseURL` to your `betterAuth()` options. Without it, Better Auth 1.6 logs a
+"Base URL could not be determined" warning on every request.
+
+```ts
+betterAuth({
+  baseURL: process.env.CONVEX_SITE_URL, // [!code ++]
+  // ...
+});
+```
+
+Next.js and TanStack Start setups already set `baseURL` and are not affected.
+
+  </div>
+
+  <div className="fd-step">
+
+### Review breaking changes in Better Auth 1.6
+
+Be sure to review the
+[Better Auth 1.6 release post](https://better-auth.com/blog/1-6) for other
+breaking changes that may affect your app.
+
+  </div>
+
+</div>
 
 ## Local Install additional steps
 

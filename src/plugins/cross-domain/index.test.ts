@@ -1,67 +1,101 @@
 import { describe, expect, it } from "vitest";
+import { betterAuth } from "better-auth/minimal";
+import { memoryAdapter, type MemoryDB } from "better-auth/adapters/memory";
+import { magicLink } from "better-auth/plugins/magic-link";
 import { crossDomain } from "./index.js";
 
-const getPostRewriteMatcher = () => {
-  const plugin = crossDomain({ siteUrl: "https://example.com" });
-  const matcher = plugin.hooks?.before?.[2]?.matcher;
-  if (!matcher) {
-    throw new Error("expected cross-domain POST rewrite matcher");
-  }
-  return matcher;
-};
+const SITE_URL = "https://myapp.example.com";
+const AUTH_BASE_URL = "http://localhost:3000";
+const BASE_PATH = "/api/auth";
 
-describe("crossDomain POST rewrite matcher", () => {
-  it("matches POST requests regardless of route", () => {
-    const matcher = getPostRewriteMatcher();
-    type MatcherContext = Parameters<typeof matcher>[0];
+describe("crossDomain plugin", async () => {
+  let capturedMagicLinkUrl = "";
 
-    const knownPathCtx = {
-      method: "POST",
-      path: "/sign-in/email",
-      headers: new Headers(),
-    } satisfies Partial<MatcherContext>;
-    const unknownPathCtx = {
-      method: "POST",
-      path: "/custom-endpoint",
-      headers: new Headers(),
-    } satisfies Partial<MatcherContext>;
+  const db: MemoryDB = {
+    user: [],
+    session: [],
+    account: [],
+    verification: [],
+  };
 
-    expect(matcher(knownPathCtx as MatcherContext)).toBe(true);
-    expect(matcher(unknownPathCtx as MatcherContext)).toBe(true);
+  const auth = betterAuth({
+    baseURL: AUTH_BASE_URL,
+    basePath: BASE_PATH,
+    secret: "test-secret-at-least-thirty-two-characters-long",
+    database: memoryAdapter(db),
+    emailAndPassword: {
+      enabled: true,
+      requireEmailVerification: false,
+    },
+    plugins: [
+      magicLink({
+        sendMagicLink: async ({ url }) => {
+          capturedMagicLinkUrl = url;
+        },
+      }),
+      crossDomain({ siteUrl: SITE_URL }),
+    ],
   });
 
-  it("rejects non-POST methods", () => {
-    const matcher = getPostRewriteMatcher();
-    type MatcherContext = Parameters<typeof matcher>[0];
+  const post = (
+    path: string,
+    body: Record<string, unknown>,
+    extraHeaders?: Record<string, string>,
+  ) =>
+    auth.handler(
+      new Request(`${AUTH_BASE_URL}${BASE_PATH}${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...extraHeaders },
+        body: JSON.stringify(body),
+      }),
+    );
 
-    const getSignInCtx = {
-      method: "GET",
-      path: "/sign-in/email",
-      headers: new Headers(),
-    } satisfies Partial<MatcherContext>;
-    const optionsLinkSocialCtx = {
-      method: "OPTIONS",
-      path: "/link-social",
-      headers: new Headers(),
-    } satisfies Partial<MatcherContext>;
-
-    expect(matcher(getSignInCtx as MatcherContext)).toBe(false);
-    expect(matcher(optionsLinkSocialCtx as MatcherContext)).toBe(false);
+  await post("/sign-up/email", {
+    email: "test@example.com",
+    password: "testpassword123",
+    name: "Test User",
   });
 
-  it("rejects expo-native requests", () => {
-    const matcher = getPostRewriteMatcher();
-    type MatcherContext = Parameters<typeof matcher>[0];
+  describe("callbackURL defaulting for magic-link", () => {
+    it("injects siteUrl when callbackURL is absent", async () => {
+      capturedMagicLinkUrl = "";
+      await post("/sign-in/magic-link", { email: "test@example.com" });
+      const url = new URL(capturedMagicLinkUrl);
+      expect(url.searchParams.get("callbackURL")).toBe(SITE_URL);
+    });
 
-    const headers = new Headers();
-    headers.set("expo-origin", "expo");
+    it("rewrites relative callbackURL to absolute using siteUrl", async () => {
+      capturedMagicLinkUrl = "";
+      await post("/sign-in/magic-link", {
+        email: "test@example.com",
+        callbackURL: "/dashboard",
+      });
+      const url = new URL(capturedMagicLinkUrl);
+      expect(url.searchParams.get("callbackURL")).toBe(
+        `${SITE_URL}/dashboard`,
+      );
+    });
 
-    const expoCtx = {
-      method: "POST",
-      path: "/sign-in/social",
-      headers,
-    } satisfies Partial<MatcherContext>;
+    it("preserves absolute callbackURL", async () => {
+      capturedMagicLinkUrl = "";
+      await post("/sign-in/magic-link", {
+        email: "test@example.com",
+        callbackURL: "https://other.example.com/callback",
+      });
+      const url = new URL(capturedMagicLinkUrl);
+      expect(url.searchParams.get("callbackURL")).toBe(
+        "https://other.example.com/callback",
+      );
+    });
+  });
 
-    expect(matcher(expoCtx as MatcherContext)).toBe(false);
+  describe("no callbackURL injection for email sign-in", () => {
+    it("does not redirect when callbackURL is absent", async () => {
+      const response = await post("/sign-in/email", {
+        email: "test@example.com",
+        password: "testpassword123",
+      });
+      expect(response.status).not.toBe(302);
+    });
   });
 });

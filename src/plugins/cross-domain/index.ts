@@ -57,8 +57,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
               Boolean(
                 ctx.request?.headers.has("better-auth-cookie") ||
                   ctx.headers?.has("better-auth-cookie")
-              ) &&
-              !isExpoNative(ctx)
+              ) && !isExpoNative(ctx)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
@@ -87,8 +86,8 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
           matcher: (ctx) => {
             return Boolean(
               ctx.method === "GET" &&
-              ctx.path?.startsWith("/verify-email") &&
-              !isExpoNative(ctx)
+                ctx.path?.startsWith("/verify-email") &&
+                !isExpoNative(ctx)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
@@ -103,6 +102,17 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
             return Boolean(ctx.method === "POST" && !isExpoNative(ctx));
           },
           handler: createAuthMiddleware(async (ctx) => {
+            // Set callbackURL to siteUrl for redirect-triggering paths with
+            // no callbackURL defined.
+            if (
+              ctx.body &&
+              !ctx.body.callbackURL &&
+              (ctx.path?.startsWith("/sign-in/social") ||
+                ctx.path?.startsWith("/sign-in/magic-link") ||
+                ctx.path?.startsWith("/send-verification-email"))
+            ) {
+              ctx.body.callbackURL = siteUrl;
+            }
             if (ctx.body?.callbackURL) {
               ctx.body.callbackURL = rewriteCallbackURL(ctx.body.callbackURL);
             }
@@ -127,8 +137,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
               Boolean(
                 ctx.request?.headers.has("better-auth-cookie") ||
                   ctx.headers?.has("better-auth-cookie")
-              ) &&
-              !isExpoNative(ctx)
+              ) && !isExpoNative(ctx)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
@@ -146,7 +155,7 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
               (ctx.path?.startsWith("/callback") ||
                 ctx.path?.startsWith("/oauth2/callback") ||
                 ctx.path?.startsWith("/magic-link/verify")) &&
-              !isExpoNative(ctx)
+                !isExpoNative(ctx)
             );
           },
           handler: createAuthMiddleware(async (ctx) => {
