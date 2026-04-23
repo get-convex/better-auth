@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { betterAuth } from "better-auth/minimal";
-import { memoryAdapter, type MemoryDB } from "better-auth/adapters/memory";
+import { memoryAdapter } from "better-auth/adapters/memory";
+import type { MemoryDB } from "better-auth/adapters/memory";
 import { magicLink } from "better-auth/plugins/magic-link";
 import { crossDomain } from "./index.js";
 
@@ -40,14 +41,14 @@ describe("crossDomain plugin", async () => {
   const post = (
     path: string,
     body: Record<string, unknown>,
-    extraHeaders?: Record<string, string>,
+    extraHeaders?: Record<string, string>
   ) =>
     auth.handler(
       new Request(`${AUTH_BASE_URL}${BASE_PATH}${path}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...extraHeaders },
         body: JSON.stringify(body),
-      }),
+      })
     );
 
   await post("/sign-up/email", {
@@ -71,9 +72,7 @@ describe("crossDomain plugin", async () => {
         callbackURL: "/dashboard",
       });
       const url = new URL(capturedMagicLinkUrl);
-      expect(url.searchParams.get("callbackURL")).toBe(
-        `${SITE_URL}/dashboard`,
-      );
+      expect(url.searchParams.get("callbackURL")).toBe(`${SITE_URL}/dashboard`);
     });
 
     it("preserves absolute callbackURL", async () => {
@@ -84,7 +83,7 @@ describe("crossDomain plugin", async () => {
       });
       const url = new URL(capturedMagicLinkUrl);
       expect(url.searchParams.get("callbackURL")).toBe(
-        "https://other.example.com/callback",
+        "https://other.example.com/callback"
       );
     });
   });
