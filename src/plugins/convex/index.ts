@@ -165,7 +165,7 @@ export const convex = (opts: {
    * Handles error that occurs when existing JWKS key does not match configured
    * algorithm, which will be common for 0.10 upgrades switching from EdDSA to RS256.
    *
-   * @default true
+   * @default false
    */
   jwksRotateOnTokenGenerationError?: boolean;
   /**
@@ -191,9 +191,9 @@ export const convex = (opts: {
       issuer: `${process.env.CONVEX_SITE_URL}`,
       audience: "convex",
       expirationTime: `${jwtExpirationSeconds}s`,
-      definePayload: ({ user, session }) => ({
+      definePayload: async ({ user, session }) => ({
         ...(opts.jwt?.definePayload
-          ? opts.jwt.definePayload({ user, session })
+          ? await opts.jwt.definePayload({ user, session })
           : omit(user, ["id", "image"])),
         sessionId: session.id,
         iat: Math.floor(new Date().getTime() / 1000),
@@ -511,6 +511,8 @@ export const convex = (opts: {
             ...ctx,
             method: "GET",
             asResponse: false,
+            returnHeaders: false,
+            returnStatus: false,
           });
           const jwks: any[] = await ctx.context.adapter.findMany({
             model: "jwks",
@@ -550,6 +552,8 @@ export const convex = (opts: {
             ...ctx,
             method: "GET",
             asResponse: false,
+            returnHeaders: false,
+            returnStatus: false,
           });
           const jwks: any[] = await ctx.context.adapter.findMany({
             model: "jwks",

@@ -46,13 +46,10 @@ export function getCookie(cookie: string) {
   } catch {
     // noop
   }
-  const toSend = Object.entries(parsed).reduce((acc, [key, value]) => {
-    if (value.expires && new Date(value.expires) < new Date()) {
-      return acc;
-    }
-    return `${acc}; ${key}=${value.value}`;
-  }, "");
-  return toSend;
+  return Object.entries(parsed)
+    .filter(([, value]) => !value.expires || new Date(value.expires) >= new Date())
+    .map(([key, value]) => `${key}=${value.value}`)
+    .join("; ");
 }
 
 export const crossDomainClient = (
@@ -140,8 +137,8 @@ export const crossDomainClient = (
     },
     fetchPlugins: [
       {
-        id: "convex",
-        name: "Convex",
+        id: "cross-domain",
+        name: "Cross Domain",
         hooks: {
           async onSuccess(context) {
             if (!storage) {
@@ -215,7 +212,7 @@ export const crossDomainClient = (
               error: null,
               isPending: false,
             });
-            storage.setItem(localCacheName, "{}");
+            await storage.setItem(localCacheName, "{}");
           }
           return {
             url,

@@ -517,6 +517,11 @@ export const paginate = async <
         model: args.model,
         where: [uniqueWhere],
       }) || {};
+    if (uniqueWhere.field !== "_id" && !index) {
+      throw new Error(
+        `No index found for ${args.model}.${uniqueWhere.field}`
+      );
+    }
     const doc =
       uniqueWhere.field === "_id"
         ? await ctx.db.get(uniqueWhere.value as GenericId<T>)
