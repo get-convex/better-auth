@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- feat: support Better Auth 1.6.7+
+- feat: support Better Auth 1.6.9+
 
 ## 0.11.5
 
