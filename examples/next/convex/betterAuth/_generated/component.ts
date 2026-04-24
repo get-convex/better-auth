@@ -86,7 +86,12 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 model: "verification";
               }
             | {
-                data: { backupCodes: string; secret: string; userId: string };
+                data: {
+                  backupCodes: string;
+                  secret: string;
+                  userId: string;
+                  verified?: null | boolean;
+                };
                 model: "twoFactor";
               }
             | {
@@ -127,6 +132,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "userId"
                     | "foo"
                     | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -161,6 +167,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "userAgent"
                     | "userId"
                     | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -200,6 +207,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "createdAt"
                     | "updatedAt"
                     | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -232,6 +240,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "createdAt"
                     | "updatedAt"
                     | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -257,7 +266,13 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 model: "twoFactor";
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "secret" | "backupCodes" | "userId" | "_id";
+                  field:
+                    | "secret"
+                    | "backupCodes"
+                    | "userId"
+                    | "verified"
+                    | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -289,6 +304,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "createdAt"
                     | "expiresAt"
                     | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -346,6 +362,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "userId"
                     | "foo"
                     | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -380,6 +397,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "userAgent"
                     | "userId"
                     | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -419,6 +437,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "createdAt"
                     | "updatedAt"
                     | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -451,6 +470,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "createdAt"
                     | "updatedAt"
                     | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -476,7 +496,13 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 model: "twoFactor";
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "secret" | "backupCodes" | "userId" | "_id";
+                  field:
+                    | "secret"
+                    | "backupCodes"
+                    | "userId"
+                    | "verified"
+                    | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -508,6 +534,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "createdAt"
                     | "expiresAt"
                     | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -556,10 +583,12 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             maximumRowsRead?: number;
             numItems: number;
           };
+          select?: Array<string>;
           sortBy?: { direction: "asc" | "desc"; field: string };
           where?: Array<{
             connector?: "AND" | "OR";
             field: string;
+            mode?: "sensitive" | "insensitive";
             operator?:
               | "lt"
               | "lte"
@@ -600,6 +629,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           where?: Array<{
             connector?: "AND" | "OR";
             field: string;
+            mode?: "sensitive" | "insensitive";
             operator?:
               | "lt"
               | "lte"
@@ -661,6 +691,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "userId"
                     | "foo"
                     | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -704,6 +735,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "userAgent"
                     | "userId"
                     | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -757,6 +789,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "createdAt"
                     | "updatedAt"
                     | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -796,6 +829,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "createdAt"
                     | "updatedAt"
                     | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -823,10 +857,17 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   backupCodes?: string;
                   secret?: string;
                   userId?: string;
+                  verified?: null | boolean;
                 };
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "secret" | "backupCodes" | "userId" | "_id";
+                  field:
+                    | "secret"
+                    | "backupCodes"
+                    | "userId"
+                    | "verified"
+                    | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -864,6 +905,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "createdAt"
                     | "expiresAt"
                     | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -935,6 +977,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "userId"
                     | "foo"
                     | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -978,6 +1021,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "userAgent"
                     | "userId"
                     | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1031,6 +1075,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "createdAt"
                     | "updatedAt"
                     | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1070,6 +1115,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "createdAt"
                     | "updatedAt"
                     | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1097,10 +1143,17 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   backupCodes?: string;
                   secret?: string;
                   userId?: string;
+                  verified?: null | boolean;
                 };
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "secret" | "backupCodes" | "userId" | "_id";
+                  field:
+                    | "secret"
+                    | "backupCodes"
+                    | "userId"
+                    | "verified"
+                    | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1138,6 +1191,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "createdAt"
                     | "expiresAt"
                     | "_id";
+                  mode?: "sensitive" | "insensitive";
                   operator?:
                     | "lt"
                     | "lte"

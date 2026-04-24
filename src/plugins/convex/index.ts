@@ -11,6 +11,7 @@ import type { JwtOptions, Jwk } from "better-auth/plugins/jwt";
 import { oidcProvider as oidcProviderPlugin } from "better-auth/plugins/oidc-provider";
 import { omit } from "convex-helpers";
 import type { AuthConfig, AuthProvider } from "convex/server";
+import { VERSION } from "../../version.js";
 
 export const JWT_COOKIE_NAME = "convex_jwt";
 
@@ -164,7 +165,7 @@ export const convex = (opts: {
    * Handles error that occurs when existing JWKS key does not match configured
    * algorithm, which will be common for 0.10 upgrades switching from EdDSA to RS256.
    *
-   * @default true
+   * @default false
    */
   jwksRotateOnTokenGenerationError?: boolean;
   /**
@@ -181,6 +182,7 @@ export const convex = (opts: {
       issuer: `${process.env.CONVEX_SITE_URL}`,
       jwks_uri: `${process.env.CONVEX_SITE_URL}${opts.options?.basePath ?? "/api/auth"}/convex/jwks`,
     },
+    __skipDeprecationWarning: true,
   });
   const providerConfig = parseAuthConfig(opts.authConfig, opts);
 
@@ -189,9 +191,9 @@ export const convex = (opts: {
       issuer: `${process.env.CONVEX_SITE_URL}`,
       audience: "convex",
       expirationTime: `${jwtExpirationSeconds}s`,
-      definePayload: ({ user, session }) => ({
+      definePayload: async ({ user, session }) => ({
         ...(opts.jwt?.definePayload
-          ? opts.jwt.definePayload({ user, session })
+          ? await opts.jwt.definePayload({ user, session })
           : omit(user, ["id", "image"])),
         sessionId: session.id,
         iat: Math.floor(new Date().getTime() / 1000),
@@ -253,6 +255,7 @@ export const convex = (opts: {
 
   return {
     id: "convex",
+    version: VERSION,
     init: (ctx) => {
       const { options, logger: _logger } = ctx;
       if (options.basePath !== "/api/auth" && !opts.options?.basePath) {
@@ -337,6 +340,7 @@ export const convex = (opts: {
                 ...ctx,
                 headers: {},
                 method: "GET",
+                asResponse: false,
                 returnHeaders: false,
                 returnStatus: false,
               });
@@ -382,6 +386,7 @@ export const convex = (opts: {
         async (ctx) => {
           const response = await oidcProvider.endpoints.getOpenIdConfig({
             ...ctx,
+            asResponse: false,
             returnHeaders: false,
             returnStatus: false,
           });
@@ -478,6 +483,7 @@ export const convex = (opts: {
         async (ctx) => {
           const response = await jwt.endpoints.getJwks({
             ...ctx,
+            asResponse: false,
             returnHeaders: false,
             returnStatus: false,
           });
@@ -504,6 +510,9 @@ export const convex = (opts: {
           await jwtPlugin(jwtOptions).endpoints.getJwks({
             ...ctx,
             method: "GET",
+            asResponse: false,
+            returnHeaders: false,
+            returnStatus: false,
           });
           const jwks: any[] = await ctx.context.adapter.findMany({
             model: "jwks",
@@ -542,6 +551,9 @@ export const convex = (opts: {
           await jwtPlugin(jwtOptions).endpoints.getJwks({
             ...ctx,
             method: "GET",
+            asResponse: false,
+            returnHeaders: false,
+            returnStatus: false,
           });
           const jwks: any[] = await ctx.context.adapter.findMany({
             model: "jwks",
@@ -588,6 +600,7 @@ export const convex = (opts: {
           const runEndpoint = async () => {
             const response = await jwt.endpoints.getToken({
               ...ctx,
+              asResponse: false,
               returnHeaders: false,
               returnStatus: false,
             });

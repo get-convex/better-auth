@@ -41,6 +41,7 @@ export const adapterWhereValidator = v.object({
     v.null()
   ),
   connector: v.optional(v.union(v.literal("AND"), v.literal("OR"))),
+  mode: v.optional(v.union(v.literal("sensitive"), v.literal("insensitive"))),
 });
 
 export const adapterArgsValidator = v.object({
@@ -106,6 +107,7 @@ const findIndex = (
         | "ends_with";
       value: string | number | boolean | null | string[] | number[];
       connector?: "AND" | "OR";
+      mode?: "sensitive" | "insensitive";
     }[];
     sortBy?: {
       field: string;
@@ -185,11 +187,7 @@ const findIndex = (
   // We internally use _creationTime in place of Better Auth's createdAt
   const indexFields = indexEqFields
     .map(([field]) => field)
-    .concat(
-      boundField && boundField !== "createdAt"
-        ? boundField
-        : ""
-    )
+    .concat(boundField && boundField !== "createdAt" ? boundField : "")
     .concat(
       sortField && sortField !== "createdAt" && boundField !== sortField
         ? sortField
@@ -499,6 +497,11 @@ export const paginate = async <
       `_id can only be used with eq, in, or not_in operator: ${JSON.stringify(args.where)}`
     );
   }
+  if (args.where?.some((w) => w.mode === "insensitive")) {
+    throw new Error(
+      `Case-insensitive queries (mode: "insensitive") are not supported by the Convex adapter. Store values in a normalized form (e.g. lowercase on write) and query against the normalized value.`
+    );
+  }
   // If any where clause is "eq" (or missing operator) on a unique field,
   // we can only return a single document, so we get it and use any other
   // where clauses as static filters.
@@ -514,6 +517,11 @@ export const paginate = async <
         model: args.model,
         where: [uniqueWhere],
       }) || {};
+    if (uniqueWhere.field !== "_id" && !index) {
+      throw new Error(
+        `No index found for ${args.model}.${uniqueWhere.field}`
+      );
+    }
     const doc =
       uniqueWhere.field === "_id"
         ? await ctx.db.get(uniqueWhere.value as GenericId<T>)

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- feat: support Better Auth 1.6.9+
+
 ## 0.11.5
 
 - Preserve and restore forwarded host headers in framework adapters (#327)
