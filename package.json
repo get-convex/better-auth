@@ -30,10 +30,9 @@
     "test:e2e": "npm run build && cd e2e && npm run test",
     "test:coverage": "vitest run --coverage --coverage.reporter=text",
     "preversion": "npm ci && npm run build:clean && npm run test && npm run lint && npm run typecheck",
-    "prepublishOnly": "node scripts/sync-version.mjs",
     "alpha": "npm version prerelease --preid alpha && npm publish --tag alpha && git push --follow-tags",
     "release": "npm version patch && npm publish && git push --follow-tags",
-    "version": "(npm whoami || npm login) && vim -c 'normal o' -c 'normal o## '$npm_package_version CHANGELOG.md && prettier -w CHANGELOG.md && git add CHANGELOG.md"
+    "version": "(npm whoami || npm login) && node scripts/sync-version.mjs && vim -c 'normal o' -c 'normal o## '$npm_package_version CHANGELOG.md && prettier -w CHANGELOG.md && git add CHANGELOG.md src/version.ts"
   },
   "files": [
     "dist",
