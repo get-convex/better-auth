@@ -90,7 +90,8 @@ type InternalWithTestProfiles = {
   testProfiles: Record<TestProfileName, AdapterModule>;
 };
 
-const internalWithTestProfiles = internal as unknown as InternalWithTestProfiles;
+const internalWithTestProfiles =
+  internal as unknown as InternalWithTestProfiles;
 
 const baseProfileApi = {
   adapter: internalWithTestProfiles.adapter,
@@ -108,8 +109,9 @@ const renameUserCustomProfileApi = profileApi("adapterRenameUserCustom");
 const renameUserTableProfileApi = profileApi("adapterRenameUserTable");
 const organizationJoinsProfileApi = profileApi("adapterOrganizationJoins");
 
-export const runTests = action(
-  async (ctx: GenericActionCtx<DataModel>, _args: EmptyObject) => {
+export const runTests = action({
+  args: {},
+  handler: async (ctx: GenericActionCtx<DataModel>) => {
     const testUtilsImport = "@better-auth/test-utils/adapter";
     const { testAdapter, transactionsTestSuite, uuidTestSuite } = await import(
       testUtilsImport
@@ -271,5 +273,5 @@ export const runTests = action(
     await executeRenameUserCustomProfile();
     await executeRenameUserTableProfile();
     await executeOrganizationJoinsProfile();
-  }
-);
+  },
+});
