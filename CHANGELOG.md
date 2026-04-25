@@ -1,8 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.12.0
 
-- feat: support Better Auth 1.6.9+
+- feat: support Better Auth 1.6.9+ (#323) @ramonclaudio
+- feat: allow setting basePath for getToken (#308) @amosbastian
 
 ## 0.11.5
 
