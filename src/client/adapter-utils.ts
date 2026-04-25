@@ -524,7 +524,9 @@ export const paginate = async <
     }
     const doc =
       uniqueWhere.field === "_id"
-        ? await ctx.db.get(args.model, uniqueWhere.value as GenericId<T>)
+        ? // Unfortunately this is one place where tests pass in UUIDs as values and convex-test doesn't support them
+          // eslint-disable-next-line @convex-dev/explicit-table-ids
+          await ctx.db.get(uniqueWhere.value as GenericId<T>)
         : await ctx.db
             .query(args.model as any)
             .withIndex(index?.indexDescriptor as any, (q) =>
