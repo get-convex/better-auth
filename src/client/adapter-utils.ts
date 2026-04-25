@@ -524,7 +524,7 @@ export const paginate = async <
     }
     const doc =
       uniqueWhere.field === "_id"
-        ? await ctx.db.get(uniqueWhere.value as GenericId<T>)
+        ? await ctx.db.get(args.model, uniqueWhere.value as GenericId<T>)
         : await ctx.db
             .query(args.model as any)
             .withIndex(index?.indexDescriptor as any, (q) =>
@@ -566,7 +566,7 @@ export const paginate = async <
     // For ids, just use asyncMap + .get()
     if (inWhere.field === "_id") {
       const docs = await asyncMap(inWhere.value as any[], async (value) => {
-        return ctx.db.get(value as GenericId<T>);
+        return ctx.db.get(args.model, value as GenericId<T>);
       });
       const filteredDocs = docs
         .flatMap((doc) => (doc ? [doc] : []))

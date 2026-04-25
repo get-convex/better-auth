@@ -91,7 +91,7 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
           args.input.model as any,
           args.input.data
         );
-        const doc = await ctx.db.get(id);
+        const doc = await ctx.db.get(args.input.model, id);
         if (!doc) {
           throw new Error(`Failed to create ${args.input.model}`);
         }
@@ -174,10 +174,14 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
           doc
         );
         await ctx.db.patch(
-          doc._id as GenericId<string>,
+          args.input.model,
+          doc._id as GenericId<TableNames>,
           args.input.update as any
         );
-        const updatedDoc = await ctx.db.get(doc._id as GenericId<string>);
+        const updatedDoc = await ctx.db.get(
+          args.input.model,
+          doc._id as GenericId<TableNames>
+        );
         if (!updatedDoc) {
           throw new Error(`Failed to update ${args.input.model}`);
         }
@@ -245,7 +249,8 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
               doc
             );
             await ctx.db.patch(
-              doc._id as GenericId<string>,
+              args.input.model,
+              doc._id as GenericId<TableNames>,
               args.input.update as any
             );
 
@@ -254,7 +259,10 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
                 args.onUpdateHandle as FunctionHandle<"mutation">,
                 {
                   model: args.input.model,
-                  newDoc: await ctx.db.get(doc._id as GenericId<string>),
+                  newDoc: await ctx.db.get(
+                    args.input.model,
+                    doc._id as GenericId<TableNames>
+                  ),
                   oldDoc: doc,
                 }
               );
@@ -286,7 +294,7 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
         if (!doc) {
           return;
         }
-        await ctx.db.delete(doc._id as GenericId<string>);
+        await ctx.db.delete(args.input.model, doc._id as GenericId<TableNames>);
         if (args.onDeleteHandle) {
           await ctx.runMutation(
             args.onDeleteHandle as FunctionHandle<"mutation">,
@@ -330,7 +338,10 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
               }
             );
           }
-          await ctx.db.delete(doc._id as GenericId<string>);
+          await ctx.db.delete(
+            args.input.model,
+            doc._id as GenericId<TableNames>
+          );
         });
         return {
           ...result,
