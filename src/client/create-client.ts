@@ -87,6 +87,27 @@ type RegisterRoutesLazyOptions = {
   cors?: RouteCorsOptions;
 };
 
+const restoreOriginalForwardedHeaders = (request: Request) => {
+  const originalHost = request.headers.get("x-better-auth-forwarded-host");
+  const originalProto = request.headers.get("x-better-auth-forwarded-proto");
+
+  if (!originalHost && !originalProto) {
+    return request;
+  }
+
+  const headers = new Headers(request.headers);
+
+  if (originalHost) {
+    headers.set("x-forwarded-host", originalHost);
+  }
+
+  if (originalProto) {
+    headers.set("x-forwarded-proto", originalProto);
+  }
+
+  return new Request(request, { headers });
+};
+
 /**
  * Backend API for the Better Auth component.
  * Responsible for exposing the `client` and `triggers` APIs to the client, http
@@ -375,7 +396,8 @@ export const createClient = <
           console.log("request headers", request.headers);
         }
         const auth = createAuth(ctx as any);
-        const response = await auth.handler(request);
+        const normalizedRequest = restoreOriginalForwardedHeaders(request);
+        const response = await auth.handler(normalizedRequest);
         if (config?.verbose) {
           // eslint-disable-next-line no-console
           console.log("response headers", response.headers);
@@ -494,7 +516,8 @@ export const createClient = <
           console.log("request headers", request.headers);
         }
         const auth = createAuth(ctx as any);
-        const response = await auth.handler(request);
+        const normalizedRequest = restoreOriginalForwardedHeaders(request);
+        const response = await auth.handler(normalizedRequest);
         if (config?.verbose) {
           // eslint-disable-next-line no-console
           console.log("response headers", response.headers);

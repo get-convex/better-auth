@@ -1,39 +1,8 @@
 import type { BetterAuthClientPlugin, ClientStore } from "better-auth";
+import { parseSetCookieHeader } from "better-auth/cookies";
 import type { BetterFetchOption } from "@better-fetch/fetch";
 import type { crossDomain } from "./index.js";
-
-interface CookieAttributes {
-  value: string;
-  expires?: Date;
-  "max-age"?: number;
-  domain?: string;
-  path?: string;
-  secure?: boolean;
-  httpOnly?: boolean;
-  sameSite?: "Strict" | "Lax" | "None";
-}
-
-export function parseSetCookieHeader(
-  header: string
-): Map<string, CookieAttributes> {
-  const cookieMap = new Map<string, CookieAttributes>();
-  const cookies = header.split(", ");
-  cookies.forEach((cookie) => {
-    const [nameValue, ...attributes] = cookie.split("; ");
-    const [name, value] = nameValue.split("=");
-
-    const cookieObj: CookieAttributes = { value };
-
-    attributes.forEach((attr) => {
-      const [attrName, attrValue] = attr.split("=");
-      cookieObj[attrName.toLowerCase() as "value"] = attrValue;
-    });
-
-    cookieMap.set(name, cookieObj);
-  });
-
-  return cookieMap;
-}
+import { VERSION } from "../../version.js";
 
 interface StoredCookie {
   value: string;
@@ -77,13 +46,10 @@ export function getCookie(cookie: string) {
   } catch {
     // noop
   }
-  const toSend = Object.entries(parsed).reduce((acc, [key, value]) => {
-    if (value.expires && new Date(value.expires) < new Date()) {
-      return acc;
-    }
-    return `${acc}; ${key}=${value.value}`;
-  }, "");
-  return toSend;
+  return Object.entries(parsed)
+    .filter(([, value]) => !value.expires || new Date(value.expires) >= new Date())
+    .map(([key, value]) => `${key}=${value.value}`)
+    .join("; ");
 }
 
 export const crossDomainClient = (
@@ -104,6 +70,7 @@ export const crossDomainClient = (
 
   return {
     id: "cross-domain",
+    version: VERSION,
     $InferServerPlugin: {} as ReturnType<typeof crossDomain>,
     getActions(_, $store) {
       store = $store;
@@ -154,7 +121,13 @@ export const crossDomainClient = (
           if (!sessionData) return null;
           try {
             const parsed = JSON.parse(sessionData);
-            if (parsed && typeof parsed === "object" && Object.keys(parsed).length === 0) return null;
+            if (
+              parsed &&
+              typeof parsed === "object" &&
+              Object.keys(parsed).length === 0
+            ) {
+              return null;
+            }
             return parsed;
           } catch {
             return null;
@@ -164,8 +137,8 @@ export const crossDomainClient = (
     },
     fetchPlugins: [
       {
-        id: "convex",
-        name: "Convex",
+        id: "cross-domain",
+        name: "Cross Domain",
         hooks: {
           async onSuccess(context) {
             if (!storage) {
@@ -256,7 +229,7 @@ export const crossDomainClient = (
               error: null,
               isPending: false,
             });
-            storage.setItem(localCacheName, "{}");
+            await storage.setItem(localCacheName, "{}");
           }
           return {
             url,

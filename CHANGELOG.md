@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.12.0
+
+- feat: support Better Auth 1.6.9+ (#323) @ramonclaudio
+- feat: allow setting basePath for getToken (#308) @amosbastian
+
+## 0.11.5
+
+- Preserve and restore forwarded host headers in framework adapters (#327)
+  @mmailaender
+
 ## 0.11.4
 
 - fix: accept BaseURLConfig type for baseURL option (#310)

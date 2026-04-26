@@ -46,6 +46,10 @@ const handler = (request: Request, siteUrl: string) => {
   const newRequest = new Request(nextUrl, request);
   newRequest.headers.set("accept-encoding", "application/json");
   newRequest.headers.set("host", new URL(siteUrl).host);
+  newRequest.headers.set("x-forwarded-host", requestUrl.host);
+  newRequest.headers.set("x-forwarded-proto", requestUrl.protocol.replace(/:$/, ""));
+  newRequest.headers.set("x-better-auth-forwarded-host", requestUrl.host);
+  newRequest.headers.set("x-better-auth-forwarded-proto", requestUrl.protocol.replace(/:$/, ""));
   return fetch(newRequest, { method: request.method, redirect: "manual" });
 };
 

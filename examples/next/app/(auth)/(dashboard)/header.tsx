@@ -5,7 +5,6 @@ import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { LogOut, Settings } from "lucide-react";
 import { Preloaded } from "convex/react";
-import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { usePreloadedAuthQuery } from "@convex-dev/better-auth/nextjs/client";
 
@@ -44,10 +43,8 @@ export const Header = ({
 }: {
   preloadedUserQuery: Preloaded<typeof api.auth.getCurrentUser>;
 }) => {
-  const router = useRouter();
   const handleSignOut = async () => {
     await authClient.signOut();
-    router.push("/sign-in");
   };
   return (
     <header className="flex items-center justify-between max-w-2xl mx-auto">
