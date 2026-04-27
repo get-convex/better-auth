@@ -17,7 +17,6 @@ import type { Infer } from "convex/values";
 import { convexAdapter } from "./adapter.js";
 import { corsRouter } from "convex-helpers/server/cors";
 import type defaultSchema from "../component/schema.js";
-import type { ComponentApi } from "../component/_generated/component.js";
 import type { CreateAuth, GenericCtx } from "./index.js";
 import type { TrustedOriginsOption } from "../utils/index.js";
 
@@ -70,7 +69,6 @@ type SlimComponentApi = {
     deleteOne: FunctionReference<"mutation", "internal">;
     deleteMany: FunctionReference<"mutation", "internal">;
   };
-  adapterTest?: ComponentApi["adapterTest"];
 };
 
 type RouteCorsOptions =
