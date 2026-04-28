@@ -1893,9 +1893,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
         Name
       >;
     };
-    adapterTest: {
-      runTests: FunctionReference<"action", "internal", any, any, Name>;
-    };
     testProfiles: {
       adapterAdditionalFields: {
         create: FunctionReference<

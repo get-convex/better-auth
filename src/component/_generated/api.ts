@@ -9,7 +9,6 @@
  */
 
 import type * as adapter from "../adapter.js";
-import type * as adapterTest from "../adapterTest.js";
 import type * as testProfiles_adapterAdditionalFields from "../testProfiles/adapterAdditionalFields.js";
 import type * as testProfiles_adapterOrganizationJoins from "../testProfiles/adapterOrganizationJoins.js";
 import type * as testProfiles_adapterPluginTable from "../testProfiles/adapterPluginTable.js";
@@ -26,7 +25,6 @@ import { anyApi, componentsGeneric } from "convex/server";
 
 const fullApi: ApiFromModules<{
   adapter: typeof adapter;
-  adapterTest: typeof adapterTest;
   "testProfiles/adapterAdditionalFields": typeof testProfiles_adapterAdditionalFields;
   "testProfiles/adapterOrganizationJoins": typeof testProfiles_adapterOrganizationJoins;
   "testProfiles/adapterPluginTable": typeof testProfiles_adapterPluginTable;

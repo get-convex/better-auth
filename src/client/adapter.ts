@@ -171,7 +171,6 @@ export const convexAdapter = <
   ctx: Ctx,
   api: {
     adapter: ComponentApi["adapter"];
-    adapterTest?: ComponentApi["adapterTest"];
   },
   config: {
     debugLogs?: DBAdapterDebugLogOption;
