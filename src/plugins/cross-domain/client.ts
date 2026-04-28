@@ -47,7 +47,9 @@ export function getCookie(cookie: string) {
     // noop
   }
   return Object.entries(parsed)
-    .filter(([, value]) => !value.expires || new Date(value.expires) >= new Date())
+    .filter(
+      ([, value]) => !value.expires || new Date(value.expires) >= new Date()
+    )
     .map(([key, value]) => `${key}=${value.value}`)
     .join("; ");
 }
@@ -192,10 +194,17 @@ export const crossDomainClient = (
                 // verifyTotp in cross-domain setups.
                 const prev = storage.getItem(cookieName);
                 try {
-                  const parsed = JSON.parse(prev || "{}") as Record<string, unknown>;
+                  const parsed = JSON.parse(prev || "{}") as Record<
+                    string,
+                    unknown
+                  >;
                   const preserved: Record<string, unknown> = {};
                   for (const [key, val] of Object.entries(parsed)) {
-                    if (!key.includes("session_token") && !key.includes("session_data") && !key.includes("convex_jwt")) {
+                    if (
+                      !key.includes("session_token") &&
+                      !key.includes("session_data") &&
+                      !key.includes("convex_jwt")
+                    ) {
                       preserved[key] = val;
                     }
                   }
