@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.12.1
+
+- fix: set correct Host header in getToken (#348) @zougari47
+- fix: preserve 2FA cookie in crossDomain plugin (#325) @rit3sh-x
+- move adapter test registration out of t.action() into module scope (#351)
+
 ## 0.12.0
 
 - feat: support Better Auth 1.6.9+ (#323) @ramonclaudio
