@@ -137,6 +137,7 @@ export const getToken = async (
   headers: Headers,
   opts?: GetTokenOptions
 ) => {
+  headers.set("host", new URL(siteUrl).host)
   const fetchToken = async () => {
     const basePath = opts?.basePath
       ? (opts.basePath.startsWith("/") ? opts.basePath : `/${opts.basePath}`)
