@@ -47,7 +47,9 @@ export function getCookie(cookie: string) {
     // noop
   }
   return Object.entries(parsed)
-    .filter(([, value]) => !value.expires || new Date(value.expires) >= new Date())
+    .filter(
+      ([, value]) => !value.expires || new Date(value.expires) >= new Date()
+    )
     .map(([key, value]) => `${key}=${value.value}`)
     .join("; ");
 }
@@ -185,7 +187,31 @@ export const crossDomainClient = (
               const data = context.data;
               storage.setItem(localCacheName, JSON.stringify(data));
               if (data === null) {
-                storage.setItem(cookieName, "{}");
+                // Preserve non-session cookies (e.g. two_factor) when
+                // get-session returns null during 2FA pending state.
+                // Previously this unconditionally set cookieName to "{}",
+                // which wiped the two_factor challenge token needed for
+                // verifyTotp in cross-domain setups.
+                const prev = storage.getItem(cookieName);
+                try {
+                  const parsed = JSON.parse(prev || "{}") as Record<
+                    string,
+                    unknown
+                  >;
+                  const preserved: Record<string, unknown> = {};
+                  for (const [key, val] of Object.entries(parsed)) {
+                    if (
+                      !key.includes("session_token") &&
+                      !key.includes("session_data") &&
+                      !key.includes("convex_jwt")
+                    ) {
+                      preserved[key] = val;
+                    }
+                  }
+                  storage.setItem(cookieName, JSON.stringify(preserved));
+                } catch {
+                  storage.setItem(cookieName, "{}");
+                }
               }
             }
           },

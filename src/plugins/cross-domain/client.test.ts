@@ -191,13 +191,10 @@ describe("crossDomainClient", () => {
   });
 
   describe("onSuccess handler", () => {
-    it("clears cookies when get-session returns null", async () => {
-      storage.set(
-        cookieName,
-        JSON.stringify({
-          "better-auth.session_token": { value: "stale", expires: null },
-        })
-      );
+    it("clears session cookies when get-session returns null", async () => {
+      storage.set(cookieName, JSON.stringify({
+        "better-auth.session_token": { value: "stale", expires: null },
+      }));
 
       const onSuccess = getOnSuccessHook();
       await onSuccess({
@@ -207,6 +204,28 @@ describe("crossDomainClient", () => {
       } as any);
 
       expect(storage.get(cookieName)).toBe("{}");
+    });
+
+    it("preserves two_factor cookie when get-session returns null", async () => {
+      storage.set(cookieName, JSON.stringify({
+        "better-auth.session_token": { value: "stale", expires: null },
+        "better-auth.session_data": { value: "data", expires: null },
+        "better-auth.convex_jwt": { value: "jwt", expires: null },
+        "better-auth.two_factor": { value: "2fa-challenge-token", expires: null },
+      }));
+
+      const onSuccess = getOnSuccessHook();
+      await onSuccess({
+        data: null,
+        request: { url: new URL("https://example.com/api/auth/get-session") },
+        response: { headers: new Headers() },
+      } as any);
+
+      const result = JSON.parse(storage.get(cookieName)!);
+      expect(result["better-auth.two_factor"]).toEqual({ value: "2fa-challenge-token", expires: null });
+      expect(result["better-auth.session_token"]).toBeUndefined();
+      expect(result["better-auth.session_data"]).toBeUndefined();
+      expect(result["better-auth.convex_jwt"]).toBeUndefined();
     });
 
     it("preserves cookies when get-session returns data", async () => {
