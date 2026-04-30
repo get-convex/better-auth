@@ -4,6 +4,9 @@ const withMDX = createMDX();
 
 /** @type {import('next').NextConfig} */
 const config = {
+  turbopack: {
+    root: ".",
+  },
   basePath: "/better-auth",
   reactStrictMode: true,
   redirects: async () => {
