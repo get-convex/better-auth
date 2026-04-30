@@ -17,15 +17,15 @@
     "react-dom": "^19.2.3"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "4.1.13",
+    "@tailwindcss/postcss": "4.2.4",
     "@types/mdx": "2.0.13",
     "@types/node": "24.12.2",
-    "@types/react": "19.2.7",
+    "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "eslint": "10.2.1",
     "eslint-config-next": "16.2.4",
-    "postcss": "8.5.6",
-    "tailwindcss": "4.1.13",
-    "typescript": "5.9.2"
+    "postcss": "8.5.12",
+    "tailwindcss": "4.2.4",
+    "typescript": "5.9.3"
   }
 }
