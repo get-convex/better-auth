@@ -8,7 +8,9 @@ export const sessionOnCreateUpdater = internalMutationGeneric({
   args: { doc: v.any(), model: v.string() },
   handler: async (ctx, args) => {
     if (args.model === "session") {
-      await ctx.db.patch(args.doc._id, { userAgent: "trigger-ran-on-create" });
+      await ctx.db.patch("session", args.doc._id, {
+        userAgent: "trigger-ran-on-create",
+      });
     }
   },
 });
@@ -17,7 +19,7 @@ export const sessionOnUpdateUpdater = internalMutationGeneric({
   args: { newDoc: v.any(), oldDoc: v.any(), model: v.string() },
   handler: async (ctx, args) => {
     if (args.model === "session") {
-      await ctx.db.patch(args.newDoc._id, {
+      await ctx.db.patch("session", args.newDoc._id, {
         userAgent: "trigger-ran-on-update",
       });
     }

@@ -102,7 +102,7 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
               doc,
             }
           );
-          const updatedDoc = await ctx.db.get(id);
+          const updatedDoc = await ctx.db.get(args.input.model, id);
           if (!updatedDoc) {
             throw new Error(
               `Failed to create ${args.input.model} (deleted by onCreate trigger?)`
@@ -200,7 +200,8 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
             }
           );
           const innerUpdatedDoc = await ctx.db.get(
-            doc._id as GenericId<string>
+            args.input.model,
+            doc._id as GenericId<TableNames>
           );
           if (!innerUpdatedDoc) {
             throw new Error(
