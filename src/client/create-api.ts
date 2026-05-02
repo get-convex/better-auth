@@ -55,9 +55,7 @@ const whereValidator = (
       v.null()
     ),
     connector: v.optional(v.union(v.literal("AND"), v.literal("OR"))),
-    mode: v.optional(
-      v.union(v.literal("sensitive"), v.literal("insensitive"))
-    ),
+    mode: v.optional(v.union(v.literal("sensitive"), v.literal("insensitive"))),
   });
 
 export const createApi = <Schema extends SchemaDefinition<any, any>>(
@@ -104,6 +102,13 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
               doc,
             }
           );
+          const updatedDoc = await ctx.db.get(id);
+          if (!updatedDoc) {
+            throw new Error(
+              `Failed to create ${args.input.model} (deleted by onCreate trigger?)`
+            );
+          }
+          return selectFields(updatedDoc, args.select);
         }
         return result;
       },
@@ -194,6 +199,15 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
               oldDoc: doc,
             }
           );
+          const innerUpdatedDoc = await ctx.db.get(
+            doc._id as GenericId<string>
+          );
+          if (!innerUpdatedDoc) {
+            throw new Error(
+              `Failed to update ${args.input.model} (deleted by onUpdate trigger?)`
+            );
+          }
+          return innerUpdatedDoc;
         }
         return updatedDoc;
       },
