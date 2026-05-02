@@ -5,7 +5,6 @@ import { convexTest } from "convex-test";
 import {
   testAdapter,
   transactionsTestSuite,
-  uuidTestSuite,
 } from "@better-auth/test-utils/adapter";
 import type { BetterAuthOptions } from "better-auth";
 import { internal } from "../component/_generated/api.js";
@@ -74,15 +73,8 @@ const NORMAL_DISABLED_TESTS = [
   "findOne - should work with both one-to-one and one-to-many joins",
 ] as const;
 
-const UUID_SUITE_TESTS = ["init - tests"] as const;
-
 const toDisableMap = (testNames: readonly string[]) =>
   Object.fromEntries(testNames.map((testName) => [testName, true]));
-
-const toEnableOnlyMap = (testNames: readonly string[]) => ({
-  ALL: true,
-  ...Object.fromEntries(testNames.map((testName) => [testName, false])),
-});
 
 const getOverrideBetterAuthOptions = (
   opts: BetterAuthOptions
@@ -113,10 +105,7 @@ type InternalWithTestProfiles = {
 
 if (currentNodeMajor < MIN_NODE_MAJOR) {
   describe("Better Auth Adapter Tests", () => {
-    it.skip(
-      `requires Node ${MIN_NODE_MAJOR}+ (adapter test-utils uses explicit resource management syntax)`,
-      () => {}
-    );
+    it.skip(`requires Node ${MIN_NODE_MAJOR}+ (adapter test-utils uses explicit resource management syntax)`, () => {});
   });
 } else {
   describe("Better Auth Adapter Tests", async () => {
@@ -178,9 +167,6 @@ if (currentNodeMajor < MIN_NODE_MAJOR) {
         coreNormalTestSuite({
           disableTests: toDisableMap(NORMAL_DISABLED_TESTS),
         }),
-        uuidTestSuite({
-          disableTests: toEnableOnlyMap(UUID_SUITE_TESTS),
-        }),
         transactionsTestSuite({ disableTests: { ALL: true } }),
         coreAuthFlowTestSuite(),
         convexCustomTestSuite(),
@@ -238,12 +224,12 @@ if (currentNodeMajor < MIN_NODE_MAJOR) {
       tests: [multiJoinsMissingRowsTestSuite()],
     });
 
-    await executeBaseProfile();
-    await executeAdditionalFieldsProfile();
-    await executePluginTableProfile();
-    await executeRenameFieldProfile();
-    await executeRenameUserCustomProfile();
-    await executeRenameUserTableProfile();
-    await executeOrganizationJoinsProfile();
+    executeBaseProfile();
+    executeAdditionalFieldsProfile();
+    executePluginTableProfile();
+    executeRenameFieldProfile();
+    executeRenameUserCustomProfile();
+    executeRenameUserTableProfile();
+    executeOrganizationJoinsProfile();
   });
 }
