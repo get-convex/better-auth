@@ -15,7 +15,7 @@ import type * as testProfiles_adapterPluginTable from "../testProfiles/adapterPl
 import type * as testProfiles_adapterRenameField from "../testProfiles/adapterRenameField.js";
 import type * as testProfiles_adapterRenameUserCustom from "../testProfiles/adapterRenameUserCustom.js";
 import type * as testProfiles_adapterRenameUserTable from "../testProfiles/adapterRenameUserTable.js";
-import type * as testProfiles_triggerHandlers from "../testProfiles/triggerHandlers.js";
+import type * as testTriggerHandlers from "../testTriggerHandlers.js";
 
 import type {
   ApiFromModules,
@@ -32,7 +32,7 @@ const fullApi: ApiFromModules<{
   "testProfiles/adapterRenameField": typeof testProfiles_adapterRenameField;
   "testProfiles/adapterRenameUserCustom": typeof testProfiles_adapterRenameUserCustom;
   "testProfiles/adapterRenameUserTable": typeof testProfiles_adapterRenameUserTable;
-  "testProfiles/triggerHandlers": typeof testProfiles_triggerHandlers;
+  testTriggerHandlers: typeof testTriggerHandlers;
 }> = anyApi as any;
 
 /**

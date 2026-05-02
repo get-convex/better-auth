@@ -14,12 +14,12 @@ const baseSessionData = () => ({
   userAgent: "original",
 });
 
-describe("trigger result propagation (issue #291)", () => {
+describe("trigger result propagation", () => {
   it("api.adapter.create returns the doc reflecting onCreateHandle writes", async () => {
     const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
     const result = await t.run(async (ctx) => {
       const handle = await createFunctionHandle(
-        internal.testProfiles.triggerHandlers.sessionOnCreateUpdater
+        internal.testTriggerHandlers.sessionOnCreateUpdater
       );
       return await ctx.runMutation(api.adapter.create, {
         input: {
@@ -42,7 +42,7 @@ describe("trigger result propagation (issue #291)", () => {
         },
       });
       const handle = await createFunctionHandle(
-        internal.testProfiles.triggerHandlers.sessionOnUpdateUpdater
+        internal.testTriggerHandlers.sessionOnUpdateUpdater
       );
       return await ctx.runMutation(api.adapter.updateOne, {
         input: {
