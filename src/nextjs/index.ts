@@ -40,17 +40,36 @@ const parseConvexSiteUrl = (url: string) => {
   return url;
 };
 
-const handler = (request: Request, siteUrl: string) => {
+const handler = async (request: Request, siteUrl: string) => {
   const requestUrl = new URL(request.url);
   const nextUrl = `${siteUrl}${requestUrl.pathname}${requestUrl.search}`;
-  const newRequest = new Request(nextUrl, request);
-  newRequest.headers.set("accept-encoding", "application/json");
-  newRequest.headers.set("host", new URL(siteUrl).host);
-  newRequest.headers.set("x-forwarded-host", requestUrl.host);
-  newRequest.headers.set("x-forwarded-proto", requestUrl.protocol.replace(/:$/, ""));
-  newRequest.headers.set("x-better-auth-forwarded-host", requestUrl.host);
-  newRequest.headers.set("x-better-auth-forwarded-proto", requestUrl.protocol.replace(/:$/, ""));
-  return fetch(newRequest, { method: request.method, redirect: "manual" });
+
+  const headers = new Headers(request.headers);
+  // Strip hop-by-hop headers; undici rejects outbound `transfer-encoding: chunked`.
+  headers.delete("transfer-encoding");
+  headers.delete("content-length");
+  headers.delete("connection");
+  headers.set("accept-encoding", "application/json");
+  headers.set("host", new URL(siteUrl).host);
+  headers.set("x-forwarded-host", requestUrl.host);
+  headers.set("x-forwarded-proto", requestUrl.protocol.replace(/:$/, ""));
+  headers.set("x-better-auth-forwarded-host", requestUrl.host);
+  headers.set("x-better-auth-forwarded-proto", requestUrl.protocol.replace(/:$/, ""));
+
+  const init: RequestInit = {
+    headers,
+    method: request.method,
+    redirect: "manual",
+  };
+
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    const body = await request.arrayBuffer();
+    if (body.byteLength > 0) {
+      init.body = body;
+    }
+  }
+
+  return fetch(nextUrl, init);
 };
 
 const nextJsHandler = (siteUrl: string) => ({
