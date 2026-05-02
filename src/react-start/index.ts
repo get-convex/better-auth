@@ -63,6 +63,11 @@ const handler = (request: Request, opts: { convexSiteUrl: string }) => {
   const requestUrl = new URL(request.url);
   const nextUrl = `${opts.convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
   const headers = new Headers(request.headers);
+  // Strip hop-by-hop headers inherited from the incoming request; undici
+  // rejects an outbound `transfer-encoding: chunked` header value.
+  headers.delete("transfer-encoding");
+  headers.delete("content-length");
+  headers.delete("connection");
   headers.set("accept-encoding", "application/json");
   headers.set("host", new URL(opts.convexSiteUrl).host);
   headers.set("x-forwarded-host", requestUrl.host);
