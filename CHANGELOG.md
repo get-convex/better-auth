@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.12.2
+
+- fix: strip hop-by-hop headers in framework proxy handlers (#360) @CipherSight
+- fix: pass through trigger results from create/update (#358)
+
 ## 0.12.1
 
 - fix: set correct Host header in getToken (#348) @zougari47
