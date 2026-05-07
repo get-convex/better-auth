@@ -127,30 +127,34 @@ function useUseAuthFromBetterAuth(
           }
         }, [session, isSessionPending]);
         const fetchAccessToken = useCallback(
-          async ({
+          ({
             forceRefreshToken = false,
           }: { forceRefreshToken?: boolean } = {}) => {
-            if (cachedToken && !forceRefreshToken) {
-              return cachedToken;
-            }
-            if (!forceRefreshToken && pendingTokenRef.current) {
-              return pendingTokenRef.current;
-            }
-            pendingTokenRef.current = authClient.convex
-              .token({ fetchOptions: { throw: false } })
-              .then(({ data }) => {
-                const token = data?.token || null;
-                setCachedToken(token);
-                return token;
-              })
-              .catch(() => {
-                setCachedToken(null);
-                return null;
-              })
-              .finally(() => {
-                pendingTokenRef.current = null;
-              });
-            return pendingTokenRef.current;
+            return new Promise<string | null>((resolve, reject) => {
+              if (cachedToken && !forceRefreshToken) {
+                resolve(cachedToken);
+                return;
+              }
+              if (!forceRefreshToken && pendingTokenRef.current) {
+                pendingTokenRef.current.then(resolve, reject);
+                return;
+              }
+              pendingTokenRef.current = authClient.convex
+                .token({ fetchOptions: { throw: false } })
+                .then(({ data }) => {
+                  const token = data?.token || null;
+                  setCachedToken(token);
+                  return token;
+                })
+                .catch(() => {
+                  setCachedToken(null);
+                  return null;
+                })
+                .finally(() => {
+                  pendingTokenRef.current = null;
+                });
+              pendingTokenRef.current.then(resolve, reject);
+            });
           },
           // Build a new fetchAccessToken to trigger setAuth() whenever the
           // session changes.
