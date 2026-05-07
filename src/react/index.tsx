@@ -127,9 +127,12 @@ function useUseAuthFromBetterAuth(
           }
         }, [session, isSessionPending]);
         const fetchAccessToken = useCallback(
-          async ({
-            forceRefreshToken = false,
-          }: { forceRefreshToken?: boolean } = {}) => {
+          // Hermes V1 (RN 0.85 / Expo SDK 56) miscompiles async fns with
+          // non-simple params: await resolves to undefined, so isAuthenticated
+          // never flips true. Plain-identifier param keeps params simple.
+          // Drop when bundled Hermes ships facebook/hermes#2030/#2045/#2046.
+          async (opts?: { forceRefreshToken?: boolean }) => {
+            const forceRefreshToken = opts?.forceRefreshToken ?? false;
             if (cachedToken && !forceRefreshToken) {
               return cachedToken;
             }
