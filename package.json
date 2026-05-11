@@ -121,7 +121,7 @@
     "better-auth": "1.6.9",
     "chokidar-cli": "3.0.0",
     "concurrently": "9.2.1",
-    "convex": "1.37.0",
+    "convex": "1.38.0",
     "convex-test": "0.0.51",
     "eslint": "9.39.4",
     "eslint-plugin-import": "2.32.0",
