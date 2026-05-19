@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+- feat: migrate the Convex plugin from Better Auth's deprecated
+  `oidc-provider` integration to `@better-auth/oauth-provider`.
+- feat: add Convex-friendly MCP helper exports:
+  `withMcpAuth`, `oAuthDiscoveryMetadata`, and
+  `oAuthProtectedResourceMetadata`.
+- feat: expose OAuth/OIDC discovery routes and `WWW-Authenticate` CORS headers
+  for MCP/OAuth clients.
+- chore: pin `better-auth` and `@better-auth/oauth-provider` to `1.6.11`.
+
+Migration notes:
+
+- Regenerate local Better Auth schemas after upgrading.
+- Existing `oauthApplication` / legacy `oidcApplication` rows must be migrated
+  to the new `oauthClient` table shape. Existing OAuth access and refresh
+  tokens should be invalidated and clients should reauthorize.
+- Configure first-party clients that need seamless authorization with
+  `skip_consent: true`; configure clients that need RP-initiated logout with
+  `enable_end_session: true` and `post_logout_redirect_uris`.
+- Set a stable Convex environment variable for `pairwiseSecret` before enabling
+  pairwise subject identifiers. Rotating this secret changes pairwise `sub`
+  values.
+
 ## 0.12.2
 
 - fix: strip hop-by-hop headers in framework proxy handlers (#360) @CipherSight

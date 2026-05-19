@@ -1,0 +1,84 @@
+---
+title: Migrate to OAuth Provider
+description: Move existing OIDC provider data to @better-auth/oauth-provider.
+---
+
+# Migrate to OAuth Provider
+
+This release replaces Better Auth's deprecated `oidc-provider` plugin with
+`@better-auth/oauth-provider`. The new provider keeps Convex as the OAuth/OIDC
+issuer and adds Dynamic Client Registration, OAuth 2.1 metadata, pairwise
+subjects, RP-initiated logout, and MCP helper support.
+
+## 1. Upgrade packages
+
+Use the pinned versions documented by this component:
+
+```bash
+npm install better-auth@1.6.11 @better-auth/oauth-provider@1.6.11
+```
+
+## 2. Regenerate schema
+
+If you use Local Install, regenerate your Better Auth schema:
+
+```bash
+npx auth generate
+```
+
+The old provider tables are replaced by:
+
+- `oauthClient`
+- `oauthRefreshToken`
+- `oauthAccessToken` with the new oauth-provider shape
+- `oauthConsent` with array `scopes`
+
+## 3. Migrate clients
+
+Migrate rows from `oauthApplication` (or older fork tables named
+`oidcApplication`) to `oauthClient`:
+
+- `clientId` -> `clientId`
+- `clientSecret` -> `clientSecret`
+- `redirectUrls` -> `redirectUris` as a string array
+- `name`, `icon`, `metadata`, `disabled`, `userId`, `createdAt`, `updatedAt`
+  -> matching fields
+- public/native clients should use `tokenEndpointAuthMethod: "none"` and
+  `public: true`
+- first-party clients should usually set `skipConsent: true`
+- clients that use RP-initiated logout must set `enableEndSession: true` and
+  `postLogoutRedirectUris`
+
+Existing OAuth access and refresh tokens should be invalidated. The new
+provider stores tokens differently and separates refresh tokens into
+`oauthRefreshToken`, so users should reauthorize clients after migration.
+
+## 4. Configure provider options
+
+```ts
+convex({
+  authConfig,
+  oauthProvider: {
+    loginPage: `${process.env.SITE_URL}/sign-in`,
+    consentPage: `${process.env.SITE_URL}/oauth/consent`,
+    allowDynamicClientRegistration: true,
+    allowUnauthenticatedClientRegistration: true,
+    pairwiseSecret: process.env.OAUTH_PAIRWISE_SECRET,
+  },
+});
+```
+
+Store `pairwiseSecret` in Convex environment variables and keep it stable.
+Rotating it changes pairwise `sub` values for relying parties.
+
+## 5. Update discovery and MCP clients
+
+`registerRoutes()` now exposes root-level OAuth/OIDC discovery routes and CORS
+exposes `WWW-Authenticate`. MCP clients should discover via:
+
+- `/.well-known/oauth-protected-resource`
+- `/.well-known/oauth-authorization-server`
+
+Use `withMcpAuth`, `oAuthDiscoveryMetadata`, and
+`oAuthProtectedResourceMetadata` from `@convex-dev/better-auth/plugins` for
+custom MCP HTTP routes.

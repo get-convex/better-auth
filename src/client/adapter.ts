@@ -269,7 +269,7 @@ export const convexAdapter = <
                 )) as FunctionHandle<"mutation">)
               : undefined;
           return ctx.runMutation(api.adapter.create, {
-            input: { model: model as any, data },
+            input: { model: model as any, data: data as any },
             select,
             onCreateHandle: onCreateHandle,
           });

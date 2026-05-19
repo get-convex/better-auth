@@ -21,7 +21,22 @@ export const indexFields = {
   session: ["expiresAt", ["expiresAt", "userId"]],
   verification: ["expiresAt", "identifier"],
   user: [["email", "name"], "name", "userId"],
-  oauthConsent: [["clientId", "userId"]],
+  oauthClient: ["clientId", "userId", "referenceId"],
+  oauthRefreshToken: ["token", "clientId", "sessionId", "userId", "referenceId"],
+  oauthAccessToken: [
+    "token",
+    "clientId",
+    "sessionId",
+    "userId",
+    "refreshId",
+    "referenceId",
+  ],
+  oauthConsent: [
+    ["clientId", "userId"],
+    ["clientId", "userId", "referenceId"],
+    "userId",
+    "referenceId",
+  ],
 };
 
 // Return map of unique, sortable, and reference fields
@@ -167,7 +182,7 @@ export const tables = {
       mergedIndexFields(tables)[
         tableKey as keyof typeof mergedIndexFields
       ]?.map((index) => {
-        const indexArray = Array.isArray(index) ? index.sort() : [index];
+        const indexArray = Array.isArray(index) ? index : [index];
         const indexName = indexArray.join("_");
         return `.index("${indexName}", ${JSON.stringify(indexArray)})`;
       }) || [];

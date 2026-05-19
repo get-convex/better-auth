@@ -1,5 +1,7 @@
 import type { BetterAuthPlugin, Session, User } from "better-auth";
 import type { BetterAuthOptions } from "better-auth/minimal";
+import { oauthProvider as oauthProviderPlugin } from "@better-auth/oauth-provider";
+import type { OAuthOptions, Scope } from "@better-auth/oauth-provider";
 import {
   createAuthEndpoint,
   createAuthMiddleware,
@@ -8,7 +10,6 @@ import {
 import { bearer as bearerPlugin } from "better-auth/plugins/bearer";
 import { jwt as jwtPlugin } from "better-auth/plugins/jwt";
 import type { JwtOptions, Jwk } from "better-auth/plugins/jwt";
-import { oidcProvider as oidcProviderPlugin } from "better-auth/plugins/oidc-provider";
 import { omit } from "convex-helpers";
 import type { AuthConfig, AuthProvider } from "convex/server";
 import { VERSION } from "../../version.js";
@@ -18,15 +19,40 @@ export const JWT_COOKIE_NAME = "convex_jwt";
 type BetterAuthAfterHooks = NonNullable<
   NonNullable<BetterAuthPlugin["hooks"]>["after"]
 >;
+type BetterAuthBeforeHooks = NonNullable<
+  NonNullable<BetterAuthPlugin["hooks"]>["before"]
+>;
 type BetterAuthAfterHook = BetterAuthAfterHooks[number];
+type BetterAuthBeforeHook = BetterAuthBeforeHooks[number];
 type BetterAuthHookContext = Parameters<BetterAuthAfterHook["matcher"]>[0];
 
+const normalizeBeforeHooks = <THook extends BetterAuthBeforeHook>(
+  hooks: THook[] = []
+): BetterAuthBeforeHooks => {
+  return hooks.map((hook) => ({
+    ...hook,
+    matcher: (ctx: BetterAuthHookContext) => {
+      try {
+        return Boolean(hook.matcher(ctx));
+      } catch {
+        return false;
+      }
+    },
+  }));
+};
+
 const normalizeAfterHooks = <THook extends BetterAuthAfterHook>(
-  hooks: THook[]
+  hooks: THook[] = []
 ): BetterAuthAfterHooks => {
   return hooks.map((hook) => ({
     ...hook,
-    matcher: (ctx: BetterAuthHookContext) => Boolean(hook.matcher(ctx)),
+    matcher: (ctx: BetterAuthHookContext) => {
+      try {
+        return Boolean(hook.matcher(ctx));
+      } catch {
+        return false;
+      }
+    },
   }));
 };
 
@@ -73,6 +99,26 @@ const parseAuthConfig = (authConfig: AuthConfig, opts: { jwks?: string }) => {
   }
   return providerConfig;
 };
+
+type ConvexOAuthProviderOptions = Partial<
+  Omit<OAuthOptions<Scope[]>, "disableJwtPlugin" | "schema">
+>;
+
+const normalizeBasePath = (basePath?: string) =>
+  !basePath || basePath === "/" ? "" : basePath;
+
+const withConvexSiteBaseURL = <TCtx extends { context: { baseURL?: string } }>(
+  ctx: TCtx,
+  basePath?: string
+): TCtx => ({
+  ...ctx,
+  context: {
+    ...ctx.context,
+    baseURL: process.env.CONVEX_SITE_URL
+      ? `${process.env.CONVEX_SITE_URL}${normalizeBasePath(basePath)}`
+      : ctx.context.baseURL,
+  },
+});
 
 export const convex = (opts: {
   /**
@@ -170,20 +216,19 @@ export const convex = (opts: {
   jwksRotateOnTokenGenerationError?: boolean;
   /**
    * @param {BetterAuthOptions} options - Better Auth options. Not required,
-   * currently used to pass the basePath to the oidcProvider plugin.
+   * currently used to pass the basePath to the oauthProvider plugin.
    */
   options?: BetterAuthOptions;
+  /**
+   * OAuth 2.1 / OIDC authorization server configuration.
+   *
+   * The Convex plugin provides the required jwt plugin integration
+   * internally, so do not set disableJwtPlugin here.
+   */
+  oauthProvider?: ConvexOAuthProviderOptions;
 }) => {
   const jwtExpirationSeconds =
     opts.jwt?.expirationSeconds ?? opts.jwtExpirationSeconds ?? 60 * 15;
-  const oidcProvider = oidcProviderPlugin({
-    loginPage: "/not-used",
-    metadata: {
-      issuer: `${process.env.CONVEX_SITE_URL}`,
-      jwks_uri: `${process.env.CONVEX_SITE_URL}${opts.options?.basePath ?? "/api/auth"}/convex/jwks`,
-    },
-    __skipDeprecationWarning: true,
-  });
   const providerConfig = parseAuthConfig(opts.authConfig, opts);
 
   const jwtOptions = {
@@ -242,6 +287,33 @@ export const convex = (opts: {
       },
     },
   });
+  const oauthProviderOptions = opts.oauthProvider ?? {};
+  const oauthProvider = oauthProviderPlugin({
+    loginPage: oauthProviderOptions.loginPage ?? "/not-used",
+    consentPage: oauthProviderOptions.consentPage ?? "/oauth2/consent",
+    allowDynamicClientRegistration:
+      oauthProviderOptions.allowDynamicClientRegistration ?? false,
+    allowUnauthenticatedClientRegistration:
+      oauthProviderOptions.allowUnauthenticatedClientRegistration ?? false,
+    ...oauthProviderOptions,
+    disableJwtPlugin: false,
+    silenceWarnings: {
+      oauthAuthServerConfig: true,
+      openidConfig: true,
+      ...oauthProviderOptions.silenceWarnings,
+    },
+  });
+  const {
+    getOpenIdConfig: oauthProviderGetOpenIdConfig,
+    getOAuthServerConfig: oauthProviderGetOAuthServerConfig,
+    ...oauthProviderEndpoints
+  } = oauthProvider.endpoints;
+  const getOAuthProviderBasePath = (ctx?: {
+    context?: { options?: { basePath?: string } };
+  }) => ctx?.context?.options?.basePath ?? opts.options?.basePath ?? "/api/auth";
+  const publicOptions: Record<string, any> = {
+    oauthProvider: oauthProvider.options,
+  };
   // Bearer plugin converts the session token to a cookie
   // for cross domain social login after code verification,
   // and is required for the headers() helper to work.
@@ -250,14 +322,29 @@ export const convex = (opts: {
     user: {
       fields: { userId: { type: "string", required: false, input: false } },
     } as const,
+    ...oauthProvider.schema,
     ...jwt.schema,
   };
 
   return {
     id: "convex",
     version: VERSION,
-    init: (ctx) => {
+    options: publicOptions,
+    init: async (ctx) => {
       const { options, logger: _logger } = ctx;
+      const getPlugin = ((pluginId: string) => {
+        if (pluginId === "jwt") {
+          return jwt;
+        }
+        if (pluginId === "oauth-provider") {
+          return oauthProvider;
+        }
+        return ctx.getPlugin(pluginId as any);
+      }) as typeof ctx.getPlugin;
+      await oauthProvider.init?.({
+        ...ctx,
+        getPlugin,
+      } as any);
       if (options.basePath !== "/api/auth" && !opts.options?.basePath) {
         // eslint-disable-next-line no-console
         console.warn(
@@ -273,9 +360,11 @@ export const convex = (opts: {
           `Better Auth basePath ${options.basePath} does not match Convex plugin basePath ${opts.options?.basePath}. This is probably a mistake.`
         );
       }
+      return { context: { getPlugin } };
     },
     hooks: {
       before: [
+        ...normalizeBeforeHooks(oauthProvider.hooks.before),
         ...bearer.hooks.before,
         // In query context, no writes can succeed. No-op adapter write
         // methods and session refresh to prevent errors from fire-and-forget
@@ -314,7 +403,7 @@ export const convex = (opts: {
         },
       ],
       after: [
-        ...normalizeAfterHooks(oidcProvider.hooks.after),
+        ...normalizeAfterHooks(oauthProvider.hooks.after),
         {
           matcher: (ctx) => {
             return Boolean(
@@ -360,6 +449,7 @@ export const convex = (opts: {
           matcher: (ctx) => {
             return Boolean(
               ctx.path?.startsWith("/sign-out") ||
+                ctx.path?.startsWith("/oauth2/end-session") ||
                 ctx.path?.startsWith("/delete-user") ||
                 (ctx.path?.startsWith("/get-session") && !ctx.context.session)
             );
@@ -374,6 +464,43 @@ export const convex = (opts: {
       ],
     },
     endpoints: {
+      ...oauthProviderEndpoints,
+      oauthProviderGetOpenIdConfig: createAuthEndpoint(
+        "/.well-known/openid-configuration",
+        {
+          method: "GET",
+          metadata: {
+            isAction: false,
+          },
+        },
+        async (ctx) => {
+          const response = await oauthProviderGetOpenIdConfig({
+            ...withConvexSiteBaseURL(ctx, getOAuthProviderBasePath(ctx)),
+            asResponse: false,
+            returnHeaders: false,
+            returnStatus: false,
+          });
+          return response;
+        }
+      ),
+      oauthProviderGetOAuthServerConfig: createAuthEndpoint(
+        "/.well-known/oauth-authorization-server",
+        {
+          method: "GET",
+          metadata: {
+            isAction: false,
+          },
+        },
+        async (ctx) => {
+          const response = await oauthProviderGetOAuthServerConfig({
+            ...withConvexSiteBaseURL(ctx, getOAuthProviderBasePath(ctx)),
+            asResponse: false,
+            returnHeaders: false,
+            returnStatus: false,
+          });
+          return response;
+        }
+      ),
       getOpenIdConfig: createAuthEndpoint(
         "/convex/.well-known/openid-configuration",
         {
@@ -384,7 +511,45 @@ export const convex = (opts: {
           // TODO: properly type this
         },
         async (ctx) => {
-          const response = await oidcProvider.endpoints.getOpenIdConfig({
+          const response = await oauthProviderGetOpenIdConfig({
+            ...withConvexSiteBaseURL(ctx, getOAuthProviderBasePath(ctx)),
+            asResponse: false,
+            returnHeaders: false,
+            returnStatus: false,
+          });
+          return response;
+        }
+      ),
+      getOAuthServerConfig: createAuthEndpoint(
+        "/convex/.well-known/oauth-authorization-server",
+        {
+          method: "GET",
+          metadata: {
+            isAction: false,
+          },
+        },
+        async (ctx) => {
+          const response = await oauthProviderGetOAuthServerConfig({
+            ...withConvexSiteBaseURL(ctx, getOAuthProviderBasePath(ctx)),
+            asResponse: false,
+            returnHeaders: false,
+            returnStatus: false,
+          });
+          return response;
+        }
+      ),
+      getRootJwks: createAuthEndpoint(
+        "/jwks",
+        {
+          method: "GET",
+          metadata: {
+            openapi: {
+              description: "Get the JSON Web Key Set",
+            },
+          },
+        },
+        async (ctx) => {
+          const response = await jwt.endpoints.getJwks({
             ...ctx,
             asResponse: false,
             returnHeaders: false,

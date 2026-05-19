@@ -15,6 +15,9 @@ const AdmZip = require("adm-zip");
 
 const backendCloudPort = 3210;
 const backendSitePort = 3211;
+const instanceName = "anonymous-react";
+const instanceSecret =
+  "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 const parsedUrl = new URL(`http://127.0.0.1:${backendCloudPort}`);
 
 function logToStderr(...args) {
@@ -137,7 +140,16 @@ async function downloadAndStartBackend() {
   chmodSync(binaryPath, 0o755);
   return spawn(
     binaryPath,
-    ["--port", String(backendCloudPort), "--site-proxy-port", String(backendSitePort)],
+    [
+      "--port",
+      String(backendCloudPort),
+      "--site-proxy-port",
+      String(backendSitePort),
+      "--instance-secret",
+      instanceSecret,
+      "--instance-name",
+      instanceName,
+    ],
     { env: { CONVEX_TRACE_FILE: "1" } },
   );
 }

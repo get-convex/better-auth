@@ -29,6 +29,20 @@ management features.
 Allow users to sign in with their accounts, including GitHub, Google, Discord,
 Twitter, and more.
 
+### OAuth 2.1 / OIDC provider
+
+**Serve OAuth and OIDC from Convex.**
+
+The Convex plugin uses `@better-auth/oauth-provider` to expose OAuth 2.1 and
+OIDC endpoints from your Convex HTTP deployment, including Dynamic Client
+Registration, `/oauth2/userinfo`, RP-initiated logout, and MCP discovery helper
+exports.
+
+This package pins the provider integration to `better-auth@1.6.11` and
+`@better-auth/oauth-provider@1.6.11`. Keep those versions aligned when
+upgrading. Static JWKS remains supported and recommended for fast Convex
+WebSocket identity validation.
+
 ### Two Factor
 
 **Multi Factor Authentication.**
