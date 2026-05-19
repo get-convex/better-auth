@@ -12,10 +12,7 @@ export async function getLLMText(page: (typeof source)["$inferPage"]) {
 }
 
 function stripDropMarkers(text: string): string {
-  return text
-    .split("\n")
-    .filter((line) => !/^\s*​+\s*$/.test(line))
-    .join("\n");
+  return text.replace(/​+/g, "").replace(/^[ \t]+$/gm, "");
 }
 
 function collapseBlankLines(text: string): string {

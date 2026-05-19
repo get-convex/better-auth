@@ -52,8 +52,12 @@ export function CopyMarkdownButton({ mdUrl }: Props) {
       : `${window.location.origin}${mdUrl}`;
 
   const handleCopyLink = async () => {
-    await navigator.clipboard.writeText(fullUrl());
-    flash(setLinkCopied, () => setOpen(false));
+    try {
+      await navigator.clipboard.writeText(fullUrl());
+      flash(setLinkCopied, () => setOpen(false));
+    } catch {
+      setOpen(false);
+    }
   };
 
   const handleOpenLink = () => {
