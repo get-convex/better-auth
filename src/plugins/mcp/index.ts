@@ -17,13 +17,26 @@ type WithMcpAuthOptions = {
 const exposeAuthenticateHeader = (response: Response) => {
   if (
     response.status !== 401 ||
-    !response.headers.has("WWW-Authenticate") ||
-    response.headers.has("Access-Control-Expose-Headers")
+    !response.headers.has("WWW-Authenticate")
   ) {
     return response;
   }
   const headers = new Headers(response.headers);
-  headers.set("Access-Control-Expose-Headers", "WWW-Authenticate");
+  const exposeHeader = "Access-Control-Expose-Headers";
+  const authenticateHeader = "WWW-Authenticate";
+  const exposedHeaders =
+    headers
+      .get(exposeHeader)
+      ?.split(",")
+      .map((header) => header.trim())
+      .filter(Boolean) ?? [];
+  const hasAuthenticateHeader = exposedHeaders.some(
+    (header) => header.toLowerCase() === authenticateHeader.toLowerCase()
+  );
+  if (!hasAuthenticateHeader) {
+    exposedHeaders.push(authenticateHeader);
+  }
+  headers.set(exposeHeader, exposedHeaders.join(", "));
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,

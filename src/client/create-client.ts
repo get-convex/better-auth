@@ -115,11 +115,16 @@ const jsonResponse = (body: Record<string, unknown>) =>
     },
   });
 
-const protectedResourceMetadata = (resourcePath: string) => {
+const getConvexSiteUrl = () => {
   const siteUrl = process.env.CONVEX_SITE_URL;
   if (!siteUrl) {
     throw new Error("CONVEX_SITE_URL is not set");
   }
+  return siteUrl;
+};
+
+const protectedResourceMetadata = (resourcePath: string) => {
+  const siteUrl = getConvexSiteUrl();
   const resource =
     resourcePath === "/" ? siteUrl : `${siteUrl}${resourcePath}`;
   return {
@@ -151,7 +156,7 @@ const registerWellKnownRoutes = (http: HttpRouter, path: string) => {
   const authPath = path === "/" ? "" : path;
   const protectedResourceRoute = "/.well-known/oauth-protected-resource";
   routeIfMissing(http, "/.well-known/openid-configuration", () => {
-    const url = `${process.env.CONVEX_SITE_URL}${authPath}/convex/.well-known/openid-configuration`;
+    const url = `${getConvexSiteUrl()}${authPath}/convex/.well-known/openid-configuration`;
     return Response.redirect(url);
   });
   if (issuerPath) {
@@ -159,13 +164,13 @@ const registerWellKnownRoutes = (http: HttpRouter, path: string) => {
       http,
       `/.well-known/openid-configuration${issuerPath}`,
       () => {
-        const url = `${process.env.CONVEX_SITE_URL}${authPath}/convex/.well-known/openid-configuration`;
+        const url = `${getConvexSiteUrl()}${authPath}/convex/.well-known/openid-configuration`;
         return Response.redirect(url);
       }
     );
   }
   routeIfMissing(http, "/.well-known/oauth-authorization-server", () => {
-    const url = `${process.env.CONVEX_SITE_URL}${authPath}/convex/.well-known/oauth-authorization-server`;
+    const url = `${getConvexSiteUrl()}${authPath}/convex/.well-known/oauth-authorization-server`;
     return Response.redirect(url);
   });
   if (issuerPath) {
@@ -173,7 +178,7 @@ const registerWellKnownRoutes = (http: HttpRouter, path: string) => {
       http,
       `/.well-known/oauth-authorization-server${issuerPath}`,
       () => {
-        const url = `${process.env.CONVEX_SITE_URL}${authPath}/convex/.well-known/oauth-authorization-server`;
+        const url = `${getConvexSiteUrl()}${authPath}/convex/.well-known/oauth-authorization-server`;
         return Response.redirect(url);
       }
     );
