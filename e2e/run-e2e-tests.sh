@@ -9,7 +9,7 @@ source "$SCRIPT_DIR/.env.test"
 set +a
 
 CONVEX_URL="http://127.0.0.1:3210"
-ADMIN_KEY="0135d8598650f8f5cb0f30c34ec2e2bb62793bc28717c8eb6fb577996d50be5f4281b59181095065c5d0f86a2c31ddbe9b597ec62b47ded69782cd"
+ADMIN_KEY="${ADMIN_KEY:-anonymous-react|01d14f2e6aff25b56be22d89e5c120c4d216d0533ab439630a409350d9c9008074ba4bfce3}"
 EXAMPLE_DIR="$SCRIPT_DIR/../examples/react"
 
 # Run convex commands from the example directory so the CLI finds the convex dependency

@@ -99,7 +99,7 @@ npm install convex @mmailaender/convex-svelte
 
     ```npm
     npm install @convex-dev/better-auth @mmailaender/convex-better-auth-svelte
-    npm install better-auth@1.5.3 --save-exact
+    npm install better-auth@1.6.11 @better-auth/oauth-provider@1.6.11 --save-exact
     ```
 
   </div>
@@ -215,8 +215,20 @@ npm install convex @mmailaender/convex-svelte
           requireEmailVerification: false,
         },
         plugins: [
-          // The Convex plugin is required for Convex compatibility
-          convex({ authConfig }),
+          // The Convex plugin is required for Convex compatibility.
+          // It also exposes OAuth 2.1 / OIDC provider endpoints from Convex.
+          convex({
+            authConfig,
+            oauthProvider: {
+              // Send the browser to the SvelteKit app to sign in, while
+              // keeping Convex as the OAuth/OIDC issuer.
+              loginPage: `${siteUrl}/sign-in`,
+              consentPage: `${siteUrl}/oauth/consent`,
+              allowDynamicClientRegistration: true,
+              allowUnauthenticatedClientRegistration: true,
+              pairwiseSecret: process.env.OAUTH_PAIRWISE_SECRET,
+            },
+          }),
         ],
       })
     }
@@ -231,6 +243,65 @@ npm install convex @mmailaender/convex-svelte
     });
     ```
 
+  </div>
+
+  <div className="fd-step">
+    ### Handle OAuth authorization continuation on sign-in
+
+    When an OAuth client starts at
+    `<deployment>.convex.site/oauth2/authorize`, the Convex authorization
+    server redirects the browser to your SvelteKit `loginPage` with a signed
+    `oauth_query`. Preserve that value and send it back to Better Auth when the
+    user signs in so Convex can resume the authorization request.
+
+    ```svelte title="src/routes/sign-in/+page.svelte"
+    <script lang="ts">
+      import { page } from '$app/state';
+      import { goto } from '$app/navigation';
+      import { authClient } from '$lib/auth-client';
+
+      let email = $state('');
+      let password = $state('');
+
+      const oauthQuery = $derived(page.url.searchParams.get('oauth_query'));
+
+      async function signIn() {
+        const result = await authClient.signIn.email({
+          email,
+          password,
+          callbackURL: '/',
+          ...(oauthQuery ? { oauth_query: oauthQuery } : {}),
+        });
+
+        if (result.error) {
+          throw new Error(result.error.message);
+        }
+
+        if (oauthQuery) {
+          const continued = await authClient.$fetch('/oauth2/continue', {
+            method: 'POST',
+            body: { oauth_query: oauthQuery },
+          });
+          if (continued.data?.url) {
+            await goto(continued.data.url);
+            return;
+          }
+        }
+
+        await goto('/');
+      }
+    </script>
+
+    <form onsubmit={(event) => { event.preventDefault(); signIn(); }}>
+      <input bind:value={email} type="email" autocomplete="email" />
+      <input bind:value={password} type="password" autocomplete="current-password" />
+      <button type="submit">Sign in</button>
+    </form>
+    ```
+
+    For first-party web or Capacitor clients, create OAuth clients with
+    `skip_consent: true`. For RP-initiated logout, also set
+    `enable_end_session: true` and provide `post_logout_redirect_uris`.
   </div>
 
   <div className="fd-step">
