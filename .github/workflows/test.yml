@@ -17,6 +17,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
 
       - name: Node setup
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
@@ -36,7 +38,9 @@ jobs:
           cd examples/tanstack && npm i &
           wait
       - name: Publish package for testing branch
-        run: npx pkg-pr-new publish || echo "Have you set up pkg-pr-new for this repo?"
+        run:
+          npx pkg-pr-new publish || echo "Have you set up pkg-pr-new for this
+          repo?"
       - name: Test
         run: |
           npm run test
