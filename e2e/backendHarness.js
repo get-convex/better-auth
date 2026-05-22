@@ -6,6 +6,7 @@
 import http from "node:http";
 import fsPromises from "node:fs/promises";
 import { spawn } from "node:child_process";
+import crypto from "node:crypto";
 import { existsSync, unlinkSync, rmSync, chmodSync } from "node:fs";
 import { Readable } from "node:stream";
 import { createRequire } from "node:module";
@@ -135,11 +136,35 @@ async function downloadAndStartBackend() {
   zip.extractAllTo(".", true);
   const binaryPath = "./convex-local-backend";
   chmodSync(binaryPath, 0o755);
-  return spawn(
+
+  const instanceName = "carnitas";
+  const instanceSecret = crypto.randomBytes(32).toString("hex");
+  const keyResponse = await fetch(
+    "https://provision.convex.dev/api/local_deployment/generate_admin_key",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ instanceName, instanceSecret }),
+    },
+  );
+  if (!keyResponse.ok) {
+    throw new Error(
+      `Failed to generate admin key: ${keyResponse.status} ${await keyResponse.text()}`,
+    );
+  }
+  const { adminKey } = await keyResponse.json();
+
+  const process_ = spawn(
     binaryPath,
-    ["--port", String(backendCloudPort), "--site-proxy-port", String(backendSitePort)],
+    [
+      "--port", String(backendCloudPort),
+      "--site-proxy-port", String(backendSitePort),
+      "--instance-name", instanceName,
+      "--instance-secret", instanceSecret,
+    ],
     { env: { CONVEX_TRACE_FILE: "1" } },
   );
+  return { process: process_, adminKey };
 }
 
 async function runWithLocalBackend(command, backendUrl) {
@@ -154,7 +179,8 @@ async function runWithLocalBackend(command, backendUrl) {
   rmSync("convex_local_storage", { recursive: true, force: true });
   rmSync("convex_local_backend.sqlite3", { force: true });
 
-  backendProcess = await downloadAndStartBackend();
+  const { process: started, adminKey } = await downloadAndStartBackend();
+  backendProcess = started;
   backendProcess.stdout.pipe(process.stderr);
   backendProcess.stderr.pipe(process.stderr);
 
@@ -166,7 +192,7 @@ async function runWithLocalBackend(command, backendUrl) {
     const c = spawn(command, {
       shell: true,
       stdio: "pipe",
-      env: { ...process.env, FORCE_COLOR: "1" },
+      env: { ...process.env, FORCE_COLOR: "1", CONVEX_ADMIN_KEY: adminKey },
     });
     c.stdout.on("data", (data) => {
       process.stdout.write(data);
