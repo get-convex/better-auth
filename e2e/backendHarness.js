@@ -137,7 +137,7 @@ async function downloadAndStartBackend() {
   const binaryPath = "./convex-local-backend";
   chmodSync(binaryPath, 0o755);
 
-  const instanceName = "carnitas";
+  const instanceName = "anonymous-convex-better-auth-e2e";
   const instanceSecret = crypto.randomBytes(32).toString("hex");
   const keyResponse = await fetch(
     "https://provision.convex.dev/api/local_deployment/generate_admin_key",
@@ -153,6 +153,11 @@ async function downloadAndStartBackend() {
     );
   }
   const { adminKey } = await keyResponse.json();
+  if (typeof adminKey !== "string" || adminKey.length === 0) {
+    throw new Error(
+      "Provisioning response did not include a valid adminKey",
+    );
+  }
 
   const process_ = spawn(
     binaryPath,
