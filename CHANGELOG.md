@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.12.3
+
+- update to better-auth 1.6.15, minimum 1.6.11 (#388)
+
 ## 0.12.2
 
 - fix: strip hop-by-hop headers in framework proxy handlers (#360) @CipherSight
