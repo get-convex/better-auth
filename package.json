@@ -120,7 +120,7 @@
     "@types/semver": "7.7.1",
     "better-auth": "1.6.15",
     "chokidar-cli": "3.0.0",
-    "concurrently": "9.2.1",
+    "concurrently": "10.0.3",
     "convex": "1.38.0",
     "convex-test": "0.0.51",
     "eslint": "9.39.4",
