@@ -427,28 +427,29 @@ export const convexCustomTestSuite = createTestSuite(
       ]);
     },
 
-    "should reject update with an empty where clause": async () => {
-      const user = await adapter.create({
-        model: "user",
-        data: {
-          name: "foo",
-          email: "foo@bar.com",
-        },
-      });
-      await expect(
-        adapter.update({
+    "should return null and not modify records when update where is empty":
+      async () => {
+        const user = await adapter.create({
           model: "user",
-          where: [],
-          update: { name: "bar" },
-        }),
-      ).rejects.toThrow("where clause not supported");
-      expect(
-        await adapter.findOne({
-          model: "user",
-          where: [{ field: "id", value: user.id }],
-        }),
-      ).toEqual(user);
-    },
+          data: {
+            name: "foo",
+            email: "foo@bar.com",
+          },
+        });
+        expect(
+          await adapter.update({
+            model: "user",
+            where: [],
+            update: { name: "bar" },
+          }),
+        ).toBeNull();
+        expect(
+          await adapter.findOne({
+            model: "user",
+            where: [{ field: "id", value: user.id }],
+          }),
+        ).toEqual(user);
+      },
 
     "should update and count each match only once for overlapping OR clauses":
       async () => {
