@@ -372,24 +372,29 @@ export const convexAdapter = <
           if (!("runMutation" in ctx)) {
             throw new Error("ctx is not a mutation ctx");
           }
-          if (data.where?.length && !data.where.some((w) => w.connector === "OR")) {
-            const onUpdateHandle =
-              config.authFunctions?.onUpdate &&
-              config.triggers?.[data.model]?.onUpdate
-                ? ((await createFunctionHandle(
-                    config.authFunctions.onUpdate
-                  )) as FunctionHandle<"mutation">)
-                : undefined;
-            return ctx.runMutation(api.adapter.updateOne, {
-              input: {
-                model: data.model as TableNames,
-                where: parseWhere(data.where),
-                update: data.update as any,
-              },
-              onUpdateHandle: onUpdateHandle,
-            });
+          // An empty where matches no single record, so there's nothing to
+          // update. better-auth's adapter contract expects null here.
+          if (!data.where?.length) {
+            return null;
           }
-          throw new Error("where clause not supported");
+          if (data.where.some((w) => w.connector === "OR")) {
+            throw new Error("where clause not supported");
+          }
+          const onUpdateHandle =
+            config.authFunctions?.onUpdate &&
+            config.triggers?.[data.model]?.onUpdate
+              ? ((await createFunctionHandle(
+                  config.authFunctions.onUpdate
+                )) as FunctionHandle<"mutation">)
+              : undefined;
+          return ctx.runMutation(api.adapter.updateOne, {
+            input: {
+              model: data.model as TableNames,
+              where: parseWhere(data.where),
+              update: data.update as any,
+            },
+            onUpdateHandle: onUpdateHandle,
+          });
         },
         delete: async (data) => {
           if (!("runMutation" in ctx)) {
