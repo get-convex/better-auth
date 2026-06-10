@@ -105,9 +105,13 @@ function useUseAuthFromBetterAuth(
   authClient: AuthClient,
   initialToken?: string | null
 ) {
-  const [cachedToken, setCachedToken] = useState<string | null>(
-    initialTokenUsed ? null : (initialToken ?? null)
-  );
+  const initial = initialTokenUsed ? null : (initialToken ?? null);
+  const cachedTokenRef = useRef<string | null>(initial);
+  const [cachedToken, setCachedTokenState] = useState<string | null>(initial);
+  const setCachedToken = (value: string | null) => {
+    cachedTokenRef.current = value;
+    setCachedTokenState(value);
+  };
   const pendingTokenRef = useRef<Promise<string | null> | null>(null);
   useEffect(() => {
     if (!initialTokenUsed) {
@@ -121,6 +125,7 @@ function useUseAuthFromBetterAuth(
         const { data: session, isPending: isSessionPending } =
           authClient.useSession();
         const sessionId = session?.session?.id;
+        const lastSessionIdRef = useRef<string | null | undefined>(sessionId);
         useEffect(() => {
           if (!session && !isSessionPending && cachedToken) {
             setCachedToken(null);
@@ -130,31 +135,45 @@ function useUseAuthFromBetterAuth(
           async ({
             forceRefreshToken = false,
           }: { forceRefreshToken?: boolean } = {}) => {
-            if (cachedToken && !forceRefreshToken) {
-              return cachedToken;
+            if (
+              sessionId !== undefined &&
+              lastSessionIdRef.current !== undefined &&
+              sessionId !== lastSessionIdRef.current
+            ) {
+              cachedTokenRef.current = null;
+              pendingTokenRef.current = null;
+              setCachedTokenState(null);
+            }
+            lastSessionIdRef.current = sessionId;
+            if (cachedTokenRef.current && !forceRefreshToken) {
+              return cachedTokenRef.current;
             }
             if (!forceRefreshToken && pendingTokenRef.current) {
               return pendingTokenRef.current;
             }
-            pendingTokenRef.current = authClient.convex
+            const tokenPromise = authClient.convex
               .token({ fetchOptions: { throw: false } })
               .then(({ data }) => {
+                if (pendingTokenRef.current !== tokenPromise) return null;
                 const token = data?.token || null;
                 setCachedToken(token);
                 return token;
               })
               .catch(() => {
+                if (pendingTokenRef.current !== tokenPromise) return null;
                 setCachedToken(null);
                 return null;
               })
               .finally(() => {
-                pendingTokenRef.current = null;
+                if (pendingTokenRef.current === tokenPromise) {
+                  pendingTokenRef.current = null;
+                }
               });
-            return pendingTokenRef.current;
+            pendingTokenRef.current = tokenPromise;
+            return tokenPromise;
           },
           // Build a new fetchAccessToken to trigger setAuth() whenever the
           // session changes.
-          // eslint-disable-next-line react-hooks/exhaustive-deps
           [sessionId]
         );
         return useMemo(
