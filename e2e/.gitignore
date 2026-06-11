@@ -1,0 +1,9 @@
+node_modules
+test-results
+playwright-report
+blob-report
+convex-backend.zip
+convex-local-backend
+convex-local-backend.log
+convex_local_storage
+convex_local_backend.sqlite3

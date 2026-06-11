@@ -1,0 +1,25 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:best-practices"],
+  "schedule": ["* * * * 1-5"],
+  "timezone": "America/Los_Angeles",
+  "minimumReleaseAge": "14 days",
+  "packageRules": [
+    {
+      "groupName": "Routine updates",
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    },
+    {
+      "matchDepTypes": ["devDependencies"],
+      "automerge": true
+    }
+  ],
+  "constraints": {
+    "npm": "^10"
+  }
+}

@@ -1,0 +1,28 @@
+node_modules
+yarn.lock
+
+!.env
+.DS_Store
+.cache
+.vercel
+.output
+.vinxi
+.nitro
+.tanstack
+
+/build/
+/api/
+/server/build
+/public/build
+.vinxi
+# Sentry Config File
+.env.sentry-build-plugin
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# just ignored for the template
+.env
+
+.env.local

@@ -1,0 +1,99 @@
+---
+title: Basic Usage
+description: Using Better Auth with Convex
+---
+
+## Better Auth guide
+
+Better Auth's [basic usage guide](https://www.better-auth.com/docs/basic-usage)
+applies to Convex as well. It covers signing in and out, social providers,
+plugins, and more. You will be using Better Auth directly in your project, so
+their guides are a primary reference.
+
+### Exceptions
+
+There are a few areas in the Better Auth basic usage guide that work differently
+in Convex.
+
+- #### Server side authentication
+
+  Better Auth supports signing users in and out through server side functions.
+  Because Convex functions run over websockets and don't return HTTP responses
+  or set cookies, signing up/in/out must be done from the client via
+  `authClient.signIn.*` methods.
+
+- #### Schemas and migrations
+
+  The basic usage guide includes information on database schema generation and
+  migrations via the Better Auth CLI. This only applies for
+  [local installs](/local-install), which support generating schemas. For
+  projects not using local install, the default schema provided with the Better
+  Auth component (preconfigured with the
+  [supported plugins](/supported-plugins)) is used, and cannot be altered.
+
+## Using server methods with `auth.api`
+
+Better Auth's server side `auth.api` methods can be used with your `createAuth`
+function and the component `headers` method. Here's an example implementing the
+[`changePassword` server method](https://www.better-auth.com/docs/concepts/users-accounts#api-method-change-password).
+
+```ts
+export const updateUserPassword = mutation({
+  args: {
+    currentPassword: v.string(),
+    newPassword: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Many Better Auth server methods require a currently authenticated
+    // user, so request headers have to be passed in so session cookies
+    // can be parsed and validated. The `getAuth` method provides both the
+    // auth object and headers for convenience.
+    const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
+    await auth.api.changePassword({
+      body: {
+        currentPassword: args.currentPassword,
+        newPassword: args.newPassword,
+      },
+      headers,
+    });
+  },
+});
+```
+
+## Using Convex ctx in Better Auth config
+
+The `ctx` param passed in to the `createAuth` function is the Convex context
+object. This can be used to access the Convex database or Convex functions in
+your Better Auth config. It can be a
+[query](https://docs.convex.dev/functions/query-functions#query-context),
+[mutation](https://docs.convex.dev/functions/mutation-functions#mutation-context),
+or [action](https://docs.convex.dev/functions/actions#action-context) context.
+
+A common use case is sending emails for verification or password resets with the
+[Resend component](https://www.convex.dev/components/resend). `resend.sendEmail`
+will produce a type error because the ctx object could be a query ctx. The
+component provides type guards for this.
+
+```ts
+import { requireActionCtx } from "@convex-dev/better-auth/utils";
+import { type GenericCtx } from "@convex-dev/better-auth";
+import { Resend } from "@convex-dev/resend";
+import { components } from "./_generated/api";
+import { type DataModel } from "./_generated/dataModel";
+
+export const resend = new Resend(components.resend);
+
+export const createAuthOptions = (ctx: GenericCtx<DataModel>) => ({
+  baseURL: siteUrl,
+  sendVerificationEmail: async ({ user, url }) => {
+    // This function only requires a `runMutation` property on the ctx object,
+    // but we'll make sure we have an action ctx because we know a network
+    // request is being made, which requires an action ctx.
+    await resend.sendEmail(requireActionCtx(ctx), {
+      to: user.email,
+      subject: "Verify your email",
+      html: `<p>Click <a href="${url}">here</a> to verify your email</p>`,
+    });
+  },
+});
+```

@@ -1,0 +1,153 @@
+{
+  "name": "@convex-dev/better-auth",
+  "description": "A Better Auth component for Convex.",
+  "repository": "github:get-convex/better-auth",
+  "homepage": "https://github.com/get-convex/better-auth#readme",
+  "bugs": {
+    "url": "https://github.com/get-convex/better-auth/issues"
+  },
+  "version": "0.12.3",
+  "license": "Apache-2.0",
+  "keywords": [
+    "convex",
+    "component",
+    "auth",
+    "authentication",
+    "better-auth",
+    "convex-auth"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "npm run build && cd examples/react && npm run dev",
+    "build": "tsc --project tsconfig.build.json",
+    "build:codegen": "cd examples/react && npx convex codegen --component-dir ../../src/component && cd ../.. && npm run build",
+    "build:clean": "rm -rf dist *.tsbuildinfo && npm run build:codegen",
+    "typecheck": "tsc --noEmit && tsc -p examples/next && tsc -p examples/next/convex && tsc -p examples/react && tsc -p examples/react/convex && tsc -p examples/tanstack && tsc -p examples/tanstack/convex",
+    "lint": "eslint .",
+    "test": "vitest run --typecheck",
+    "test:watch": "vitest --typecheck --clearScreen false",
+    "test:debug": "vitest --inspect-brk --no-file-parallelism",
+    "test:e2e": "npm run build && cd e2e && npm run test",
+    "test:coverage": "vitest run --coverage --coverage.reporter=text",
+    "preversion": "npm ci && npm run build:clean && npm run test && npm run lint && npm run typecheck",
+    "alpha": "npm version prerelease --preid alpha && npm publish --tag alpha && git push --follow-tags",
+    "release": "npm version patch && npm publish && git push --follow-tags",
+    "version": "(npm whoami || npm login) && node scripts/sync-version.mjs && vim -c 'normal o' -c 'normal o## '$npm_package_version CHANGELOG.md && prettier -w CHANGELOG.md && git add CHANGELOG.md src/version.ts"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/client/index.d.ts",
+      "default": "./dist/client/index.js"
+    },
+    "./_generated/component.js": {
+      "types": "./dist/component/_generated/component.d.ts"
+    },
+    "./convex.config": {
+      "types": "./dist/component/convex.config.d.ts",
+      "default": "./dist/component/convex.config.js"
+    },
+    "./convex.config.js": {
+      "types": "./dist/component/convex.config.d.ts",
+      "default": "./dist/component/convex.config.js"
+    },
+    "./adapter": {
+      "types": "./dist/component/adapter.d.ts",
+      "default": "./dist/component/adapter.js"
+    },
+    "./auth-config": {
+      "types": "./dist/auth-config.d.ts",
+      "default": "./dist/auth-config.js"
+    },
+    "./client/plugins": {
+      "types": "./dist/client/plugins/index.d.ts",
+      "default": "./dist/client/plugins/index.js"
+    },
+    "./nextjs": {
+      "types": "./dist/nextjs/index.d.ts",
+      "default": "./dist/nextjs/index.js"
+    },
+    "./nextjs/client": {
+      "types": "./dist/nextjs/client.d.ts",
+      "default": "./dist/nextjs/client.js"
+    },
+    "./plugins": {
+      "types": "./dist/plugins/index.d.ts",
+      "default": "./dist/plugins/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "default": "./dist/react/index.js"
+    },
+    "./react-start": {
+      "types": "./dist/react-start/index.d.ts",
+      "default": "./dist/react-start/index.js"
+    },
+    "./test": "./src/test.ts",
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "default": "./dist/utils/index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "next-js": [
+        "./dist/nextjs/index.d.ts"
+      ]
+    }
+  },
+  "peerDependencies": {
+    "better-auth": ">=1.6.11 <1.7.0",
+    "convex": "^1.25.0",
+    "react": "^18.3.1 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@better-auth/core": "1.6.15",
+    "@better-auth/test-utils": "1.6.15",
+    "@convex-dev/eslint-plugin": "2.0.0",
+    "@edge-runtime/vm": "5.0.0",
+    "@eslint/eslintrc": "3.3.5",
+    "@eslint/js": "9.39.4",
+    "@tanstack/react-start": "1.167.65",
+    "@types/common-tags": "1.8.4",
+    "@types/node": "24.12.3",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@types/semver": "7.7.1",
+    "better-auth": "1.6.15",
+    "chokidar-cli": "3.0.0",
+    "concurrently": "10.0.3",
+    "convex": "1.38.0",
+    "convex-test": "0.0.51",
+    "eslint": "9.39.4",
+    "eslint-plugin-import": "2.32.0",
+    "eslint-plugin-react": "7.37.5",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-react-refresh": "0.5.2",
+    "globals": "17.6.0",
+    "next": "16.2.6",
+    "pkg-pr-new": "0.0.71",
+    "prettier": "3.8.3",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.59.2",
+    "vitest": "4.1.5"
+  },
+  "types": "./dist/client/index.d.ts",
+  "module": "./dist/client/index.js",
+  "dependencies": {
+    "@better-fetch/fetch": "^1.1.18",
+    "common-tags": "^1.8.2",
+    "convex-helpers": "^0.1.95",
+    "jose": "^6.1.0",
+    "remeda": "^2.32.0",
+    "semver": "^7.7.3",
+    "type-fest": "^5.0.0",
+    "zod": "^4.0.0"
+  }
+}
