@@ -163,6 +163,13 @@ export const crossDomain = ({ siteUrl }: { siteUrl: string }) => {
             // Mostly copied from the one-time-token plugin
             const session = ctx.context.newSession;
             if (!session) {
+              // linkSocial callbacks have no newSession — the user is already
+              // signed in. Follow the provider redirect without the
+              // one-time-token flow instead of dead-ending with an error.
+              const redirectTo = ctx.context.responseHeaders?.get("location");
+              if (redirectTo) {
+                throw ctx.redirect(redirectTo);
+              }
               ctx.context.logger.error("No session found");
               return;
             }
