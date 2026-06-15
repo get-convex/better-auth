@@ -138,12 +138,12 @@ describe("crossDomainClient", () => {
       notify: () => {},
       atoms: { session: { set: () => {}, get: () => ({}) } },
     };
-    return plugin.getActions({} as any, mockStore as any);
+    return plugin.getActions({} as any, mockStore as any, undefined);
   }
 
   function getOnSuccessHook() {
     const plugin = crossDomainClient({ storage: mockStorage });
-    return plugin.fetchPlugins[0].hooks!.onSuccess!;
+    return plugin.fetchPlugins![0].hooks!.onSuccess!;
   }
 
   function getOnSuccessHookWithStore() {
@@ -154,8 +154,8 @@ describe("crossDomainClient", () => {
       atoms: { session: { set: () => {}, get: () => ({}) } },
     };
     // getActions sets the internal store reference
-    plugin.getActions({} as any, mockStore as any);
-    return { onSuccess: plugin.fetchPlugins[0].hooks!.onSuccess!, notify };
+    plugin.getActions({} as any, mockStore as any, undefined);
+    return { onSuccess: plugin.fetchPlugins![0].hooks!.onSuccess!, notify };
   }
 
   describe("getSessionData", () => {
