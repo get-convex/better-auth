@@ -1,4 +1,4 @@
-import type { BetterAuthClientPlugin, ClientStore } from "better-auth";
+import type { BetterAuthClientPlugin, ClientStore } from "better-auth/client";
 import { parseSetCookieHeader } from "better-auth/cookies";
 import type { BetterFetchOption } from "@better-fetch/fetch";
 import type { crossDomain } from "./index.js";
@@ -8,6 +8,22 @@ interface StoredCookie {
   value: string;
   expires: string | null;
 }
+
+type CrossDomainActions = {
+  getCookie: () => string;
+  updateSession: () => void;
+  getSessionData: () => Record<string, unknown> | null;
+};
+
+type CrossDomainClientPlugin = Omit<
+  BetterAuthClientPlugin,
+  "$InferServerPlugin" | "getActions"
+> & {
+  $InferServerPlugin: ReturnType<typeof crossDomain>;
+  getActions: (
+    ...args: Parameters<NonNullable<BetterAuthClientPlugin["getActions"]>>
+  ) => CrossDomainActions;
+};
 
 export function getSetCookie(header: string, prevCookie?: string) {
   const parsed = parseSetCookieHeader(header);
@@ -63,7 +79,7 @@ export const crossDomainClient = (
     storagePrefix?: string;
     disableCache?: boolean;
   } = {}
-) => {
+): CrossDomainClientPlugin => {
   let store: ClientStore | null = null;
   const cookieName = `${opts?.storagePrefix || "better-auth"}_cookie`;
   const localCacheName = `${opts?.storagePrefix || "better-auth"}_session_data`;
@@ -247,5 +263,5 @@ export const crossDomainClient = (
         },
       },
     ],
-  } satisfies BetterAuthClientPlugin;
+  };
 };
