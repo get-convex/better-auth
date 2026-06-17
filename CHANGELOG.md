@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.12.4
+
+- use ActionCtx for runMutation for now (#390)
+- fix cross-domain client plugin types (#391) @zbeyens
+
 ## 0.12.3
 
 - update to better-auth 1.6.15, minimum 1.6.11 (#388)
