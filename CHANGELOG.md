@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.12.5
+
+- fix unbounded count/findMany pagination looping forever past 200 rows (#394)
+
 ## 0.12.4
 
 - use ActionCtx for runMutation for now (#390)
