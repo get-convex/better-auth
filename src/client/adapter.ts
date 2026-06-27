@@ -66,17 +66,31 @@ const handlePagination = async (
   };
 
   do {
+    const cursorBeforePage = state.cursor;
     const result = await next({
       paginationOpts: {
+        // Subtract collected rows so the last page doesn't over-fetch past a
+        // caller limit. No limit means an unbounded budget (Infinity, not 200,
+        // or collecting 200 makes numItems 0 and the cursor never advances; #392).
         numItems: Math.min(
           numItems ?? 200,
-          (limit ?? 200) - state.docs.length,
+          limit !== undefined ? limit - state.docs.length : Infinity,
           200
         ),
         cursor: state.cursor,
       },
     });
     onResult(result);
+    // A page that returns nothing and doesn't advance the cursor while !isDone
+    // can never terminate; fail loudly instead of looping forever.
+    const advanced = state.cursor !== cursorBeforePage;
+    const produced =
+      (result.page?.length ?? 0) > 0 || (result.count ?? 0) > 0;
+    if (!state.isDone && !advanced && !produced) {
+      throw new Error(
+        "handlePagination made no forward progress; aborting to avoid an infinite pagination loop"
+      );
+    }
   } while (!state.isDone);
   return state;
 };
