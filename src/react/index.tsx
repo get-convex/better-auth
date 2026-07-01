@@ -8,8 +8,8 @@ import {
   useQuery,
 } from "convex/react";
 import type { FunctionReference } from "convex/server";
-import type { BetterAuthClientPlugin } from "better-auth";
-import type { createAuthClient } from "better-auth/react";
+import type { BetterAuthClientPlugin, BetterAuthClientOptions } from "better-auth";
+import type { ReactAuthClient } from "better-auth/react";
 import type {
   convexClient,
   crossDomainClient,
@@ -24,18 +24,21 @@ type PluginsWithCrossDomain = (
   | BetterAuthClientPlugin
 )[];
 type PluginsWithoutCrossDomain = (ConvexClient | BetterAuthClientPlugin)[];
+type SupportedClientOptions = BetterAuthClientOptions & {
+  plugins?: PluginsWithCrossDomain | PluginsWithoutCrossDomain;
+};
 type AuthClientWithPlugins<
   Plugins extends PluginsWithCrossDomain | PluginsWithoutCrossDomain,
-> = ReturnType<
-  typeof createAuthClient<
-    BetterAuthClientPlugin & {
-      plugins: Plugins;
-    }
-  >
->;
-export type AuthClient =
-  | AuthClientWithPlugins<PluginsWithCrossDomain>
-  | AuthClientWithPlugins<PluginsWithoutCrossDomain>;
+> = ReactAuthClient<{
+  plugins: Plugins;
+}>;
+/** @internal Auth client shape used by ConvexBetterAuthProvider internals. */
+type InternalAuthClient = ReactAuthClient<{
+  plugins: [ConvexClient];
+}>;
+export type AuthClient<
+  Option extends SupportedClientOptions = SupportedClientOptions,
+> = ReactAuthClient<Option>;
 
 // Until we can import from our own entry points (requires TypeScript 4.7),
 // just describe the interface enough to help users pass the right type.
@@ -50,7 +53,9 @@ type IConvexReactClient = {
  *
  * @public
  */
-export function ConvexBetterAuthProvider({
+export function ConvexBetterAuthProvider<
+  Option extends SupportedClientOptions,
+>({
   children,
   client,
   authClient,
@@ -58,10 +63,13 @@ export function ConvexBetterAuthProvider({
 }: {
   children: ReactNode;
   client: IConvexReactClient;
-  authClient: AuthClient;
+  authClient: ReactAuthClient<Option>;
   initialToken?: string | null;
 }) {
-  const useBetterAuth = useUseAuthFromBetterAuth(authClient, initialToken);
+  const useBetterAuth = useUseAuthFromBetterAuth(
+    authClient as unknown as InternalAuthClient,
+    initialToken,
+  );
   useEffect(() => {
     (async () => {
       if (typeof window === "undefined" || !window.location?.href) {
@@ -71,7 +79,7 @@ export function ConvexBetterAuthProvider({
       const token = url.searchParams.get("ott");
       if (token) {
         const authClientWithCrossDomain =
-          authClient as AuthClientWithPlugins<PluginsWithCrossDomain>;
+          authClient as unknown as AuthClientWithPlugins<PluginsWithCrossDomain>;
         url.searchParams.delete("ott");
         window.history.replaceState({}, "", url);
         const result =
@@ -80,7 +88,7 @@ export function ConvexBetterAuthProvider({
           });
         const session = result.data?.session;
         if (session) {
-          await authClient.getSession({
+          await (authClient as unknown as InternalAuthClient).getSession({
             fetchOptions: {
               headers: {
                 Authorization: `Bearer ${session.token}`,
@@ -102,7 +110,7 @@ export function ConvexBetterAuthProvider({
 let initialTokenUsed = false;
 
 function useUseAuthFromBetterAuth(
-  authClient: AuthClient,
+  authClient: InternalAuthClient,
   initialToken?: string | null
 ) {
   const [cachedToken, setCachedToken] = useState<string | null>(
@@ -256,7 +264,9 @@ const UserSubscription = ({
  * The component provides a query for this via `export const { getAuthUser } = authComponent.clientApi()`.
  * @param props.isAuthError - Function to check if the error is auth related.
  */
-export const AuthBoundary = ({
+export const AuthBoundary = <
+  Option extends SupportedClientOptions,
+>({
   children,
   /**
    * The function to call when the user is unauthenticated. Typically a redirect
@@ -282,7 +292,7 @@ export const AuthBoundary = ({
   isAuthError,
 }: PropsWithChildren<{
   onUnauth: () => void | Promise<void>;
-  authClient: AuthClient;
+  authClient: ReactAuthClient<Option>;
   renderFallback?: () => React.ReactNode;
   getAuthUserFn: FunctionReference<"query", "public", EmptyObject>;
   isAuthError: (error: unknown) => boolean;
@@ -290,7 +300,7 @@ export const AuthBoundary = ({
   const { isAuthenticated, isLoading } = useConvexAuth();
   const handleUnauth = useCallback(async () => {
     // Auth request that will clear cookies if session is invalid
-    await authClient.getSession();
+    await (authClient as unknown as InternalAuthClient).getSession();
     await onUnauth();
   }, [onUnauth]);
 
