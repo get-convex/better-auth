@@ -3,6 +3,7 @@
 import { describe, it } from "vitest";
 import { convexTest } from "convex-test";
 import {
+  caseInsensitiveTestSuite,
   testAdapter,
   transactionsTestSuite,
 } from "@better-auth/test-utils/adapter";
@@ -42,14 +43,9 @@ const NORMAL_DISABLED_TESTS = [
   // convex-id-generation:
   // Convex controls generated IDs at write time.
   "create - should use generateId if provided",
-  // offset-unsupported:
-  // Convex adapter rejects offset pagination.
+  // joins-unsupported:
+  // Better Auth experimental joins are not supported by the Convex adapter.
   "findMany - should be able to perform a complex limited join",
-  "findMany - should find many models with limit and offset",
-  "findMany - should find many models with offset",
-  "findMany - should find many models with sortBy and limit and offset",
-  "findMany - should find many models with sortBy and limit and offset and where",
-  "findMany - should find many models with sortBy and offset",
   "findMany - should find many with both one-to-one and one-to-many joins",
   "findMany - should find many with join and offset",
   "findMany - should find many with join, where, limit, and offset",
@@ -169,6 +165,7 @@ if (currentNodeMajor < MIN_NODE_MAJOR) {
         }),
         transactionsTestSuite({ disableTests: { ALL: true } }),
         coreAuthFlowTestSuite(),
+        caseInsensitiveTestSuite(),
         convexCustomTestSuite(),
       ],
     });

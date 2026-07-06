@@ -427,6 +427,155 @@ export const convexCustomTestSuite = createTestSuite(
       ]);
     },
 
+    "should combine OR where clauses with AND where clauses": async () => {
+      const alice = await adapter.create({
+        model: "user",
+        data: {
+          name: "Alice",
+          email: "alice@or-and.test",
+        },
+      });
+      const bob = await adapter.create({
+        model: "user",
+        data: {
+          name: "Bob",
+          email: "bob@or-and.test",
+        },
+      });
+      await adapter.create({
+        model: "user",
+        data: {
+          name: "Alice",
+          email: "alice@elsewhere.test",
+        },
+      });
+      // (name = Alice OR name = Bob) AND email ends_with @or-and.test
+      const mixedWhere = [
+        { field: "name", value: "Alice", connector: "OR" as const },
+        { field: "name", value: "Bob", connector: "OR" as const },
+        {
+          field: "email",
+          operator: "ends_with" as const,
+          value: "@or-and.test",
+        },
+      ];
+      const results = await adapter.findMany<{ id: string }>({
+        model: "user",
+        where: mixedWhere,
+        sortBy: { field: "name", direction: "asc" },
+      });
+      expect(results).toEqual([alice, bob]);
+      expect(
+        await adapter.count({
+          model: "user",
+          where: mixedWhere,
+        }),
+      ).toEqual(2);
+      expect(
+        await adapter.findOne({
+          model: "user",
+          where: [
+            { field: "name", value: "Nobody", connector: "OR" },
+            { field: "name", value: "Bob", connector: "OR" },
+            {
+              field: "email",
+              operator: "ends_with",
+              value: "@or-and.test",
+            },
+          ],
+        }),
+      ).toEqual(bob);
+    },
+
+    "should return null from findOne when no OR clause matches": async () => {
+      await adapter.create({
+        model: "user",
+        data: {
+          name: "solo",
+          email: "solo@none.test",
+        },
+      });
+      expect(
+        await adapter.findOne({
+          model: "user",
+          where: [
+            { field: "name", value: "missing-one", connector: "OR" },
+            { field: "name", value: "missing-two", connector: "OR" },
+          ],
+        }),
+      ).toEqual(null);
+    },
+
+    "should apply offset to OR unions": async () => {
+      const users = [];
+      for (const letter of ["a", "b", "c", "d"]) {
+        users.push(
+          await adapter.create({
+            model: "user",
+            data: {
+              name: "offset-user",
+              email: `${letter}@offset-or.test`,
+            },
+          }),
+        );
+      }
+      const page = await adapter.findMany({
+        model: "user",
+        where: [
+          { field: "name", value: "offset-user", connector: "OR" },
+          { field: "email", value: "none@offset-or.test", connector: "OR" },
+        ],
+        sortBy: { field: "email", direction: "asc" },
+        limit: 2,
+        offset: 1,
+      });
+      expect(page).toEqual([users[1], users[2]]);
+    },
+
+    "should update records matching OR clauses combined with AND clauses":
+      async () => {
+        const target = await adapter.create({
+          model: "user",
+          data: {
+            name: "update-me",
+            email: "target@mixed-update.test",
+          },
+        });
+        const excludedByAnd = await adapter.create({
+          model: "user",
+          data: {
+            name: "update-me",
+            email: "excluded@elsewhere.test",
+          },
+        });
+        const updatedCount = await adapter.updateMany({
+          model: "user",
+          where: [
+            { field: "name", value: "update-me", connector: "OR" },
+            { field: "name", value: "also-update-me", connector: "OR" },
+            {
+              field: "email",
+              operator: "ends_with",
+              value: "@mixed-update.test",
+            },
+          ],
+          update: { name: "updated" },
+        });
+        expect(updatedCount).toEqual(1);
+        expect(
+          await adapter.findOne<{ name: string }>({
+            model: "user",
+            where: [{ field: "id", value: target.id }],
+          }),
+        ).toMatchObject({ name: "updated" });
+        expect(
+          await adapter.findOne<{ name: string }>({
+            model: "user",
+            where: [{ field: "id", value: excludedByAnd.id }],
+          }),
+        ).toMatchObject({ name: "update-me" });
+      },
+
     "should return null and not modify records when update where is empty":
       async () => {
         const user = await adapter.create({
@@ -761,7 +910,7 @@ export const convexCustomTestSuite = createTestSuite(
       expect(typeof user.createdAt).toBe("number");
     },
 
-    "should reject case-insensitive where clauses": async () => {
+    "should reject case-insensitive range operators": async () => {
       await adapter.create({
         model: "user",
         data: {
@@ -769,19 +918,21 @@ export const convexCustomTestSuite = createTestSuite(
           email: "foo@bar.com",
         },
       });
+      // Case-insensitive ordering is ambiguous; only equality/string
+      // matching operators support mode: "insensitive".
       await expect(
-        adapter.findOne({
+        adapter.findMany({
           model: "user",
           where: [
             {
               field: "email",
               value: "FOO@BAR.COM",
-              operator: "eq",
+              operator: "lt",
               mode: "insensitive",
             },
           ],
         }),
-      ).rejects.toThrow(/mode: "insensitive"/);
+      ).rejects.toThrow(/range operators/);
     },
   }),
 );
