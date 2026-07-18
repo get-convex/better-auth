@@ -59,7 +59,7 @@ const parseConvexSiteUrl = (url: string) => {
   return url;
 };
 
-const handler = (request: Request, opts: { convexSiteUrl: string }) => {
+const handler = async (request: Request, opts: { convexSiteUrl: string }) => {
   const requestUrl = new URL(request.url);
   const nextUrl = `${opts.convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
   const headers = new Headers(request.headers);
@@ -74,13 +74,29 @@ const handler = (request: Request, opts: { convexSiteUrl: string }) => {
   headers.set("x-forwarded-proto", requestUrl.protocol.replace(/:$/, ""));
   headers.set("x-better-auth-forwarded-host", requestUrl.host);
   headers.set("x-better-auth-forwarded-proto", requestUrl.protocol.replace(/:$/, ""));
-  return fetch(nextUrl, {
+  const upstream = await fetch(nextUrl, {
     method: request.method,
     headers,
     redirect: "manual",
     body: request.body,
     // @ts-expect-error - duplex is required for streaming request bodies in modern fetch
     duplex: "half",
+  });
+  // Buffer the upstream body before returning. Auth JSON is small, and
+  // streaming an undici fetch body through TanStack Start / Nitro under
+  // inbound `Connection: close` (common with reverse proxies like Portless)
+  // fails roughly every other sequential request with an empty HTTP 400.
+  // See: get-session / convex/token flakiness with local HTTPS proxies.
+  const body = await upstream.arrayBuffer();
+  const responseHeaders = new Headers(upstream.headers);
+  responseHeaders.delete("content-encoding");
+  responseHeaders.delete("transfer-encoding");
+  responseHeaders.delete("connection");
+  responseHeaders.delete("keep-alive");
+  return new Response(body, {
+    status: upstream.status,
+    statusText: upstream.statusText,
+    headers: responseHeaders,
   });
 };
 

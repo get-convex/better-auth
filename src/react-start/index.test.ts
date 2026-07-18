@@ -89,3 +89,32 @@ describe("convexBetterAuthReactStart handler", () => {
     expect(init.body).toBeDefined();
   });
 });
+
+  it("buffers the upstream response body and strips hop-by-hop response headers", async () => {
+    const { handler, fetchSpy } = setup();
+    fetchSpy.mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+          "set-cookie": "a=1; Path=/",
+          connection: "keep-alive",
+          "transfer-encoding": "chunked",
+          "keep-alive": "timeout=5",
+        },
+      })
+    );
+    const request = new Request("https://app.example.com/api/auth/ok", {
+      method: "GET",
+    });
+    const response = await handler(request);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("application/json");
+    expect(response.headers.get("set-cookie")).toBe("a=1; Path=/");
+    expect(response.headers.get("connection")).toBeNull();
+    expect(response.headers.get("transfer-encoding")).toBeNull();
+    expect(response.headers.get("keep-alive")).toBeNull();
+    // Body is fully materialized (not an undici network stream).
+    await expect(response.json()).resolves.toEqual({ ok: true });
+  });
+
