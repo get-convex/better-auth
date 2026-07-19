@@ -75,6 +75,7 @@ describe("convexBetterAuthReactStart handler", () => {
     expect(headers.get("x-forwarded-proto")).toBe("https");
     expect(headers.get("x-better-auth-forwarded-host")).toBe("app.example.com");
     expect(headers.get("x-better-auth-forwarded-proto")).toBe("https");
+    expect(headers.get("accept-encoding")).toBe("identity");
   });
 
   it("streams the request body with duplex: half", async () => {

@@ -68,7 +68,10 @@ const handler = async (request: Request, opts: { convexSiteUrl: string }) => {
   headers.delete("transfer-encoding");
   headers.delete("content-length");
   headers.delete("connection");
-  headers.set("accept-encoding", "application/json");
+  // Request uncompressed bodies so the buffered ArrayBuffer matches the
+  // headers we forward (and so stripping content-encoding is safe).
+  // `identity` is already used by getToken() in this module.
+  headers.set("accept-encoding", "identity");
   headers.set("host", new URL(opts.convexSiteUrl).host);
   headers.set("x-forwarded-host", requestUrl.host);
   headers.set("x-forwarded-proto", requestUrl.protocol.replace(/:$/, ""));
@@ -89,6 +92,10 @@ const handler = async (request: Request, opts: { convexSiteUrl: string }) => {
   // See: get-session / convex/token flakiness with local HTTPS proxies.
   const body = await upstream.arrayBuffer();
   const responseHeaders = new Headers(upstream.headers);
+  // Drop hop-by-hop / encoding headers that must not be re-emitted on a
+  // re-buffered body. With accept-encoding: identity the payload is raw;
+  // content-encoding would otherwise claim compression that is no longer
+  // applied to these bytes.
   responseHeaders.delete("content-encoding");
   responseHeaders.delete("transfer-encoding");
   responseHeaders.delete("connection");
