@@ -1,6 +1,5 @@
 import type { BetterAuthClientPlugin, ClientStore } from "better-auth/client";
 import { parseSetCookieHeader } from "better-auth/cookies";
-import type { BetterFetchOption } from "@better-fetch/fetch";
 import type { crossDomain } from "./index.js";
 import { VERSION } from "../../version.js";
 
@@ -10,9 +9,9 @@ interface StoredCookie {
 }
 
 type CrossDomainActions = {
-  getCookie: () => string;
+  getCookie: () => Promise<string>;
   updateSession: () => void;
-  getSessionData: () => Record<string, unknown> | null;
+  getSessionData: () => Promise<Record<string, unknown> | null>;
 };
 
 type CrossDomainClientPlugin = Omit<
@@ -74,7 +73,7 @@ export const crossDomainClient = (
   opts: {
     storage?: {
       setItem: (key: string, value: string) => any;
-      getItem: (key: string) => string | null;
+      getItem: (key: string) => Promise<string | null> | string | null;
     };
     storagePrefix?: string;
     disableCache?: boolean;
@@ -108,8 +107,8 @@ export const crossDomainClient = (
          * 	},
          * });
          */
-        getCookie: () => {
-          const cookie = storage?.getItem(cookieName);
+        getCookie: async () => {
+          const cookie = await storage?.getItem(cookieName);
           return getCookie(cookie || "{}");
         },
         /**
@@ -134,8 +133,8 @@ export const crossDomainClient = (
          * const sessionData = client.getSessionData();
          * ```
          */
-        getSessionData: (): Record<string, unknown> | null => {
-          const sessionData = storage?.getItem(localCacheName);
+        getSessionData: async (): Promise<Record<string, unknown> | null> => {
+          const sessionData = await storage?.getItem(localCacheName);
           if (!sessionData) return null;
           try {
             const parsed = JSON.parse(sessionData);
@@ -166,7 +165,7 @@ export const crossDomainClient = (
               "set-better-auth-cookie"
             );
             if (setCookie) {
-              const prevCookie = storage.getItem(cookieName);
+              const prevCookie = await storage.getItem(cookieName);
               const toSetCookie = getSetCookie(
                 setCookie || "",
                 prevCookie ?? undefined
@@ -208,7 +207,7 @@ export const crossDomainClient = (
                 // Previously this unconditionally set cookieName to "{}",
                 // which wiped the two_factor challenge token needed for
                 // verifyTotp in cross-domain setups.
-                const prev = storage.getItem(cookieName);
+                const prev = await storage.getItem(cookieName);
                 try {
                   const parsed = JSON.parse(prev || "{}") as Record<
                     string,
@@ -236,11 +235,11 @@ export const crossDomainClient = (
           if (!storage) {
             return {
               url,
-              options: options as BetterFetchOption,
+              options: options,
             };
           }
           options = options || {};
-          const storedCookie = storage.getItem(cookieName);
+          const storedCookie = await storage.getItem(cookieName);
           const cookie = getCookie(storedCookie || "{}");
           options.credentials = "omit";
           options.headers = {
@@ -258,7 +257,7 @@ export const crossDomainClient = (
           }
           return {
             url,
-            options: options as BetterFetchOption,
+            options: options ,
           };
         },
       },
