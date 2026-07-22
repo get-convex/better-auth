@@ -72,7 +72,7 @@ export function getCookie(cookie: string) {
 export const crossDomainClient = (
   opts: {
     storage?: {
-      setItem: (key: string, value: string) => any;
+      setItem: (key: string, value: string) => void | Promise<void>;
       getItem: (key: string) => Promise<string | null> | string | null;
     };
     storagePrefix?: string;
@@ -100,7 +100,7 @@ export const crossDomainClient = (
          *
          * @example
          * ```ts
-         * const cookie = client.getCookie();
+         * const cookie = await client.getCookie();
          * fetch("https://api.example.com", {
          * 	headers: {
          * 		cookie,
@@ -130,7 +130,7 @@ export const crossDomainClient = (
          *
          * @example
          * ```ts
-         * const sessionData = client.getSessionData();
+         * const sessionData = await client.getSessionData();
          * ```
          */
         getSessionData: async (): Promise<Record<string, unknown> | null> => {
