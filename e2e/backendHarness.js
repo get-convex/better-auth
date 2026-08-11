@@ -140,7 +140,7 @@ async function downloadAndStartBackend() {
   const instanceName = "anonymous-convex-better-auth-e2e";
   const instanceSecret = crypto.randomBytes(32).toString("hex");
   const keyResponse = await fetch(
-    "https://provision.convex.dev/api/local_deployment/generate_admin_key",
+    "https://api.convex.dev/api/local_deployment/generate_admin_key",
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
