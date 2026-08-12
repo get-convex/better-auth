@@ -71,10 +71,29 @@ describe("convexBetterAuthReactStart handler", () => {
     await handler(request);
     const headers = headersOf(fetchSpy);
     expect(headers.get("host")).toBe(new URL(SITE_URL).host);
-    expect(headers.get("x-forwarded-host")).toBe("app.example.com");
+    expect(headers.get("x-forwarded-host")).toBeNull();
     expect(headers.get("x-forwarded-proto")).toBe("https");
     expect(headers.get("x-better-auth-forwarded-host")).toBe("app.example.com");
     expect(headers.get("x-better-auth-forwarded-proto")).toBe("https");
+  });
+
+  it("drops an inbound x-forwarded-host instead of forwarding it", async () => {
+    const { handler, fetchSpy } = setup();
+    // Platforms in front of the app (Vercel, for one) set this on the way in.
+    // It has to go: Convex's edge routes on it, and an app domain resolves to
+    // no deployment, so the request 404s before the component sees it.
+    const request = new Request(
+      "https://app.example.com/api/auth/sign-in/email",
+      {
+        method: "POST",
+        body: "{}",
+        headers: { "x-forwarded-host": "app.example.com" },
+      }
+    );
+    await handler(request);
+    const headers = headersOf(fetchSpy);
+    expect(headers.get("x-forwarded-host")).toBeNull();
+    expect(headers.get("x-better-auth-forwarded-host")).toBe("app.example.com");
   });
 
   it("streams the request body with duplex: half", async () => {
