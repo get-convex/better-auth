@@ -87,7 +87,9 @@ describe("convexBetterAuthReactStart handler", () => {
       {
         method: "POST",
         body: "{}",
-        headers: { "x-forwarded-host": "app.example.com" },
+        // Deliberately different from the request URL host, so the
+        // assertions below show where each value comes from.
+        headers: { "x-forwarded-host": "proxy.internal.example.com" },
       }
     );
     await handler(request);

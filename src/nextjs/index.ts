@@ -49,15 +49,12 @@ const handler = async (request: Request, siteUrl: string) => {
   headers.delete("transfer-encoding");
   headers.delete("content-length");
   headers.delete("connection");
+  // Convex's edge resolves the deployment from `x-forwarded-host`, so an app
+  // domain here routes to nothing; the component restores it from
+  // `x-better-auth-forwarded-host` instead.
+  headers.delete("x-forwarded-host");
   headers.set("accept-encoding", "application/json");
   headers.set("host", new URL(siteUrl).host);
-  // Convex's edge resolves which deployment serves a request from
-  // `x-forwarded-host` when it is present, so forwarding the app's own domain
-  // routes to no deployment and the request dies as an empty 404 before it
-  // reaches the component. Drop any inbound value as well: platforms such as
-  // Vercel set one on the incoming request. The component restores it from
-  // `x-better-auth-forwarded-host` (see `restoreOriginalForwardedHeaders`).
-  headers.delete("x-forwarded-host");
   headers.set("x-forwarded-proto", requestUrl.protocol.replace(/:$/, ""));
   headers.set("x-better-auth-forwarded-host", requestUrl.host);
   headers.set("x-better-auth-forwarded-proto", requestUrl.protocol.replace(/:$/, ""));
