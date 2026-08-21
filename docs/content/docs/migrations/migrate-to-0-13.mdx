@@ -353,24 +353,24 @@ migration functions are not available after the switch. A cursor returned with
 2. Add the replacement package and review Better Auth's full OAuth provider
    migration requirements:
 
-```npm
-npm install @better-auth/oauth-provider@~1.7.1
-```
+   ```npm
+   npm install @better-auth/oauth-provider@~1.7.1
+   ```
 
-```ts
-import { oauthProvider } from "@better-auth/oauth-provider";
-import { jwt } from "better-auth/plugins/jwt";
+   ```ts
+   import { oauthProvider } from "@better-auth/oauth-provider";
+   import { jwt } from "better-auth/plugins/jwt";
 
-betterAuth({
-  plugins: [
-    jwt(),
-    oauthProvider({
-      loginPage: "/sign-in",
-      consentPage: "/consent",
-    }),
-  ],
-});
-```
+   betterAuth({
+     plugins: [
+       jwt(),
+       oauthProvider({
+         loginPage: "/sign-in",
+         consentPage: "/consent",
+       }),
+     ],
+   });
+   ```
 
 3. Generate the Local Install schema only after the static Better Auth options
    include `oauthProvider()`. The account backfill is complete and all three
