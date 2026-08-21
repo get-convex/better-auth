@@ -100,10 +100,10 @@ describe("crossDomain plugin", async () => {
     });
   });
 
-  describe("callbackURL defaulting for oauth2", () => {
+  describe("callbackURL defaulting for generic OAuth", () => {
     it("injects siteUrl when callbackURL is absent", async () => {
-      const response = await post("/sign-in/oauth2", {
-        providerId: "example-oauth",
+      const response = await post("/sign-in/social", {
+        provider: "example-oauth",
         disableRedirect: true,
       });
       const { url } = (await response.json()) as { url: string };
@@ -116,8 +116,8 @@ describe("crossDomain plugin", async () => {
     });
 
     it("rewrites relative callbackURL to absolute using siteUrl", async () => {
-      const response = await post("/sign-in/oauth2", {
-        providerId: "example-oauth",
+      const response = await post("/sign-in/social", {
+        provider: "example-oauth",
         callbackURL: "/dashboard",
         disableRedirect: true,
       });

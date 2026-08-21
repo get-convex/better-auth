@@ -66,6 +66,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   accountId: string;
                   createdAt: number;
                   idToken?: null | string;
+                  issuer?: null | string;
                   password?: null | string;
                   providerId: string;
                   refreshToken?: null | string;
@@ -89,6 +90,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             | {
                 data: {
                   backupCodes: string;
+                  failedVerificationCount?: null | number;
+                  lockedUntil?: null | number;
                   secret: string;
                   userId: string;
                   verified?: null | boolean;
@@ -138,7 +141,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               }
             | {
                 data: {
+                  alg?: null | string;
                   createdAt: number;
+                  crv?: null | string;
                   expiresAt?: null | number;
                   privateKey: string;
                   publicKey: string;
@@ -241,6 +246,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field:
+                    | "issuer"
                     | "accountId"
                     | "providerId"
                     | "userId"
@@ -318,6 +324,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "backupCodes"
                     | "userId"
                     | "verified"
+                    | "failedVerificationCount"
+                    | "lockedUntil"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -460,6 +468,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "privateKey"
                     | "createdAt"
                     | "expiresAt"
+                    | "alg"
+                    | "crv"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -609,6 +619,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field:
+                    | "issuer"
                     | "accountId"
                     | "providerId"
                     | "userId"
@@ -686,6 +697,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "backupCodes"
                     | "userId"
                     | "verified"
+                    | "failedVerificationCount"
+                    | "lockedUntil"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -828,6 +841,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "privateKey"
                     | "createdAt"
                     | "expiresAt"
+                    | "alg"
+                    | "crv"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -984,6 +999,476 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
         any,
         Name
       >;
+      incrementOne: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          input:
+            | {
+                increment: Record<string, number>;
+                model: "user";
+                set?: {
+                  createdAt?: number;
+                  displayUsername?: null | string;
+                  email?: string;
+                  emailVerified?: boolean;
+                  image?: null | string;
+                  isAnonymous?: null | boolean;
+                  name?: string;
+                  phoneNumber?: null | string;
+                  phoneNumberVerified?: null | boolean;
+                  twoFactorEnabled?: null | boolean;
+                  updatedAt?: number;
+                  userId?: null | string;
+                  username?: null | string;
+                };
+                where: Array<{
+                  connector?: "AND" | "OR";
+                  field:
+                    | "name"
+                    | "email"
+                    | "emailVerified"
+                    | "image"
+                    | "createdAt"
+                    | "updatedAt"
+                    | "twoFactorEnabled"
+                    | "isAnonymous"
+                    | "username"
+                    | "displayUsername"
+                    | "phoneNumber"
+                    | "phoneNumberVerified"
+                    | "userId"
+                    | "_id";
+                  mode?: "sensitive" | "insensitive";
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "not_in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                increment: Record<string, number>;
+                model: "session";
+                set?: {
+                  createdAt?: number;
+                  expiresAt?: number;
+                  ipAddress?: null | string;
+                  token?: string;
+                  updatedAt?: number;
+                  userAgent?: null | string;
+                  userId?: string;
+                };
+                where: Array<{
+                  connector?: "AND" | "OR";
+                  field:
+                    | "expiresAt"
+                    | "token"
+                    | "createdAt"
+                    | "updatedAt"
+                    | "ipAddress"
+                    | "userAgent"
+                    | "userId"
+                    | "_id";
+                  mode?: "sensitive" | "insensitive";
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "not_in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                increment: Record<string, number>;
+                model: "account";
+                set?: {
+                  accessToken?: null | string;
+                  accessTokenExpiresAt?: null | number;
+                  accountId?: string;
+                  createdAt?: number;
+                  idToken?: null | string;
+                  issuer?: null | string;
+                  password?: null | string;
+                  providerId?: string;
+                  refreshToken?: null | string;
+                  refreshTokenExpiresAt?: null | number;
+                  scope?: null | string;
+                  updatedAt?: number;
+                  userId?: string;
+                };
+                where: Array<{
+                  connector?: "AND" | "OR";
+                  field:
+                    | "issuer"
+                    | "accountId"
+                    | "providerId"
+                    | "userId"
+                    | "accessToken"
+                    | "refreshToken"
+                    | "idToken"
+                    | "accessTokenExpiresAt"
+                    | "refreshTokenExpiresAt"
+                    | "scope"
+                    | "password"
+                    | "createdAt"
+                    | "updatedAt"
+                    | "_id";
+                  mode?: "sensitive" | "insensitive";
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "not_in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                increment: Record<string, number>;
+                model: "verification";
+                set?: {
+                  createdAt?: number;
+                  expiresAt?: number;
+                  identifier?: string;
+                  updatedAt?: number;
+                  value?: string;
+                };
+                where: Array<{
+                  connector?: "AND" | "OR";
+                  field:
+                    | "identifier"
+                    | "value"
+                    | "expiresAt"
+                    | "createdAt"
+                    | "updatedAt"
+                    | "_id";
+                  mode?: "sensitive" | "insensitive";
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "not_in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                increment: Record<string, number>;
+                model: "twoFactor";
+                set?: {
+                  backupCodes?: string;
+                  failedVerificationCount?: null | number;
+                  lockedUntil?: null | number;
+                  secret?: string;
+                  userId?: string;
+                  verified?: null | boolean;
+                };
+                where: Array<{
+                  connector?: "AND" | "OR";
+                  field:
+                    | "secret"
+                    | "backupCodes"
+                    | "userId"
+                    | "verified"
+                    | "failedVerificationCount"
+                    | "lockedUntil"
+                    | "_id";
+                  mode?: "sensitive" | "insensitive";
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "not_in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                increment: Record<string, number>;
+                model: "oauthApplication";
+                set?: {
+                  clientId?: null | string;
+                  clientSecret?: null | string;
+                  createdAt?: null | number;
+                  disabled?: null | boolean;
+                  icon?: null | string;
+                  metadata?: null | string;
+                  name?: null | string;
+                  redirectUrls?: null | string;
+                  type?: null | string;
+                  updatedAt?: null | number;
+                  userId?: null | string;
+                };
+                where: Array<{
+                  connector?: "AND" | "OR";
+                  field:
+                    | "name"
+                    | "icon"
+                    | "metadata"
+                    | "clientId"
+                    | "clientSecret"
+                    | "redirectUrls"
+                    | "type"
+                    | "disabled"
+                    | "userId"
+                    | "createdAt"
+                    | "updatedAt"
+                    | "_id";
+                  mode?: "sensitive" | "insensitive";
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "not_in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                increment: Record<string, number>;
+                model: "oauthAccessToken";
+                set?: {
+                  accessToken?: null | string;
+                  accessTokenExpiresAt?: null | number;
+                  clientId?: null | string;
+                  createdAt?: null | number;
+                  refreshToken?: null | string;
+                  refreshTokenExpiresAt?: null | number;
+                  scopes?: null | string;
+                  updatedAt?: null | number;
+                  userId?: null | string;
+                };
+                where: Array<{
+                  connector?: "AND" | "OR";
+                  field:
+                    | "accessToken"
+                    | "refreshToken"
+                    | "accessTokenExpiresAt"
+                    | "refreshTokenExpiresAt"
+                    | "clientId"
+                    | "userId"
+                    | "scopes"
+                    | "createdAt"
+                    | "updatedAt"
+                    | "_id";
+                  mode?: "sensitive" | "insensitive";
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "not_in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                increment: Record<string, number>;
+                model: "oauthConsent";
+                set?: {
+                  clientId?: null | string;
+                  consentGiven?: null | boolean;
+                  createdAt?: null | number;
+                  scopes?: null | string;
+                  updatedAt?: null | number;
+                  userId?: null | string;
+                };
+                where: Array<{
+                  connector?: "AND" | "OR";
+                  field:
+                    | "clientId"
+                    | "userId"
+                    | "scopes"
+                    | "createdAt"
+                    | "updatedAt"
+                    | "consentGiven"
+                    | "_id";
+                  mode?: "sensitive" | "insensitive";
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "not_in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                increment: Record<string, number>;
+                model: "jwks";
+                set?: {
+                  alg?: null | string;
+                  createdAt?: number;
+                  crv?: null | string;
+                  expiresAt?: null | number;
+                  privateKey?: string;
+                  publicKey?: string;
+                };
+                where: Array<{
+                  connector?: "AND" | "OR";
+                  field:
+                    | "publicKey"
+                    | "privateKey"
+                    | "createdAt"
+                    | "expiresAt"
+                    | "alg"
+                    | "crv"
+                    | "_id";
+                  mode?: "sensitive" | "insensitive";
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "not_in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                increment: Record<string, number>;
+                model: "rateLimit";
+                set?: { count?: number; key?: string; lastRequest?: number };
+                where: Array<{
+                  connector?: "AND" | "OR";
+                  field: "key" | "count" | "lastRequest" | "_id";
+                  mode?: "sensitive" | "insensitive";
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "not_in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              };
+          onUpdateHandle?: string;
+        },
+        any,
+        Name
+      >;
       updateMany: FunctionReference<
         "mutation",
         "internal",
@@ -1097,6 +1582,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   accountId?: string;
                   createdAt?: number;
                   idToken?: null | string;
+                  issuer?: null | string;
                   password?: null | string;
                   providerId?: string;
                   refreshToken?: null | string;
@@ -1108,6 +1594,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field:
+                    | "issuer"
                     | "accountId"
                     | "providerId"
                     | "userId"
@@ -1187,6 +1674,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 model: "twoFactor";
                 update: {
                   backupCodes?: string;
+                  failedVerificationCount?: null | number;
+                  lockedUntil?: null | number;
                   secret?: string;
                   userId?: string;
                   verified?: null | boolean;
@@ -1198,6 +1687,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "backupCodes"
                     | "userId"
                     | "verified"
+                    | "failedVerificationCount"
+                    | "lockedUntil"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -1366,7 +1857,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             | {
                 model: "jwks";
                 update: {
+                  alg?: null | string;
                   createdAt?: number;
+                  crv?: null | string;
                   expiresAt?: null | number;
                   privateKey?: string;
                   publicKey?: string;
@@ -1378,6 +1871,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "privateKey"
                     | "createdAt"
                     | "expiresAt"
+                    | "alg"
+                    | "crv"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -1555,6 +2050,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   accountId?: string;
                   createdAt?: number;
                   idToken?: null | string;
+                  issuer?: null | string;
                   password?: null | string;
                   providerId?: string;
                   refreshToken?: null | string;
@@ -1566,6 +2062,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field:
+                    | "issuer"
                     | "accountId"
                     | "providerId"
                     | "userId"
@@ -1645,6 +2142,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 model: "twoFactor";
                 update: {
                   backupCodes?: string;
+                  failedVerificationCount?: null | number;
+                  lockedUntil?: null | number;
                   secret?: string;
                   userId?: string;
                   verified?: null | boolean;
@@ -1656,6 +2155,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "backupCodes"
                     | "userId"
                     | "verified"
+                    | "failedVerificationCount"
+                    | "lockedUntil"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -1824,7 +2325,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             | {
                 model: "jwks";
                 update: {
+                  alg?: null | string;
                   createdAt?: number;
+                  crv?: null | string;
                   expiresAt?: null | number;
                   privateKey?: string;
                   publicKey?: string;
@@ -1836,6 +2339,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "privateKey"
                     | "createdAt"
                     | "expiresAt"
+                    | "alg"
+                    | "crv"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -1893,6 +2398,105 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
         Name
       >;
     };
+    migrations: {
+      backfillAccountIssuers: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          paginationOpts: {
+            cursor: string | null;
+            endCursor?: string | null;
+            id?: number;
+            maximumBytesRead?: number;
+            maximumRowsRead?: number;
+            numItems: number;
+          };
+          providerIssuers: Record<string, string>;
+        },
+        {
+          alreadyMigrated: number;
+          continueCursor: string;
+          isDone: boolean;
+          migrated: number;
+        },
+        Name
+      >;
+      clearLegacyOAuthProviderRecords: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          paginationOpts: {
+            cursor: string | null;
+            endCursor?: string | null;
+            id?: number;
+            maximumBytesRead?: number;
+            maximumRowsRead?: number;
+            numItems: number;
+          };
+          table: "oauthApplication" | "oauthAccessToken" | "oauthConsent";
+        },
+        { continueCursor: string; deleted: number; isDone: boolean },
+        Name
+      >;
+      listLegacyOAuthApplications: FunctionReference<
+        "query",
+        "internal",
+        {
+          paginationOpts: {
+            cursor: string | null;
+            endCursor?: string | null;
+            id?: number;
+            maximumBytesRead?: number;
+            maximumRowsRead?: number;
+            numItems: number;
+          };
+        },
+        {
+          continueCursor: string;
+          isDone: boolean;
+          page: Array<{
+            _creationTime: number;
+            _id: string;
+            clientId?: null | string;
+            createdAt?: null | number;
+            disabled?: null | boolean;
+            hadClientSecret: boolean;
+            icon?: null | string;
+            metadata?: null | string;
+            name?: null | string;
+            redirectUrls?: null | string;
+            type?: null | string;
+            updatedAt?: null | number;
+            userId?: null | string;
+          }>;
+          pageStatus?: "SplitRecommended" | "SplitRequired" | null;
+          splitCursor?: string | null;
+        },
+        Name
+      >;
+      validateAccountIssuerBackfill: FunctionReference<
+        "query",
+        "internal",
+        {
+          paginationOpts: {
+            cursor: string | null;
+            endCursor?: string | null;
+            id?: number;
+            maximumBytesRead?: number;
+            maximumRowsRead?: number;
+            numItems: number;
+          };
+          providerIssuers: Record<string, string>;
+        },
+        {
+          alreadyMigrated: number;
+          continueCursor: string;
+          isDone: boolean;
+          pending: number;
+        },
+        Name
+      >;
+    };
     testProfiles: {
       adapterAdditionalFields: {
         create: FunctionReference<
@@ -1942,6 +2546,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     accountId: string;
                     createdAt: number;
                     idToken?: null | string;
+                    issuer?: null | string;
                     password?: null | string;
                     providerId: string;
                     refreshToken?: null | string;
@@ -1965,6 +2570,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   data: {
                     backupCodes: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
                     secret: string;
                     userId: string;
                     verified?: null | boolean;
@@ -2014,7 +2621,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 }
               | {
                   data: {
+                    alg?: null | string;
                     createdAt: number;
+                    crv?: null | string;
                     expiresAt?: null | number;
                     privateKey: string;
                     publicKey: string;
@@ -2122,6 +2731,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -2199,6 +2809,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -2341,6 +2953,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -2495,6 +3109,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -2572,6 +3187,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -2714,6 +3331,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -2870,6 +3489,486 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           any,
           Name
         >;
+        incrementOne: FunctionReference<
+          "mutation",
+          "internal",
+          {
+            input:
+              | {
+                  increment: Record<string, number>;
+                  model: "user";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    createdAt?: number;
+                    customField?: null | string;
+                    dateField?: null | number;
+                    displayUsername?: null | string;
+                    email?: string;
+                    emailVerified?: boolean;
+                    image?: null | string;
+                    isAnonymous?: null | boolean;
+                    name?: string;
+                    numericField?: null | number;
+                    phoneNumber?: null | string;
+                    phoneNumberVerified?: null | boolean;
+                    testField?: null | string;
+                    twoFactorEnabled?: null | boolean;
+                    updatedAt?: number;
+                    userId?: null | string;
+                    username?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "email"
+                      | "emailVerified"
+                      | "image"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "twoFactorEnabled"
+                      | "isAnonymous"
+                      | "username"
+                      | "displayUsername"
+                      | "phoneNumber"
+                      | "phoneNumberVerified"
+                      | "userId"
+                      | "customField"
+                      | "numericField"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "dateField"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "session";
+                  set?: {
+                    createdAt?: number;
+                    expiresAt?: number;
+                    ipAddress?: null | string;
+                    token?: string;
+                    updatedAt?: number;
+                    userAgent?: null | string;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "expiresAt"
+                      | "token"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "ipAddress"
+                      | "userAgent"
+                      | "userId"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "account";
+                  set?: {
+                    accessToken?: null | string;
+                    accessTokenExpiresAt?: null | number;
+                    accountId?: string;
+                    createdAt?: number;
+                    idToken?: null | string;
+                    issuer?: null | string;
+                    password?: null | string;
+                    providerId?: string;
+                    refreshToken?: null | string;
+                    refreshTokenExpiresAt?: null | number;
+                    scope?: null | string;
+                    updatedAt?: number;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "issuer"
+                      | "accountId"
+                      | "providerId"
+                      | "userId"
+                      | "accessToken"
+                      | "refreshToken"
+                      | "idToken"
+                      | "accessTokenExpiresAt"
+                      | "refreshTokenExpiresAt"
+                      | "scope"
+                      | "password"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "verification";
+                  set?: {
+                    createdAt?: number;
+                    expiresAt?: number;
+                    identifier?: string;
+                    updatedAt?: number;
+                    value?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "identifier"
+                      | "value"
+                      | "expiresAt"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "twoFactor";
+                  set?: {
+                    backupCodes?: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
+                    secret?: string;
+                    userId?: string;
+                    verified?: null | boolean;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "secret"
+                      | "backupCodes"
+                      | "userId"
+                      | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oauthApplication";
+                  set?: {
+                    clientId?: null | string;
+                    clientSecret?: null | string;
+                    createdAt?: null | number;
+                    disabled?: null | boolean;
+                    icon?: null | string;
+                    metadata?: null | string;
+                    name?: null | string;
+                    redirectUrls?: null | string;
+                    type?: null | string;
+                    updatedAt?: null | number;
+                    userId?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "icon"
+                      | "metadata"
+                      | "clientId"
+                      | "clientSecret"
+                      | "redirectUrls"
+                      | "type"
+                      | "disabled"
+                      | "userId"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oauthAccessToken";
+                  set?: {
+                    accessToken?: null | string;
+                    accessTokenExpiresAt?: null | number;
+                    clientId?: null | string;
+                    createdAt?: null | number;
+                    refreshToken?: null | string;
+                    refreshTokenExpiresAt?: null | number;
+                    scopes?: null | string;
+                    updatedAt?: null | number;
+                    userId?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "accessToken"
+                      | "refreshToken"
+                      | "accessTokenExpiresAt"
+                      | "refreshTokenExpiresAt"
+                      | "clientId"
+                      | "userId"
+                      | "scopes"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oauthConsent";
+                  set?: {
+                    clientId?: null | string;
+                    consentGiven?: null | boolean;
+                    createdAt?: null | number;
+                    scopes?: null | string;
+                    updatedAt?: null | number;
+                    userId?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "clientId"
+                      | "userId"
+                      | "scopes"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "consentGiven"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "jwks";
+                  set?: {
+                    alg?: null | string;
+                    createdAt?: number;
+                    crv?: null | string;
+                    expiresAt?: null | number;
+                    privateKey?: string;
+                    publicKey?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "publicKey"
+                      | "privateKey"
+                      | "createdAt"
+                      | "expiresAt"
+                      | "alg"
+                      | "crv"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "rateLimit";
+                  set?: { count?: number; key?: string; lastRequest?: number };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field: "key" | "count" | "lastRequest" | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                };
+            onUpdateHandle?: string;
+          },
+          any,
+          Name
+        >;
         updateMany: FunctionReference<
           "mutation",
           "internal",
@@ -2993,6 +4092,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     accountId?: string;
                     createdAt?: number;
                     idToken?: null | string;
+                    issuer?: null | string;
                     password?: null | string;
                     providerId?: string;
                     refreshToken?: null | string;
@@ -3004,6 +4104,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -3083,6 +4184,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "twoFactor";
                   update: {
                     backupCodes?: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
                     secret?: string;
                     userId?: string;
                     verified?: null | boolean;
@@ -3094,6 +4197,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -3262,7 +4367,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   model: "jwks";
                   update: {
+                    alg?: null | string;
                     createdAt?: number;
+                    crv?: null | string;
                     expiresAt?: null | number;
                     privateKey?: string;
                     publicKey?: string;
@@ -3274,6 +4381,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -3465,6 +4574,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     accountId?: string;
                     createdAt?: number;
                     idToken?: null | string;
+                    issuer?: null | string;
                     password?: null | string;
                     providerId?: string;
                     refreshToken?: null | string;
@@ -3476,6 +4586,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -3555,6 +4666,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "twoFactor";
                   update: {
                     backupCodes?: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
                     secret?: string;
                     userId?: string;
                     verified?: null | boolean;
@@ -3566,6 +4679,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -3734,7 +4849,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   model: "jwks";
                   update: {
+                    alg?: null | string;
                     createdAt?: number;
+                    crv?: null | string;
                     expiresAt?: null | number;
                     privateKey?: string;
                     publicKey?: string;
@@ -3746,6 +4863,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -3856,6 +4975,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     accountId: string;
                     createdAt: number;
                     idToken?: null | string;
+                    issuer?: null | string;
                     password?: null | string;
                     providerId: string;
                     refreshToken?: null | string;
@@ -3879,6 +4999,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   data: {
                     backupCodes: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
                     secret: string;
                     userId: string;
                     verified?: null | boolean;
@@ -3928,7 +5050,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 }
               | {
                   data: {
+                    alg?: null | string;
                     createdAt: number;
+                    crv?: null | string;
                     expiresAt?: null | number;
                     privateKey: string;
                     publicKey: string;
@@ -4030,6 +5154,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   data: {
                     createdAt: number;
+                    memberCount: number;
                     name: string;
                     organizationId: string;
                     updatedAt?: null | number;
@@ -4039,6 +5164,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   data: {
                     createdAt?: null | number;
+                    membershipKey?: null | string;
                     teamId: string;
                     userId: string;
                   };
@@ -4156,6 +5282,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -4233,6 +5360,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -4375,6 +5504,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -4680,6 +5811,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     connector?: "AND" | "OR";
                     field:
                       | "name"
+                      | "memberCount"
                       | "organizationId"
                       | "createdAt"
                       | "updatedAt"
@@ -4710,7 +5842,12 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "teamMember";
                   where?: Array<{
                     connector?: "AND" | "OR";
-                    field: "teamId" | "userId" | "createdAt" | "_id";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
                       | "lt"
@@ -4875,6 +6012,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -4952,6 +6090,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -5094,6 +6234,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -5399,6 +6541,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     connector?: "AND" | "OR";
                     field:
                       | "name"
+                      | "memberCount"
                       | "organizationId"
                       | "createdAt"
                       | "updatedAt"
@@ -5429,7 +6572,12 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "teamMember";
                   where?: Array<{
                     connector?: "AND" | "OR";
-                    field: "teamId" | "userId" | "createdAt" | "_id";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
                       | "lt"
@@ -5615,6 +6763,943 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           any,
           Name
         >;
+        incrementOne: FunctionReference<
+          "mutation",
+          "internal",
+          {
+            input:
+              | {
+                  increment: Record<string, number>;
+                  model: "user";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    createdAt?: number;
+                    customField?: null | string;
+                    dateField?: null | number;
+                    displayUsername?: null | string;
+                    email?: null | string;
+                    emailVerified?: boolean;
+                    email_address?: null | string;
+                    image?: null | string;
+                    isAnonymous?: null | boolean;
+                    name?: string;
+                    numericField?: null | number;
+                    phoneNumber?: null | string;
+                    phoneNumberVerified?: null | boolean;
+                    testField?: null | string;
+                    twoFactorEnabled?: null | boolean;
+                    updatedAt?: number;
+                    userId?: null | string;
+                    username?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "email"
+                      | "email_address"
+                      | "emailVerified"
+                      | "image"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "twoFactorEnabled"
+                      | "isAnonymous"
+                      | "username"
+                      | "displayUsername"
+                      | "phoneNumber"
+                      | "phoneNumberVerified"
+                      | "userId"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "customField"
+                      | "numericField"
+                      | "dateField"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "session";
+                  set?: {
+                    createdAt?: number;
+                    expiresAt?: number;
+                    ipAddress?: null | string;
+                    token?: string;
+                    updatedAt?: number;
+                    userAgent?: null | string;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "expiresAt"
+                      | "token"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "ipAddress"
+                      | "userAgent"
+                      | "userId"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "account";
+                  set?: {
+                    accessToken?: null | string;
+                    accessTokenExpiresAt?: null | number;
+                    accountId?: string;
+                    createdAt?: number;
+                    idToken?: null | string;
+                    issuer?: null | string;
+                    password?: null | string;
+                    providerId?: string;
+                    refreshToken?: null | string;
+                    refreshTokenExpiresAt?: null | number;
+                    scope?: null | string;
+                    updatedAt?: number;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "issuer"
+                      | "accountId"
+                      | "providerId"
+                      | "userId"
+                      | "accessToken"
+                      | "refreshToken"
+                      | "idToken"
+                      | "accessTokenExpiresAt"
+                      | "refreshTokenExpiresAt"
+                      | "scope"
+                      | "password"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "verification";
+                  set?: {
+                    createdAt?: number;
+                    expiresAt?: number;
+                    identifier?: string;
+                    updatedAt?: number;
+                    value?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "identifier"
+                      | "value"
+                      | "expiresAt"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "twoFactor";
+                  set?: {
+                    backupCodes?: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
+                    secret?: string;
+                    userId?: string;
+                    verified?: null | boolean;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "secret"
+                      | "backupCodes"
+                      | "userId"
+                      | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oauthApplication";
+                  set?: {
+                    clientId?: null | string;
+                    clientSecret?: null | string;
+                    createdAt?: null | number;
+                    disabled?: null | boolean;
+                    icon?: null | string;
+                    metadata?: null | string;
+                    name?: null | string;
+                    redirectUrls?: null | string;
+                    type?: null | string;
+                    updatedAt?: null | number;
+                    userId?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "icon"
+                      | "metadata"
+                      | "clientId"
+                      | "clientSecret"
+                      | "redirectUrls"
+                      | "type"
+                      | "disabled"
+                      | "userId"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oauthAccessToken";
+                  set?: {
+                    accessToken?: null | string;
+                    accessTokenExpiresAt?: null | number;
+                    clientId?: null | string;
+                    createdAt?: null | number;
+                    refreshToken?: null | string;
+                    refreshTokenExpiresAt?: null | number;
+                    scopes?: null | string;
+                    updatedAt?: null | number;
+                    userId?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "accessToken"
+                      | "refreshToken"
+                      | "accessTokenExpiresAt"
+                      | "refreshTokenExpiresAt"
+                      | "clientId"
+                      | "userId"
+                      | "scopes"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oauthConsent";
+                  set?: {
+                    clientId?: null | string;
+                    consentGiven?: null | boolean;
+                    createdAt?: null | number;
+                    scopes?: null | string;
+                    updatedAt?: null | number;
+                    userId?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "clientId"
+                      | "userId"
+                      | "scopes"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "consentGiven"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "jwks";
+                  set?: {
+                    alg?: null | string;
+                    createdAt?: number;
+                    crv?: null | string;
+                    expiresAt?: null | number;
+                    privateKey?: string;
+                    publicKey?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "publicKey"
+                      | "privateKey"
+                      | "createdAt"
+                      | "expiresAt"
+                      | "alg"
+                      | "crv"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "rateLimit";
+                  set?: { count?: number; key?: string; lastRequest?: number };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field: "key" | "count" | "lastRequest" | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "user_custom";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    createdAt?: number;
+                    customField?: null | string;
+                    dateField?: null | number;
+                    displayUsername?: null | string;
+                    email?: null | string;
+                    emailVerified?: boolean;
+                    email_address?: null | string;
+                    image?: null | string;
+                    isAnonymous?: null | boolean;
+                    name?: string;
+                    numericField?: null | number;
+                    phoneNumber?: null | string;
+                    phoneNumberVerified?: null | boolean;
+                    testField?: null | string;
+                    twoFactorEnabled?: null | boolean;
+                    updatedAt?: number;
+                    userId?: null | string;
+                    username?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "email"
+                      | "email_address"
+                      | "emailVerified"
+                      | "image"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "twoFactorEnabled"
+                      | "isAnonymous"
+                      | "username"
+                      | "displayUsername"
+                      | "phoneNumber"
+                      | "phoneNumberVerified"
+                      | "userId"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "customField"
+                      | "numericField"
+                      | "dateField"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "user_table";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    createdAt?: number;
+                    customField?: null | string;
+                    dateField?: null | number;
+                    displayUsername?: null | string;
+                    email?: null | string;
+                    emailVerified?: boolean;
+                    email_address?: null | string;
+                    image?: null | string;
+                    isAnonymous?: null | boolean;
+                    name?: string;
+                    numericField?: null | number;
+                    phoneNumber?: null | string;
+                    phoneNumberVerified?: null | boolean;
+                    testField?: null | string;
+                    twoFactorEnabled?: null | boolean;
+                    updatedAt?: number;
+                    userId?: null | string;
+                    username?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "email"
+                      | "email_address"
+                      | "emailVerified"
+                      | "image"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "twoFactorEnabled"
+                      | "isAnonymous"
+                      | "username"
+                      | "displayUsername"
+                      | "phoneNumber"
+                      | "phoneNumberVerified"
+                      | "userId"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "customField"
+                      | "numericField"
+                      | "dateField"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oneToOneTable";
+                  set?: { oneToOne?: string };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field: "oneToOne" | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "one_to_one_table";
+                  set?: {
+                    oneToOne?: null | string;
+                    one_to_one?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field: "oneToOne" | "one_to_one" | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "testModel";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    json?: any;
+                    nullableReference?: null | string;
+                    numberArray?: null | Array<number>;
+                    stringArray?: null | Array<string>;
+                    testField?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "nullableReference"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "stringArray"
+                      | "numberArray"
+                      | "json"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "organization";
+                  set?: {
+                    createdAt?: number;
+                    logo?: null | string;
+                    metadata?: null | string;
+                    name?: string;
+                    slug?: string;
+                    updatedAt?: null | number;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "slug"
+                      | "logo"
+                      | "metadata"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "member";
+                  set?: {
+                    createdAt?: number;
+                    organizationId?: string;
+                    role?: string;
+                    updatedAt?: null | number;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "organizationId"
+                      | "userId"
+                      | "role"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "team";
+                  set?: {
+                    createdAt?: number;
+                    memberCount?: number;
+                    name?: string;
+                    organizationId?: string;
+                    updatedAt?: null | number;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "memberCount"
+                      | "organizationId"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "teamMember";
+                  set?: {
+                    createdAt?: null | number;
+                    membershipKey?: null | string;
+                    teamId?: string;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "invitation";
+                  set?: {
+                    createdAt?: null | number;
+                    email?: null | string;
+                    expiresAt?: null | number;
+                    inviterId?: null | string;
+                    organizationId?: null | string;
+                    role?: null | string;
+                    status?: null | string;
+                    teamId?: null | string;
+                    updatedAt?: null | number;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "email"
+                      | "role"
+                      | "status"
+                      | "organizationId"
+                      | "teamId"
+                      | "inviterId"
+                      | "expiresAt"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                };
+            onUpdateHandle?: string;
+          },
+          any,
+          Name
+        >;
         updateMany: FunctionReference<
           "mutation",
           "internal",
@@ -5740,6 +7825,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     accountId?: string;
                     createdAt?: number;
                     idToken?: null | string;
+                    issuer?: null | string;
                     password?: null | string;
                     providerId?: string;
                     refreshToken?: null | string;
@@ -5751,6 +7837,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -5830,6 +7917,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "twoFactor";
                   update: {
                     backupCodes?: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
                     secret?: string;
                     userId?: string;
                     verified?: null | boolean;
@@ -5841,6 +7930,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -6009,7 +8100,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   model: "jwks";
                   update: {
+                    alg?: null | string;
                     createdAt?: number;
+                    crv?: null | string;
                     expiresAt?: null | number;
                     privateKey?: string;
                     publicKey?: string;
@@ -6021,6 +8114,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -6399,6 +8494,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "team";
                   update: {
                     createdAt?: number;
+                    memberCount?: number;
                     name?: string;
                     organizationId?: string;
                     updatedAt?: null | number;
@@ -6407,6 +8503,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     connector?: "AND" | "OR";
                     field:
                       | "name"
+                      | "memberCount"
                       | "organizationId"
                       | "createdAt"
                       | "updatedAt"
@@ -6437,12 +8534,18 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "teamMember";
                   update: {
                     createdAt?: null | number;
+                    membershipKey?: null | string;
                     teamId?: string;
                     userId?: string;
                   };
                   where?: Array<{
                     connector?: "AND" | "OR";
-                    field: "teamId" | "userId" | "createdAt" | "_id";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
                       | "lt"
@@ -6651,6 +8754,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     accountId?: string;
                     createdAt?: number;
                     idToken?: null | string;
+                    issuer?: null | string;
                     password?: null | string;
                     providerId?: string;
                     refreshToken?: null | string;
@@ -6662,6 +8766,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -6741,6 +8846,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "twoFactor";
                   update: {
                     backupCodes?: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
                     secret?: string;
                     userId?: string;
                     verified?: null | boolean;
@@ -6752,6 +8859,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -6920,7 +9029,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   model: "jwks";
                   update: {
+                    alg?: null | string;
                     createdAt?: number;
+                    crv?: null | string;
                     expiresAt?: null | number;
                     privateKey?: string;
                     publicKey?: string;
@@ -6932,6 +9043,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -7310,6 +9423,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "team";
                   update: {
                     createdAt?: number;
+                    memberCount?: number;
                     name?: string;
                     organizationId?: string;
                     updatedAt?: null | number;
@@ -7318,6 +9432,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     connector?: "AND" | "OR";
                     field:
                       | "name"
+                      | "memberCount"
                       | "organizationId"
                       | "createdAt"
                       | "updatedAt"
@@ -7348,12 +9463,18 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "teamMember";
                   update: {
                     createdAt?: null | number;
+                    membershipKey?: null | string;
                     teamId?: string;
                     userId?: string;
                   };
                   where?: Array<{
                     connector?: "AND" | "OR";
-                    field: "teamId" | "userId" | "createdAt" | "_id";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
                       | "lt"
@@ -7479,6 +9600,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     accountId: string;
                     createdAt: number;
                     idToken?: null | string;
+                    issuer?: null | string;
                     password?: null | string;
                     providerId: string;
                     refreshToken?: null | string;
@@ -7502,6 +9624,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   data: {
                     backupCodes: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
                     secret: string;
                     userId: string;
                     verified?: null | boolean;
@@ -7551,7 +9675,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 }
               | {
                   data: {
+                    alg?: null | string;
                     createdAt: number;
+                    crv?: null | string;
                     expiresAt?: null | number;
                     privateKey: string;
                     publicKey: string;
@@ -7653,6 +9779,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   data: {
                     createdAt: number;
+                    memberCount: number;
                     name: string;
                     organizationId: string;
                     updatedAt?: null | number;
@@ -7662,6 +9789,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   data: {
                     createdAt?: null | number;
+                    membershipKey?: null | string;
                     teamId: string;
                     userId: string;
                   };
@@ -7779,6 +9907,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -7856,6 +9985,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -7998,6 +10129,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -8303,6 +10436,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     connector?: "AND" | "OR";
                     field:
                       | "name"
+                      | "memberCount"
                       | "organizationId"
                       | "createdAt"
                       | "updatedAt"
@@ -8333,7 +10467,12 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "teamMember";
                   where?: Array<{
                     connector?: "AND" | "OR";
-                    field: "teamId" | "userId" | "createdAt" | "_id";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
                       | "lt"
@@ -8498,6 +10637,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -8575,6 +10715,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -8717,6 +10859,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -9022,6 +11166,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     connector?: "AND" | "OR";
                     field:
                       | "name"
+                      | "memberCount"
                       | "organizationId"
                       | "createdAt"
                       | "updatedAt"
@@ -9052,7 +11197,12 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "teamMember";
                   where?: Array<{
                     connector?: "AND" | "OR";
-                    field: "teamId" | "userId" | "createdAt" | "_id";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
                       | "lt"
@@ -9238,6 +11388,943 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           any,
           Name
         >;
+        incrementOne: FunctionReference<
+          "mutation",
+          "internal",
+          {
+            input:
+              | {
+                  increment: Record<string, number>;
+                  model: "user";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    createdAt?: number;
+                    customField?: null | string;
+                    dateField?: null | number;
+                    displayUsername?: null | string;
+                    email?: null | string;
+                    emailVerified?: boolean;
+                    email_address?: null | string;
+                    image?: null | string;
+                    isAnonymous?: null | boolean;
+                    name?: string;
+                    numericField?: null | number;
+                    phoneNumber?: null | string;
+                    phoneNumberVerified?: null | boolean;
+                    testField?: null | string;
+                    twoFactorEnabled?: null | boolean;
+                    updatedAt?: number;
+                    userId?: null | string;
+                    username?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "email"
+                      | "email_address"
+                      | "emailVerified"
+                      | "image"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "twoFactorEnabled"
+                      | "isAnonymous"
+                      | "username"
+                      | "displayUsername"
+                      | "phoneNumber"
+                      | "phoneNumberVerified"
+                      | "userId"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "customField"
+                      | "numericField"
+                      | "dateField"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "session";
+                  set?: {
+                    createdAt?: number;
+                    expiresAt?: number;
+                    ipAddress?: null | string;
+                    token?: string;
+                    updatedAt?: number;
+                    userAgent?: null | string;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "expiresAt"
+                      | "token"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "ipAddress"
+                      | "userAgent"
+                      | "userId"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "account";
+                  set?: {
+                    accessToken?: null | string;
+                    accessTokenExpiresAt?: null | number;
+                    accountId?: string;
+                    createdAt?: number;
+                    idToken?: null | string;
+                    issuer?: null | string;
+                    password?: null | string;
+                    providerId?: string;
+                    refreshToken?: null | string;
+                    refreshTokenExpiresAt?: null | number;
+                    scope?: null | string;
+                    updatedAt?: number;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "issuer"
+                      | "accountId"
+                      | "providerId"
+                      | "userId"
+                      | "accessToken"
+                      | "refreshToken"
+                      | "idToken"
+                      | "accessTokenExpiresAt"
+                      | "refreshTokenExpiresAt"
+                      | "scope"
+                      | "password"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "verification";
+                  set?: {
+                    createdAt?: number;
+                    expiresAt?: number;
+                    identifier?: string;
+                    updatedAt?: number;
+                    value?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "identifier"
+                      | "value"
+                      | "expiresAt"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "twoFactor";
+                  set?: {
+                    backupCodes?: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
+                    secret?: string;
+                    userId?: string;
+                    verified?: null | boolean;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "secret"
+                      | "backupCodes"
+                      | "userId"
+                      | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oauthApplication";
+                  set?: {
+                    clientId?: null | string;
+                    clientSecret?: null | string;
+                    createdAt?: null | number;
+                    disabled?: null | boolean;
+                    icon?: null | string;
+                    metadata?: null | string;
+                    name?: null | string;
+                    redirectUrls?: null | string;
+                    type?: null | string;
+                    updatedAt?: null | number;
+                    userId?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "icon"
+                      | "metadata"
+                      | "clientId"
+                      | "clientSecret"
+                      | "redirectUrls"
+                      | "type"
+                      | "disabled"
+                      | "userId"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oauthAccessToken";
+                  set?: {
+                    accessToken?: null | string;
+                    accessTokenExpiresAt?: null | number;
+                    clientId?: null | string;
+                    createdAt?: null | number;
+                    refreshToken?: null | string;
+                    refreshTokenExpiresAt?: null | number;
+                    scopes?: null | string;
+                    updatedAt?: null | number;
+                    userId?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "accessToken"
+                      | "refreshToken"
+                      | "accessTokenExpiresAt"
+                      | "refreshTokenExpiresAt"
+                      | "clientId"
+                      | "userId"
+                      | "scopes"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oauthConsent";
+                  set?: {
+                    clientId?: null | string;
+                    consentGiven?: null | boolean;
+                    createdAt?: null | number;
+                    scopes?: null | string;
+                    updatedAt?: null | number;
+                    userId?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "clientId"
+                      | "userId"
+                      | "scopes"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "consentGiven"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "jwks";
+                  set?: {
+                    alg?: null | string;
+                    createdAt?: number;
+                    crv?: null | string;
+                    expiresAt?: null | number;
+                    privateKey?: string;
+                    publicKey?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "publicKey"
+                      | "privateKey"
+                      | "createdAt"
+                      | "expiresAt"
+                      | "alg"
+                      | "crv"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "rateLimit";
+                  set?: { count?: number; key?: string; lastRequest?: number };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field: "key" | "count" | "lastRequest" | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "user_custom";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    createdAt?: number;
+                    customField?: null | string;
+                    dateField?: null | number;
+                    displayUsername?: null | string;
+                    email?: null | string;
+                    emailVerified?: boolean;
+                    email_address?: null | string;
+                    image?: null | string;
+                    isAnonymous?: null | boolean;
+                    name?: string;
+                    numericField?: null | number;
+                    phoneNumber?: null | string;
+                    phoneNumberVerified?: null | boolean;
+                    testField?: null | string;
+                    twoFactorEnabled?: null | boolean;
+                    updatedAt?: number;
+                    userId?: null | string;
+                    username?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "email"
+                      | "email_address"
+                      | "emailVerified"
+                      | "image"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "twoFactorEnabled"
+                      | "isAnonymous"
+                      | "username"
+                      | "displayUsername"
+                      | "phoneNumber"
+                      | "phoneNumberVerified"
+                      | "userId"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "customField"
+                      | "numericField"
+                      | "dateField"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "user_table";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    createdAt?: number;
+                    customField?: null | string;
+                    dateField?: null | number;
+                    displayUsername?: null | string;
+                    email?: null | string;
+                    emailVerified?: boolean;
+                    email_address?: null | string;
+                    image?: null | string;
+                    isAnonymous?: null | boolean;
+                    name?: string;
+                    numericField?: null | number;
+                    phoneNumber?: null | string;
+                    phoneNumberVerified?: null | boolean;
+                    testField?: null | string;
+                    twoFactorEnabled?: null | boolean;
+                    updatedAt?: number;
+                    userId?: null | string;
+                    username?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "email"
+                      | "email_address"
+                      | "emailVerified"
+                      | "image"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "twoFactorEnabled"
+                      | "isAnonymous"
+                      | "username"
+                      | "displayUsername"
+                      | "phoneNumber"
+                      | "phoneNumberVerified"
+                      | "userId"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "customField"
+                      | "numericField"
+                      | "dateField"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oneToOneTable";
+                  set?: { oneToOne?: string };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field: "oneToOne" | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "one_to_one_table";
+                  set?: {
+                    oneToOne?: null | string;
+                    one_to_one?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field: "oneToOne" | "one_to_one" | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "testModel";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    json?: any;
+                    nullableReference?: null | string;
+                    numberArray?: null | Array<number>;
+                    stringArray?: null | Array<string>;
+                    testField?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "nullableReference"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "stringArray"
+                      | "numberArray"
+                      | "json"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "organization";
+                  set?: {
+                    createdAt?: number;
+                    logo?: null | string;
+                    metadata?: null | string;
+                    name?: string;
+                    slug?: string;
+                    updatedAt?: null | number;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "slug"
+                      | "logo"
+                      | "metadata"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "member";
+                  set?: {
+                    createdAt?: number;
+                    organizationId?: string;
+                    role?: string;
+                    updatedAt?: null | number;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "organizationId"
+                      | "userId"
+                      | "role"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "team";
+                  set?: {
+                    createdAt?: number;
+                    memberCount?: number;
+                    name?: string;
+                    organizationId?: string;
+                    updatedAt?: null | number;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "memberCount"
+                      | "organizationId"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "teamMember";
+                  set?: {
+                    createdAt?: null | number;
+                    membershipKey?: null | string;
+                    teamId?: string;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "invitation";
+                  set?: {
+                    createdAt?: null | number;
+                    email?: null | string;
+                    expiresAt?: null | number;
+                    inviterId?: null | string;
+                    organizationId?: null | string;
+                    role?: null | string;
+                    status?: null | string;
+                    teamId?: null | string;
+                    updatedAt?: null | number;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "email"
+                      | "role"
+                      | "status"
+                      | "organizationId"
+                      | "teamId"
+                      | "inviterId"
+                      | "expiresAt"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                };
+            onUpdateHandle?: string;
+          },
+          any,
+          Name
+        >;
         updateMany: FunctionReference<
           "mutation",
           "internal",
@@ -9363,6 +12450,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     accountId?: string;
                     createdAt?: number;
                     idToken?: null | string;
+                    issuer?: null | string;
                     password?: null | string;
                     providerId?: string;
                     refreshToken?: null | string;
@@ -9374,6 +12462,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -9453,6 +12542,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "twoFactor";
                   update: {
                     backupCodes?: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
                     secret?: string;
                     userId?: string;
                     verified?: null | boolean;
@@ -9464,6 +12555,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -9632,7 +12725,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   model: "jwks";
                   update: {
+                    alg?: null | string;
                     createdAt?: number;
+                    crv?: null | string;
                     expiresAt?: null | number;
                     privateKey?: string;
                     publicKey?: string;
@@ -9644,6 +12739,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -10022,6 +13119,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "team";
                   update: {
                     createdAt?: number;
+                    memberCount?: number;
                     name?: string;
                     organizationId?: string;
                     updatedAt?: null | number;
@@ -10030,6 +13128,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     connector?: "AND" | "OR";
                     field:
                       | "name"
+                      | "memberCount"
                       | "organizationId"
                       | "createdAt"
                       | "updatedAt"
@@ -10060,12 +13159,18 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "teamMember";
                   update: {
                     createdAt?: null | number;
+                    membershipKey?: null | string;
                     teamId?: string;
                     userId?: string;
                   };
                   where?: Array<{
                     connector?: "AND" | "OR";
-                    field: "teamId" | "userId" | "createdAt" | "_id";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
                       | "lt"
@@ -10274,6 +13379,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     accountId?: string;
                     createdAt?: number;
                     idToken?: null | string;
+                    issuer?: null | string;
                     password?: null | string;
                     providerId?: string;
                     refreshToken?: null | string;
@@ -10285,6 +13391,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -10364,6 +13471,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "twoFactor";
                   update: {
                     backupCodes?: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
                     secret?: string;
                     userId?: string;
                     verified?: null | boolean;
@@ -10375,6 +13484,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -10543,7 +13654,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   model: "jwks";
                   update: {
+                    alg?: null | string;
                     createdAt?: number;
+                    crv?: null | string;
                     expiresAt?: null | number;
                     privateKey?: string;
                     publicKey?: string;
@@ -10555,6 +13668,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -10933,6 +14048,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "team";
                   update: {
                     createdAt?: number;
+                    memberCount?: number;
                     name?: string;
                     organizationId?: string;
                     updatedAt?: null | number;
@@ -10941,6 +14057,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     connector?: "AND" | "OR";
                     field:
                       | "name"
+                      | "memberCount"
                       | "organizationId"
                       | "createdAt"
                       | "updatedAt"
@@ -10971,12 +14088,18 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "teamMember";
                   update: {
                     createdAt?: null | number;
+                    membershipKey?: null | string;
                     teamId?: string;
                     userId?: string;
                   };
                   where?: Array<{
                     connector?: "AND" | "OR";
-                    field: "teamId" | "userId" | "createdAt" | "_id";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
                       | "lt"
@@ -11102,6 +14225,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     accountId: string;
                     createdAt: number;
                     idToken?: null | string;
+                    issuer?: null | string;
                     password?: null | string;
                     providerId: string;
                     refreshToken?: null | string;
@@ -11125,6 +14249,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   data: {
                     backupCodes: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
                     secret: string;
                     userId: string;
                     verified?: null | boolean;
@@ -11174,7 +14300,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 }
               | {
                   data: {
+                    alg?: null | string;
                     createdAt: number;
+                    crv?: null | string;
                     expiresAt?: null | number;
                     privateKey: string;
                     publicKey: string;
@@ -11276,6 +14404,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   data: {
                     createdAt: number;
+                    memberCount: number;
                     name: string;
                     organizationId: string;
                     updatedAt?: null | number;
@@ -11285,6 +14414,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   data: {
                     createdAt?: null | number;
+                    membershipKey?: null | string;
                     teamId: string;
                     userId: string;
                   };
@@ -11402,6 +14532,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -11479,6 +14610,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -11621,6 +14754,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -11926,6 +15061,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     connector?: "AND" | "OR";
                     field:
                       | "name"
+                      | "memberCount"
                       | "organizationId"
                       | "createdAt"
                       | "updatedAt"
@@ -11956,7 +15092,12 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "teamMember";
                   where?: Array<{
                     connector?: "AND" | "OR";
-                    field: "teamId" | "userId" | "createdAt" | "_id";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
                       | "lt"
@@ -12121,6 +15262,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -12198,6 +15340,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -12340,6 +15484,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -12645,6 +15791,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     connector?: "AND" | "OR";
                     field:
                       | "name"
+                      | "memberCount"
                       | "organizationId"
                       | "createdAt"
                       | "updatedAt"
@@ -12675,7 +15822,12 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "teamMember";
                   where?: Array<{
                     connector?: "AND" | "OR";
-                    field: "teamId" | "userId" | "createdAt" | "_id";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
                       | "lt"
@@ -12861,6 +16013,943 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           any,
           Name
         >;
+        incrementOne: FunctionReference<
+          "mutation",
+          "internal",
+          {
+            input:
+              | {
+                  increment: Record<string, number>;
+                  model: "user";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    createdAt?: number;
+                    customField?: null | string;
+                    dateField?: null | number;
+                    displayUsername?: null | string;
+                    email?: null | string;
+                    emailVerified?: boolean;
+                    email_address?: null | string;
+                    image?: null | string;
+                    isAnonymous?: null | boolean;
+                    name?: string;
+                    numericField?: null | number;
+                    phoneNumber?: null | string;
+                    phoneNumberVerified?: null | boolean;
+                    testField?: null | string;
+                    twoFactorEnabled?: null | boolean;
+                    updatedAt?: number;
+                    userId?: null | string;
+                    username?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "email"
+                      | "email_address"
+                      | "emailVerified"
+                      | "image"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "twoFactorEnabled"
+                      | "isAnonymous"
+                      | "username"
+                      | "displayUsername"
+                      | "phoneNumber"
+                      | "phoneNumberVerified"
+                      | "userId"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "customField"
+                      | "numericField"
+                      | "dateField"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "session";
+                  set?: {
+                    createdAt?: number;
+                    expiresAt?: number;
+                    ipAddress?: null | string;
+                    token?: string;
+                    updatedAt?: number;
+                    userAgent?: null | string;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "expiresAt"
+                      | "token"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "ipAddress"
+                      | "userAgent"
+                      | "userId"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "account";
+                  set?: {
+                    accessToken?: null | string;
+                    accessTokenExpiresAt?: null | number;
+                    accountId?: string;
+                    createdAt?: number;
+                    idToken?: null | string;
+                    issuer?: null | string;
+                    password?: null | string;
+                    providerId?: string;
+                    refreshToken?: null | string;
+                    refreshTokenExpiresAt?: null | number;
+                    scope?: null | string;
+                    updatedAt?: number;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "issuer"
+                      | "accountId"
+                      | "providerId"
+                      | "userId"
+                      | "accessToken"
+                      | "refreshToken"
+                      | "idToken"
+                      | "accessTokenExpiresAt"
+                      | "refreshTokenExpiresAt"
+                      | "scope"
+                      | "password"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "verification";
+                  set?: {
+                    createdAt?: number;
+                    expiresAt?: number;
+                    identifier?: string;
+                    updatedAt?: number;
+                    value?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "identifier"
+                      | "value"
+                      | "expiresAt"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "twoFactor";
+                  set?: {
+                    backupCodes?: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
+                    secret?: string;
+                    userId?: string;
+                    verified?: null | boolean;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "secret"
+                      | "backupCodes"
+                      | "userId"
+                      | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oauthApplication";
+                  set?: {
+                    clientId?: null | string;
+                    clientSecret?: null | string;
+                    createdAt?: null | number;
+                    disabled?: null | boolean;
+                    icon?: null | string;
+                    metadata?: null | string;
+                    name?: null | string;
+                    redirectUrls?: null | string;
+                    type?: null | string;
+                    updatedAt?: null | number;
+                    userId?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "icon"
+                      | "metadata"
+                      | "clientId"
+                      | "clientSecret"
+                      | "redirectUrls"
+                      | "type"
+                      | "disabled"
+                      | "userId"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oauthAccessToken";
+                  set?: {
+                    accessToken?: null | string;
+                    accessTokenExpiresAt?: null | number;
+                    clientId?: null | string;
+                    createdAt?: null | number;
+                    refreshToken?: null | string;
+                    refreshTokenExpiresAt?: null | number;
+                    scopes?: null | string;
+                    updatedAt?: null | number;
+                    userId?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "accessToken"
+                      | "refreshToken"
+                      | "accessTokenExpiresAt"
+                      | "refreshTokenExpiresAt"
+                      | "clientId"
+                      | "userId"
+                      | "scopes"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oauthConsent";
+                  set?: {
+                    clientId?: null | string;
+                    consentGiven?: null | boolean;
+                    createdAt?: null | number;
+                    scopes?: null | string;
+                    updatedAt?: null | number;
+                    userId?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "clientId"
+                      | "userId"
+                      | "scopes"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "consentGiven"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "jwks";
+                  set?: {
+                    alg?: null | string;
+                    createdAt?: number;
+                    crv?: null | string;
+                    expiresAt?: null | number;
+                    privateKey?: string;
+                    publicKey?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "publicKey"
+                      | "privateKey"
+                      | "createdAt"
+                      | "expiresAt"
+                      | "alg"
+                      | "crv"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "rateLimit";
+                  set?: { count?: number; key?: string; lastRequest?: number };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field: "key" | "count" | "lastRequest" | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "user_custom";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    createdAt?: number;
+                    customField?: null | string;
+                    dateField?: null | number;
+                    displayUsername?: null | string;
+                    email?: null | string;
+                    emailVerified?: boolean;
+                    email_address?: null | string;
+                    image?: null | string;
+                    isAnonymous?: null | boolean;
+                    name?: string;
+                    numericField?: null | number;
+                    phoneNumber?: null | string;
+                    phoneNumberVerified?: null | boolean;
+                    testField?: null | string;
+                    twoFactorEnabled?: null | boolean;
+                    updatedAt?: number;
+                    userId?: null | string;
+                    username?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "email"
+                      | "email_address"
+                      | "emailVerified"
+                      | "image"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "twoFactorEnabled"
+                      | "isAnonymous"
+                      | "username"
+                      | "displayUsername"
+                      | "phoneNumber"
+                      | "phoneNumberVerified"
+                      | "userId"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "customField"
+                      | "numericField"
+                      | "dateField"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "user_table";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    createdAt?: number;
+                    customField?: null | string;
+                    dateField?: null | number;
+                    displayUsername?: null | string;
+                    email?: null | string;
+                    emailVerified?: boolean;
+                    email_address?: null | string;
+                    image?: null | string;
+                    isAnonymous?: null | boolean;
+                    name?: string;
+                    numericField?: null | number;
+                    phoneNumber?: null | string;
+                    phoneNumberVerified?: null | boolean;
+                    testField?: null | string;
+                    twoFactorEnabled?: null | boolean;
+                    updatedAt?: number;
+                    userId?: null | string;
+                    username?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "email"
+                      | "email_address"
+                      | "emailVerified"
+                      | "image"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "twoFactorEnabled"
+                      | "isAnonymous"
+                      | "username"
+                      | "displayUsername"
+                      | "phoneNumber"
+                      | "phoneNumberVerified"
+                      | "userId"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "customField"
+                      | "numericField"
+                      | "dateField"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oneToOneTable";
+                  set?: { oneToOne?: string };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field: "oneToOne" | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "one_to_one_table";
+                  set?: {
+                    oneToOne?: null | string;
+                    one_to_one?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field: "oneToOne" | "one_to_one" | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "testModel";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    json?: any;
+                    nullableReference?: null | string;
+                    numberArray?: null | Array<number>;
+                    stringArray?: null | Array<string>;
+                    testField?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "nullableReference"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "stringArray"
+                      | "numberArray"
+                      | "json"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "organization";
+                  set?: {
+                    createdAt?: number;
+                    logo?: null | string;
+                    metadata?: null | string;
+                    name?: string;
+                    slug?: string;
+                    updatedAt?: null | number;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "slug"
+                      | "logo"
+                      | "metadata"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "member";
+                  set?: {
+                    createdAt?: number;
+                    organizationId?: string;
+                    role?: string;
+                    updatedAt?: null | number;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "organizationId"
+                      | "userId"
+                      | "role"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "team";
+                  set?: {
+                    createdAt?: number;
+                    memberCount?: number;
+                    name?: string;
+                    organizationId?: string;
+                    updatedAt?: null | number;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "memberCount"
+                      | "organizationId"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "teamMember";
+                  set?: {
+                    createdAt?: null | number;
+                    membershipKey?: null | string;
+                    teamId?: string;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "invitation";
+                  set?: {
+                    createdAt?: null | number;
+                    email?: null | string;
+                    expiresAt?: null | number;
+                    inviterId?: null | string;
+                    organizationId?: null | string;
+                    role?: null | string;
+                    status?: null | string;
+                    teamId?: null | string;
+                    updatedAt?: null | number;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "email"
+                      | "role"
+                      | "status"
+                      | "organizationId"
+                      | "teamId"
+                      | "inviterId"
+                      | "expiresAt"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                };
+            onUpdateHandle?: string;
+          },
+          any,
+          Name
+        >;
         updateMany: FunctionReference<
           "mutation",
           "internal",
@@ -12986,6 +17075,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     accountId?: string;
                     createdAt?: number;
                     idToken?: null | string;
+                    issuer?: null | string;
                     password?: null | string;
                     providerId?: string;
                     refreshToken?: null | string;
@@ -12997,6 +17087,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -13076,6 +17167,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "twoFactor";
                   update: {
                     backupCodes?: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
                     secret?: string;
                     userId?: string;
                     verified?: null | boolean;
@@ -13087,6 +17180,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -13255,7 +17350,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   model: "jwks";
                   update: {
+                    alg?: null | string;
                     createdAt?: number;
+                    crv?: null | string;
                     expiresAt?: null | number;
                     privateKey?: string;
                     publicKey?: string;
@@ -13267,6 +17364,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -13645,6 +17744,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "team";
                   update: {
                     createdAt?: number;
+                    memberCount?: number;
                     name?: string;
                     organizationId?: string;
                     updatedAt?: null | number;
@@ -13653,6 +17753,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     connector?: "AND" | "OR";
                     field:
                       | "name"
+                      | "memberCount"
                       | "organizationId"
                       | "createdAt"
                       | "updatedAt"
@@ -13683,12 +17784,18 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "teamMember";
                   update: {
                     createdAt?: null | number;
+                    membershipKey?: null | string;
                     teamId?: string;
                     userId?: string;
                   };
                   where?: Array<{
                     connector?: "AND" | "OR";
-                    field: "teamId" | "userId" | "createdAt" | "_id";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
                       | "lt"
@@ -13897,6 +18004,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     accountId?: string;
                     createdAt?: number;
                     idToken?: null | string;
+                    issuer?: null | string;
                     password?: null | string;
                     providerId?: string;
                     refreshToken?: null | string;
@@ -13908,6 +18016,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -13987,6 +18096,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "twoFactor";
                   update: {
                     backupCodes?: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
                     secret?: string;
                     userId?: string;
                     verified?: null | boolean;
@@ -13998,6 +18109,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -14166,7 +18279,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   model: "jwks";
                   update: {
+                    alg?: null | string;
                     createdAt?: number;
+                    crv?: null | string;
                     expiresAt?: null | number;
                     privateKey?: string;
                     publicKey?: string;
@@ -14178,6 +18293,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -14556,6 +18673,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "team";
                   update: {
                     createdAt?: number;
+                    memberCount?: number;
                     name?: string;
                     organizationId?: string;
                     updatedAt?: null | number;
@@ -14564,6 +18682,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     connector?: "AND" | "OR";
                     field:
                       | "name"
+                      | "memberCount"
                       | "organizationId"
                       | "createdAt"
                       | "updatedAt"
@@ -14594,12 +18713,18 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "teamMember";
                   update: {
                     createdAt?: null | number;
+                    membershipKey?: null | string;
                     teamId?: string;
                     userId?: string;
                   };
                   where?: Array<{
                     connector?: "AND" | "OR";
-                    field: "teamId" | "userId" | "createdAt" | "_id";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
                       | "lt"
@@ -14725,6 +18850,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     accountId: string;
                     createdAt: number;
                     idToken?: null | string;
+                    issuer?: null | string;
                     password?: null | string;
                     providerId: string;
                     refreshToken?: null | string;
@@ -14748,6 +18874,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   data: {
                     backupCodes: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
                     secret: string;
                     userId: string;
                     verified?: null | boolean;
@@ -14797,7 +18925,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 }
               | {
                   data: {
+                    alg?: null | string;
                     createdAt: number;
+                    crv?: null | string;
                     expiresAt?: null | number;
                     privateKey: string;
                     publicKey: string;
@@ -14899,6 +19029,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   data: {
                     createdAt: number;
+                    memberCount: number;
                     name: string;
                     organizationId: string;
                     updatedAt?: null | number;
@@ -14908,6 +19039,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   data: {
                     createdAt?: null | number;
+                    membershipKey?: null | string;
                     teamId: string;
                     userId: string;
                   };
@@ -15025,6 +19157,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -15102,6 +19235,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -15244,6 +19379,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -15549,6 +19686,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     connector?: "AND" | "OR";
                     field:
                       | "name"
+                      | "memberCount"
                       | "organizationId"
                       | "createdAt"
                       | "updatedAt"
@@ -15579,7 +19717,12 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "teamMember";
                   where?: Array<{
                     connector?: "AND" | "OR";
-                    field: "teamId" | "userId" | "createdAt" | "_id";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
                       | "lt"
@@ -15744,6 +19887,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -15821,6 +19965,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -15963,6 +20109,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -16268,6 +20416,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     connector?: "AND" | "OR";
                     field:
                       | "name"
+                      | "memberCount"
                       | "organizationId"
                       | "createdAt"
                       | "updatedAt"
@@ -16298,7 +20447,12 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "teamMember";
                   where?: Array<{
                     connector?: "AND" | "OR";
-                    field: "teamId" | "userId" | "createdAt" | "_id";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
                       | "lt"
@@ -16484,6 +20638,943 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           any,
           Name
         >;
+        incrementOne: FunctionReference<
+          "mutation",
+          "internal",
+          {
+            input:
+              | {
+                  increment: Record<string, number>;
+                  model: "user";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    createdAt?: number;
+                    customField?: null | string;
+                    dateField?: null | number;
+                    displayUsername?: null | string;
+                    email?: null | string;
+                    emailVerified?: boolean;
+                    email_address?: null | string;
+                    image?: null | string;
+                    isAnonymous?: null | boolean;
+                    name?: string;
+                    numericField?: null | number;
+                    phoneNumber?: null | string;
+                    phoneNumberVerified?: null | boolean;
+                    testField?: null | string;
+                    twoFactorEnabled?: null | boolean;
+                    updatedAt?: number;
+                    userId?: null | string;
+                    username?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "email"
+                      | "email_address"
+                      | "emailVerified"
+                      | "image"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "twoFactorEnabled"
+                      | "isAnonymous"
+                      | "username"
+                      | "displayUsername"
+                      | "phoneNumber"
+                      | "phoneNumberVerified"
+                      | "userId"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "customField"
+                      | "numericField"
+                      | "dateField"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "session";
+                  set?: {
+                    createdAt?: number;
+                    expiresAt?: number;
+                    ipAddress?: null | string;
+                    token?: string;
+                    updatedAt?: number;
+                    userAgent?: null | string;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "expiresAt"
+                      | "token"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "ipAddress"
+                      | "userAgent"
+                      | "userId"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "account";
+                  set?: {
+                    accessToken?: null | string;
+                    accessTokenExpiresAt?: null | number;
+                    accountId?: string;
+                    createdAt?: number;
+                    idToken?: null | string;
+                    issuer?: null | string;
+                    password?: null | string;
+                    providerId?: string;
+                    refreshToken?: null | string;
+                    refreshTokenExpiresAt?: null | number;
+                    scope?: null | string;
+                    updatedAt?: number;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "issuer"
+                      | "accountId"
+                      | "providerId"
+                      | "userId"
+                      | "accessToken"
+                      | "refreshToken"
+                      | "idToken"
+                      | "accessTokenExpiresAt"
+                      | "refreshTokenExpiresAt"
+                      | "scope"
+                      | "password"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "verification";
+                  set?: {
+                    createdAt?: number;
+                    expiresAt?: number;
+                    identifier?: string;
+                    updatedAt?: number;
+                    value?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "identifier"
+                      | "value"
+                      | "expiresAt"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "twoFactor";
+                  set?: {
+                    backupCodes?: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
+                    secret?: string;
+                    userId?: string;
+                    verified?: null | boolean;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "secret"
+                      | "backupCodes"
+                      | "userId"
+                      | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oauthApplication";
+                  set?: {
+                    clientId?: null | string;
+                    clientSecret?: null | string;
+                    createdAt?: null | number;
+                    disabled?: null | boolean;
+                    icon?: null | string;
+                    metadata?: null | string;
+                    name?: null | string;
+                    redirectUrls?: null | string;
+                    type?: null | string;
+                    updatedAt?: null | number;
+                    userId?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "icon"
+                      | "metadata"
+                      | "clientId"
+                      | "clientSecret"
+                      | "redirectUrls"
+                      | "type"
+                      | "disabled"
+                      | "userId"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oauthAccessToken";
+                  set?: {
+                    accessToken?: null | string;
+                    accessTokenExpiresAt?: null | number;
+                    clientId?: null | string;
+                    createdAt?: null | number;
+                    refreshToken?: null | string;
+                    refreshTokenExpiresAt?: null | number;
+                    scopes?: null | string;
+                    updatedAt?: null | number;
+                    userId?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "accessToken"
+                      | "refreshToken"
+                      | "accessTokenExpiresAt"
+                      | "refreshTokenExpiresAt"
+                      | "clientId"
+                      | "userId"
+                      | "scopes"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oauthConsent";
+                  set?: {
+                    clientId?: null | string;
+                    consentGiven?: null | boolean;
+                    createdAt?: null | number;
+                    scopes?: null | string;
+                    updatedAt?: null | number;
+                    userId?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "clientId"
+                      | "userId"
+                      | "scopes"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "consentGiven"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "jwks";
+                  set?: {
+                    alg?: null | string;
+                    createdAt?: number;
+                    crv?: null | string;
+                    expiresAt?: null | number;
+                    privateKey?: string;
+                    publicKey?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "publicKey"
+                      | "privateKey"
+                      | "createdAt"
+                      | "expiresAt"
+                      | "alg"
+                      | "crv"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "rateLimit";
+                  set?: { count?: number; key?: string; lastRequest?: number };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field: "key" | "count" | "lastRequest" | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "user_custom";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    createdAt?: number;
+                    customField?: null | string;
+                    dateField?: null | number;
+                    displayUsername?: null | string;
+                    email?: null | string;
+                    emailVerified?: boolean;
+                    email_address?: null | string;
+                    image?: null | string;
+                    isAnonymous?: null | boolean;
+                    name?: string;
+                    numericField?: null | number;
+                    phoneNumber?: null | string;
+                    phoneNumberVerified?: null | boolean;
+                    testField?: null | string;
+                    twoFactorEnabled?: null | boolean;
+                    updatedAt?: number;
+                    userId?: null | string;
+                    username?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "email"
+                      | "email_address"
+                      | "emailVerified"
+                      | "image"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "twoFactorEnabled"
+                      | "isAnonymous"
+                      | "username"
+                      | "displayUsername"
+                      | "phoneNumber"
+                      | "phoneNumberVerified"
+                      | "userId"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "customField"
+                      | "numericField"
+                      | "dateField"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "user_table";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    createdAt?: number;
+                    customField?: null | string;
+                    dateField?: null | number;
+                    displayUsername?: null | string;
+                    email?: null | string;
+                    emailVerified?: boolean;
+                    email_address?: null | string;
+                    image?: null | string;
+                    isAnonymous?: null | boolean;
+                    name?: string;
+                    numericField?: null | number;
+                    phoneNumber?: null | string;
+                    phoneNumberVerified?: null | boolean;
+                    testField?: null | string;
+                    twoFactorEnabled?: null | boolean;
+                    updatedAt?: number;
+                    userId?: null | string;
+                    username?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "email"
+                      | "email_address"
+                      | "emailVerified"
+                      | "image"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "twoFactorEnabled"
+                      | "isAnonymous"
+                      | "username"
+                      | "displayUsername"
+                      | "phoneNumber"
+                      | "phoneNumberVerified"
+                      | "userId"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "customField"
+                      | "numericField"
+                      | "dateField"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oneToOneTable";
+                  set?: { oneToOne?: string };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field: "oneToOne" | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "one_to_one_table";
+                  set?: {
+                    oneToOne?: null | string;
+                    one_to_one?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field: "oneToOne" | "one_to_one" | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "testModel";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    json?: any;
+                    nullableReference?: null | string;
+                    numberArray?: null | Array<number>;
+                    stringArray?: null | Array<string>;
+                    testField?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "nullableReference"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "stringArray"
+                      | "numberArray"
+                      | "json"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "organization";
+                  set?: {
+                    createdAt?: number;
+                    logo?: null | string;
+                    metadata?: null | string;
+                    name?: string;
+                    slug?: string;
+                    updatedAt?: null | number;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "slug"
+                      | "logo"
+                      | "metadata"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "member";
+                  set?: {
+                    createdAt?: number;
+                    organizationId?: string;
+                    role?: string;
+                    updatedAt?: null | number;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "organizationId"
+                      | "userId"
+                      | "role"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "team";
+                  set?: {
+                    createdAt?: number;
+                    memberCount?: number;
+                    name?: string;
+                    organizationId?: string;
+                    updatedAt?: null | number;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "memberCount"
+                      | "organizationId"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "teamMember";
+                  set?: {
+                    createdAt?: null | number;
+                    membershipKey?: null | string;
+                    teamId?: string;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "invitation";
+                  set?: {
+                    createdAt?: null | number;
+                    email?: null | string;
+                    expiresAt?: null | number;
+                    inviterId?: null | string;
+                    organizationId?: null | string;
+                    role?: null | string;
+                    status?: null | string;
+                    teamId?: null | string;
+                    updatedAt?: null | number;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "email"
+                      | "role"
+                      | "status"
+                      | "organizationId"
+                      | "teamId"
+                      | "inviterId"
+                      | "expiresAt"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                };
+            onUpdateHandle?: string;
+          },
+          any,
+          Name
+        >;
         updateMany: FunctionReference<
           "mutation",
           "internal",
@@ -16609,6 +21700,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     accountId?: string;
                     createdAt?: number;
                     idToken?: null | string;
+                    issuer?: null | string;
                     password?: null | string;
                     providerId?: string;
                     refreshToken?: null | string;
@@ -16620,6 +21712,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -16699,6 +21792,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "twoFactor";
                   update: {
                     backupCodes?: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
                     secret?: string;
                     userId?: string;
                     verified?: null | boolean;
@@ -16710,6 +21805,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -16878,7 +21975,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   model: "jwks";
                   update: {
+                    alg?: null | string;
                     createdAt?: number;
+                    crv?: null | string;
                     expiresAt?: null | number;
                     privateKey?: string;
                     publicKey?: string;
@@ -16890,6 +21989,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -17268,6 +22369,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "team";
                   update: {
                     createdAt?: number;
+                    memberCount?: number;
                     name?: string;
                     organizationId?: string;
                     updatedAt?: null | number;
@@ -17276,6 +22378,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     connector?: "AND" | "OR";
                     field:
                       | "name"
+                      | "memberCount"
                       | "organizationId"
                       | "createdAt"
                       | "updatedAt"
@@ -17306,12 +22409,18 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "teamMember";
                   update: {
                     createdAt?: null | number;
+                    membershipKey?: null | string;
                     teamId?: string;
                     userId?: string;
                   };
                   where?: Array<{
                     connector?: "AND" | "OR";
-                    field: "teamId" | "userId" | "createdAt" | "_id";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
                       | "lt"
@@ -17520,6 +22629,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     accountId?: string;
                     createdAt?: number;
                     idToken?: null | string;
+                    issuer?: null | string;
                     password?: null | string;
                     providerId?: string;
                     refreshToken?: null | string;
@@ -17531,6 +22641,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -17610,6 +22721,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "twoFactor";
                   update: {
                     backupCodes?: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
                     secret?: string;
                     userId?: string;
                     verified?: null | boolean;
@@ -17621,6 +22734,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -17789,7 +22904,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   model: "jwks";
                   update: {
+                    alg?: null | string;
                     createdAt?: number;
+                    crv?: null | string;
                     expiresAt?: null | number;
                     privateKey?: string;
                     publicKey?: string;
@@ -17801,6 +22918,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -18179,6 +23298,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "team";
                   update: {
                     createdAt?: number;
+                    memberCount?: number;
                     name?: string;
                     organizationId?: string;
                     updatedAt?: null | number;
@@ -18187,6 +23307,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     connector?: "AND" | "OR";
                     field:
                       | "name"
+                      | "memberCount"
                       | "organizationId"
                       | "createdAt"
                       | "updatedAt"
@@ -18217,12 +23338,18 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "teamMember";
                   update: {
                     createdAt?: null | number;
+                    membershipKey?: null | string;
                     teamId?: string;
                     userId?: string;
                   };
                   where?: Array<{
                     connector?: "AND" | "OR";
-                    field: "teamId" | "userId" | "createdAt" | "_id";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
                       | "lt"
@@ -18348,6 +23475,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     accountId: string;
                     createdAt: number;
                     idToken?: null | string;
+                    issuer?: null | string;
                     password?: null | string;
                     providerId: string;
                     refreshToken?: null | string;
@@ -18371,6 +23499,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   data: {
                     backupCodes: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
                     secret: string;
                     userId: string;
                     verified?: null | boolean;
@@ -18420,7 +23550,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 }
               | {
                   data: {
+                    alg?: null | string;
                     createdAt: number;
+                    crv?: null | string;
                     expiresAt?: null | number;
                     privateKey: string;
                     publicKey: string;
@@ -18522,6 +23654,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   data: {
                     createdAt: number;
+                    memberCount: number;
                     name: string;
                     organizationId: string;
                     updatedAt?: null | number;
@@ -18531,6 +23664,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   data: {
                     createdAt?: null | number;
+                    membershipKey?: null | string;
                     teamId: string;
                     userId: string;
                   };
@@ -18648,6 +23782,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -18725,6 +23860,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -18867,6 +24004,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -19172,6 +24311,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     connector?: "AND" | "OR";
                     field:
                       | "name"
+                      | "memberCount"
                       | "organizationId"
                       | "createdAt"
                       | "updatedAt"
@@ -19202,7 +24342,12 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "teamMember";
                   where?: Array<{
                     connector?: "AND" | "OR";
-                    field: "teamId" | "userId" | "createdAt" | "_id";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
                       | "lt"
@@ -19367,6 +24512,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -19444,6 +24590,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -19586,6 +24734,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -19891,6 +25041,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     connector?: "AND" | "OR";
                     field:
                       | "name"
+                      | "memberCount"
                       | "organizationId"
                       | "createdAt"
                       | "updatedAt"
@@ -19921,7 +25072,12 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "teamMember";
                   where?: Array<{
                     connector?: "AND" | "OR";
-                    field: "teamId" | "userId" | "createdAt" | "_id";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
                       | "lt"
@@ -20107,6 +25263,943 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           any,
           Name
         >;
+        incrementOne: FunctionReference<
+          "mutation",
+          "internal",
+          {
+            input:
+              | {
+                  increment: Record<string, number>;
+                  model: "user";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    createdAt?: number;
+                    customField?: null | string;
+                    dateField?: null | number;
+                    displayUsername?: null | string;
+                    email?: null | string;
+                    emailVerified?: boolean;
+                    email_address?: null | string;
+                    image?: null | string;
+                    isAnonymous?: null | boolean;
+                    name?: string;
+                    numericField?: null | number;
+                    phoneNumber?: null | string;
+                    phoneNumberVerified?: null | boolean;
+                    testField?: null | string;
+                    twoFactorEnabled?: null | boolean;
+                    updatedAt?: number;
+                    userId?: null | string;
+                    username?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "email"
+                      | "email_address"
+                      | "emailVerified"
+                      | "image"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "twoFactorEnabled"
+                      | "isAnonymous"
+                      | "username"
+                      | "displayUsername"
+                      | "phoneNumber"
+                      | "phoneNumberVerified"
+                      | "userId"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "customField"
+                      | "numericField"
+                      | "dateField"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "session";
+                  set?: {
+                    createdAt?: number;
+                    expiresAt?: number;
+                    ipAddress?: null | string;
+                    token?: string;
+                    updatedAt?: number;
+                    userAgent?: null | string;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "expiresAt"
+                      | "token"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "ipAddress"
+                      | "userAgent"
+                      | "userId"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "account";
+                  set?: {
+                    accessToken?: null | string;
+                    accessTokenExpiresAt?: null | number;
+                    accountId?: string;
+                    createdAt?: number;
+                    idToken?: null | string;
+                    issuer?: null | string;
+                    password?: null | string;
+                    providerId?: string;
+                    refreshToken?: null | string;
+                    refreshTokenExpiresAt?: null | number;
+                    scope?: null | string;
+                    updatedAt?: number;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "issuer"
+                      | "accountId"
+                      | "providerId"
+                      | "userId"
+                      | "accessToken"
+                      | "refreshToken"
+                      | "idToken"
+                      | "accessTokenExpiresAt"
+                      | "refreshTokenExpiresAt"
+                      | "scope"
+                      | "password"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "verification";
+                  set?: {
+                    createdAt?: number;
+                    expiresAt?: number;
+                    identifier?: string;
+                    updatedAt?: number;
+                    value?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "identifier"
+                      | "value"
+                      | "expiresAt"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "twoFactor";
+                  set?: {
+                    backupCodes?: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
+                    secret?: string;
+                    userId?: string;
+                    verified?: null | boolean;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "secret"
+                      | "backupCodes"
+                      | "userId"
+                      | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oauthApplication";
+                  set?: {
+                    clientId?: null | string;
+                    clientSecret?: null | string;
+                    createdAt?: null | number;
+                    disabled?: null | boolean;
+                    icon?: null | string;
+                    metadata?: null | string;
+                    name?: null | string;
+                    redirectUrls?: null | string;
+                    type?: null | string;
+                    updatedAt?: null | number;
+                    userId?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "icon"
+                      | "metadata"
+                      | "clientId"
+                      | "clientSecret"
+                      | "redirectUrls"
+                      | "type"
+                      | "disabled"
+                      | "userId"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oauthAccessToken";
+                  set?: {
+                    accessToken?: null | string;
+                    accessTokenExpiresAt?: null | number;
+                    clientId?: null | string;
+                    createdAt?: null | number;
+                    refreshToken?: null | string;
+                    refreshTokenExpiresAt?: null | number;
+                    scopes?: null | string;
+                    updatedAt?: null | number;
+                    userId?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "accessToken"
+                      | "refreshToken"
+                      | "accessTokenExpiresAt"
+                      | "refreshTokenExpiresAt"
+                      | "clientId"
+                      | "userId"
+                      | "scopes"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oauthConsent";
+                  set?: {
+                    clientId?: null | string;
+                    consentGiven?: null | boolean;
+                    createdAt?: null | number;
+                    scopes?: null | string;
+                    updatedAt?: null | number;
+                    userId?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "clientId"
+                      | "userId"
+                      | "scopes"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "consentGiven"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "jwks";
+                  set?: {
+                    alg?: null | string;
+                    createdAt?: number;
+                    crv?: null | string;
+                    expiresAt?: null | number;
+                    privateKey?: string;
+                    publicKey?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "publicKey"
+                      | "privateKey"
+                      | "createdAt"
+                      | "expiresAt"
+                      | "alg"
+                      | "crv"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "rateLimit";
+                  set?: { count?: number; key?: string; lastRequest?: number };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field: "key" | "count" | "lastRequest" | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "user_custom";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    createdAt?: number;
+                    customField?: null | string;
+                    dateField?: null | number;
+                    displayUsername?: null | string;
+                    email?: null | string;
+                    emailVerified?: boolean;
+                    email_address?: null | string;
+                    image?: null | string;
+                    isAnonymous?: null | boolean;
+                    name?: string;
+                    numericField?: null | number;
+                    phoneNumber?: null | string;
+                    phoneNumberVerified?: null | boolean;
+                    testField?: null | string;
+                    twoFactorEnabled?: null | boolean;
+                    updatedAt?: number;
+                    userId?: null | string;
+                    username?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "email"
+                      | "email_address"
+                      | "emailVerified"
+                      | "image"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "twoFactorEnabled"
+                      | "isAnonymous"
+                      | "username"
+                      | "displayUsername"
+                      | "phoneNumber"
+                      | "phoneNumberVerified"
+                      | "userId"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "customField"
+                      | "numericField"
+                      | "dateField"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "user_table";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    createdAt?: number;
+                    customField?: null | string;
+                    dateField?: null | number;
+                    displayUsername?: null | string;
+                    email?: null | string;
+                    emailVerified?: boolean;
+                    email_address?: null | string;
+                    image?: null | string;
+                    isAnonymous?: null | boolean;
+                    name?: string;
+                    numericField?: null | number;
+                    phoneNumber?: null | string;
+                    phoneNumberVerified?: null | boolean;
+                    testField?: null | string;
+                    twoFactorEnabled?: null | boolean;
+                    updatedAt?: number;
+                    userId?: null | string;
+                    username?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "email"
+                      | "email_address"
+                      | "emailVerified"
+                      | "image"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "twoFactorEnabled"
+                      | "isAnonymous"
+                      | "username"
+                      | "displayUsername"
+                      | "phoneNumber"
+                      | "phoneNumberVerified"
+                      | "userId"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "customField"
+                      | "numericField"
+                      | "dateField"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "oneToOneTable";
+                  set?: { oneToOne?: string };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field: "oneToOne" | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "one_to_one_table";
+                  set?: {
+                    oneToOne?: null | string;
+                    one_to_one?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field: "oneToOne" | "one_to_one" | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "testModel";
+                  set?: {
+                    cbDefaultValueField?: null | string;
+                    json?: any;
+                    nullableReference?: null | string;
+                    numberArray?: null | Array<number>;
+                    stringArray?: null | Array<string>;
+                    testField?: null | string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "nullableReference"
+                      | "testField"
+                      | "cbDefaultValueField"
+                      | "stringArray"
+                      | "numberArray"
+                      | "json"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "organization";
+                  set?: {
+                    createdAt?: number;
+                    logo?: null | string;
+                    metadata?: null | string;
+                    name?: string;
+                    slug?: string;
+                    updatedAt?: null | number;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "slug"
+                      | "logo"
+                      | "metadata"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "member";
+                  set?: {
+                    createdAt?: number;
+                    organizationId?: string;
+                    role?: string;
+                    updatedAt?: null | number;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "organizationId"
+                      | "userId"
+                      | "role"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "team";
+                  set?: {
+                    createdAt?: number;
+                    memberCount?: number;
+                    name?: string;
+                    organizationId?: string;
+                    updatedAt?: null | number;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "name"
+                      | "memberCount"
+                      | "organizationId"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "teamMember";
+                  set?: {
+                    createdAt?: null | number;
+                    membershipKey?: null | string;
+                    teamId?: string;
+                    userId?: string;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                }
+              | {
+                  increment: Record<string, number>;
+                  model: "invitation";
+                  set?: {
+                    createdAt?: null | number;
+                    email?: null | string;
+                    expiresAt?: null | number;
+                    inviterId?: null | string;
+                    organizationId?: null | string;
+                    role?: null | string;
+                    status?: null | string;
+                    teamId?: null | string;
+                    updatedAt?: null | number;
+                  };
+                  where: Array<{
+                    connector?: "AND" | "OR";
+                    field:
+                      | "email"
+                      | "role"
+                      | "status"
+                      | "organizationId"
+                      | "teamId"
+                      | "inviterId"
+                      | "expiresAt"
+                      | "createdAt"
+                      | "updatedAt"
+                      | "_id";
+                    mode?: "sensitive" | "insensitive";
+                    operator?:
+                      | "lt"
+                      | "lte"
+                      | "gt"
+                      | "gte"
+                      | "eq"
+                      | "in"
+                      | "not_in"
+                      | "ne"
+                      | "contains"
+                      | "starts_with"
+                      | "ends_with";
+                    value:
+                      | string
+                      | number
+                      | boolean
+                      | Array<string>
+                      | Array<number>
+                      | null;
+                  }>;
+                };
+            onUpdateHandle?: string;
+          },
+          any,
+          Name
+        >;
         updateMany: FunctionReference<
           "mutation",
           "internal",
@@ -20232,6 +26325,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     accountId?: string;
                     createdAt?: number;
                     idToken?: null | string;
+                    issuer?: null | string;
                     password?: null | string;
                     providerId?: string;
                     refreshToken?: null | string;
@@ -20243,6 +26337,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -20322,6 +26417,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "twoFactor";
                   update: {
                     backupCodes?: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
                     secret?: string;
                     userId?: string;
                     verified?: null | boolean;
@@ -20333,6 +26430,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -20501,7 +26600,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   model: "jwks";
                   update: {
+                    alg?: null | string;
                     createdAt?: number;
+                    crv?: null | string;
                     expiresAt?: null | number;
                     privateKey?: string;
                     publicKey?: string;
@@ -20513,6 +26614,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -20891,6 +26994,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "team";
                   update: {
                     createdAt?: number;
+                    memberCount?: number;
                     name?: string;
                     organizationId?: string;
                     updatedAt?: null | number;
@@ -20899,6 +27003,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     connector?: "AND" | "OR";
                     field:
                       | "name"
+                      | "memberCount"
                       | "organizationId"
                       | "createdAt"
                       | "updatedAt"
@@ -20929,12 +27034,18 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "teamMember";
                   update: {
                     createdAt?: null | number;
+                    membershipKey?: null | string;
                     teamId?: string;
                     userId?: string;
                   };
                   where?: Array<{
                     connector?: "AND" | "OR";
-                    field: "teamId" | "userId" | "createdAt" | "_id";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
                       | "lt"
@@ -21143,6 +27254,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     accountId?: string;
                     createdAt?: number;
                     idToken?: null | string;
+                    issuer?: null | string;
                     password?: null | string;
                     providerId?: string;
                     refreshToken?: null | string;
@@ -21154,6 +27266,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   where?: Array<{
                     connector?: "AND" | "OR";
                     field:
+                      | "issuer"
                       | "accountId"
                       | "providerId"
                       | "userId"
@@ -21233,6 +27346,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "twoFactor";
                   update: {
                     backupCodes?: string;
+                    failedVerificationCount?: null | number;
+                    lockedUntil?: null | number;
                     secret?: string;
                     userId?: string;
                     verified?: null | boolean;
@@ -21244,6 +27359,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "backupCodes"
                       | "userId"
                       | "verified"
+                      | "failedVerificationCount"
+                      | "lockedUntil"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -21412,7 +27529,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               | {
                   model: "jwks";
                   update: {
+                    alg?: null | string;
                     createdAt?: number;
+                    crv?: null | string;
                     expiresAt?: null | number;
                     privateKey?: string;
                     publicKey?: string;
@@ -21424,6 +27543,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                       | "privateKey"
                       | "createdAt"
                       | "expiresAt"
+                      | "alg"
+                      | "crv"
                       | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
@@ -21802,6 +27923,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "team";
                   update: {
                     createdAt?: number;
+                    memberCount?: number;
                     name?: string;
                     organizationId?: string;
                     updatedAt?: null | number;
@@ -21810,6 +27932,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     connector?: "AND" | "OR";
                     field:
                       | "name"
+                      | "memberCount"
                       | "organizationId"
                       | "createdAt"
                       | "updatedAt"
@@ -21840,12 +27963,18 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   model: "teamMember";
                   update: {
                     createdAt?: null | number;
+                    membershipKey?: null | string;
                     teamId?: string;
                     userId?: string;
                   };
                   where?: Array<{
                     connector?: "AND" | "OR";
-                    field: "teamId" | "userId" | "createdAt" | "_id";
+                    field:
+                      | "teamId"
+                      | "userId"
+                      | "membershipKey"
+                      | "createdAt"
+                      | "_id";
                     mode?: "sensitive" | "insensitive";
                     operator?:
                       | "lt"

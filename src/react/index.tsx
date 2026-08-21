@@ -8,34 +8,40 @@ import {
   useQuery,
 } from "convex/react";
 import type { FunctionReference } from "convex/server";
-import type { BetterAuthClientPlugin } from "better-auth";
-import type { createAuthClient } from "better-auth/react";
-import type {
-  convexClient,
-  crossDomainClient,
-} from "../client/plugins/index.js";
 import type { EmptyObject } from "convex-helpers";
+import type { BetterAuthClientOptions } from "better-auth";
+import type { ReactAuthClient } from "better-auth/react";
 
-type CrossDomainClient = ReturnType<typeof crossDomainClient>;
-type ConvexClient = ReturnType<typeof convexClient>;
-type PluginsWithCrossDomain = (
-  | CrossDomainClient
-  | ConvexClient
-  | BetterAuthClientPlugin
-)[];
-type PluginsWithoutCrossDomain = (ConvexClient | BetterAuthClientPlugin)[];
-type AuthClientWithPlugins<
-  Plugins extends PluginsWithCrossDomain | PluginsWithoutCrossDomain,
-> = ReturnType<
-  typeof createAuthClient<
-    BetterAuthClientPlugin & {
-      plugins: Plugins;
-    }
-  >
->;
-export type AuthClient =
-  | AuthClientWithPlugins<PluginsWithCrossDomain>
-  | AuthClientWithPlugins<PluginsWithoutCrossDomain>;
+type RequiredAuthClient = {
+  useSession: () => {
+    data: { session?: { id: string } } | null;
+    isPending: boolean;
+  };
+  getSession: (args?: {
+    fetchOptions: { headers: Record<string, string> };
+  }) => Promise<unknown>;
+  convex: {
+    token: (args: {
+      fetchOptions: { throw: boolean };
+    }) => Promise<{ data?: { token?: string } | null }>;
+  };
+};
+
+export type AuthClient<
+  Client extends RequiredAuthClient = ReactAuthClient<BetterAuthClientOptions> &
+    RequiredAuthClient,
+> = Client & RequiredAuthClient;
+
+type AuthClientWithCrossDomain<Client extends RequiredAuthClient> = Client & {
+  crossDomain: {
+    oneTimeToken: {
+      verify: (args: { token: string }) => Promise<{
+        data?: { session?: { token: string } } | null;
+      }>;
+    };
+  };
+  updateSession: () => void;
+};
 
 // Until we can import from our own entry points (requires TypeScript 4.7),
 // just describe the interface enough to help users pass the right type.
@@ -50,7 +56,7 @@ type IConvexReactClient = {
  *
  * @public
  */
-export function ConvexBetterAuthProvider({
+export function ConvexBetterAuthProvider<Client extends RequiredAuthClient>({
   children,
   client,
   authClient,
@@ -58,7 +64,7 @@ export function ConvexBetterAuthProvider({
 }: {
   children: ReactNode;
   client: IConvexReactClient;
-  authClient: AuthClient;
+  authClient: Client;
   initialToken?: string | null;
 }) {
   const useBetterAuth = useUseAuthFromBetterAuth(authClient, initialToken);
@@ -71,7 +77,7 @@ export function ConvexBetterAuthProvider({
       const token = url.searchParams.get("ott");
       if (token) {
         const authClientWithCrossDomain =
-          authClient as AuthClientWithPlugins<PluginsWithCrossDomain>;
+          authClient as AuthClientWithCrossDomain<Client>;
         url.searchParams.delete("ott");
         window.history.replaceState({}, "", url);
         const result =
@@ -101,8 +107,8 @@ export function ConvexBetterAuthProvider({
 
 let initialTokenUsed = false;
 
-function useUseAuthFromBetterAuth(
-  authClient: AuthClient,
+function useUseAuthFromBetterAuth<Client extends RequiredAuthClient>(
+  authClient: Client,
   initialToken?: string | null
 ) {
   const [cachedToken, setCachedToken] = useState<string | null>(
@@ -256,7 +262,7 @@ const UserSubscription = ({
  * The component provides a query for this via `export const { getAuthUser } = authComponent.clientApi()`.
  * @param props.isAuthError - Function to check if the error is auth related.
  */
-export const AuthBoundary = ({
+export const AuthBoundary = <Client extends RequiredAuthClient,>({
   children,
   /**
    * The function to call when the user is unauthenticated. Typically a redirect
@@ -282,7 +288,7 @@ export const AuthBoundary = ({
   isAuthError,
 }: PropsWithChildren<{
   onUnauth: () => void | Promise<void>;
-  authClient: AuthClient;
+  authClient: Client;
   renderFallback?: () => React.ReactNode;
   getAuthUserFn: FunctionReference<"query", "public", EmptyObject>;
   isAuthError: (error: unknown) => boolean;

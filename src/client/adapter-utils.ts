@@ -58,33 +58,44 @@ export const adapterArgsValidator = v.object({
   offset: v.optional(v.number()),
 });
 
+const getUniqueConstraints = (
+  betterAuthSchema: BetterAuthDBSchema,
+  model: string
+) => {
+  const table = Object.values(betterAuthSchema).find(
+    (value) => value.modelName === model
+  );
+  if (!table) {
+    return [];
+  }
+  const singleFieldConstraints = Object.entries(table.fields)
+    .filter(([, value]) => value.unique)
+    .map(([key, value]) => [value.fieldName ?? key]);
+  const tableConstraints =
+    table.indexes
+      ?.filter((index) => index.unique)
+      .map((index) =>
+        index.fields.map((field) => table.fields[field]?.fieldName ?? field)
+      ) ?? [];
+  return [...singleFieldConstraints, ...tableConstraints];
+};
 const isUniqueField = (
   betterAuthSchema: BetterAuthDBSchema,
   model: string,
   field: string
-) => {
-  const fields = Object.values(betterAuthSchema).find(
-    (value) => value.modelName === model
-  )?.fields;
-  if (!fields) {
-    return false;
-  }
-  return Object.entries(fields)
-    .filter(([, value]) => value.unique)
-    .map(([key]) => key)
-    .includes(field);
-};
+) =>
+  getUniqueConstraints(betterAuthSchema, model).some(
+    (constraint) => constraint.length === 1 && constraint[0] === field
+  );
 export const hasUniqueFields = (
   betterAuthSchema: BetterAuthDBSchema,
   model: string,
   input: Record<string, any>
 ) => {
-  for (const field of Object.keys(input)) {
-    if (isUniqueField(betterAuthSchema, model, field)) {
-      return true;
-    }
-  }
-  return false;
+  const inputFields = new Set(Object.keys(input));
+  return getUniqueConstraints(betterAuthSchema, model).some((constraint) =>
+    constraint.every((field) => inputFields.has(field))
+  );
 };
 
 const findIndex = (
@@ -246,31 +257,44 @@ export const checkUniqueFields = async <
   input: Record<string, any>,
   doc?: Record<string, any>
 ) => {
-  if (!hasUniqueFields(betterAuthSchema, table, input)) {
-    return;
-  }
-  for (const field of Object.keys(input)) {
-    if (!isUniqueField(betterAuthSchema, table, field)) {
+  const mergedDoc = { ...doc, ...input };
+  for (const constraint of getUniqueConstraints(betterAuthSchema, table)) {
+    if (
+      !constraint.some((field) => field in input) ||
+      !constraint.every((field) => mergedDoc[field] !== undefined)
+    ) {
       continue;
     }
-    const { index } =
-      findIndex(schema, {
-        model: table,
-        where: [
-          { field, operator: "eq", value: input[field as keyof typeof input] },
-        ],
-      }) || {};
+    const { index } = findIndex(schema, {
+      model: table,
+      where: constraint.map((field) => ({
+        field,
+        operator: "eq" as const,
+        value: mergedDoc[field],
+      })),
+    }) || { index: undefined };
     if (!index) {
-      throw new Error(`No index found for ${table}${field}`);
+      throw new Error(
+        `No index found for unique constraint ${table}.${constraint.join("+")}`
+      );
     }
-    const existingDoc = await ctx.db
+    const existingDocs = await ctx.db
       .query(table as any)
       .withIndex(index.indexDescriptor, (q) =>
-        q.eq(field, input[field as keyof typeof input])
+        index.fields
+          .slice(0, constraint.length)
+          .reduce(
+            (query: any, field: string) => query.eq(field, mergedDoc[field]),
+            q
+          )
       )
-      .unique();
-    if (existingDoc && existingDoc._id !== doc?._id) {
-      throw new Error(`${table} ${field} already exists`);
+      .take(2);
+    if (existingDocs.some((existingDoc) => existingDoc._id !== doc?._id)) {
+      const constraintName =
+        constraint.length === 1
+          ? constraint[0]
+          : `unique constraint ${constraint.join("+")}`;
+      throw new Error(`${table} ${constraintName} already exists`);
     }
   }
 };

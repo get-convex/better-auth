@@ -3,7 +3,12 @@ import {
   paginationOptsValidator,
   queryGeneric,
 } from "convex/server";
-import type { FunctionHandle, SchemaDefinition } from "convex/server";
+import type {
+  FunctionHandle,
+  GenericDataModel,
+  GenericMutationCtx,
+  SchemaDefinition,
+} from "convex/server";
 import { v } from "convex/values";
 import type { GenericId } from "convex/values";
 import { asyncMap } from "convex-helpers";
@@ -63,6 +68,42 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
   createAuthOptions: (ctx: any) => BetterAuthOptions
 ) => {
   const betterAuthSchema = getAuthTables(createAuthOptions({} as any));
+  const applySingleUpdate = async <Doc extends Record<string, any>>(
+    ctx: GenericMutationCtx<GenericDataModel>,
+    model: TableNames,
+    doc: Doc,
+    update: Record<string, any>,
+    onUpdateHandle?: string
+  ): Promise<Doc> => {
+    await checkUniqueFields(ctx, schema, betterAuthSchema, model, update, doc);
+    await ctx.db.patch(model, doc._id as GenericId<TableNames>, update as any);
+    const updatedDoc = await ctx.db.get(
+      model,
+      doc._id as GenericId<TableNames>
+    );
+    if (!updatedDoc) {
+      throw new Error(`Failed to update ${model}`);
+    }
+    if (!onUpdateHandle) {
+      return updatedDoc as Doc;
+    }
+    await ctx.runMutation(onUpdateHandle as FunctionHandle<"mutation">, {
+      model,
+      newDoc: updatedDoc,
+      oldDoc: doc,
+    });
+    const triggeredDoc = await ctx.db.get(
+      model,
+      doc._id as GenericId<TableNames>
+    );
+    if (!triggeredDoc) {
+      throw new Error(
+        `Failed to update ${model} (deleted by onUpdate trigger?)`
+      );
+    }
+    return triggeredDoc as Doc;
+  };
+
   return {
     create: mutationGeneric({
       args: {
@@ -168,49 +209,64 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
       handler: async (ctx, args) => {
         const doc = await listOne(ctx, schema, betterAuthSchema, args.input);
         if (!doc) {
-          throw new Error(`Failed to update ${args.input.model}`);
+          return null;
         }
-        await checkUniqueFields(
+        return await applySingleUpdate(
           ctx,
-          schema,
-          betterAuthSchema,
           args.input.model,
+          doc,
           args.input.update,
-          doc
+          args.onUpdateHandle
         );
-        await ctx.db.patch(
-          args.input.model,
-          doc._id as GenericId<TableNames>,
-          args.input.update as any
-        );
-        const updatedDoc = await ctx.db.get(
-          args.input.model,
-          doc._id as GenericId<TableNames>
-        );
-        if (!updatedDoc) {
-          throw new Error(`Failed to update ${args.input.model}`);
-        }
-        if (args.onUpdateHandle) {
-          await ctx.runMutation(
-            args.onUpdateHandle as FunctionHandle<"mutation">,
-            {
-              model: args.input.model,
-              newDoc: updatedDoc,
-              oldDoc: doc,
+      },
+    }),
+    incrementOne: mutationGeneric({
+      args: {
+        input: v.union(
+          ...Object.entries(schema.tables).map(
+            ([name, table]: [string, Schema["tables"][string]]) => {
+              const tableName = name as TableNames;
+              return v.object({
+                model: v.literal(tableName),
+                where: v.array(whereValidator(schema, tableName)),
+                increment: v.record(v.string(), v.number()),
+                set: v.optional(v.object(partial(table.validator.fields))),
+              });
             }
-          );
-          const innerUpdatedDoc = await ctx.db.get(
-            args.input.model,
-            doc._id as GenericId<TableNames>
-          );
-          if (!innerUpdatedDoc) {
+          )
+        ),
+        onUpdateHandle: v.optional(v.string()),
+      },
+      handler: async (ctx, args) => {
+        if (!args.input.where.length) {
+          return null;
+        }
+        const doc = await listOne(ctx, schema, betterAuthSchema, args.input);
+        if (!doc) {
+          return null;
+        }
+
+        const update: Record<string, unknown> = { ...args.input.set };
+        for (const [field, delta] of Object.entries(args.input.increment)) {
+          const current = doc[field];
+          if (
+            current !== undefined &&
+            current !== null &&
+            typeof current !== "number"
+          ) {
             throw new Error(
-              `Failed to update ${args.input.model} (deleted by onUpdate trigger?)`
+              `Cannot increment non-numeric field ${args.input.model}.${field}`
             );
           }
-          return innerUpdatedDoc;
+          update[field] = (current ?? 0) + delta;
         }
-        return updatedDoc;
+        return await applySingleUpdate(
+          ctx,
+          args.input.model,
+          doc,
+          update,
+          args.onUpdateHandle
+        );
       },
     }),
     updateMany: mutationGeneric({

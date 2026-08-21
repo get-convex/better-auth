@@ -1,0 +1,427 @@
+---
+title: Migrate to 0.13
+description: Migrate to @convex-dev/better-auth@0.13
+---
+
+Version 0.13 supports Better Auth 1.7. Better Auth 1.7 adds an issuer-scoped
+account identity, requires atomic adapter operations, moves the OIDC provider to
+its own package, and changes the Generic OAuth client API. The bundled component
+does not include the schema-changing replacement provider. If your application
+acts as an OAuth or OIDC provider, switch to [Local Install](/local-install).
+
+Review Better Auth's
+[complete 1.7 upgrade guide](https://www.better-auth.com/docs/guides/1-7-upgrade-guide)
+alongside this component-specific migration.
+
+<Callout type="warn">
+  Existing applications must backfill account issuers. Use a maintenance window,
+  stop authentication writes, and back up your Better Auth data before
+  upgrading.
+</Callout>
+
+## Before upgrading
+
+Inventory every distinct `providerId` in the `account` table and match it to the
+`accountIssuer` Better Auth 1.7 will use for that exact provider configuration.
+Do not infer an issuer from an email address, profile field, or unverified
+request value.
+
+| Account type                          | Issuer                                     |
+| ------------------------------------- | ------------------------------------------ |
+| Email and password                    | `local:credential`                         |
+| SIWE                                  | `local:siwe`                               |
+| OAuth provider with a verified issuer | The exact issuer published by the provider |
+| OAuth provider without an issuer      | `local:oauth:<encoded providerId>`         |
+
+The component migration handles `credential` and `siwe` automatically. Pass an
+explicit mapping for every other legacy provider. For an OAuth provider without
+an `accountIssuer`, use Better Auth's helper rather than constructing the value
+by hand:
+
+```ts
+import { createOAuthAccountIssuer } from "better-auth/db";
+
+createOAuthAccountIssuer("github"); // local:oauth:github
+createOAuthAccountIssuer("team/github"); // local:oauth:team%2Fgithub
+```
+
+Providers with an explicit or discovered `accountIssuer` must use that exact
+verified value. For example, Better Auth's built-in Google provider uses
+`https://accounts.google.com`, while its built-in GitHub provider uses the
+synthetic `local:oauth:github` value. Existing rows already written by Better
+Auth 1.7 retain their stored issuer and do not need a mapping on a rerun.
+
+<Callout type="warn" title="Microsoft accounts need an additional migration">
+  Better Auth 1.7 changes Microsoft identities from the app-specific `sub` claim
+  to the stable directory `oid` claim. Before running this component migration,
+  update `accountId` for `microsoft` and `microsoft-entra-id` rows using
+  verified ID tokens or a trusted Microsoft Entra export. The old account row
+  cannot safely supply this mapping by itself. See Better Auth's upgrade guide
+  for the full provider-specific procedure.
+</Callout>
+
+Also audit custom OAuth providers whose immutable identifier is not their
+default `sub` or `id`; configure Better Auth's `accountSubject` and migrate the
+stored `accountId` from trusted provider data before the backfill.
+
+### If your app is an OAuth or OIDC provider
+
+Better Auth replaced `oidcProvider` with `@better-auth/oauth-provider` and
+changed its storage model. The replacement is not included in the bundled
+component. Complete the account backfill on the staged bundled component first,
+then:
+
+1. Export every legacy `oauthApplication` client registration. The migration
+   query described below redacts client secrets; confidential clients receive
+   new secrets when re-registered.
+2. Clear the legacy `oauthAccessToken`, `oauthConsent`, and `oauthApplication`
+   tables while the bundled migration functions are still available.
+3. Convert the existing `betterAuth` component mount to Local Install and deploy
+   the generated Better Auth 1.7 schema with `@better-auth/oauth-provider`.
+4. Re-register the saved clients in the Local Install `oauthClient` table. Map
+   `redirectUrls` to `redirectUris`, convert the legacy `metadata` string to
+   JSON, and review grant types and the token endpoint authentication method.
+
+Legacy access and refresh tokens cannot be reused with the new provider.
+
+## Upgrade and backfill accounts
+
+<div className="fd-steps">
+
+  <div className="fd-step">
+
+### Start the maintenance window
+
+Back up the Better Auth component data, disable the Better Auth HTTP routes, and
+pause every background job or admin function that can create or update an
+`account`. Leave writes stopped through the validation and backfill steps.
+
+If a 1.7 sign-in reaches an un-migrated account, the new `(issuer, accountId)`
+lookup cannot find it and may create a duplicate account. A read-only UI is not
+enough if server jobs can still write authentication data.
+
+  </div>
+
+  <div className="fd-step">
+
+### Install dependencies
+
+```npm
+npm install @convex-dev/better-auth@^0.13.0
+npm install better-auth@~1.7.1
+```
+
+  </div>
+
+  <div className="fd-step">
+
+### Deploy the staged component schema
+
+Run your normal Convex development or deploy command. The bundled component
+temporarily accepts accounts without `issuer` so the backfill can run, while
+Better Auth 1.7 supplies `issuer` for every new account. It retains the legacy
+OAuth application, token, and consent tables so identity-provider deployments
+can export and clear their old component data before moving to Local Install. It
+does not add the replacement provider's schema to the bundled component.
+
+Do not restore authentication writes after this deploy.
+
+  </div>
+
+  <div className="fd-step">
+
+### Add validation and migration wrappers
+
+Create temporary internal functions in your application. Replace the example
+mapping with the issuers verified from your Better Auth provider configuration.
+
+```ts title="convex/migrations.ts"
+import { createOAuthAccountIssuer } from "better-auth/db";
+import { internalMutation, internalQuery } from "./_generated/server";
+import { components } from "./_generated/api";
+import { v } from "convex/values";
+
+const providerIssuers = {
+  github: createOAuthAccountIssuer("github"),
+  google: "https://accounts.google.com",
+  // "my-oidc-provider": "https://issuer.example.com",
+};
+
+export const validateAccountIssuerBackfill = internalQuery({
+  args: { cursor: v.union(v.string(), v.null()) },
+  handler: async (ctx, { cursor }) => {
+    return await ctx.runQuery(
+      components.betterAuth.migrations.validateAccountIssuerBackfill,
+      {
+        providerIssuers,
+        paginationOpts: { cursor, numItems: 100 },
+      }
+    );
+  },
+});
+
+export const backfillAccountIssuers = internalMutation({
+  args: { cursor: v.union(v.string(), v.null()) },
+  handler: async (ctx, { cursor }) => {
+    return await ctx.runMutation(
+      components.betterAuth.migrations.backfillAccountIssuers,
+      {
+        providerIssuers,
+        paginationOpts: { cursor, numItems: 100 },
+      }
+    );
+  },
+});
+```
+
+The migration normalizes credential accounts so `accountId` is the linked user
+ID, as required by Better Auth 1.7. Both functions calculate the target identity
+of legacy rows outside the current page, so a collision split across pages is
+detected before either row is changed.
+
+  </div>
+
+  <div className="fd-step">
+
+### Validate every page without writing
+
+Start the validation query with a null cursor:
+
+```bash
+npx convex run migrations:validateAccountIssuerBackfill '{"cursor":null}'
+```
+
+If the result has `isDone: false`, run it again with the returned
+`continueCursor`. Repeat until `isDone` is true. This pass must finish before
+the first backfill mutation. The query stops at the first invalid account in a
+page; fix that record or mapping and rerun the same page until validation can
+advance. Resolve missing mappings, issuer mismatches, and collisions from
+trusted provider data; never merge users based only on matching email.
+
+Treat every cursor as opaque and only advance with `continueCursor` while
+`isDone` is false. The cursor returned with `isDone: true` is terminal and
+replaying it is a no-op. Start again with a null cursor when intentionally
+beginning a new validation or migration pass.
+
+Run the same process with `--prod` for production.
+
+  </div>
+
+  <div className="fd-step">
+
+### Backfill every page
+
+After validation finishes, start the mutation with a new null cursor:
+
+```bash
+npx convex run migrations:backfillAccountIssuers '{"cursor":null}'
+```
+
+Repeat with each returned `continueCursor` until `isDone` is true. Do not reuse
+the validation cursor. The mutation repeats the collision checks and is safe to
+rerun for accounts already migrated with the same identity. Add `--prod` to each
+command when running against production.
+
+  </div>
+
+  <div className="fd-step">
+
+### Verify before resuming writes
+
+Confirm that a second validation pass reports `pending: 0` on every page.
+Applications acting as an OAuth or OIDC provider must now complete the provider
+conversion below while remaining in maintenance mode. Other applications can
+temporarily enable the HTTP routes for a controlled smoke test. Verify
+email-and-password sign-in, returning OAuth or SSO sign-in, explicit account
+linking and unlinking, provider profile retrieval, and token refresh for every
+configured provider. Only then restore normal public traffic and background
+writes.
+
+  </div>
+
+</div>
+
+## Update Better Auth configuration
+
+### Account selectors
+
+Account-management APIs now select the local Better Auth account row, not the
+provider-side subject. Read `id` from `listAccounts` and pass that value as
+`accountId` to `unlinkAccount`. For `getAccessToken`, `refreshToken`, and
+`accountInfo`, pass exactly one of `{ accountId: account.id }` or
+`{ useAccountCookie: true }`. Remove `providerId` from these selectors; the
+provider-side identity remains available as `account.accountId`.
+
+### Generic OAuth
+
+Generic OAuth now uses the standard social client API:
+
+```ts
+await authClient.signIn.social({ provider: "my-provider" });
+```
+
+Remove `genericOAuthClient()` from the client plugins. Update provider callback
+URLs from `/api/auth/oauth2/callback/:id` to `/api/auth/callback/:id`.
+
+### Database joins
+
+If you enabled `experimental.joins`, move the option to
+`advanced.database.joins`. The Convex adapter still disables native joins and
+uses its existing relation queries.
+
+### OAuth or OIDC provider
+
+This section applies only if the application previously used the bundled
+`oidcProvider` plugin to act as an identity provider. Complete it after the
+account-issuer backfill, while the staged bundled component is still mounted and
+authentication writes remain stopped.
+
+Add temporary internal wrappers for the staged component's legacy OAuth
+functions:
+
+```ts title="convex/migrations.ts"
+export const listLegacyOAuthApplications = internalQuery({
+  args: { cursor: v.union(v.string(), v.null()) },
+  handler: async (ctx, { cursor }) => {
+    return await ctx.runQuery(
+      components.betterAuth.migrations.listLegacyOAuthApplications,
+      { paginationOpts: { cursor, numItems: 100 } }
+    );
+  },
+});
+
+export const clearLegacyOAuthProviderRecords = internalMutation({
+  args: {
+    table: v.union(
+      v.literal("oauthApplication"),
+      v.literal("oauthAccessToken"),
+      v.literal("oauthConsent")
+    ),
+    cursor: v.union(v.string(), v.null()),
+  },
+  handler: async (ctx, { table, cursor }) => {
+    return await ctx.runMutation(
+      components.betterAuth.migrations.clearLegacyOAuthProviderRecords,
+      { table, paginationOpts: { cursor, numItems: 100 } }
+    );
+  },
+});
+```
+
+Run `listLegacyOAuthApplications` through every cursor page and save the
+redacted registration metadata somewhere access-controlled. The result says
+whether each client had a secret but never returns `clientSecret` itself. Other
+fields, especially custom `metadata`, may still contain sensitive application
+data and must be reviewed before reuse. Existing confidential clients receive a
+new secret when re-registered.
+
+```bash
+npx convex run migrations:listLegacyOAuthApplications '{"cursor":null}'
+```
+
+Repeat with each returned `continueCursor` until `isDone` is true. Add `--prod`
+to each command when running against production. Follow the same terminal cursor
+rule as the account migration above.
+
+After verifying the exported client metadata, run
+`clearLegacyOAuthProviderRecords` through every page for `oauthAccessToken`,
+`oauthConsent`, and finally `oauthApplication`. This intentionally invalidates
+all legacy provider tokens and consents and removes the old client secrets. Run
+it before any 1.7 provider tokens are issued.
+
+```bash
+npx convex run migrations:clearLegacyOAuthProviderRecords \
+  '{"table":"oauthAccessToken","cursor":null}'
+npx convex run migrations:clearLegacyOAuthProviderRecords \
+  '{"table":"oauthConsent","cursor":null}'
+npx convex run migrations:clearLegacyOAuthProviderRecords \
+  '{"table":"oauthApplication","cursor":null}'
+```
+
+For each table, repeat the command with its returned `continueCursor` until
+`isDone` is true. Add `--prod` to each production command. Do not switch to
+Local Install until all three tables report `isDone: true`; the bundled
+migration functions are not available after the switch. A cursor returned with
+`isDone: true` is terminal; start from null to intentionally run a new pass.
+
+#### Convert the staged component to Local Install
+
+1. Follow the [Local Install guide](/local-install) to create the local
+   `convex/betterAuth` component. Keep the component mounted as `betterAuth` in
+   `app.use(betterAuth)` so the generated `components.betterAuth` path does not
+   change. Export every adapter function shown there, including `incrementOne`.
+2. Add the replacement package and review Better Auth's full OAuth provider
+   migration requirements:
+
+```npm
+npm install @better-auth/oauth-provider@~1.7.1
+```
+
+```ts
+import { oauthProvider } from "@better-auth/oauth-provider";
+import { jwt } from "better-auth/plugins/jwt";
+
+betterAuth({
+  plugins: [
+    jwt(),
+    oauthProvider({
+      loginPage: "/sign-in",
+      consentPage: "/consent",
+    }),
+  ],
+});
+```
+
+3. Generate the Local Install schema only after the static Better Auth options
+   include `oauthProvider()`. The account backfill is complete and all three
+   legacy provider tables are empty, so this converting deployment can use the
+   final generated Better Auth 1.7 schema rather than the temporary merged
+   schema described below for existing Local Install deployments.
+4. Deploy the local component while writes and public HTTP routes remain
+   stopped. Before registering clients, confirm that existing users, accounts,
+   and sessions are still present under the unchanged `components.betterAuth`
+   mount. If they are not, roll back the component registration and restore the
+   backup; do not resume traffic.
+5. Re-register the exported clients using the new provider, map `redirectUrls`
+   to `redirectUris`, convert the legacy `metadata` string to JSON, review grant
+   types and the token endpoint authentication method, and distribute new client
+   secrets through the normal secret channel. Existing provider tokens must be
+   issued again.
+6. Run the controlled smoke tests described above, including authorization,
+   consent, token issuance, refresh, user info, and logout, before restoring
+   normal traffic and background writes.
+
+## Local Install additional steps
+
+This section applies to applications that already used Local Install before the
+upgrade. They control their own schema and cannot call the bundled component
+migration functions above. Generate the 1.7 schema to a side file instead of
+overwriting the deployed schema:
+
+```npm
+cd convex/betterAuth
+npx auth generate --output generatedSchema.next.ts
+```
+
+Before deploying, copy the new definitions into your active schema with these
+temporary changes:
+
+1. Make `account.issuer` optional, but add the `accountId_issuer` compound
+   index.
+2. If you used `oidcProvider`, retain `oauthApplication` and merge the legacy
+   and new `oauthAccessToken` and `oauthConsent` fields as optional unions.
+3. Add the new OAuth tables without removing legacy records.
+
+Implement the same two-pass process against your local `account` table: a
+read-only paginated validation that calculates every target identity and checks
+legacy candidates outside the page, followed by the paginated write migration.
+Do not deploy the required `issuer` validator from `generatedSchema.next.ts`
+until validation reports no pending rows and the backfill is complete.
+
+If the local deployment used `oidcProvider`, also implement local equivalents of
+the export and clear functions above. Redact `clientSecret` from the export,
+save the client metadata, and clear `oauthAccessToken`, `oauthConsent`, and
+`oauthApplication` before replacing the temporary table definitions with the
+final generated definitions. Run Convex code generation and deploy, then
+re-register clients and complete the provider smoke tests before resuming
+authentication writes.
