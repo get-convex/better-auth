@@ -417,9 +417,9 @@ npx auth generate --output generatedSchema.next.ts
 Before deploying, copy the new definitions into your active schema with these
 temporary changes:
 
-1. Make `account.issuer` optional. Add the generated `issuer_accountId` index
-   and keep the generated `accountId` and `providerId_userId` indexes for
-   migration collision checks.
+1. Make `account.issuer` optional. Add the generated `issuer_accountId` and
+   `userId_providerId_issuer_accountId` indexes. Keep the generated `accountId`
+   and `providerId_userId` indexes for migration collision checks.
 2. If you used `oidcProvider`, retain `oauthApplication` and merge the legacy
    and new `oauthAccessToken` and `oauthConsent` fields as optional unions.
 3. Add the new OAuth tables without removing legacy records.
