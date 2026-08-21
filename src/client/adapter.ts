@@ -3,6 +3,7 @@ import type { DBAdapterDebugLogOption } from "better-auth/adapters";
 import { createFunctionHandle } from "convex/server";
 import type {
   FunctionHandle,
+  FunctionReference,
   GenericActionCtx,
   GenericDataModel,
   PaginationOptions,
@@ -17,10 +18,9 @@ import { asyncMap } from "convex-helpers";
 import { prop, sortBy } from "remeda";
 import { isRunMutationCtx } from "../utils/index.js";
 import type { Doc, TableNames } from "../component/_generated/dataModel.js";
-import type { ComponentApi } from "../component/_generated/component.js";
 import type { AuthFunctions, GenericCtx, Triggers } from "./index.js";
 
-let didWarnExperimentalJoinsUnsupported = false;
+let didWarnJoinsUnsupported = false;
 
 const handlePagination = async (
   next: ({
@@ -184,7 +184,16 @@ export const convexAdapter = <
 >(
   ctx: Ctx,
   api: {
-    adapter: ComponentApi["adapter"];
+    adapter: {
+      create: FunctionReference<"mutation", "internal">;
+      findOne: FunctionReference<"query", "internal">;
+      findMany: FunctionReference<"query", "internal">;
+      updateOne: FunctionReference<"mutation", "internal">;
+      incrementOne: FunctionReference<"mutation", "internal">;
+      updateMany: FunctionReference<"mutation", "internal">;
+      deleteOne: FunctionReference<"mutation", "internal">;
+      deleteMany: FunctionReference<"mutation", "internal">;
+    };
   },
   config: {
     debugLogs?: DBAdapterDebugLogOption;
@@ -228,16 +237,19 @@ export const convexAdapter = <
     adapter: ({ options }) => {
       // Disable telemetry in all cases because it requires Node
       options.telemetry = { enabled: false };
-      if (options.experimental?.joins) {
-        options.experimental = {
-          ...options.experimental,
-          joins: false,
+      if (options.advanced?.database?.joins) {
+        options.advanced = {
+          ...options.advanced,
+          database: {
+            ...options.advanced.database,
+            joins: false,
+          },
         };
-        if (!didWarnExperimentalJoinsUnsupported) {
-          didWarnExperimentalJoinsUnsupported = true;
+        if (!didWarnJoinsUnsupported) {
+          didWarnJoinsUnsupported = true;
           // eslint-disable-next-line no-console
           console.warn(
-            "[convex-better-auth] Better Auth experimental.joins is not supported by the Convex adapter yet. Forcing experimental.joins = false."
+            "[convex-better-auth] Better Auth advanced.database.joins is not supported by the Convex adapter yet. Forcing advanced.database.joins = false."
           );
         }
       }
@@ -408,6 +420,52 @@ export const convexAdapter = <
               update: data.update as any,
             },
             onUpdateHandle: onUpdateHandle,
+          });
+        },
+        consumeOne: async (data): Promise<any> => {
+          if (!("runMutation" in ctx)) {
+            throw new Error("ctx is not a mutation ctx");
+          }
+          if (!data.where.length) {
+            return null;
+          }
+          const onDeleteHandle =
+            config.authFunctions?.onDelete &&
+            config.triggers?.[data.model]?.onDelete
+              ? ((await createFunctionHandle(
+                  config.authFunctions.onDelete
+                )) as FunctionHandle<"mutation">)
+              : undefined;
+          return ctx.runMutation(api.adapter.deleteOne, {
+            input: {
+              model: data.model as TableNames,
+              where: parseWhere(data.where),
+            },
+            onDeleteHandle,
+          });
+        },
+        incrementOne: async (data): Promise<any> => {
+          if (!("runMutation" in ctx)) {
+            throw new Error("ctx is not a mutation ctx");
+          }
+          if (!data.where.length) {
+            return null;
+          }
+          const onUpdateHandle =
+            config.authFunctions?.onUpdate &&
+            config.triggers?.[data.model]?.onUpdate
+              ? ((await createFunctionHandle(
+                  config.authFunctions.onUpdate
+                )) as FunctionHandle<"mutation">)
+              : undefined;
+          return ctx.runMutation(api.adapter.incrementOne, {
+            input: {
+              model: data.model as TableNames,
+              where: parseWhere(data.where),
+              increment: data.increment,
+              set: data.set as any,
+            },
+            onUpdateHandle,
           });
         },
         delete: async (data) => {

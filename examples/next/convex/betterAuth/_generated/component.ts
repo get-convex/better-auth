@@ -65,6 +65,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   accountId: string;
                   createdAt: number;
                   idToken?: null | string;
+                  issuer: string;
                   password?: null | string;
                   providerId: string;
                   refreshToken?: null | string;
@@ -88,6 +89,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             | {
                 data: {
                   backupCodes: string;
+                  failedVerificationCount?: null | number;
+                  lockedUntil?: null | number;
                   secret: string;
                   userId: string;
                   verified?: null | boolean;
@@ -96,7 +99,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
               }
             | {
                 data: {
+                  alg?: null | string;
                   createdAt: number;
+                  crv?: null | string;
                   expiresAt?: null | number;
                   privateKey: string;
                   publicKey: string;
@@ -194,6 +199,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field:
+                    | "issuer"
                     | "accountId"
                     | "providerId"
                     | "userId"
@@ -271,6 +277,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "backupCodes"
                     | "userId"
                     | "verified"
+                    | "failedVerificationCount"
+                    | "lockedUntil"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -303,6 +311,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "privateKey"
                     | "createdAt"
                     | "expiresAt"
+                    | "alg"
+                    | "crv"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -424,6 +434,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field:
+                    | "issuer"
                     | "accountId"
                     | "providerId"
                     | "userId"
@@ -501,6 +512,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "backupCodes"
                     | "userId"
                     | "verified"
+                    | "failedVerificationCount"
+                    | "lockedUntil"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -533,6 +546,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "privateKey"
                     | "createdAt"
                     | "expiresAt"
+                    | "alg"
+                    | "crv"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -654,6 +669,300 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
         any,
         Name
       >;
+      incrementOne: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          input:
+            | {
+                increment: Record<string, number>;
+                model: "user";
+                set?: {
+                  createdAt?: number;
+                  displayUsername?: null | string;
+                  email?: string;
+                  emailVerified?: boolean;
+                  foo?: null | string;
+                  image?: null | string;
+                  isAnonymous?: null | boolean;
+                  name?: string;
+                  twoFactorEnabled?: null | boolean;
+                  updatedAt?: number;
+                  userId?: null | string;
+                  username?: null | string;
+                };
+                where: Array<{
+                  connector?: "AND" | "OR";
+                  field:
+                    | "name"
+                    | "email"
+                    | "emailVerified"
+                    | "image"
+                    | "createdAt"
+                    | "updatedAt"
+                    | "isAnonymous"
+                    | "username"
+                    | "displayUsername"
+                    | "twoFactorEnabled"
+                    | "userId"
+                    | "foo"
+                    | "_id";
+                  mode?: "sensitive" | "insensitive";
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "not_in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                increment: Record<string, number>;
+                model: "session";
+                set?: {
+                  createdAt?: number;
+                  expiresAt?: number;
+                  ipAddress?: null | string;
+                  token?: string;
+                  updatedAt?: number;
+                  userAgent?: null | string;
+                  userId?: string;
+                };
+                where: Array<{
+                  connector?: "AND" | "OR";
+                  field:
+                    | "expiresAt"
+                    | "token"
+                    | "createdAt"
+                    | "updatedAt"
+                    | "ipAddress"
+                    | "userAgent"
+                    | "userId"
+                    | "_id";
+                  mode?: "sensitive" | "insensitive";
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "not_in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                increment: Record<string, number>;
+                model: "account";
+                set?: {
+                  accessToken?: null | string;
+                  accessTokenExpiresAt?: null | number;
+                  accountId?: string;
+                  createdAt?: number;
+                  idToken?: null | string;
+                  issuer?: string;
+                  password?: null | string;
+                  providerId?: string;
+                  refreshToken?: null | string;
+                  refreshTokenExpiresAt?: null | number;
+                  scope?: null | string;
+                  updatedAt?: number;
+                  userId?: string;
+                };
+                where: Array<{
+                  connector?: "AND" | "OR";
+                  field:
+                    | "issuer"
+                    | "accountId"
+                    | "providerId"
+                    | "userId"
+                    | "accessToken"
+                    | "refreshToken"
+                    | "idToken"
+                    | "accessTokenExpiresAt"
+                    | "refreshTokenExpiresAt"
+                    | "scope"
+                    | "password"
+                    | "createdAt"
+                    | "updatedAt"
+                    | "_id";
+                  mode?: "sensitive" | "insensitive";
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "not_in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                increment: Record<string, number>;
+                model: "verification";
+                set?: {
+                  createdAt?: number;
+                  expiresAt?: number;
+                  identifier?: string;
+                  updatedAt?: number;
+                  value?: string;
+                };
+                where: Array<{
+                  connector?: "AND" | "OR";
+                  field:
+                    | "identifier"
+                    | "value"
+                    | "expiresAt"
+                    | "createdAt"
+                    | "updatedAt"
+                    | "_id";
+                  mode?: "sensitive" | "insensitive";
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "not_in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                increment: Record<string, number>;
+                model: "twoFactor";
+                set?: {
+                  backupCodes?: string;
+                  failedVerificationCount?: null | number;
+                  lockedUntil?: null | number;
+                  secret?: string;
+                  userId?: string;
+                  verified?: null | boolean;
+                };
+                where: Array<{
+                  connector?: "AND" | "OR";
+                  field:
+                    | "secret"
+                    | "backupCodes"
+                    | "userId"
+                    | "verified"
+                    | "failedVerificationCount"
+                    | "lockedUntil"
+                    | "_id";
+                  mode?: "sensitive" | "insensitive";
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "not_in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              }
+            | {
+                increment: Record<string, number>;
+                model: "jwks";
+                set?: {
+                  alg?: null | string;
+                  createdAt?: number;
+                  crv?: null | string;
+                  expiresAt?: null | number;
+                  privateKey?: string;
+                  publicKey?: string;
+                };
+                where: Array<{
+                  connector?: "AND" | "OR";
+                  field:
+                    | "publicKey"
+                    | "privateKey"
+                    | "createdAt"
+                    | "expiresAt"
+                    | "alg"
+                    | "crv"
+                    | "_id";
+                  mode?: "sensitive" | "insensitive";
+                  operator?:
+                    | "lt"
+                    | "lte"
+                    | "gt"
+                    | "gte"
+                    | "eq"
+                    | "in"
+                    | "not_in"
+                    | "ne"
+                    | "contains"
+                    | "starts_with"
+                    | "ends_with";
+                  value:
+                    | string
+                    | number
+                    | boolean
+                    | Array<string>
+                    | Array<number>
+                    | null;
+                }>;
+              };
+          onUpdateHandle?: string;
+        },
+        any,
+        Name
+      >;
       updateMany: FunctionReference<
         "mutation",
         "internal",
@@ -765,6 +1074,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   accountId?: string;
                   createdAt?: number;
                   idToken?: null | string;
+                  issuer?: string;
                   password?: null | string;
                   providerId?: string;
                   refreshToken?: null | string;
@@ -776,6 +1086,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field:
+                    | "issuer"
                     | "accountId"
                     | "providerId"
                     | "userId"
@@ -855,6 +1166,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 model: "twoFactor";
                 update: {
                   backupCodes?: string;
+                  failedVerificationCount?: null | number;
+                  lockedUntil?: null | number;
                   secret?: string;
                   userId?: string;
                   verified?: null | boolean;
@@ -866,6 +1179,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "backupCodes"
                     | "userId"
                     | "verified"
+                    | "failedVerificationCount"
+                    | "lockedUntil"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -892,7 +1207,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             | {
                 model: "jwks";
                 update: {
+                  alg?: null | string;
                   createdAt?: number;
+                  crv?: null | string;
                   expiresAt?: null | number;
                   privateKey?: string;
                   publicKey?: string;
@@ -904,6 +1221,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "privateKey"
                     | "createdAt"
                     | "expiresAt"
+                    | "alg"
+                    | "crv"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -1051,6 +1370,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   accountId?: string;
                   createdAt?: number;
                   idToken?: null | string;
+                  issuer?: string;
                   password?: null | string;
                   providerId?: string;
                   refreshToken?: null | string;
@@ -1062,6 +1382,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 where?: Array<{
                   connector?: "AND" | "OR";
                   field:
+                    | "issuer"
                     | "accountId"
                     | "providerId"
                     | "userId"
@@ -1141,6 +1462,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 model: "twoFactor";
                 update: {
                   backupCodes?: string;
+                  failedVerificationCount?: null | number;
+                  lockedUntil?: null | number;
                   secret?: string;
                   userId?: string;
                   verified?: null | boolean;
@@ -1152,6 +1475,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "backupCodes"
                     | "userId"
                     | "verified"
+                    | "failedVerificationCount"
+                    | "lockedUntil"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -1178,7 +1503,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             | {
                 model: "jwks";
                 update: {
+                  alg?: null | string;
                   createdAt?: number;
+                  crv?: null | string;
                   expiresAt?: null | number;
                   privateKey?: string;
                   publicKey?: string;
@@ -1190,6 +1517,8 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "privateKey"
                     | "createdAt"
                     | "expiresAt"
+                    | "alg"
+                    | "crv"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:

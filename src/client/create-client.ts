@@ -65,6 +65,7 @@ type SlimComponentApi = {
     findOne: FunctionReference<"query", "internal">;
     findMany: FunctionReference<"query", "internal">;
     updateOne: FunctionReference<"mutation", "internal">;
+    incrementOne: FunctionReference<"mutation", "internal">;
     updateMany: FunctionReference<"mutation", "internal">;
     deleteOne: FunctionReference<"mutation", "internal">;
     deleteMany: FunctionReference<"mutation", "internal">;

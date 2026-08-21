@@ -28,7 +28,7 @@ export const tables = {
     userId: v.optional(v.union(v.null(), v.string())),
     foo: v.optional(v.union(v.null(), v.string())),
   })
-    .index("email_name", ["email","name"])
+    .index("email_name", ["email", "name"])
     .index("name", ["name"])
     .index("userId", ["userId"])
     .index("username", ["username"]),
@@ -42,10 +42,11 @@ export const tables = {
     userId: v.string(),
   })
     .index("expiresAt", ["expiresAt"])
-    .index("expiresAt_userId", ["expiresAt","userId"])
+    .index("expiresAt_userId", ["expiresAt", "userId"])
     .index("token", ["token"])
     .index("userId", ["userId"]),
   account: defineTable({
+    issuer: v.string(),
     accountId: v.string(),
     providerId: v.string(),
     userId: v.string(),
@@ -59,9 +60,16 @@ export const tables = {
     createdAt: v.number(),
     updatedAt: v.number(),
   })
+    .index("issuer_accountId", ["issuer", "accountId"])
     .index("accountId", ["accountId"])
-    .index("accountId_providerId", ["accountId","providerId"])
-    .index("providerId_userId", ["providerId","userId"])
+    .index("accountId_providerId", ["accountId", "providerId"])
+    .index("providerId_userId", ["providerId", "userId"])
+    .index("userId_providerId_issuer_accountId", [
+      "userId",
+      "providerId",
+      "issuer",
+      "accountId",
+    ])
     .index("userId", ["userId"]),
   verification: defineTable({
     identifier: v.string(),
@@ -77,13 +85,16 @@ export const tables = {
     backupCodes: v.string(),
     userId: v.string(),
     verified: v.optional(v.union(v.null(), v.boolean())),
-  })
-    .index("userId", ["userId"]),
+    failedVerificationCount: v.optional(v.union(v.null(), v.number())),
+    lockedUntil: v.optional(v.union(v.null(), v.number())),
+  }).index("userId", ["userId"]),
   jwks: defineTable({
     publicKey: v.string(),
     privateKey: v.string(),
     createdAt: v.number(),
     expiresAt: v.optional(v.union(v.null(), v.number())),
+    alg: v.optional(v.union(v.null(), v.string())),
+    crv: v.optional(v.union(v.null(), v.string())),
   }),
 };
 
