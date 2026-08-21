@@ -1,5 +1,12 @@
 import type { PropsWithChildren, ReactNode } from "react";
-import { Component, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Component,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { AuthTokenFetcher } from "convex/browser";
 import {
   Authenticated,
@@ -11,37 +18,13 @@ import type { FunctionReference } from "convex/server";
 import type { EmptyObject } from "convex-helpers";
 import type { BetterAuthClientOptions } from "better-auth";
 import type { ReactAuthClient } from "better-auth/react";
-
-type RequiredAuthClient = {
-  useSession: () => {
-    data: { session?: { id: string } } | null;
-    isPending: boolean;
-  };
-  getSession: (args?: {
-    fetchOptions: { headers: Record<string, string> };
-  }) => Promise<unknown>;
-  convex: {
-    token: (args: {
-      fetchOptions: { throw: boolean };
-    }) => Promise<{ data?: { token?: string } | null }>;
-  };
-};
+import { handleCrossDomainCallback } from "./cross-domain.js";
+import type { RequiredAuthClient } from "./cross-domain.js";
 
 export type AuthClient<
   Client extends RequiredAuthClient = ReactAuthClient<BetterAuthClientOptions> &
     RequiredAuthClient,
 > = Client & RequiredAuthClient;
-
-type AuthClientWithCrossDomain<Client extends RequiredAuthClient> = Client & {
-  crossDomain: {
-    oneTimeToken: {
-      verify: (args: { token: string }) => Promise<{
-        data?: { session?: { token: string } } | null;
-      }>;
-    };
-  };
-  updateSession: () => void;
-};
 
 // Until we can import from our own entry points (requires TypeScript 4.7),
 // just describe the interface enough to help users pass the right type.
@@ -73,29 +56,9 @@ export function ConvexBetterAuthProvider<Client extends RequiredAuthClient>({
       if (typeof window === "undefined" || !window.location?.href) {
         return;
       }
-      const url = new URL(window.location.href);
-      const token = url.searchParams.get("ott");
-      if (token) {
-        const authClientWithCrossDomain =
-          authClient as AuthClientWithCrossDomain<Client>;
-        url.searchParams.delete("ott");
-        window.history.replaceState({}, "", url);
-        const result =
-          await authClientWithCrossDomain.crossDomain.oneTimeToken.verify({
-            token,
-          });
-        const session = result.data?.session;
-        if (session) {
-          await authClient.getSession({
-            fetchOptions: {
-              headers: {
-                Authorization: `Bearer ${session.token}`,
-              },
-            },
-          });
-          authClientWithCrossDomain.updateSession();
-        }
-      }
+      await handleCrossDomainCallback(authClient, window.location.href, (url) =>
+        window.history.replaceState({}, "", url)
+      );
     })();
   }, [authClient]);
   return (
@@ -262,7 +225,7 @@ const UserSubscription = ({
  * The component provides a query for this via `export const { getAuthUser } = authComponent.clientApi()`.
  * @param props.isAuthError - Function to check if the error is auth related.
  */
-export const AuthBoundary = <Client extends RequiredAuthClient,>({
+export const AuthBoundary = <Client extends RequiredAuthClient>({
   children,
   /**
    * The function to call when the user is unauthenticated. Typically a redirect
