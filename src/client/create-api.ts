@@ -363,16 +363,40 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
         onUpdateHandle: v.optional(v.string()),
       },
       handler: async (ctx, args) => {
+        const uniqueFieldsTouched = touchesUniqueFields(
+          betterAuthSchema,
+          args.input.model,
+          args.input.update ?? {}
+        );
+        const firstInWhere = args.input.where?.find(
+          (where) => where.operator === "in"
+        );
+        const usesAtomicIdSet = firstInWhere?.field === "_id";
+        const requestedPageSize = args.paginationOpts.numItems;
         const { page, ...result } = await paginate(
           ctx,
           schema,
           betterAuthSchema,
           {
             ...args.input,
-            paginationOpts: args.paginationOpts,
+            paginationOpts: uniqueFieldsTouched
+              ? {
+                  ...args.paginationOpts,
+                  numItems: requestedPageSize + 1,
+                }
+              : args.paginationOpts,
           }
         );
         if (args.input.update) {
+          if (
+            uniqueFieldsTouched &&
+            !usesAtomicIdSet &&
+            (page.length > requestedPageSize || !result.isDone)
+          ) {
+            throw new Error(
+              `Cannot update unique fields across multiple pages in ${args.input.model}`
+            );
+          }
           if (
             hasUniqueFields(
               betterAuthSchema,
@@ -438,13 +462,7 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
               );
             }
           };
-          if (
-            touchesUniqueFields(
-              betterAuthSchema,
-              args.input.model,
-              args.input.update ?? {}
-            )
-          ) {
+          if (uniqueFieldsTouched) {
             for (const doc of page) {
               await updateDoc(doc);
             }
