@@ -45,6 +45,17 @@ describe("getAuthConfigProvider", () => {
     }
   );
 
+  it.each([
+    "https://deployment.convex.site?region=us",
+    "https://deployment.convex.site#fragment",
+  ])("rejects URL components in the Convex site URL %s", (siteUrl) => {
+    process.env.CONVEX_SITE_URL = siteUrl;
+
+    expect(() => getAuthConfigProvider()).toThrow(
+      "CONVEX_SITE_URL must not include a query string or fragment"
+    );
+  });
+
   it("accepts an HTTP URL for a local Convex deployment", () => {
     process.env.CONVEX_SITE_URL = "http://127.0.0.1:3211";
 

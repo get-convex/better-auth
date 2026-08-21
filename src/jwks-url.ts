@@ -12,6 +12,11 @@ export const validateConvexSiteUrl = (siteUrl: string) => {
   ) {
     throw new Error("CONVEX_SITE_URL must be a valid HTTP or HTTPS URL");
   }
+  if (parsedSiteUrl.search || parsedSiteUrl.hash) {
+    throw new Error(
+      "CONVEX_SITE_URL must not include a query string or fragment"
+    );
+  }
 
   return siteUrl;
 };
