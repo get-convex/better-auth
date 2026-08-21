@@ -61,7 +61,12 @@ const targetAccountIdentity = (
       : account.providerId === "siwe"
         ? "local:siwe"
         : undefined;
-  const mappedIssuer = providerIssuers[account.providerId];
+  const mappedIssuer = Object.prototype.hasOwnProperty.call(
+    providerIssuers,
+    account.providerId
+  )
+    ? providerIssuers[account.providerId]
+    : undefined;
   const existingIssuer = account.issuer ?? undefined;
 
   if (existingIssuer !== undefined && !existingIssuer.trim()) {

@@ -97,6 +97,16 @@ export const hasUniqueFields = (
     constraint.every((field) => inputFields.has(field))
   );
 };
+export const touchesUniqueFields = (
+  betterAuthSchema: BetterAuthDBSchema,
+  model: string,
+  input: Record<string, any>
+) => {
+  const inputFields = new Set(Object.keys(input));
+  return getUniqueConstraints(betterAuthSchema, model).some((constraint) =>
+    constraint.some((field) => inputFields.has(field))
+  );
+};
 
 const findIndex = (
   schema: SchemaDefinition<any, any>,

@@ -25,3 +25,26 @@ export const sessionOnUpdateUpdater = internalMutationGeneric({
     }
   },
 });
+
+export const accountOnCreateIssuerClearer = internalMutationGeneric({
+  args: { doc: v.any(), model: v.string() },
+  handler: async (ctx, args) => {
+    if (args.model === "account") {
+      await ctx.db.patch("account", args.doc._id, { issuer: null });
+    }
+  },
+});
+
+export const accountOnUpdateIssuerClearer = internalMutationGeneric({
+  args: { newDoc: v.any(), oldDoc: v.any(), model: v.string() },
+  handler: async (ctx, args) => {
+    if (args.model === "account") {
+      await ctx.db.patch("account", args.newDoc._id, { issuer: null });
+    }
+  },
+});
+
+export const accountOnUpdateNoop = internalMutationGeneric({
+  args: { newDoc: v.any(), oldDoc: v.any(), model: v.string() },
+  handler: async () => {},
+});

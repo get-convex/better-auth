@@ -92,4 +92,37 @@ describe("trigger result propagation", () => {
       userAgent: "trigger-ran-on-update",
     });
   });
+
+  it("api.adapter.updateMany runs onUpdateHandle for every updated doc", async () => {
+    const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
+    const result = await t.run(async (ctx) => {
+      for (const token of ["bulk-update-token-1", "bulk-update-token-2"]) {
+        await ctx.runMutation(api.adapter.create, {
+          input: {
+            model: "session",
+            data: { ...baseSessionData(), token },
+          },
+        });
+      }
+      const handle = await createFunctionHandle(
+        internal.testTriggerHandlers.sessionOnUpdateUpdater
+      );
+      return await ctx.runMutation(api.adapter.updateMany, {
+        input: {
+          model: "session",
+          update: { userAgent: "set-by-update" },
+          where: [{ field: "userId", operator: "eq", value: "user-1" }],
+        },
+        paginationOpts: { cursor: null, numItems: 10 },
+        onUpdateHandle: handle,
+      });
+    });
+    expect(result.count).toBe(2);
+
+    const sessions = await t.run((ctx) => ctx.db.query("session").collect());
+    expect(sessions).toHaveLength(2);
+    expect(
+      sessions.every(({ userAgent }) => userAgent === "trigger-ran-on-update")
+    ).toBe(true);
+  });
 });

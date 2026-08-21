@@ -75,6 +75,33 @@ describe("backfillAccountIssuers", () => {
     expect(account?.issuer).toBeUndefined();
   });
 
+  it("does not treat inherited properties as provider issuer mappings", async () => {
+    const t = convexTest(schema, modules);
+    await t.run((ctx) =>
+      ctx.db.insert("account", {
+        accountId: "subject",
+        providerId: "constructor",
+        userId: "user-1",
+        createdAt: 1,
+        updatedAt: 1,
+      })
+    );
+    const args = {
+      providerIssuers: {},
+      paginationOpts: { cursor: null, numItems: 10 },
+    };
+
+    await expect(t.query(validateAccountIssuerBackfill, args)).rejects.toThrow(
+      "Missing trusted issuer mapping"
+    );
+    await expect(t.mutation(backfillAccountIssuers, args)).rejects.toThrow(
+      "Missing trusted issuer mapping"
+    );
+
+    const [account] = await t.run((ctx) => ctx.db.query("account").collect());
+    expect(account?.issuer).toBeUndefined();
+  });
+
   it("rejects issuer mappings with surrounding whitespace", async () => {
     const t = convexTest(schema, modules);
     await t.run((ctx) =>

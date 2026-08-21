@@ -20,8 +20,10 @@ import {
   listOne,
   paginate,
   selectFields,
+  touchesUniqueFields,
 } from "./adapter-utils.js";
 import { getAuthTables } from "better-auth/db";
+import type { BetterAuthDBSchema } from "better-auth/db";
 import type { TableNames } from "../component/_generated/dataModel.js";
 import type { BetterAuthOptions } from "better-auth/minimal";
 
@@ -63,6 +65,66 @@ const whereValidator = (
     mode: v.optional(v.union(v.literal("sensitive"), v.literal("insensitive"))),
   });
 
+const requiredFieldNames = (
+  betterAuthSchema: BetterAuthDBSchema,
+  model: string
+) => {
+  const table = Object.values(betterAuthSchema).find(
+    (value) => value.modelName === model
+  );
+  if (!table) {
+    return [];
+  }
+  return Object.entries(table.fields)
+    .filter(([, field]) => field.required)
+    .map(([fieldName, field]) => field.fieldName ?? fieldName);
+};
+
+export const assertRequiredFields = (
+  betterAuthSchema: BetterAuthDBSchema,
+  model: string,
+  data: Record<string, unknown>
+) => {
+  for (const fieldName of requiredFieldNames(betterAuthSchema, model)) {
+    if (data[fieldName] == null) {
+      throw new Error(`Missing required field ${model}.${fieldName}`);
+    }
+  }
+};
+
+const assertRequiredUpdateFields = (
+  betterAuthSchema: BetterAuthDBSchema,
+  model: string,
+  update: Record<string, unknown>
+) => {
+  for (const fieldName of requiredFieldNames(betterAuthSchema, model)) {
+    if (
+      Object.prototype.hasOwnProperty.call(update, fieldName) &&
+      update[fieldName] == null
+    ) {
+      throw new Error(`Cannot clear required field ${model}.${fieldName}`);
+    }
+  }
+};
+
+const assertRequiredFieldTransitions = (
+  betterAuthSchema: BetterAuthDBSchema,
+  model: string,
+  before: Record<string, unknown>,
+  after: Record<string, unknown>
+) => {
+  for (const fieldName of requiredFieldNames(betterAuthSchema, model)) {
+    if (
+      after[fieldName] == null &&
+      (before[fieldName] != null ||
+        (!Object.prototype.hasOwnProperty.call(before, fieldName) &&
+          Object.prototype.hasOwnProperty.call(after, fieldName)))
+    ) {
+      throw new Error(`Trigger cleared required field ${model}.${fieldName}`);
+    }
+  }
+};
+
 export const createApi = <Schema extends SchemaDefinition<any, any>>(
   schema: Schema,
   createAuthOptions: (ctx: any) => BetterAuthOptions
@@ -75,6 +137,7 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
     update: Record<string, any>,
     onUpdateHandle?: string
   ): Promise<Doc> => {
+    assertRequiredUpdateFields(betterAuthSchema, model, update);
     await checkUniqueFields(ctx, schema, betterAuthSchema, model, update, doc);
     await ctx.db.patch(model, doc._id as GenericId<TableNames>, update as any);
     const updatedDoc = await ctx.db.get(
@@ -101,6 +164,12 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
         `Failed to update ${model} (deleted by onUpdate trigger?)`
       );
     }
+    assertRequiredFieldTransitions(
+      betterAuthSchema,
+      model,
+      updatedDoc,
+      triggeredDoc
+    );
     return triggeredDoc as Doc;
   };
 
@@ -119,6 +188,11 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
         onCreateHandle: v.optional(v.string()),
       },
       handler: async (ctx, args) => {
+        assertRequiredFields(
+          betterAuthSchema,
+          args.input.model,
+          args.input.data
+        );
         await checkUniqueFields(
           ctx,
           schema,
@@ -149,6 +223,7 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
               `Failed to create ${args.input.model} (deleted by onCreate trigger?)`
             );
           }
+          assertRequiredFields(betterAuthSchema, args.input.model, updatedDoc);
           return selectFields(updatedDoc, args.select);
         }
         return result;
@@ -310,7 +385,12 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
               `Attempted to set unique fields in multiple documents in ${args.input.model} with the same value. Fields: ${Object.keys(args.input.update ?? {}).join(", ")}`
             );
           }
-          await asyncMap(page, async (doc) => {
+          const updateDoc = async (doc: (typeof page)[number]) => {
+            assertRequiredUpdateFields(
+              betterAuthSchema,
+              args.input.model,
+              args.input.update ?? {}
+            );
             await checkUniqueFields(
               ctx,
               schema,
@@ -326,19 +406,51 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
             );
 
             if (args.onUpdateHandle) {
+              const updatedDoc = await ctx.db.get(
+                args.input.model,
+                doc._id as GenericId<TableNames>
+              );
+              if (!updatedDoc) {
+                throw new Error(`Failed to update ${args.input.model}`);
+              }
               await ctx.runMutation(
                 args.onUpdateHandle as FunctionHandle<"mutation">,
                 {
                   model: args.input.model,
-                  newDoc: await ctx.db.get(
-                    args.input.model,
-                    doc._id as GenericId<TableNames>
-                  ),
+                  newDoc: updatedDoc,
                   oldDoc: doc,
                 }
               );
+              const triggeredDoc = await ctx.db.get(
+                args.input.model,
+                doc._id as GenericId<TableNames>
+              );
+              if (!triggeredDoc) {
+                throw new Error(
+                  `Failed to update ${args.input.model} (deleted by onUpdate trigger?)`
+                );
+              }
+              assertRequiredFieldTransitions(
+                betterAuthSchema,
+                args.input.model,
+                updatedDoc,
+                triggeredDoc
+              );
             }
-          });
+          };
+          if (
+            touchesUniqueFields(
+              betterAuthSchema,
+              args.input.model,
+              args.input.update ?? {}
+            )
+          ) {
+            for (const doc of page) {
+              await updateDoc(doc);
+            }
+          } else {
+            await asyncMap(page, updateDoc);
+          }
         }
         return {
           ...result,

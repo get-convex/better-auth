@@ -514,6 +514,77 @@ export const convexCustomTestSuite = createTestSuite(
         ).toMatchObject({ emailVerified: true });
       },
 
+    "should roll back partial bulk updates that collide on a compound unique constraint":
+      async () => {
+        await adapter.create({
+          model: "account",
+          data: {
+            issuer: "issuer-a",
+            accountId: "shared-account",
+            providerId: "provider-a",
+            userId: "user-a",
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          },
+        });
+        await adapter.create({
+          model: "account",
+          data: {
+            issuer: "issuer-b",
+            accountId: "shared-account",
+            providerId: "provider-b",
+            userId: "user-b",
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          },
+        });
+
+        await expect(
+          adapter.updateMany({
+            model: "account",
+            where: [{ field: "accountId", value: "shared-account" }],
+            update: { issuer: "issuer-c" },
+          }),
+        ).rejects.toThrow(
+          "account unique constraint issuer+accountId already exists",
+        );
+
+        const accounts = await adapter.findMany({
+          model: "account",
+          where: [{ field: "accountId", value: "shared-account" }],
+        });
+        expect(accounts).toHaveLength(2);
+        expect(accounts).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ issuer: "issuer-a" }),
+            expect.objectContaining({ issuer: "issuer-b" }),
+          ]),
+        );
+      },
+
+    "should reject new accounts without the required issuer": async () => {
+      const account = {
+        accountId: "subject",
+        providerId: "custom-provider",
+        userId: "user-without-issuer",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      await expect(
+        adapter.create({
+          model: "account",
+          data: account as any,
+        }),
+      ).rejects.toThrow("Missing required field account.issuer");
+      await expect(
+        adapter.create({
+          model: "account",
+          data: { ...account, issuer: null } as any,
+        }),
+      ).rejects.toThrow("Missing required field account.issuer");
+    },
+
     "should delete and count each match only once for overlapping OR clauses":
       async () => {
         await adapter.create({
