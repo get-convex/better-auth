@@ -130,6 +130,13 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
   createAuthOptions: (ctx: any) => BetterAuthOptions
 ) => {
   const betterAuthSchema = getAuthTables(createAuthOptions({} as any));
+  const checkPersistedUniqueFields = async (
+    ctx: GenericMutationCtx<GenericDataModel>,
+    model: string,
+    doc: Record<string, any>
+  ) => {
+    await checkUniqueFields(ctx, schema, betterAuthSchema, model, doc, doc);
+  };
   const applySingleUpdate = async <Doc extends Record<string, any>>(
     ctx: GenericMutationCtx<GenericDataModel>,
     model: TableNames,
@@ -170,6 +177,7 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
       updatedDoc,
       triggeredDoc
     );
+    await checkPersistedUniqueFields(ctx, model, triggeredDoc);
     return triggeredDoc as Doc;
   };
 
@@ -224,6 +232,7 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
             );
           }
           assertRequiredFields(betterAuthSchema, args.input.model, updatedDoc);
+          await checkPersistedUniqueFields(ctx, args.input.model, updatedDoc);
           return selectFields(updatedDoc, args.select);
         }
         return result;
@@ -458,6 +467,11 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
                 betterAuthSchema,
                 args.input.model,
                 updatedDoc,
+                triggeredDoc
+              );
+              await checkPersistedUniqueFields(
+                ctx,
+                args.input.model,
                 triggeredDoc
               );
             }
