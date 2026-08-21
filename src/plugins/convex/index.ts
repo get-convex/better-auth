@@ -11,6 +11,7 @@ import type { JwtOptions, Jwk } from "better-auth/plugins/jwt";
 import { omit } from "convex-helpers";
 import type { AuthConfig, AuthProvider } from "convex/server";
 import { VERSION } from "../../version.js";
+import { getJwksUrl } from "../../jwks-url.js";
 
 export const JWT_COOKIE_NAME = "convex_jwt";
 
@@ -371,11 +372,9 @@ export const convex = (opts: {
           if (!issuer) {
             throw new Error("CONVEX_SITE_URL is not set");
           }
-          const basePath = opts.options?.basePath ?? "/api/auth";
-          const baseURL = `${issuer}${basePath === "/" ? "" : basePath}`;
           return {
             issuer,
-            jwks_uri: `${baseURL}/convex/jwks`,
+            jwks_uri: getJwksUrl(issuer, opts.options?.basePath),
             id_token_signing_alg_values_supported: [getJwksAlg(providerConfig)],
             claims_supported: [
               "sub",
