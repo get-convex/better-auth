@@ -1,7 +1,7 @@
 import type { JwtOptions } from "better-auth/plugins/jwt";
 import type { AuthProvider } from "convex/server";
 import type { JSONWebKeySet } from "jose";
-import { getJwksUrl } from "./jwks-url.js";
+import { getJwksUrl, validateConvexSiteUrl } from "./jwks-url.js";
 
 type JwksDoc = {
   id: string;
@@ -74,6 +74,7 @@ export const getAuthConfigProvider = (opts?: {
   if (!siteUrl) {
     throw new Error("CONVEX_SITE_URL is not set");
   }
+  validateConvexSiteUrl(siteUrl);
   const parsedJwks = opts?.jwks ? JSON.parse(opts.jwks) : undefined;
   return {
     type: "customJwt",
