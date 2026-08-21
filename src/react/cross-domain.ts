@@ -1,3 +1,5 @@
+import { crossDomainCapability } from "../plugins/cross-domain/client.js";
+
 export type RequiredAuthClient = {
   useSession: () => {
     data: { session?: { id: string } } | null;
@@ -14,6 +16,7 @@ export type RequiredAuthClient = {
 };
 
 type AuthClientWithCrossDomain = RequiredAuthClient & {
+  crossDomainCapability: typeof crossDomainCapability;
   crossDomain: {
     oneTimeToken: {
       verify: (args: { token: string }) => Promise<{
@@ -29,6 +32,7 @@ const hasCrossDomain = (
 ): authClient is AuthClientWithCrossDomain => {
   const candidate = authClient as Partial<AuthClientWithCrossDomain>;
   return (
+    candidate.crossDomainCapability === crossDomainCapability &&
     typeof candidate.crossDomain?.oneTimeToken?.verify === "function" &&
     typeof candidate.updateSession === "function"
   );
