@@ -75,14 +75,12 @@ const mergedIndexFields = (tables: BetterAuthDBSchema) =>
         specialFieldIndexes.map((field) => [field])
       );
       const deduplicated = indexes.filter((index, indexPosition) => {
-        const fields = [...index].sort();
         return (
           indexes.findIndex((candidate) => {
-            const candidateFields = [...candidate].sort();
             return (
-              candidateFields.length === fields.length &&
-              candidateFields.every(
-                (field, fieldPosition) => field === fields[fieldPosition]
+              candidate.length === index.length &&
+              candidate.every(
+                (field, fieldPosition) => field === index[fieldPosition]
               )
             );
           }) === indexPosition
@@ -190,7 +188,7 @@ export const tables = {
       mergedIndexFields(tables)[
         tableKey as keyof typeof mergedIndexFields
       ]?.map((index) => {
-        const indexArray = Array.isArray(index) ? [...index].sort() : [index];
+        const indexArray = Array.isArray(index) ? index : [index];
         const indexName = indexArray.join("_");
         return `.index("${indexName}", ${JSON.stringify(indexArray)})`;
       }) || [];

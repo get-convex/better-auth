@@ -110,9 +110,7 @@ const assertNoAccountIdentityCollision = async (
   const target = targetAccountIdentity(account, providerIssuers);
   const candidates = await ctx.db
     .query("account")
-    .withIndex("accountId_issuer", (index) =>
-      index.eq("accountId", target.accountId)
-    )
+    .withIndex("accountId", (index) => index.eq("accountId", target.accountId))
     .collect();
 
   if (account.providerId === "credential") {

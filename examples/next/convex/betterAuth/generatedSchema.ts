@@ -60,7 +60,7 @@ export const tables = {
     createdAt: v.number(),
     updatedAt: v.number(),
   })
-    .index("accountId_issuer", ["accountId", "issuer"])
+    .index("issuer_accountId", ["issuer", "accountId"])
     .index("accountId", ["accountId"])
     .index("accountId_providerId", ["accountId", "providerId"])
     .index("providerId_userId", ["providerId", "userId"])

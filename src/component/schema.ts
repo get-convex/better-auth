@@ -1,8 +1,8 @@
 /**
  * Generated from Better Auth 1.7, then intentionally staged for the 0.13
  * migration. Do not regenerate it without preserving the documented migration
- * exceptions: optional account.issuer and the three legacy OAuth provider
- * tables retained below.
+ * exceptions: optional account.issuer, the previous accountId_issuer index,
+ * and the three legacy OAuth provider tables retained below.
  * To regenerate the schema, from your project root:
  *
  *   npx auth generate --output src/component/schema.ts
@@ -66,6 +66,7 @@ export const tables = {
     createdAt: v.number(),
     updatedAt: v.number(),
   })
+    .index("issuer_accountId", ["issuer", "accountId"])
     .index("accountId_issuer", ["accountId", "issuer"])
     .index("accountId", ["accountId"])
     .index("accountId_providerId", ["accountId", "providerId"])

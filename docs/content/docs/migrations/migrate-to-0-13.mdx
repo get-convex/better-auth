@@ -406,8 +406,10 @@ npx auth generate --output generatedSchema.next.ts
 Before deploying, copy the new definitions into your active schema with these
 temporary changes:
 
-1. Make `account.issuer` optional, but add the `accountId_issuer` compound
-   index.
+1. Make `account.issuer` optional. Add the generated `issuer_accountId` index
+   and retain the existing `accountId_issuer` index until the new index finishes
+   backfilling. Keep the generated `accountId` index for migration collision
+   checks.
 2. If you used `oidcProvider`, retain `oauthApplication` and merge the legacy
    and new `oauthAccessToken` and `oauthConsent` fields as optional unions.
 3. Add the new OAuth tables without removing legacy records.
@@ -422,6 +424,9 @@ If the local deployment used `oidcProvider`, also implement local equivalents of
 the export and clear functions above. Redact `clientSecret` from the export,
 save the client metadata, and clear `oauthAccessToken`, `oauthConsent`, and
 `oauthApplication` before replacing the temporary table definitions with the
-final generated definitions. Run Convex code generation and deploy, then
-re-register clients and complete the provider smoke tests before resuming
-authentication writes.
+final generated definitions. Retain the old `accountId_issuer` index through
+this deployment. After `issuer_accountId` is active and the smoke tests pass,
+remove the old index in a separate deployment; Convex may require interactive
+confirmation when removing an index from a large table. Run Convex code
+generation and deploy, then re-register clients and complete the provider smoke
+tests before resuming authentication writes.
