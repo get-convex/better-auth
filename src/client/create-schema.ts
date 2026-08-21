@@ -16,7 +16,13 @@ const resolveCdTarget = (
 // Manually add fields to index on for schema generation,
 // all fields in the schema specialFields are automatically indexed
 export const indexFields = {
-  account: ["accountId", ["accountId", "providerId"], ["providerId", "userId"]],
+  account: [
+    "accountId",
+    ["accountId", "providerId"],
+    ["providerId", "userId"],
+    ["userId", "providerId", "issuer", "accountId"],
+    "userId",
+  ],
   rateLimit: ["key"],
   session: ["expiresAt", ["expiresAt", "userId"]],
   verification: ["expiresAt", "identifier"],
