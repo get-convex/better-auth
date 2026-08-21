@@ -34,9 +34,11 @@ request value.
 | OAuth provider without an issuer      | `local:oauth:<encoded providerId>`         |
 
 The component migration handles `credential` and `siwe` automatically. Pass an
-explicit mapping for every other legacy provider. For an OAuth provider without
-an `accountIssuer`, use Better Auth's helper rather than constructing the value
-by hand:
+explicit mapping for every other legacy provider whose rows all use the same
+issuer. If one `providerId` can contain rows from multiple issuers, populate
+each row's trusted issuer before running the component migration and omit that
+provider from the mapping. For an OAuth provider without an `accountIssuer`, use
+Better Auth's helper rather than constructing the value by hand:
 
 ```ts
 import { createOAuthAccountIssuer } from "better-auth/db";
@@ -54,10 +56,18 @@ Auth 1.7 retain their stored issuer and do not need a mapping on a rerun.
 <Callout type="warn" title="Microsoft accounts need an additional migration">
   Better Auth 1.7 changes Microsoft identities from the app-specific `sub` claim
   to the stable directory `oid` claim. Before running this component migration,
-  update `accountId` for `microsoft` and `microsoft-entra-id` rows using
-  verified ID tokens or a trusted Microsoft Entra export. The old account row
-  cannot safely supply this mapping by itself. See Better Auth's upgrade guide
-  for the full provider-specific procedure.
+  populate both the trusted `issuer` and the `oid`-based `accountId` on every
+  `microsoft` and `microsoft-entra-id` row using verified ID tokens or a trusted
+  Microsoft Entra export. The old account row cannot safely supply either value
+  by itself.
+
+The built-in `microsoft` provider derives the issuer from each verified token,
+so accounts from different tenants can have different issuers under the same
+`providerId`. Do not add one `microsoft` entry to `providerIssuers` unless every
+row uses that exact issuer. After populating per-row issuers, omit `microsoft`
+from the mapping. See Better Auth's upgrade guide for the full provider-specific
+procedure.
+
 </Callout>
 
 Also audit custom OAuth providers whose immutable identifier is not their
@@ -145,6 +155,7 @@ const providerIssuers = {
   github: createOAuthAccountIssuer("github"),
   google: "https://accounts.google.com",
   // "my-oidc-provider": "https://issuer.example.com",
+  // Do not add one Microsoft issuer when accounts span multiple tenants.
 };
 
 export const validateAccountIssuerBackfill = internalQuery({

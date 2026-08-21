@@ -310,6 +310,104 @@ describe("backfillAccountIssuers", () => {
     });
   });
 
+  it("preserves per-row issuers for Microsoft accounts from different tenants", async () => {
+    const t = convexTest(schema, modules);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("account", {
+        issuer: "https://login.microsoftonline.com/tenant-a/v2.0",
+        accountId: "directory-object-id",
+        providerId: "microsoft",
+        userId: "user-1",
+        createdAt: 1,
+        updatedAt: 1,
+      });
+      await ctx.db.insert("account", {
+        issuer: "https://login.microsoftonline.com/tenant-b/v2.0",
+        accountId: "directory-object-id",
+        providerId: "microsoft",
+        userId: "user-2",
+        createdAt: 1,
+        updatedAt: 1,
+      });
+    });
+
+    const args = {
+      providerIssuers: {},
+      paginationOpts: { cursor: null, numItems: 10 },
+    };
+    await expect(
+      t.query(validateAccountIssuerBackfill, args)
+    ).resolves.toMatchObject({
+      isDone: true,
+      pending: 0,
+      alreadyMigrated: 2,
+    });
+    await expect(
+      t.mutation(backfillAccountIssuers, args)
+    ).resolves.toMatchObject({
+      isDone: true,
+      migrated: 0,
+      alreadyMigrated: 2,
+    });
+
+    const accounts = await t.run((ctx) => ctx.db.query("account").collect());
+    expect(accounts.map(({ issuer }) => issuer).sort()).toEqual([
+      "https://login.microsoftonline.com/tenant-a/v2.0",
+      "https://login.microsoftonline.com/tenant-b/v2.0",
+    ]);
+  });
+
+  it("rejects one Microsoft issuer for accounts from different tenants", async () => {
+    const t = convexTest(schema, modules);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("account", {
+        issuer: "https://login.microsoftonline.com/tenant-a/v2.0",
+        accountId: "directory-object-id",
+        providerId: "microsoft",
+        userId: "user-1",
+        createdAt: 1,
+        updatedAt: 1,
+      });
+      await ctx.db.insert("account", {
+        issuer: "https://login.microsoftonline.com/tenant-b/v2.0",
+        accountId: "directory-object-id",
+        providerId: "microsoft",
+        userId: "user-2",
+        createdAt: 1,
+        updatedAt: 1,
+      });
+    });
+
+    const args = {
+      providerIssuers: {
+        microsoft: "https://login.microsoftonline.com/tenant-a/v2.0",
+      },
+      paginationOpts: { cursor: null, numItems: 10 },
+    };
+    await expect(t.query(validateAccountIssuerBackfill, args)).rejects.toThrow(
+      "does not match trusted issuer"
+    );
+    await expect(t.mutation(backfillAccountIssuers, args)).rejects.toThrow(
+      "does not match trusted issuer"
+    );
+
+    const accounts = await t.run((ctx) => ctx.db.query("account").collect());
+    expect(
+      accounts
+        .map(({ issuer, accountId }) => ({ issuer, accountId }))
+        .sort((left, right) => left.issuer!.localeCompare(right.issuer!))
+    ).toEqual([
+      {
+        issuer: "https://login.microsoftonline.com/tenant-a/v2.0",
+        accountId: "directory-object-id",
+      },
+      {
+        issuer: "https://login.microsoftonline.com/tenant-b/v2.0",
+        accountId: "directory-object-id",
+      },
+    ]);
+  });
+
   it("validates and migrates every cursor page", async () => {
     const t = convexTest(schema, modules);
     await t.run(async (ctx) => {
