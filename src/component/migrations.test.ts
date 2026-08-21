@@ -124,6 +124,60 @@ describe("backfillAccountIssuers", () => {
     ).rejects.toThrow("contains leading or trailing whitespace");
   });
 
+  it.each([
+    {
+      accountId: "   ",
+      issuer: "https://issuer.example.com",
+      label: "blank accountId",
+    },
+    {
+      accountId: "undefined",
+      issuer: "https://issuer.example.com",
+      label: "undefined accountId",
+    },
+    {
+      accountId: "null",
+      issuer: "https://issuer.example.com",
+      label: "null accountId",
+    },
+    {
+      accountId: "subject",
+      issuer: "undefined",
+      label: "undefined issuer",
+    },
+    {
+      accountId: "subject",
+      issuer: "null",
+      label: "null issuer",
+    },
+  ])("rejects a Better Auth-invalid $label", async ({ accountId, issuer }) => {
+    const t = convexTest(schema, modules);
+    await t.run((ctx) =>
+      ctx.db.insert("account", {
+        accountId,
+        providerId: "custom-provider",
+        userId: "user-1",
+        createdAt: 1,
+        updatedAt: 1,
+      })
+    );
+    const args = {
+      providerIssuers: { "custom-provider": issuer },
+      paginationOpts: { cursor: null, numItems: 10 },
+    };
+
+    await expect(t.query(validateAccountIssuerBackfill, args)).rejects.toThrow(
+      "is not a valid Better Auth account identity"
+    );
+    await expect(t.mutation(backfillAccountIssuers, args)).rejects.toThrow(
+      "is not a valid Better Auth account identity"
+    );
+
+    const [account] = await t.run((ctx) => ctx.db.query("account").collect());
+    expect(account).toMatchObject({ accountId });
+    expect(account?.issuer).toBeUndefined();
+  });
+
   it("validates supplied external issuer mappings before reading a page", async () => {
     const t = convexTest(schema, modules);
 
@@ -562,6 +616,69 @@ describe("backfillAccountIssuers", () => {
         paginationOpts: { cursor: cleared.continueCursor, numItems: 10 },
       })
     ).resolves.toMatchObject({ isDone: true, deleted: 0 });
+  });
+
+  it("rejects terminal cursors from other migrations and tables", async () => {
+    const t = convexTest(schema, modules);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("account", {
+        accountId: "github-subject",
+        providerId: "github",
+        userId: "user-1",
+        createdAt: 1,
+        updatedAt: 1,
+      });
+      await ctx.db.insert("oauthConsent", {
+        clientId: "legacy-client",
+        userId: "user-1",
+        scopes: "openid",
+        consentGiven: true,
+      });
+    });
+    const providerIssuers = { github: "local:oauth:github" };
+    const paginationOpts = { cursor: null, numItems: 10 };
+
+    const validation = await t.query(validateAccountIssuerBackfill, {
+      providerIssuers,
+      paginationOpts,
+    });
+    await expect(
+      t.mutation(backfillAccountIssuers, {
+        providerIssuers,
+        paginationOpts: {
+          cursor: validation.continueCursor,
+          numItems: 10,
+        },
+      })
+    ).rejects.toThrow(
+      "Migration cursor is not valid for backfillAccountIssuers"
+    );
+
+    const clearedApplications = await t.mutation(
+      clearLegacyOAuthProviderRecords,
+      {
+        table: "oauthApplication",
+        paginationOpts,
+      }
+    );
+    await expect(
+      t.mutation(clearLegacyOAuthProviderRecords, {
+        table: "oauthConsent",
+        paginationOpts: {
+          cursor: clearedApplications.continueCursor,
+          numItems: 10,
+        },
+      })
+    ).rejects.toThrow(
+      "Migration cursor is not valid for clearLegacyOAuthProviderRecords:oauthConsent"
+    );
+
+    const [account] = await t.run((ctx) => ctx.db.query("account").collect());
+    const consents = await t.run((ctx) =>
+      ctx.db.query("oauthConsent").collect()
+    );
+    expect(account?.issuer).toBeUndefined();
+    expect(consents).toHaveLength(1);
   });
 
   it("accepts, exports, and clears legacy OAuth provider records", async () => {

@@ -12,7 +12,38 @@ import schema from "./schema.js";
 
 type ProviderIssuers = Record<string, string>;
 
-const migrationCompleteCursor = "convex-better-auth:migration-complete";
+const invalidAccountKeyValues = new Set(["undefined", "null"]);
+
+const assertValidAccountKeyValue = (
+  field: "accountId" | "issuer",
+  value: string,
+  providerId: string
+) => {
+  if (!value.trim() || invalidAccountKeyValues.has(value)) {
+    throw new Error(
+      `Account ${field} for providerId ${providerId} is not a valid Better Auth account identity`
+    );
+  }
+};
+
+const migrationCompleteCursorPrefix = "convex-better-auth:migration-complete:";
+
+const migrationCompleteCursorFor = (operation: string) =>
+  `${migrationCompleteCursorPrefix}${operation}`;
+
+const isMigrationCompleteCursor = (
+  cursor: string | null,
+  operation: string
+) => {
+  const expected = migrationCompleteCursorFor(operation);
+  if (cursor === expected) {
+    return true;
+  }
+  if (cursor?.startsWith(migrationCompleteCursorPrefix)) {
+    throw new Error(`Migration cursor is not valid for ${operation}`);
+  }
+  return false;
+};
 
 const assertValidPaginationOpts = (paginationOpts: {
   cursor: string | null;
@@ -34,6 +65,11 @@ const assertValidProviderIssuers = (providerIssuers: ProviderIssuers) => {
     if (!issuer.trim()) {
       throw new Error(
         `Trusted issuer mapping for providerId ${providerId} must not be empty`
+      );
+    }
+    if (invalidAccountKeyValues.has(issuer)) {
+      throw new Error(
+        `Trusted issuer mapping for providerId ${providerId} is not a valid Better Auth account identity`
       );
     }
     if (issuer !== issuer.trim()) {
@@ -103,6 +139,9 @@ const targetAccountIdentity = (
       `Existing issuer ${existingIssuer} does not match trusted issuer ${issuer} for providerId ${account.providerId}`
     );
   }
+
+  assertValidAccountKeyValue("accountId", accountId, account.providerId);
+  assertValidAccountKeyValue("issuer", issuer, account.providerId);
 
   return { accountId, issuer };
 };
@@ -187,11 +226,13 @@ export const listLegacyOAuthApplications = query({
   args: { paginationOpts: paginationOptsValidator },
   returns: paginationResultValidator(legacyOAuthApplicationExportValidator),
   handler: async (ctx, args) => {
+    const operation = "listLegacyOAuthApplications";
+    const completeCursor = migrationCompleteCursorFor(operation);
     assertValidPaginationOpts(args.paginationOpts);
-    if (args.paginationOpts.cursor === migrationCompleteCursor) {
+    if (isMigrationCompleteCursor(args.paginationOpts.cursor, operation)) {
       return {
         page: [],
-        continueCursor: migrationCompleteCursor,
+        continueCursor: completeCursor,
         isDone: true,
       };
     }
@@ -200,9 +241,7 @@ export const listLegacyOAuthApplications = query({
       .paginate(args.paginationOpts);
     return {
       ...result,
-      continueCursor: result.isDone
-        ? migrationCompleteCursor
-        : result.continueCursor,
+      continueCursor: result.isDone ? completeCursor : result.continueCursor,
       page: result.page.map(({ clientSecret, ...application }) => ({
         ...application,
         hadClientSecret: Boolean(clientSecret),
@@ -222,10 +261,12 @@ export const clearLegacyOAuthProviderRecords = mutation({
   },
   returns: clearedLegacyRecordsValidator,
   handler: async (ctx, args) => {
+    const operation = `clearLegacyOAuthProviderRecords:${args.table}`;
+    const completeCursor = migrationCompleteCursorFor(operation);
     assertValidPaginationOpts(args.paginationOpts);
-    if (args.paginationOpts.cursor === migrationCompleteCursor) {
+    if (isMigrationCompleteCursor(args.paginationOpts.cursor, operation)) {
       return {
-        continueCursor: migrationCompleteCursor,
+        continueCursor: completeCursor,
         isDone: true,
         deleted: 0,
       };
@@ -246,9 +287,7 @@ export const clearLegacyOAuthProviderRecords = mutation({
       await ctx.db.delete(args.table, record._id);
     }
     return {
-      continueCursor: result.isDone
-        ? migrationCompleteCursor
-        : result.continueCursor,
+      continueCursor: result.isDone ? completeCursor : result.continueCursor,
       isDone: result.isDone,
       deleted: result.page.length,
     };
@@ -259,11 +298,13 @@ export const validateAccountIssuerBackfill = query({
   args: migrationArgs,
   returns: accountValidationValidator,
   handler: async (ctx, args) => {
+    const operation = "validateAccountIssuerBackfill";
+    const completeCursor = migrationCompleteCursorFor(operation);
     assertValidPaginationOpts(args.paginationOpts);
     assertValidProviderIssuers(args.providerIssuers);
-    if (args.paginationOpts.cursor === migrationCompleteCursor) {
+    if (isMigrationCompleteCursor(args.paginationOpts.cursor, operation)) {
       return {
-        continueCursor: migrationCompleteCursor,
+        continueCursor: completeCursor,
         isDone: true,
         pending: 0,
         alreadyMigrated: 0,
@@ -292,9 +333,7 @@ export const validateAccountIssuerBackfill = query({
     }
 
     return {
-      continueCursor: result.isDone
-        ? migrationCompleteCursor
-        : result.continueCursor,
+      continueCursor: result.isDone ? completeCursor : result.continueCursor,
       isDone: result.isDone,
       pending,
       alreadyMigrated,
@@ -306,11 +345,13 @@ export const backfillAccountIssuers = mutation({
   args: migrationArgs,
   returns: accountBackfillValidator,
   handler: async (ctx, args) => {
+    const operation = "backfillAccountIssuers";
+    const completeCursor = migrationCompleteCursorFor(operation);
     assertValidPaginationOpts(args.paginationOpts);
     assertValidProviderIssuers(args.providerIssuers);
-    if (args.paginationOpts.cursor === migrationCompleteCursor) {
+    if (isMigrationCompleteCursor(args.paginationOpts.cursor, operation)) {
       return {
-        continueCursor: migrationCompleteCursor,
+        continueCursor: completeCursor,
         isDone: true,
         migrated: 0,
         alreadyMigrated: 0,
@@ -341,9 +382,7 @@ export const backfillAccountIssuers = mutation({
     }
 
     return {
-      continueCursor: result.isDone
-        ? migrationCompleteCursor
-        : result.continueCursor,
+      continueCursor: result.isDone ? completeCursor : result.continueCursor,
       isDone: result.isDone,
       migrated,
       alreadyMigrated,
