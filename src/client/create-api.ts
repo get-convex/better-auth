@@ -167,8 +167,9 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
       },
       handler: async (ctx, args) => {
         const doc = await listOne(ctx, schema, betterAuthSchema, args.input);
+        // Better Auth's adapter contract expects null when no row matches
         if (!doc) {
-          throw new Error(`Failed to update ${args.input.model}`);
+          return null;
         }
         await checkUniqueFields(
           ctx,
