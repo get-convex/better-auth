@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- feat!: update to better-auth 1.7.5, minimum 1.7.5 (see the
+  [0.13 migration guide](./docs/content/docs/migrations/migrate-to-0-13.mdx))
+- fix relative `--output` path in generated schema header
+
 ## 0.12.5
 
 - fix unbounded count/findMany pagination looping forever past 200 rows (#394)
