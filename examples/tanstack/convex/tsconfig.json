@@ -9,6 +9,7 @@
     "strict": true,
     "skipLibCheck": true,
     "jsx": "react",
+    "types": ["node"],
 
     /* These compiler options are required by Convex */
     "target": "ESNext",

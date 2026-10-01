@@ -110,7 +110,11 @@ export const createSchema = async ({
     projectRoot !== null
       ? path.relative(projectRoot, cwd).split(path.sep).join("/")
       : null;
-  const generateCommand = `npx auth generate${file ? ` --output ${file}` : ""}`;
+  // The Better Auth CLI passes an absolute path, show it relative to cwd
+  const outputFile =
+    file &&
+    path.relative(cwd, path.resolve(cwd, file)).split(path.sep).join("/");
+  const generateCommand = `npx auth generate${outputFile ? ` --output ${outputFile}` : ""}`;
   const cdTarget = resolveCdTarget(relativeDir, path.basename(cwd));
   const commandBlock = cdTarget
     ? ` *   cd ${cdTarget}\n *   ${generateCommand}`

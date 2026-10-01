@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(import.meta.dirname, "./src"),
     },
     conditions: ["@convex-dev/component-source", ...defaultClientConditions],
     dedupe: ["react", "react-dom"],

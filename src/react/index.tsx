@@ -8,7 +8,6 @@ import {
   useQuery,
 } from "convex/react";
 import type { FunctionReference } from "convex/server";
-import type { BetterAuthClientPlugin } from "better-auth";
 import type { createAuthClient } from "better-auth/react";
 import type {
   convexClient,
@@ -18,21 +17,11 @@ import type { EmptyObject } from "convex-helpers";
 
 type CrossDomainClient = ReturnType<typeof crossDomainClient>;
 type ConvexClient = ReturnType<typeof convexClient>;
-type PluginsWithCrossDomain = (
-  | CrossDomainClient
-  | ConvexClient
-  | BetterAuthClientPlugin
-)[];
-type PluginsWithoutCrossDomain = (ConvexClient | BetterAuthClientPlugin)[];
+type PluginsWithCrossDomain = (CrossDomainClient | ConvexClient)[];
+type PluginsWithoutCrossDomain = ConvexClient[];
 type AuthClientWithPlugins<
   Plugins extends PluginsWithCrossDomain | PluginsWithoutCrossDomain,
-> = ReturnType<
-  typeof createAuthClient<
-    BetterAuthClientPlugin & {
-      plugins: Plugins;
-    }
-  >
->;
+> = ReturnType<typeof createAuthClient<{ plugins: Plugins }>>;
 export type AuthClient =
   | AuthClientWithPlugins<PluginsWithCrossDomain>
   | AuthClientWithPlugins<PluginsWithoutCrossDomain>;

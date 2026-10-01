@@ -8,27 +8,11 @@ import {
 import { bearer as bearerPlugin } from "better-auth/plugins/bearer";
 import { jwt as jwtPlugin } from "better-auth/plugins/jwt";
 import type { JwtOptions, Jwk } from "better-auth/plugins/jwt";
-import { oidcProvider as oidcProviderPlugin } from "better-auth/plugins/oidc-provider";
 import { omit } from "convex-helpers";
 import type { AuthConfig, AuthProvider } from "convex/server";
 import { VERSION } from "../../version.js";
 
 export const JWT_COOKIE_NAME = "convex_jwt";
-
-type BetterAuthAfterHooks = NonNullable<
-  NonNullable<BetterAuthPlugin["hooks"]>["after"]
->;
-type BetterAuthAfterHook = BetterAuthAfterHooks[number];
-type BetterAuthHookContext = Parameters<BetterAuthAfterHook["matcher"]>[0];
-
-const normalizeAfterHooks = <THook extends BetterAuthAfterHook>(
-  hooks: THook[]
-): BetterAuthAfterHooks => {
-  return hooks.map((hook) => ({
-    ...hook,
-    matcher: (ctx: BetterAuthHookContext) => Boolean(hook.matcher(ctx)),
-  }));
-};
 
 const getJwksAlg = (authProvider: AuthProvider) => {
   const isCustomJwt =
@@ -170,20 +154,12 @@ export const convex = (opts: {
   jwksRotateOnTokenGenerationError?: boolean;
   /**
    * @param {BetterAuthOptions} options - Better Auth options. Not required,
-   * currently used to pass the basePath to the oidcProvider plugin.
+   * currently used to pass the basePath to the OpenID configuration.
    */
   options?: BetterAuthOptions;
 }) => {
   const jwtExpirationSeconds =
     opts.jwt?.expirationSeconds ?? opts.jwtExpirationSeconds ?? 60 * 15;
-  const oidcProvider = oidcProviderPlugin({
-    loginPage: "/not-used",
-    metadata: {
-      issuer: `${process.env.CONVEX_SITE_URL}`,
-      jwks_uri: `${process.env.CONVEX_SITE_URL}${opts.options?.basePath ?? "/api/auth"}/convex/jwks`,
-    },
-    __skipDeprecationWarning: true,
-  });
   const providerConfig = parseAuthConfig(opts.authConfig, opts);
 
   const jwtOptions = {
@@ -314,14 +290,12 @@ export const convex = (opts: {
         },
       ],
       after: [
-        ...normalizeAfterHooks(oidcProvider.hooks.after),
         {
           matcher: (ctx) => {
             return Boolean(
               ctx.path?.startsWith("/sign-in") ||
                 ctx.path?.startsWith("/sign-up") ||
                 ctx.path?.startsWith("/callback") ||
-                ctx.path?.startsWith("/oauth2/callback") ||
                 ctx.path?.startsWith("/magic-link/verify") ||
                 ctx.path?.startsWith("/email-otp/verify-email") ||
                 ctx.path?.startsWith("/phone-number/verify") ||
@@ -384,13 +358,45 @@ export const convex = (opts: {
           // TODO: properly type this
         },
         async (ctx) => {
-          const response = await oidcProvider.endpoints.getOpenIdConfig({
-            ...ctx,
-            asResponse: false,
-            returnHeaders: false,
-            returnStatus: false,
+          // Same document the removed Better Auth oidcProvider plugin served
+          const baseURL = ctx.context.baseURL;
+          return ctx.json({
+            issuer: `${process.env.CONVEX_SITE_URL}`,
+            authorization_endpoint: `${baseURL}/oauth2/authorize`,
+            token_endpoint: `${baseURL}/oauth2/token`,
+            userinfo_endpoint: `${baseURL}/oauth2/userinfo`,
+            jwks_uri: `${process.env.CONVEX_SITE_URL}${opts.options?.basePath ?? "/api/auth"}/convex/jwks`,
+            registration_endpoint: `${baseURL}/oauth2/register`,
+            end_session_endpoint: `${baseURL}/oauth2/endsession`,
+            scopes_supported: ["openid", "profile", "email", "offline_access"],
+            response_types_supported: ["code"],
+            response_modes_supported: ["query"],
+            grant_types_supported: ["authorization_code", "refresh_token"],
+            acr_values_supported: [
+              "urn:mace:incommon:iap:silver",
+              "urn:mace:incommon:iap:bronze",
+            ],
+            subject_types_supported: ["public"],
+            id_token_signing_alg_values_supported: ["HS256"],
+            token_endpoint_auth_methods_supported: [
+              "client_secret_basic",
+              "client_secret_post",
+              "none",
+            ],
+            code_challenge_methods_supported: ["S256"],
+            claims_supported: [
+              "sub",
+              "iss",
+              "aud",
+              "exp",
+              "nbf",
+              "iat",
+              "jti",
+              "email",
+              "email_verified",
+              "name",
+            ],
           });
-          return response;
         }
       ),
       getJwks: createAuthEndpoint(
