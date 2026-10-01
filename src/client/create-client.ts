@@ -69,6 +69,11 @@ type SlimComponentApi = {
     deleteOne: FunctionReference<"mutation", "internal">;
     deleteMany: FunctionReference<"mutation", "internal">;
   };
+  session?: {
+    getSessionUser: FunctionReference<"query", "internal">;
+    getSession: FunctionReference<"query", "internal">;
+    getUser: FunctionReference<"query", "internal">;
+  };
 };
 
 type RouteCorsOptions =
@@ -116,6 +121,9 @@ const restoreOriginalForwardedHeaders = (request: Request) => {
  * `./_generated/api` once you've configured it in `convex.config.ts`.
  * @param config - Configuration options for the component.
  * @param config.local - Local schema configuration.
+ * @param config.local.sessionApi - Set to true when the local component
+ * exports `createSessionApi` functions from `session.ts`. The default install
+ * always uses them.
  * @param config.verbose - Whether to enable verbose logging.
  * @param config.triggers - Triggers configuration.
  * @param config.authFunctions - Authentication functions configuration.
@@ -129,6 +137,7 @@ export const createClient = <
   config?: {
     local?: {
       schema?: Schema;
+      sessionApi?: boolean;
     };
     verbose?: boolean;
   } & (
@@ -141,10 +150,22 @@ export const createClient = <
 ) => {
   type BetterAuthDataModel = DataModelFromSchemaDefinition<Schema>;
 
+  const sessionApi = (config?.local ? config.local.sessionApi : true)
+    ? component.session
+    : undefined;
+
   const safeGetAuthUser = async (ctx: GenericCtx<DataModel>) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       return;
+    }
+    if (sessionApi) {
+      const doc = (await ctx.runQuery(sessionApi.getSessionUser, {
+        sessionId: identity.sessionId as string,
+        userId: identity.subject,
+        now: new Date().getTime(),
+      })) as BetterAuthDataModel["user"]["document"] | null;
+      return doc ?? undefined;
     }
     const session = (await ctx.runQuery(component.adapter.findOne, {
       model: "session",
@@ -194,15 +215,19 @@ export const createClient = <
       return new Headers();
     }
     // Don't validate the session here, let Better Auth handle that
-    const session = await ctx.runQuery(component.adapter.findOne, {
-      model: "session",
-      where: [
-        {
-          field: "_id",
-          value: identity.sessionId as string,
-        },
-      ],
-    });
+    const session = sessionApi
+      ? await ctx.runQuery(sessionApi.getSession, {
+          sessionId: identity.sessionId as string,
+        })
+      : await ctx.runQuery(component.adapter.findOne, {
+          model: "session",
+          where: [
+            {
+              field: "_id",
+              value: identity.sessionId as string,
+            },
+          ],
+        });
     return new Headers({
       ...(session?.token ? { authorization: `Bearer ${session.token}` } : {}),
       ...(session?.ipAddress
@@ -275,6 +300,11 @@ export const createClient = <
      * @returns The user or null if the user is not found
      */
     getAnyUserById: async (ctx: GenericCtx<DataModel>, id: string) => {
+      if (sessionApi) {
+        return (await ctx.runQuery(sessionApi.getUser, {
+          userId: id,
+        })) as BetterAuthDataModel["user"]["document"] | null;
+      }
       return (await ctx.runQuery(component.adapter.findOne, {
         model: "user",
         where: [{ field: "_id", value: id }],
