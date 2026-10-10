@@ -59,7 +59,7 @@ const parseConvexSiteUrl = (url: string) => {
   return url;
 };
 
-const handler = (request: Request, opts: { convexSiteUrl: string }) => {
+const handler = async (request: Request, opts: { convexSiteUrl: string }) => {
   const requestUrl = new URL(request.url);
   const nextUrl = `${opts.convexSiteUrl}${requestUrl.pathname}${requestUrl.search}`;
   const headers = new Headers(request.headers);
@@ -68,19 +68,42 @@ const handler = (request: Request, opts: { convexSiteUrl: string }) => {
   headers.delete("transfer-encoding");
   headers.delete("content-length");
   headers.delete("connection");
-  headers.set("accept-encoding", "application/json");
+  // Request uncompressed bodies so the buffered ArrayBuffer matches the
+  // headers we forward (and so stripping content-encoding is safe).
+  // `identity` is already used by getToken() in this module.
+  headers.set("accept-encoding", "identity");
   headers.set("host", new URL(opts.convexSiteUrl).host);
   headers.set("x-forwarded-host", requestUrl.host);
   headers.set("x-forwarded-proto", requestUrl.protocol.replace(/:$/, ""));
   headers.set("x-better-auth-forwarded-host", requestUrl.host);
   headers.set("x-better-auth-forwarded-proto", requestUrl.protocol.replace(/:$/, ""));
-  return fetch(nextUrl, {
+  const upstream = await fetch(nextUrl, {
     method: request.method,
     headers,
     redirect: "manual",
     body: request.body,
     // @ts-expect-error - duplex is required for streaming request bodies in modern fetch
     duplex: "half",
+  });
+  // Buffer the upstream body before returning. Auth JSON is small, and
+  // streaming an undici fetch body through TanStack Start / Nitro under
+  // inbound `Connection: close` (common with reverse proxies like Portless)
+  // fails roughly every other sequential request with an empty HTTP 400.
+  // See: get-session / convex/token flakiness with local HTTPS proxies.
+  const body = await upstream.arrayBuffer();
+  const responseHeaders = new Headers(upstream.headers);
+  // Drop hop-by-hop / encoding headers that must not be re-emitted on a
+  // re-buffered body. With accept-encoding: identity the payload is raw;
+  // content-encoding would otherwise claim compression that is no longer
+  // applied to these bytes.
+  responseHeaders.delete("content-encoding");
+  responseHeaders.delete("transfer-encoding");
+  responseHeaders.delete("connection");
+  responseHeaders.delete("keep-alive");
+  return new Response(body, {
+    status: upstream.status,
+    statusText: upstream.statusText,
+    headers: responseHeaders,
   });
 };
 
