@@ -138,6 +138,11 @@ export const getToken = async (
   opts?: GetTokenOptions
 ) => {
   headers.set("host", new URL(siteUrl).host);
+  // Callers pass the inbound request headers straight through, and hosting
+  // platforms set `x-forwarded-host` on the way in. Convex's edge resolves
+  // the deployment from it, so leaving the app domain there 404s the token
+  // request and server-side auth reports the user as signed out.
+  headers.delete("x-forwarded-host");
   const fetchToken = async () => {
     const basePath = opts?.basePath
       ? (opts.basePath.startsWith("/")
