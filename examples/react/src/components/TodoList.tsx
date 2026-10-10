@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { useState } from "react";
 import { Check, Trash2, X } from "lucide-react";
-import { Id } from "convex/_generated/dataModel";
+import { Id } from "../../convex/_generated/dataModel";
 
 // Mutations w/ optimistic updates
 const useCreateTodo = () =>

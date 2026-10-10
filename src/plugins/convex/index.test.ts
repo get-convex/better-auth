@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { AuthConfig } from "convex/server";
+import { betterAuth } from "better-auth/minimal";
+import { memoryAdapter } from "better-auth/adapters/memory";
 import { convex } from "./index.js";
 
 const authConfig = {
@@ -51,5 +53,28 @@ describe("convex plugin JWT cookie refresh matcher", () => {
     };
     expect(matcher(withSessionCtx as unknown as MatcherContext)).toBe(true);
     expect(matcher(withoutSessionCtx as unknown as MatcherContext)).toBe(false);
+  });
+});
+
+describe("convex plugin OpenID configuration", () => {
+  it("serves issuer and jwks_uri for the Convex site", async () => {
+    process.env.CONVEX_SITE_URL = "https://example.convex.site";
+    const auth = betterAuth({
+      baseURL: "https://example.convex.site",
+      secret: "test-secret-at-least-thirty-two-characters-long",
+      database: memoryAdapter({ user: [], session: [], jwks: [] }),
+      plugins: [convex({ authConfig })],
+    });
+    const response = await auth.handler(
+      new Request(
+        "https://example.convex.site/api/auth/convex/.well-known/openid-configuration"
+      )
+    );
+    expect(response.status).toBe(200);
+    const config = (await response.json()) as Record<string, unknown>;
+    expect(config.issuer).toBe("https://example.convex.site");
+    expect(config.jwks_uri).toBe(
+      "https://example.convex.site/api/auth/convex/jwks"
+    );
   });
 });

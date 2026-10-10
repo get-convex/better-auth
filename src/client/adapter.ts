@@ -20,7 +20,7 @@ import type { Doc, TableNames } from "../component/_generated/dataModel.js";
 import type { ComponentApi } from "../component/_generated/component.js";
 import type { AuthFunctions, GenericCtx, Triggers } from "./index.js";
 
-let didWarnExperimentalJoinsUnsupported = false;
+let didWarnJoinsUnsupported = false;
 
 const handlePagination = async (
   next: ({
@@ -228,16 +228,16 @@ export const convexAdapter = <
     adapter: ({ options }) => {
       // Disable telemetry in all cases because it requires Node
       options.telemetry = { enabled: false };
-      if (options.experimental?.joins) {
-        options.experimental = {
-          ...options.experimental,
-          joins: false,
+      if (options.advanced?.database?.joins) {
+        options.advanced = {
+          ...options.advanced,
+          database: { ...options.advanced.database, joins: false },
         };
-        if (!didWarnExperimentalJoinsUnsupported) {
-          didWarnExperimentalJoinsUnsupported = true;
+        if (!didWarnJoinsUnsupported) {
+          didWarnJoinsUnsupported = true;
           // eslint-disable-next-line no-console
           console.warn(
-            "[convex-better-auth] Better Auth experimental.joins is not supported by the Convex adapter yet. Forcing experimental.joins = false."
+            "[convex-better-auth] Better Auth advanced.database.joins is not supported by the Convex adapter yet. Forcing advanced.database.joins = false."
           );
         }
       }
@@ -283,7 +283,7 @@ export const convexAdapter = <
                 )) as FunctionHandle<"mutation">)
               : undefined;
           return ctx.runMutation(api.adapter.create, {
-            input: { model: model as any, data },
+            input: { model: model as any, data: data as any },
             select,
             onCreateHandle: onCreateHandle,
           });

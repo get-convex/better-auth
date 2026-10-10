@@ -13,7 +13,7 @@ import {
   sendOTPVerification,
   sendResetPassword,
 } from "./email";
-import authConfig from "convex/auth.config";
+import authConfig from "./auth.config";
 
 const siteUrl = process.env.SITE_URL!;
 

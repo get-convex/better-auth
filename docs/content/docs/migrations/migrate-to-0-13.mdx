@@ -1,0 +1,121 @@
+---
+title: Migrate to 0.13
+description: Migrate to @convex-dev/better-auth@0.13
+---
+
+## Upgrade
+
+<div className="fd-steps">
+
+  <div className="fd-step">
+    ### Install dependencies
+
+    Update Better Auth and the component. Better Auth must be on `1.7.5` or
+    later in the `1.7.x` line.
+
+    <Callout>
+      Be sure to review [breaking changes in Better Auth 1.7](https://better-auth.com/blog/1-7).
+    </Callout>
+
+    ```npm
+    npm install @convex-dev/better-auth@^0.13.0
+    npm install better-auth@~1.7.5
+    ```
+
+  </div>
+
+</div>
+
+## Breaking changes
+
+<div className="fd-steps">
+
+  <div className="fd-step">
+
+### Use `signIn.social` for Generic OAuth providers
+
+Better Auth 1.7 registers each Generic OAuth provider as a social provider.
+Remove `genericOAuthClient()` from your auth client, and use `signIn.social`
+instead of `signIn.oauth2`.
+
+```ts
+export const authClient = createAuthClient({
+  plugins: [
+    genericOAuthClient(), // [!code --]
+    convexClient(),
+  ],
+});
+
+await authClient.signIn.oauth2({ providerId: "slack" }); // [!code --]
+await authClient.signIn.social({ provider: "slack" }); // [!code ++]
+```
+
+The callback URL changes from `/api/auth/oauth2/callback/<providerId>` to
+`/api/auth/callback/<providerId>`. Update the redirect URL in the settings of
+each OAuth provider.
+
+  </div>
+
+  <div className="fd-step">
+
+### OIDC Provider tables are removed from the default schema
+
+Better Auth 1.7 removes the deprecated `oidcProvider` plugin. The default
+component schema no longer has the `oauthApplication`, `oauthAccessToken` and
+`oauthConsent` tables.
+
+If your app does not use the OIDC Provider plugin, you do not have to do
+anything.
+
+If your app uses it, move to
+[`@better-auth/oauth-provider`](https://www.better-auth.com/docs/plugins/oauth-provider)
+with [Local Install](/local-install). The deploy does not delete documents that
+are in the old tables.
+
+  </div>
+
+  <div className="fd-step">
+
+### Move `experimental.joins` to `advanced.database.joins`
+
+If you set `experimental: { joins: true }`, change it to
+`advanced: { database: { joins: true } }`. The Convex adapter does not support
+joins yet, so it continues to set this option to `false`.
+
+  </div>
+
+  <div className="fd-step">
+
+### Review breaking changes in Better Auth 1.7
+
+Be sure to review the
+[Better Auth 1.7 release post](https://better-auth.com/blog/1-7) for other
+breaking changes that can have an effect on your app. For example,
+`twoFactor.enable` now returns a `method` field. Check that `method` is
+`"totp"` before you read `totpURI` and `backupCodes`.
+
+  </div>
+
+</div>
+
+## Local Install additional steps
+
+The following steps are only necessary for apps using
+[Local Install](/local-install).
+
+<div className="fd-steps">
+
+  <div className="fd-step">
+
+### Regenerate schema
+
+Whenever updating Better Auth with Local Install, regenerate the schema.
+
+```npm
+cd convex/betterAuth
+npx auth generate
+```
+
+  </div>
+
+</div>
