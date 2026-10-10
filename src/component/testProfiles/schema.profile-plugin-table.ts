@@ -83,6 +83,7 @@ const memberTable = defineTable({
 
 const teamTable = defineTable({
   name: v.string(),
+  memberCount: v.number(),
   organizationId: v.string(),
   createdAt: v.number(),
   updatedAt: v.optional(v.union(v.null(), v.number())),
@@ -93,9 +94,11 @@ const teamTable = defineTable({
 const teamMemberTable = defineTable({
   teamId: v.string(),
   userId: v.string(),
+  membershipKey: v.optional(v.union(v.null(), v.string())),
   createdAt: v.optional(v.union(v.null(), v.number())),
 })
   .index("teamId", ["teamId"])
+  .index("membershipKey", ["membershipKey"])
   .index("userId", ["userId"]);
 
 const invitationTable = defineTable({
