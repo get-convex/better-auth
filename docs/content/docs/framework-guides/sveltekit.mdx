@@ -640,30 +640,67 @@ const memberOnlyPosts = useQuery(api.posts.getMemberOnlyPosts, () =>
 const publicPosts = useQuery(api.posts.getPublicPosts, {});
 ```
 
-#### Option 2: Make all requests authenticated with `expectAuth`
+#### Option 2: Gate a whole members-only area
 
-Use this when your app is essentially “members-only” and almost all data
-requires authentication.
+Use this when a section of your app, or the whole app, is members-only. Instead
+of gating every query, gate the area once:
 
-By enabling `expectAuth`, all Convex queries and mutations created through
-`createSvelteAuthClient` will:
+1. **Redirect signed-out users on the server.** Do it in `handle`, which runs
+   before any `load` function. A guard in `+layout.server.ts` is not enough:
+   layout loads don't rerun on every navigation, and page loads run in parallel
+   (see SvelteKit's
+   [implications for authentication](https://svelte.dev/docs/kit/load#Implications-for-authentication)).
 
-- automatically include the auth token, and
-- not run until the user is authenticated.
+   ```ts title="src/hooks.server.ts"
+   import { redirect, type Handle } from "@sveltejs/kit"; // [!code ++]
+   import { getToken } from "@mmailaender/convex-better-auth-svelte/sveltekit";
+   import { withServerConvexToken } from "convex-svelte/sveltekit/server";
 
-Unauthenticated users won’t trigger any Convex requests until they sign in.
+   export const handle: Handle = async ({ event, resolve }) => {
+     const token = getToken(event.cookies);
+     event.locals.token = token;
+     if (!token && event.route.id?.startsWith("/(app)")) redirect(303, "/sign-in"); // [!code ++]
+     return withServerConvexToken(token, () => resolve(event));
+   };
+   ```
 
-```ts title="src/routes/+layout.svelte"
-import { createSvelteAuthClient } from "@mmailaender/convex-better-auth-svelte/svelte";
-import { authClient } from "#lib/auth-client.js";
+2. **Render the area only once Convex has accepted the token.** Components
+   inside the `{#if}` block don't exist before that, so none of their queries
+   run without auth. When the user signs out, they unmount and their queries
+   stop.
 
-createSvelteAuthClient({
-  authClient,
-  options: {
-    expectAuth: true,
-  },
-});
-```
+   ```svelte title="src/routes/(app)/+layout.svelte"
+   <script lang="ts">
+     import { useAuth } from "@mmailaender/convex-better-auth-svelte/svelte";
+
+     let { children } = $props();
+     const auth = useAuth();
+   </script>
+
+   {#if auth.isAuthenticated}
+     {@render children()}
+   {:else if auth.isLoading}
+     <p>Loading…</p>
+   {:else}
+     <p>Please sign in.</p>
+   {/if}
+   ```
+
+3. **Pass the server's auth state** (see [SSR](#ssr-optional)). Signed-in
+   users then render the area on the first paint, and their first queries are
+   already authenticated.
+
+<Callout>
+  These steps shape what users see. They don't protect your data: every Convex
+  function that returns private data must check the user itself, e.g. with
+  `authComponent.getAuthUser(ctx)`.
+</Callout>
+
+<Callout>
+  Other guides use Convex's `expectAuth` client option for this. It only holds
+  requests until the first sign-in, and leaves signed-out users with a client
+  that never sends anything, so this guide doesn't use it.
+</Callout>
 
 ### SSR (Optional)
 
