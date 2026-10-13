@@ -408,7 +408,9 @@ const filterByWhere = <
       switch (w.operator) {
         case undefined:
         case "eq": {
-          return value === w.value;
+          // Convex omits unset optional fields; Better Auth's null guards must
+          // also match those fields (for example, unrevoked refresh tokens).
+          return w.value === null ? value == null : value === w.value;
         }
         case "in": {
           return Array.isArray(w.value) && (w.value as any[]).includes(value);
@@ -431,7 +433,7 @@ const filterByWhere = <
           return value === w.value || isGreaterThan(value, w.value);
         }
         case "ne": {
-          return value !== w.value;
+          return w.value === null ? value != null : value !== w.value;
         }
         case "contains": {
           return typeof value === "string" && value.includes(w.value as string);

@@ -111,6 +111,60 @@ describe("Better Auth 1.7.7 compatibility", () => {
     expect(await adapter.count({ model: "user", where })).toBe(0);
   });
 
+  it.each([undefined, null, "already-set"])(
+    "guards atomic updates against a null optional field (stored: %s)",
+    async (image) => {
+      const { adapter } = setup();
+      const user = await adapter.create<{ id: string }>({
+        model: "user",
+        data: {
+          name: "Alice",
+          email: "alice@example.com",
+          ...(image !== undefined ? { image } : {}),
+        },
+      });
+      const where = [
+        { field: "id", value: user.id },
+        { field: "image", operator: "eq" as const, value: null },
+      ];
+      const expectedMatch = image == null;
+      expect(Boolean(await adapter.findOne({ model: "user", where }))).toBe(
+        expectedMatch
+      );
+      expect(await adapter.findMany({ model: "user", where })).toHaveLength(
+        expectedMatch ? 1 : 0
+      );
+      expect(
+        Boolean(
+          await adapter.findOne({
+            model: "user",
+            where: [
+              { field: "id", value: user.id },
+              { field: "image", operator: "ne", value: null },
+            ],
+          })
+        )
+      ).toBe(!expectedMatch);
+      // OAuth refresh rotation uses this shape: an empty increment with a
+      // guarded set, where the revocation field may never have been written.
+      const claimed = await adapter.incrementOne<{ image: string }>({
+        model: "user",
+        where,
+        increment: {},
+        set: { image: "claimed" },
+      });
+      expect(claimed?.image ?? null).toBe(expectedMatch ? "claimed" : null);
+      expect(
+        await adapter.incrementOne({
+          model: "user",
+          where,
+          increment: {},
+          set: { image: "claimed-again" },
+        })
+      ).toBeNull();
+    }
+  );
+
   it("creates and updates core accounts without an issuer backfill", async () => {
     const { t, adapter } = setup();
     const account = await adapter.create({
