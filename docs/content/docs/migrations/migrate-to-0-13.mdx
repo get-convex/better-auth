@@ -199,6 +199,37 @@ pass. Add `--prod` when running against production.
    before restoring traffic. Restore the backup with the old application version
    if the conversion fails.
 
+### Configure provider signing keys
+
+Use database-backed signing keys for this provider setup. Static keys passed to
+`convex({ jwks: ... })` are not supported: the JWT plugin signs provider tokens
+with database keys, while Convex publishes the static keys. Clients would then
+be unable to verify those provider tokens.
+
+In the runtime plugin array, place `jwt()` before `convex()` and
+`oauthProvider()` after `convex()`. These plugins share endpoint keys, so order
+matters. `registerRoutes` and `registerRoutesLazy` direct root OpenID discovery
+to the OAuth provider when it is configured, so root discovery advertises the
+provider issuer. Convex JWT verifiers should continue to use the Convex issuer
+and `/api/auth/convex/jwks` directly.
+
+Configure the JWT plugin to use Convex's public signing-key URL:
+
+```ts
+jwt({
+  disableSettingJwtHeader: true,
+  jwks: {
+    remoteUrl: `${process.env.CONVEX_SITE_URL}/api/auth/convex/jwks`,
+    keyPairConfig: { alg: "RS256" },
+  },
+});
+```
+
+Replace `/api/auth` if you use a custom `basePath`. Use the same signing
+algorithm as your Convex auth configuration (`RS256` by default). Disabling the
+JWT header avoids generating an extra token when reading a session; Convex
+clients use `/convex/token`.
+
 ## Local Install additional steps
 
 Generate the 1.7.7 schema to a side file and compare it with your deployed

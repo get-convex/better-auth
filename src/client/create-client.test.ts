@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
-import { httpRouter } from "convex/server";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { httpActionGeneric, httpRouter } from "convex/server";
 import { createClient } from "./create-client.js";
 
 const component = {
@@ -29,6 +29,92 @@ const getRouteHandler = (
 };
 
 describe("createClient route registration", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  describe.each(["registerRoutes", "registerRoutesLazy"] as const)(
+    "%s discovery",
+    (register) => {
+      it.each([
+        [undefined, false, "/api/auth/convex/.well-known/openid-configuration"],
+        [undefined, true, "/api/auth/.well-known/openid-configuration"],
+        ["/custom/auth", true, "/custom/auth/.well-known/openid-configuration"],
+        [
+          "/custom/auth",
+          false,
+          "/custom/auth/convex/.well-known/openid-configuration",
+        ],
+      ])(
+        "redirects basePath=%s provider=%s",
+        async (basePath, provider, target) => {
+          vi.stubEnv("CONVEX_SITE_URL", "https://deployment.convex.site");
+          const client = createClient(component);
+          const http = httpRouter();
+          const createAuth = vi.fn(() => ({
+            handler: async (request: Request) =>
+              new URL(request.url).pathname === target
+                ? Response.json({ issuer: "https://deployment.convex.site" })
+                : new Response(null, { status: 404 }),
+            options: {
+              basePath,
+              plugins: provider ? [{ id: "oauth-provider" }] : [],
+            },
+            $context: Promise.resolve({ options: {} }),
+          }));
+          if (register === "registerRoutesLazy") {
+            client.registerRoutesLazy(http, createAuth, { basePath });
+            expect(createAuth).not.toHaveBeenCalled();
+          } else {
+            client.registerRoutes(http, createAuth);
+          }
+          const root =
+            "https://deployment.convex.site/.well-known/openid-configuration";
+          const redirect = await getRouteHandler(
+            http,
+            new URL(root).pathname,
+            "GET"
+          )!._handler({}, new Request(root));
+          expect(redirect.status).toBe(302);
+          const location = redirect.headers.get("location")!;
+          expect(location).toBe(`https://deployment.convex.site${target}`);
+          const response = await getRouteHandler(
+            http,
+            new URL(location).pathname,
+            "GET"
+          )!._handler({}, new Request(location));
+          expect(response.status).toBe(200);
+        }
+      );
+
+      it("preserves an application-defined discovery route", async () => {
+        const client = createClient(component);
+        const http = httpRouter();
+        http.route({
+          path: "/.well-known/openid-configuration",
+          method: "GET",
+          handler: httpActionGeneric(async () =>
+            Response.json({ custom: true })
+          ),
+        });
+        const createAuth = vi.fn(() => ({
+          handler: async () => new Response(null, { status: 404 }),
+          options: { plugins: [{ id: "oauth-provider" }] },
+          $context: Promise.resolve({ options: {} }),
+        }));
+        client[register](http, createAuth);
+        const response = await getRouteHandler(
+          http,
+          "/.well-known/openid-configuration",
+          "GET"
+        )!._handler(
+          {},
+          new Request(
+            "https://deployment.convex.site/.well-known/openid-configuration"
+          )
+        );
+        expect(await response.json()).toEqual({ custom: true });
+      });
+    }
+  );
   it("registerRoutes eagerly initializes auth and infers basePath", () => {
     const client = createClient(component);
     const http = httpRouter();
@@ -145,7 +231,9 @@ describe("createClient route registration", () => {
 
     const forwardedRequest = handler.mock.calls[0]?.[0];
     expect(forwardedRequest).toBeInstanceOf(Request);
-    expect(forwardedRequest.headers.get("x-forwarded-host")).toBe("app.example.com");
+    expect(forwardedRequest.headers.get("x-forwarded-host")).toBe(
+      "app.example.com"
+    );
     expect(forwardedRequest.headers.get("x-forwarded-proto")).toBe("https");
   });
 

@@ -20,6 +20,12 @@ import type defaultSchema from "../component/schema.js";
 import type { CreateAuth, GenericCtx } from "./index.js";
 import type { TrustedOriginsOption } from "../utils/index.js";
 
+const getOpenIdConfigPath = (plugins: unknown) =>
+  Array.isArray(plugins) &&
+  plugins.some((plugin) => plugin?.id === "oauth-provider")
+    ? "/.well-known/openid-configuration"
+    : "/convex/.well-known/openid-configuration";
+
 export type AuthFunctions = {
   onCreate?: FunctionReference<"mutation", "internal", { [key: string]: any }>;
   onUpdate?: FunctionReference<"mutation", "internal", { [key: string]: any }>;
@@ -412,7 +418,7 @@ export const createClient = <
           path: "/.well-known/openid-configuration",
           method: "GET",
           handler: httpActionGeneric(async () => {
-            const url = `${process.env.CONVEX_SITE_URL}${path}/convex/.well-known/openid-configuration`;
+            const url = `${process.env.CONVEX_SITE_URL}${path}${getOpenIdConfigPath(staticAuth.options.plugins)}`;
             return Response.redirect(url);
           }),
         });
@@ -531,8 +537,9 @@ export const createClient = <
         http.route({
           path: "/.well-known/openid-configuration",
           method: "GET",
-          handler: httpActionGeneric(async () => {
-            const url = `${process.env.CONVEX_SITE_URL}${path}/convex/.well-known/openid-configuration`;
+          handler: httpActionGeneric(async (ctx) => {
+            const auth = createAuth(ctx as any);
+            const url = `${process.env.CONVEX_SITE_URL}${path}${getOpenIdConfigPath(auth.options.plugins)}`;
             return Response.redirect(url);
           }),
         });
