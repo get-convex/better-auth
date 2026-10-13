@@ -150,7 +150,9 @@ the legacy export and cleanup below.
 Use a temporary Convex schema that accepts both the existing and migrated client
 records. Backfill the new fields and remove the legacy `type` and `public`
 fields from existing `oauthClient` documents before deploying the final
-generated schema.
+generated schema. Remove those fields in a component mutation with
+`ctx.db.patch(id, { type: undefined, public: undefined })`; setting them to
+`null` still leaves fields that the final schema rejects.
 
 ### Export and clear legacy records
 
