@@ -1,7 +1,7 @@
 /**
- * Generated from Better Auth 1.7, then intentionally staged for the 0.13
+ * Generated from Better Auth 1.7.7, then intentionally staged for the 0.13
  * migration. Do not regenerate it without preserving the documented migration
- * exceptions: optional account.issuer and the three legacy OAuth provider
+ * exceptions: optional legacy account.issuer and the three legacy OAuth provider
  * tables retained below.
  * To regenerate the schema, from your project root:
  *
@@ -50,8 +50,8 @@ export const tables = {
     .index("token", ["token"])
     .index("userId", ["userId"]),
   account: defineTable({
-    // Temporarily optional so existing deployments can run the 1.7 backfill.
-    // Better Auth supplies this field for all new accounts.
+    // Retained only for data written by Better Auth 1.7.0–1.7.2.
+    // Better Auth 1.7.7 neither requires nor writes issuer.
     issuer: v.optional(v.union(v.null(), v.string())),
     accountId: v.string(),
     providerId: v.string(),
@@ -66,14 +66,12 @@ export const tables = {
     createdAt: v.number(),
     updatedAt: v.number(),
   })
-    .index("issuer_accountId", ["issuer", "accountId"])
     .index("accountId", ["accountId"])
     .index("accountId_providerId", ["accountId", "providerId"])
     .index("providerId_userId", ["providerId", "userId"])
-    .index("userId_providerId_issuer_accountId", [
+    .index("userId_providerId_accountId", [
       "userId",
       "providerId",
-      "issuer",
       "accountId",
     ])
     .index("userId", ["userId"]),

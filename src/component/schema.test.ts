@@ -1,13 +1,15 @@
 import { describe, expect, it } from "vitest";
 import schema from "./schema.js";
 
-describe("staged component schema", () => {
-  it("keeps only the generated account identity index order", () => {
-    const indexNames = schema.tables.account[" indexes"]().map(
-      (index) => index.indexDescriptor
+describe("account schema", () => {
+  it("uses the current credential lookup fields without issuer indexes", () => {
+    const indexes = schema.tables.account[" indexes"]();
+    expect(indexes).toContainEqual({
+      indexDescriptor: "userId_providerId_accountId",
+      fields: ["userId", "providerId", "accountId"],
+    });
+    expect(indexes.every(({ fields }) => !fields.includes("issuer"))).toBe(
+      true
     );
-
-    expect(indexNames).toContain("issuer_accountId");
-    expect(indexNames).not.toContain("accountId_issuer");
   });
 });

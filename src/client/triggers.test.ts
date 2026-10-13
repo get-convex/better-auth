@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest";
 import { convexTest } from "convex-test";
 import { createFunctionHandle } from "convex/server";
-import schema from "../component/schema.js";
+import schema from "../component/testProfiles/schema.constraints.js";
 import { api, internal } from "../component/_generated/api.js";
 
 const baseSessionData = () => ({
@@ -34,13 +34,13 @@ const accountData = ({
 });
 
 describe("trigger result propagation", () => {
-  it("api.adapter.create returns the doc reflecting onCreateHandle writes", async () => {
+  it("api.testProfiles.adapterConstraints.create returns the doc reflecting onCreateHandle writes", async () => {
     const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
     const result = await t.run(async (ctx) => {
       const handle = await createFunctionHandle(
         internal.testTriggerHandlers.sessionOnCreateUpdater
       );
-      return await ctx.runMutation(api.adapter.create, {
+      return await ctx.runMutation(api.testProfiles.adapterConstraints.create, {
         input: {
           model: "session",
           data: { ...baseSessionData(), token: "create-token-1" },
@@ -51,10 +51,10 @@ describe("trigger result propagation", () => {
     expect(result.userAgent).toBe("trigger-ran-on-create");
   });
 
-  it("api.adapter.updateOne returns the doc reflecting onUpdateHandle writes", async () => {
+  it("api.testProfiles.adapterConstraints.updateOne returns the doc reflecting onUpdateHandle writes", async () => {
     const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
     const result = await t.run(async (ctx) => {
-      await ctx.runMutation(api.adapter.create, {
+      await ctx.runMutation(api.testProfiles.adapterConstraints.create, {
         input: {
           model: "session",
           data: { ...baseSessionData(), token: "update-token-1" },
@@ -63,22 +63,27 @@ describe("trigger result propagation", () => {
       const handle = await createFunctionHandle(
         internal.testTriggerHandlers.sessionOnUpdateUpdater
       );
-      return await ctx.runMutation(api.adapter.updateOne, {
-        input: {
-          model: "session",
-          update: { userAgent: "set-by-update" },
-          where: [{ field: "token", operator: "eq", value: "update-token-1" }],
-        },
-        onUpdateHandle: handle,
-      });
+      return await ctx.runMutation(
+        api.testProfiles.adapterConstraints.updateOne,
+        {
+          input: {
+            model: "session",
+            update: { userAgent: "set-by-update" },
+            where: [
+              { field: "token", operator: "eq", value: "update-token-1" },
+            ],
+          },
+          onUpdateHandle: handle,
+        }
+      );
     });
     expect(result).toMatchObject({ userAgent: "trigger-ran-on-update" });
   });
 
-  it("api.adapter.incrementOne returns the doc reflecting onUpdateHandle writes", async () => {
+  it("api.testProfiles.adapterConstraints.incrementOne returns the doc reflecting onUpdateHandle writes", async () => {
     const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
     const result = await t.run(async (ctx) => {
-      await ctx.runMutation(api.adapter.create, {
+      await ctx.runMutation(api.testProfiles.adapterConstraints.create, {
         input: {
           model: "session",
           data: {
@@ -91,20 +96,23 @@ describe("trigger result propagation", () => {
       const handle = await createFunctionHandle(
         internal.testTriggerHandlers.sessionOnUpdateUpdater
       );
-      return await ctx.runMutation(api.adapter.incrementOne, {
-        input: {
-          model: "session",
-          increment: { expiresAt: 1 },
-          where: [
-            {
-              field: "token",
-              operator: "eq",
-              value: "increment-token-1",
-            },
-          ],
-        },
-        onUpdateHandle: handle,
-      });
+      return await ctx.runMutation(
+        api.testProfiles.adapterConstraints.incrementOne,
+        {
+          input: {
+            model: "session",
+            increment: { expiresAt: 1 },
+            where: [
+              {
+                field: "token",
+                operator: "eq",
+                value: "increment-token-1",
+              },
+            ],
+          },
+          onUpdateHandle: handle,
+        }
+      );
     });
     expect(result).toMatchObject({
       expiresAt: 101,
@@ -112,11 +120,11 @@ describe("trigger result propagation", () => {
     });
   });
 
-  it("api.adapter.updateMany runs onUpdateHandle for every updated doc", async () => {
+  it("api.testProfiles.adapterConstraints.updateMany runs onUpdateHandle for every updated doc", async () => {
     const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
     const result = await t.run(async (ctx) => {
       for (const token of ["bulk-update-token-1", "bulk-update-token-2"]) {
-        await ctx.runMutation(api.adapter.create, {
+        await ctx.runMutation(api.testProfiles.adapterConstraints.create, {
           input: {
             model: "session",
             data: { ...baseSessionData(), token },
@@ -126,15 +134,18 @@ describe("trigger result propagation", () => {
       const handle = await createFunctionHandle(
         internal.testTriggerHandlers.sessionOnUpdateUpdater
       );
-      return await ctx.runMutation(api.adapter.updateMany, {
-        input: {
-          model: "session",
-          update: { userAgent: "set-by-update" },
-          where: [{ field: "userId", operator: "eq", value: "user-1" }],
-        },
-        paginationOpts: { cursor: null, numItems: 10 },
-        onUpdateHandle: handle,
-      });
+      return await ctx.runMutation(
+        api.testProfiles.adapterConstraints.updateMany,
+        {
+          input: {
+            model: "session",
+            update: { userAgent: "set-by-update" },
+            where: [{ field: "userId", operator: "eq", value: "user-1" }],
+          },
+          paginationOpts: { cursor: null, numItems: 10 },
+          onUpdateHandle: handle,
+        }
+      );
     });
     expect(result.count).toBe(2);
 
@@ -150,7 +161,7 @@ describe("trigger unique constraint enforcement", () => {
   it("rolls back an onCreate trigger that creates an account identity collision", async () => {
     const t = convexTest(schema, import.meta.glob("../component/**/*.*s"));
     await t.run((ctx) =>
-      ctx.runMutation(api.adapter.create, {
+      ctx.runMutation(api.testProfiles.adapterConstraints.create, {
         input: {
           model: "account",
           data: accountData({
@@ -168,18 +179,21 @@ describe("trigger unique constraint enforcement", () => {
         const handle = await createFunctionHandle(
           internal.testTriggerHandlers.accountOnCreateIssuerCollider
         );
-        return await ctx.runMutation(api.adapter.create, {
-          input: {
-            model: "account",
-            data: accountData({
-              issuer: "safe-issuer",
-              accountId: "collision-account",
-              providerId: "candidate-provider",
-              userId: "candidate-user",
-            }),
-          },
-          onCreateHandle: handle,
-        });
+        return await ctx.runMutation(
+          api.testProfiles.adapterConstraints.create,
+          {
+            input: {
+              model: "account",
+              data: accountData({
+                issuer: "safe-issuer",
+                accountId: "collision-account",
+                providerId: "candidate-provider",
+                userId: "candidate-user",
+              }),
+            },
+            onCreateHandle: handle,
+          }
+        );
       })
     ).rejects.toThrow(
       "account unique constraint issuer+accountId already exists"
@@ -211,7 +225,7 @@ describe("trigger unique constraint enforcement", () => {
           userId: "candidate-user",
         }),
       ]) {
-        await ctx.runMutation(api.adapter.create, {
+        await ctx.runMutation(api.testProfiles.adapterConstraints.create, {
           input: { model: "account", data },
         });
       }
@@ -222,20 +236,23 @@ describe("trigger unique constraint enforcement", () => {
         const handle = await createFunctionHandle(
           internal.testTriggerHandlers.accountOnUpdateAccountIdCollider
         );
-        return await ctx.runMutation(api.adapter.updateOne, {
-          input: {
-            model: "account",
-            update: { scope: "updated-scope" },
-            where: [
-              {
-                field: "providerId",
-                operator: "eq",
-                value: "candidate-provider",
-              },
-            ],
-          },
-          onUpdateHandle: handle,
-        });
+        return await ctx.runMutation(
+          api.testProfiles.adapterConstraints.updateOne,
+          {
+            input: {
+              model: "account",
+              update: { scope: "updated-scope" },
+              where: [
+                {
+                  field: "providerId",
+                  operator: "eq",
+                  value: "candidate-provider",
+                },
+              ],
+            },
+            onUpdateHandle: handle,
+          }
+        );
       })
     ).rejects.toThrow(
       "account unique constraint issuer+accountId already exists"
@@ -275,7 +292,7 @@ describe("trigger unique constraint enforcement", () => {
           userId: "candidate-user",
         }),
       ]) {
-        await ctx.runMutation(api.adapter.create, {
+        await ctx.runMutation(api.testProfiles.adapterConstraints.create, {
           input: { model: "account", data },
         });
       }
@@ -286,21 +303,24 @@ describe("trigger unique constraint enforcement", () => {
         const handle = await createFunctionHandle(
           internal.testTriggerHandlers.accountOnUpdateAccountIdCollider
         );
-        return await ctx.runMutation(api.adapter.updateMany, {
-          input: {
-            model: "account",
-            update: { scope: "updated-scope" },
-            where: [
-              {
-                field: "providerId",
-                operator: "eq",
-                value: "candidate-provider",
-              },
-            ],
-          },
-          paginationOpts: { cursor: null, numItems: 10 },
-          onUpdateHandle: handle,
-        });
+        return await ctx.runMutation(
+          api.testProfiles.adapterConstraints.updateMany,
+          {
+            input: {
+              model: "account",
+              update: { scope: "updated-scope" },
+              where: [
+                {
+                  field: "providerId",
+                  operator: "eq",
+                  value: "candidate-provider",
+                },
+              ],
+            },
+            paginationOpts: { cursor: null, numItems: 10 },
+            onUpdateHandle: handle,
+          }
+        );
       })
     ).rejects.toThrow(
       "account unique constraint issuer+accountId already exists"

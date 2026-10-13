@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 import { convexTest } from "convex-test";
-import schema from "../component/schema.js";
+import schema from "../component/testProfiles/schema.constraints.js";
 import { api } from "../component/_generated/api.js";
 
 describe("updateMany pagination", () => {
@@ -27,7 +27,7 @@ describe("updateMany pagination", () => {
     });
 
     await expect(
-      t.mutation(api.adapter.updateMany, {
+      t.mutation(api.testProfiles.adapterConstraints.updateMany, {
         input: {
           model: "account",
           update: { issuer: "updated-issuer" },

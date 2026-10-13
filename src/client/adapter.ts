@@ -84,8 +84,7 @@ const handlePagination = async (
     // A page that returns nothing and doesn't advance the cursor while !isDone
     // can never terminate; fail loudly instead of looping forever.
     const advanced = state.cursor !== cursorBeforePage;
-    const produced =
-      (result.page?.length ?? 0) > 0 || (result.count ?? 0) > 0;
+    const produced = (result.page?.length ?? 0) > 0 || (result.count ?? 0) > 0;
     if (!state.isDone && !advanced && !produced) {
       throw new Error(
         "handlePagination made no forward progress; aborting to avoid an infinite pagination loop"
@@ -259,15 +258,13 @@ export const convexAdapter = <
         where: (Where & { join?: undefined })[];
       }) => {
         const results = await asyncMap(data.where, async (w) =>
-          handlePagination(
-            async ({ paginationOpts }) => {
-              return await ctx.runQuery(api.adapter.findMany, {
-                model: data.model as TableNames,
-                where: parseWhere(w),
-                paginationOpts,
-              });
-            }
-          )
+          handlePagination(async ({ paginationOpts }) => {
+            return await ctx.runQuery(api.adapter.findMany, {
+              model: data.model as TableNames,
+              where: parseWhere(w),
+              paginationOpts,
+            });
+          })
         );
         const ids = dedupeDocsById(results.flatMap((r) => r.docs))
           .map((doc) => getDocId(doc))
@@ -300,7 +297,8 @@ export const convexAdapter = <
             onCreateHandle: onCreateHandle,
           });
         },
-        findOne: async (data): Promise<any> => {
+        // modelKey is Better Auth metadata, not a Convex component argument.
+        findOne: async ({ modelKey: _modelKey, ...data }): Promise<any> => {
           if (data.where?.every((w) => w.connector === "OR")) {
             for (const w of data.where) {
               const result = await ctx.runQuery(api.adapter.findOne, {
@@ -319,7 +317,7 @@ export const convexAdapter = <
             where: parseWhere(data.where),
           });
         },
-        findMany: async (data): Promise<any[]> => {
+        findMany: async ({ modelKey: _modelKey, ...data }): Promise<any[]> => {
           if (data.offset) {
             throw new Error("offset not supported");
           }
@@ -367,7 +365,7 @@ export const convexAdapter = <
           );
           return result.docs;
         },
-        count: async (data) => {
+        count: async ({ modelKey: _modelKey, ...data }) => {
           // Yes, count is just findMany returning a number.
           if (data.where?.some((w) => w.connector === "OR")) {
             const results = await asyncMap(data.where, async (w) =>
@@ -487,7 +485,7 @@ export const convexAdapter = <
             onDeleteHandle: onDeleteHandle,
           });
         },
-        deleteMany: async (data) => {
+        deleteMany: async ({ modelKey: _modelKey, ...data }) => {
           if (!("runMutation" in ctx)) {
             throw new Error("ctx is not a mutation ctx");
           }
@@ -527,7 +525,7 @@ export const convexAdapter = <
           });
           return result.count;
         },
-        updateMany: async (data) => {
+        updateMany: async ({ modelKey: _modelKey, ...data }) => {
           if (!("runMutation" in ctx)) {
             throw new Error("ctx is not a mutation ctx");
           }

@@ -14,7 +14,6 @@ describe("createSchema", () => {
             references: { field: "id", model: "user" },
           },
           providerId: { type: "string", required: true },
-          issuer: { type: "string", required: true },
           accountId: { type: "string", required: true },
         },
       },
@@ -23,7 +22,7 @@ describe("createSchema", () => {
     const { code } = await createSchema({ tables });
 
     expect(code).toContain(
-      '.index("userId_providerId_issuer_accountId", ["userId","providerId","issuer","accountId"])'
+      '.index("userId_providerId_accountId", ["userId","providerId","accountId"])'
     );
     expect(code).toContain('.index("userId", ["userId"])');
   });

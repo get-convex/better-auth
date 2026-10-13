@@ -109,7 +109,7 @@ describe("crossDomain plugin", async () => {
       const { url } = (await response.json()) as { url: string };
       const state = new URL(url).searchParams.get("state");
       const verification = db.verification.find(
-        (entry) => entry.identifier === state
+        (entry) => entry.identifier === `auth-state:${state}`
       );
       expect(verification).toBeDefined();
       expect(JSON.parse(verification!.value).callbackURL).toBe(SITE_URL);
@@ -124,7 +124,7 @@ describe("crossDomain plugin", async () => {
       const { url } = (await response.json()) as { url: string };
       const state = new URL(url).searchParams.get("state");
       const verification = db.verification.find(
-        (entry) => entry.identifier === state
+        (entry) => entry.identifier === `auth-state:${state}`
       );
       expect(verification).toBeDefined();
       expect(JSON.parse(verification!.value).callbackURL).toBe(

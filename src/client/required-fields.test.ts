@@ -3,8 +3,8 @@
 import { describe, expect, it } from "vitest";
 import { convexTest } from "convex-test";
 import { createFunctionHandle } from "convex/server";
-import type { BetterAuthOptions } from "better-auth";
-import schema from "../component/schema.js";
+import { constraintsProfileOptions } from "../component/testProfiles/auth-options.constraints.js";
+import schema from "../component/testProfiles/schema.constraints.js";
 import { api, internal } from "../component/_generated/api.js";
 import type { DataModel } from "../component/_generated/dataModel.js";
 import { createClient } from "./index.js";
@@ -24,7 +24,7 @@ const createAccount = async (
   onCreateHandle?: string
 ) =>
   await t.run(async (ctx) =>
-    ctx.runMutation(api.adapter.create, {
+    ctx.runMutation(api.testProfiles.adapterConstraints.create, {
       input: { model: "account", data: accountData() },
       onCreateHandle,
     })
@@ -54,32 +54,45 @@ describe("required fields", () => {
 
       const mutation = t.run(async (ctx) => {
         if (operation === "updateOne") {
-          return await ctx.runMutation(api.adapter.updateOne, {
+          return await ctx.runMutation(
+            api.testProfiles.adapterConstraints.updateOne,
+            {
+              input: {
+                model: "account",
+                update: { issuer: null },
+                where: [
+                  { field: "accountId", operator: "eq", value: "user-1" },
+                ],
+              },
+            }
+          );
+        }
+        if (operation === "incrementOne") {
+          return await ctx.runMutation(
+            api.testProfiles.adapterConstraints.incrementOne,
+            {
+              input: {
+                model: "account",
+                increment: { updatedAt: 1 },
+                set: { issuer: null },
+                where: [
+                  { field: "accountId", operator: "eq", value: "user-1" },
+                ],
+              },
+            }
+          );
+        }
+        return await ctx.runMutation(
+          api.testProfiles.adapterConstraints.updateMany,
+          {
             input: {
               model: "account",
               update: { issuer: null },
               where: [{ field: "accountId", operator: "eq", value: "user-1" }],
             },
-          });
-        }
-        if (operation === "incrementOne") {
-          return await ctx.runMutation(api.adapter.incrementOne, {
-            input: {
-              model: "account",
-              increment: { updatedAt: 1 },
-              set: { issuer: null },
-              where: [{ field: "accountId", operator: "eq", value: "user-1" }],
-            },
-          });
-        }
-        return await ctx.runMutation(api.adapter.updateMany, {
-          input: {
-            model: "account",
-            update: { issuer: null },
-            where: [{ field: "accountId", operator: "eq", value: "user-1" }],
-          },
-          paginationOpts: { cursor: null, numItems: 10 },
-        });
+            paginationOpts: { cursor: null, numItems: 10 },
+          }
+        );
       });
 
       await expect(mutation).rejects.toThrow(
@@ -106,7 +119,7 @@ describe("required fields", () => {
           },
         ];
         if (operation === "updateOne") {
-          await ctx.runMutation(api.adapter.updateOne, {
+          await ctx.runMutation(api.testProfiles.adapterConstraints.updateOne, {
             input: {
               model: "account",
               update: { accessToken: "updated-token" },
@@ -116,16 +129,19 @@ describe("required fields", () => {
           return;
         }
         if (operation === "incrementOne") {
-          await ctx.runMutation(api.adapter.incrementOne, {
-            input: {
-              model: "account",
-              increment: { updatedAt: 1 },
-              where,
-            },
-          });
+          await ctx.runMutation(
+            api.testProfiles.adapterConstraints.incrementOne,
+            {
+              input: {
+                model: "account",
+                increment: { updatedAt: 1 },
+                where,
+              },
+            }
+          );
           return;
         }
-        await ctx.runMutation(api.adapter.updateMany, {
+        await ctx.runMutation(api.testProfiles.adapterConstraints.updateMany, {
           input: {
             model: "account",
             update: { scope: "updated-scope" },
@@ -162,12 +178,15 @@ describe("required fields", () => {
         });
       }
     });
-    const adapter = createClient<DataModel>({ adapter: api.adapter } as any, {
-      verbose: false,
-    }).adapter({
+    const adapter = createClient<DataModel>(
+      { adapter: api.testProfiles.adapterConstraints } as any,
+      {
+        verbose: false,
+      }
+    ).adapter({
       runMutation: t.mutation.bind(t),
       runQuery: t.query.bind(t),
-    } as any)({} as BetterAuthOptions);
+    } as any)(constraintsProfileOptions);
 
     await expect(
       adapter.updateMany({
@@ -193,10 +212,13 @@ describe("required fields", () => {
         const handle = await createFunctionHandle(
           internal.testTriggerHandlers.accountOnCreateIssuerClearer
         );
-        return await ctx.runMutation(api.adapter.create, {
-          input: { model: "account", data: accountData() },
-          onCreateHandle: handle,
-        });
+        return await ctx.runMutation(
+          api.testProfiles.adapterConstraints.create,
+          {
+            input: { model: "account", data: accountData() },
+            onCreateHandle: handle,
+          }
+        );
       })
     ).rejects.toThrow("Missing required field account.issuer");
     expect(await t.run((ctx) => ctx.db.query("account").collect())).toEqual([]);
@@ -211,14 +233,17 @@ describe("required fields", () => {
         const handle = await createFunctionHandle(
           internal.testTriggerHandlers.accountOnUpdateIssuerClearer
         );
-        return await ctx.runMutation(api.adapter.updateOne, {
-          input: {
-            model: "account",
-            update: { updatedAt: Date.now() + 1 },
-            where: [{ field: "accountId", operator: "eq", value: "user-1" }],
-          },
-          onUpdateHandle: handle,
-        });
+        return await ctx.runMutation(
+          api.testProfiles.adapterConstraints.updateOne,
+          {
+            input: {
+              model: "account",
+              update: { updatedAt: Date.now() + 1 },
+              where: [{ field: "accountId", operator: "eq", value: "user-1" }],
+            },
+            onUpdateHandle: handle,
+          }
+        );
       })
     ).rejects.toThrow("Trigger cleared required field account.issuer");
 
@@ -244,7 +269,7 @@ describe("required fields", () => {
       const handle = await createFunctionHandle(
         internal.testTriggerHandlers.accountOnUpdateNoop
       );
-      await ctx.runMutation(api.adapter.updateOne, {
+      await ctx.runMutation(api.testProfiles.adapterConstraints.updateOne, {
         input: {
           model: "account",
           update: { scope: "updated-scope" },

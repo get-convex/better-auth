@@ -63,7 +63,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   accountId: string
                   createdAt: number
                   idToken?: null | string
-                  issuer: string
                   password?: null | string
                   providerId: string
                   refreshToken?: null | string
@@ -195,7 +194,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 where?: Array<{
                   connector?: 'AND' | 'OR'
                   field:
-                    | 'issuer'
                     | 'accountId'
                     | 'providerId'
                     | 'userId'
@@ -428,7 +426,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 where?: Array<{
                   connector?: 'AND' | 'OR'
                   field:
-                    | 'issuer'
                     | 'accountId'
                     | 'providerId'
                     | 'userId'
@@ -773,7 +770,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   accountId?: string
                   createdAt?: number
                   idToken?: null | string
-                  issuer?: string
                   password?: null | string
                   providerId?: string
                   refreshToken?: null | string
@@ -785,7 +781,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 where: Array<{
                   connector?: 'AND' | 'OR'
                   field:
-                    | 'issuer'
                     | 'accountId'
                     | 'providerId'
                     | 'userId'
@@ -1060,7 +1055,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   accountId?: string
                   createdAt?: number
                   idToken?: null | string
-                  issuer?: string
                   password?: null | string
                   providerId?: string
                   refreshToken?: null | string
@@ -1072,7 +1066,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 where?: Array<{
                   connector?: 'AND' | 'OR'
                   field:
-                    | 'issuer'
                     | 'accountId'
                     | 'providerId'
                     | 'userId'
@@ -1352,7 +1345,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   accountId?: string
                   createdAt?: number
                   idToken?: null | string
-                  issuer?: string
                   password?: null | string
                   providerId?: string
                   refreshToken?: null | string
@@ -1364,7 +1356,6 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 where?: Array<{
                   connector?: 'AND' | 'OR'
                   field:
-                    | 'issuer'
                     | 'accountId'
                     | 'providerId'
                     | 'userId'

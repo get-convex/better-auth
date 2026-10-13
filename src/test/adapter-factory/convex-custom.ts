@@ -2,6 +2,7 @@ import { createTestSuite } from "@better-auth/test-utils/adapter";
 import type { BetterAuthOptions } from "better-auth";
 import { twoFactor } from "better-auth/plugins/two-factor";
 import { expect } from "vitest";
+import { constraintsProfileOptions } from "../../component/testProfiles/auth-options.constraints.js";
 
 const withBetterAuthOptions = (
   modifyBetterAuthOptions: (
@@ -1011,7 +1012,7 @@ export const convexCustomTestSuite = createTestSuite(
       ),
 
     "should restore Better Auth options after a custom test": async () => {
-      expect(getBetterAuthOptions().plugins).toBeUndefined();
+      expect(getBetterAuthOptions().plugins).toEqual(constraintsProfileOptions.plugins);
       expect(getBetterAuthOptions().rateLimit).toBeUndefined();
     },
 

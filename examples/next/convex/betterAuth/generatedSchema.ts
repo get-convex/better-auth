@@ -46,7 +46,6 @@ export const tables = {
     .index("token", ["token"])
     .index("userId", ["userId"]),
   account: defineTable({
-    issuer: v.string(),
     accountId: v.string(),
     providerId: v.string(),
     userId: v.string(),
@@ -60,14 +59,12 @@ export const tables = {
     createdAt: v.number(),
     updatedAt: v.number(),
   })
-    .index("issuer_accountId", ["issuer", "accountId"])
     .index("accountId", ["accountId"])
     .index("accountId_providerId", ["accountId", "providerId"])
     .index("providerId_userId", ["providerId", "userId"])
-    .index("userId_providerId_issuer_accountId", [
+    .index("userId_providerId_accountId", [
       "userId",
       "providerId",
-      "issuer",
       "accountId",
     ])
     .index("userId", ["userId"]),

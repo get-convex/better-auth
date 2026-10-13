@@ -1,6 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-import { tables as baseTables } from "../schema.js";
+import constraintsSchema from "./schema.constraints.js";
+const baseTables = constraintsSchema.tables;
 
 const makeUserTable = () =>
   defineTable({

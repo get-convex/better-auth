@@ -20,7 +20,7 @@ export const indexFields = {
     "accountId",
     ["accountId", "providerId"],
     ["providerId", "userId"],
-    ["userId", "providerId", "issuer", "accountId"],
+    ["userId", "providerId", "accountId"],
     "userId",
   ],
   rateLimit: ["key"],
