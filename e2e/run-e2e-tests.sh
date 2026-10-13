@@ -27,3 +27,5 @@ popd > /dev/null
 
 echo "Running Playwright tests..."
 npx playwright test --config "$SCRIPT_DIR/playwright.config.ts"
+
+"$SCRIPT_DIR/run-oauth-tests.sh"
