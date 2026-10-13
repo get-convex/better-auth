@@ -59,6 +59,58 @@ describe("Better Auth 1.7.7 compatibility", () => {
     }
   );
 
+  it("does not revisit rows when filtered pagination splits a page", async () => {
+    const { t, adapter } = setup();
+    await t.run(async (ctx) => {
+      // Rejected rows force the scan budget to split before 200 matches.
+      for (let i = 0; i < 4; i++) {
+        await ctx.db.insert("user", {
+          name: `Other ${i}`,
+          email: `other-${i}@example.com`,
+          emailVerified: false,
+          createdAt: 1,
+          updatedAt: 1,
+        });
+      }
+      for (let i = 0; i < 205; i++) {
+        await ctx.db.insert("user", {
+          name: `Fixture ${i}`,
+          email: `fixture-${i}@example.com`,
+          emailVerified: false,
+          createdAt: 1,
+          updatedAt: 1,
+        });
+      }
+    });
+    const where = [
+      { field: "email", operator: "starts_with" as const, value: "fixture-" },
+    ];
+    expect(await adapter.count({ model: "user", where })).toBe(205);
+    const users = await adapter.findMany<{ id: string }>({
+      model: "user",
+      where,
+      limit: 1000,
+    });
+    expect(users).toHaveLength(205);
+    expect(new Set(users.map((user) => user.id)).size).toBe(205);
+    const limited = await adapter.findMany<{ id: string }>({
+      model: "user",
+      where,
+      limit: 200,
+    });
+    expect(limited).toHaveLength(200);
+    expect(new Set(limited.map((user) => user.id)).size).toBe(200);
+    expect(
+      await adapter.updateMany({
+        model: "user",
+        where,
+        update: { name: "Updated" },
+      })
+    ).toBe(205);
+    expect(await adapter.deleteMany({ model: "user", where })).toBe(205);
+    expect(await adapter.count({ model: "user", where })).toBe(0);
+  });
+
   it("creates and updates core accounts without an issuer backfill", async () => {
     const { t, adapter } = setup();
     const account = await adapter.create({

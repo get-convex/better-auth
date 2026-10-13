@@ -46,11 +46,9 @@ const handlePagination = async (
   const onResult = (
     result: SetOptional<PaginationResult<any>, "page"> & { count?: number }
   ) => {
-    state.cursor =
-      result.pageStatus === "SplitRecommended" ||
-      result.pageStatus === "SplitRequired"
-        ? (result.splitCursor ?? result.continueCursor)
-        : result.continueCursor;
+    // splitCursor divides the page we already received. Continuing there would
+    // revisit its second half and double-count reads and mutations.
+    state.cursor = result.continueCursor;
     if (result.page) {
       state.docs.push(...result.page);
       state.isDone = (limit && state.docs.length >= limit) || result.isDone;
