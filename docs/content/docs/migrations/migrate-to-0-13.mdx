@@ -83,6 +83,16 @@ These replace `signIn.oauth2()` and `oauth2.link()`. Remove
 `genericOAuthClient()` and change provider callback URLs from
 `/api/auth/oauth2/callback/:id` to `/api/auth/callback/:id`.
 
+PKCE is enabled by default. Set `pkce: false` only for providers that reject it.
+Remove `issuer` and `requireIssuerValidation`; issuer validation is automatic.
+
+Review custom provider identity mapping. Discovery providers use verified `sub`,
+and plain OAuth providers use `id`. Set `accountSubject` if that default is not
+the provider's immutable identifier. Keep the provider identifier in
+`getUserInfo().data`; `getUserInfo().user` contains mutable user fields, and
+`mapProfileToUser` can no longer return `id`. See the upstream
+[account identity guidance](https://www.better-auth.com/docs/guides/1-7-upgrade-guide#account-identity-keeps-the-provider-key).
+
 ### Microsoft accounts
 
 Microsoft accounts now use `oid` instead of `sub`, including the Generic OAuth
@@ -100,6 +110,20 @@ an `id_token` from the token exchange. Use the built-in Microsoft provider for
 Move `experimental.joins` to `advanced.database.joins`. The Convex adapter
 continues to disable native joins and use its existing relation queries.
 
+### Expo
+
+The `@better-auth/expo` client's `getCookie()` now returns a promise. Await it
+and make callbacks that read cookies asynchronous. Passing `expo-secure-store`
+directly still works; custom storage must implement `getItem`, `getItemAsync`,
+`setItem`, and `setItemAsync`. See the upstream
+[Expo migration guidance](https://www.better-auth.com/docs/guides/1-7-upgrade-guide#expo-and-react-native).
+
+### Two-factor authentication
+
+Check the returned `method` before reading `totpURI` or backup codes from
+`enableTwoFactor`. Those fields are present only when `method === "totp"`. The
+Next.js and TanStack examples include this check.
+
 ## Early 1.7 deployments
 
 Better Auth 1.7.3 removed the required `issuer` field introduced in 1.7.0–1.7.2.
@@ -113,8 +137,20 @@ the matching account rows before resuming sign-in.
 
 ## OAuth or OIDC provider
 
-Only follow this section if your app used `oidcProvider` to act as an identity
+The conversion below is for apps that used `oidcProvider` to act as an identity
 provider. Apps that only sign in through an external provider can skip it.
+
+If you already use `@better-auth/oauth-provider` with Local Install, follow the
+upstream
+[OAuth client migration](https://www.better-auth.com/docs/guides/1-7-upgrade-guide#migrate-oauth-client-records)
+before applying the generated schema. Existing clients need field backfills and
+configuration changes; schema generation alone does not migrate their data. Skip
+the legacy export and cleanup below.
+
+Use a temporary Convex schema that accepts both the existing and migrated client
+records. Backfill the new fields and remove the legacy `type` and `public`
+fields from existing `oauthClient` documents before deploying the final
+generated schema.
 
 ### Export and clear legacy records
 
@@ -229,6 +265,14 @@ Replace `/api/auth` if you use a custom `basePath`. Use the same signing
 algorithm as your Convex auth configuration (`RS256` by default). Disabling the
 JWT header avoids generating an extra token when reading a session; Convex
 clients use `/convex/token`.
+
+### Custom consent pages
+
+Before displaying consent details, verify the signed query on the server with
+`verifyOAuthQueryParams` from `@better-auth/oauth-provider`. Use the provider's
+resolved secret, `(await auth.$context).secret`, from your server-side auth
+instance and keep it on the server. See the upstream
+[consent screen example](https://www.better-auth.com/docs/plugins/oauth-provider#consent-screen).
 
 ## Local Install additional steps
 
