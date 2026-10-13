@@ -240,13 +240,23 @@ cd convex/betterAuth
 npx auth generate --output generatedSchema.next.ts
 ```
 
-Preserve custom fields and indexes. Include the generated credential lookup
-index `userId_providerId_accountId` on `["userId", "providerId", "accountId"]`
-and export `incrementOne` with your other adapter functions. The adapter
-implements `consumeOne` using the component's atomic `deleteOne`.
+Preserve existing plugin tables, custom fields, and indexes. Include the
+generated credential lookup index `userId_providerId_accountId` on
+`["userId", "providerId", "accountId"]` and export `incrementOne` with your
+other adapter functions. The adapter implements `consumeOne` using the
+component's atomic `deleteOne`.
 
-If you already use Local Install with `oidcProvider`, implement local
-equivalents of the export and cleanup helpers above. During export, retain
-`oauthApplication` and merge legacy/new `oauthAccessToken` and `oauthConsent`
-fields as optional unions. Clear legacy records before applying the final
-provider schema.
+If you already use Local Install with `oidcProvider`, copy
+`src/component/migrations.ts` from the installed `@convex-dev/better-auth`
+package to `convex/betterAuth/migrations.ts`. Install `convex-helpers` as a
+direct dependency, choosing a version compatible with your installed Convex
+version. The helpers use its `paginator`, since `ctx.db.query(...).paginate()`
+is not supported inside components. Use the internal wrappers above to call
+them.
+
+Before exporting, deploy a temporary schema that retains `oauthApplication` and
+accepts both legacy and new `oauthAccessToken` and `oauthConsent` records. Keep
+both sets of fields and indexes, make required new fields such as `clientId` and
+`scopes` optional, and allow `scopes` to be either a string or an array of
+strings. Clear legacy records before applying the final provider schema, and
+remove the temporary migration helpers and wrappers in that same deployment.
