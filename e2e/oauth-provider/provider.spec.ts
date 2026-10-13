@@ -4,11 +4,8 @@ import { createLocalJWKSet, jwtVerify } from "jose";
 
 const site = "http://127.0.0.1:3211";
 const base = `${site}/api/auth`;
-// Authorization redirects are inspected, never followed to this synthetic client.
 const redirectUri = "https://client.example.com/callback";
 
-// Issue real provider tokens through signup, client registration, consent and PKCE.
-// No adapter rows or endpoint responses are mocked.
 async function authorize(request: APIRequestContext) {
   const signup = await request.post(`${base}/sign-up/email`, {
     data: {

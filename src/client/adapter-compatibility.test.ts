@@ -19,8 +19,6 @@ const setup = () => {
 };
 
 describe("Better Auth 1.7.7 compatibility", () => {
-  // Use the real factory so modelKey is injected upstream. Convex validators
-  // reject leaked metadata on both normal and OR/paginated component calls.
   it.each([false, true])(
     "keeps modelKey out of component calls (OR: %s)",
     async (or) => {

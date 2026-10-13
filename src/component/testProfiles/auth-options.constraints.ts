@@ -1,8 +1,7 @@
 import type { BetterAuthOptions } from "better-auth/minimal";
 import { options } from "../../auth-options.js";
 
-// Exercise custom required fields and compound uniqueness independently of
-// Better Auth's core account schema, which no longer requires issuer in 1.7.3+.
+// Test-only constraints; production accounts do not require issuer.
 export const constraintsProfileOptions = {
   ...options,
   plugins: [
