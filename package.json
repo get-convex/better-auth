@@ -121,7 +121,7 @@
     "better-auth": "1.6.15",
     "chokidar-cli": "3.0.0",
     "concurrently": "10.0.3",
-    "convex": "1.41.0",
+    "convex": "1.46.0",
     "convex-test": "0.0.51",
     "eslint": "9.39.4",
     "eslint-plugin-import": "2.32.0",
@@ -143,7 +143,7 @@
   "dependencies": {
     "@better-fetch/fetch": "^1.1.18",
     "common-tags": "^1.8.2",
-    "convex-helpers": "^0.1.95",
+    "convex-helpers": "^0.1.128",
     "jose": "^6.1.0",
     "remeda": "^2.32.0",
     "semver": "^7.7.3",
