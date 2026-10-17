@@ -68,9 +68,12 @@ const handler = (request: Request, opts: { convexSiteUrl: string }) => {
   headers.delete("transfer-encoding");
   headers.delete("content-length");
   headers.delete("connection");
+  // Convex's edge resolves the deployment from `x-forwarded-host`, so an app
+  // domain here routes to nothing; the component restores it from
+  // `x-better-auth-forwarded-host` instead.
+  headers.delete("x-forwarded-host");
   headers.set("accept-encoding", "application/json");
   headers.set("host", new URL(opts.convexSiteUrl).host);
-  headers.set("x-forwarded-host", requestUrl.host);
   headers.set("x-forwarded-proto", requestUrl.protocol.replace(/:$/, ""));
   headers.set("x-better-auth-forwarded-host", requestUrl.host);
   headers.set("x-better-auth-forwarded-proto", requestUrl.protocol.replace(/:$/, ""));
