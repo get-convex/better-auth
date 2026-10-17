@@ -7,8 +7,13 @@
     "testExistingBackend": "./run-e2e-tests.sh"
   },
   "dependencies": {
+    "@better-auth/oauth-provider": "1.7.7",
+    "@convex-dev/better-auth": "file:..",
     "@playwright/test": "^1.60.0",
     "adm-zip": "^0.5.16",
-    "dotenv": "^17.0.0"
+    "better-auth": "1.7.7",
+    "convex": "1.41.0",
+    "dotenv": "^17.0.0",
+    "jose": "^6.1.0"
   }
 }

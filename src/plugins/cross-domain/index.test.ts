@@ -100,31 +100,31 @@ describe("crossDomain plugin", async () => {
     });
   });
 
-  describe("callbackURL defaulting for oauth2", () => {
+  describe("callbackURL defaulting for generic OAuth", () => {
     it("injects siteUrl when callbackURL is absent", async () => {
-      const response = await post("/sign-in/oauth2", {
-        providerId: "example-oauth",
+      const response = await post("/sign-in/social", {
+        provider: "example-oauth",
         disableRedirect: true,
       });
       const { url } = (await response.json()) as { url: string };
       const state = new URL(url).searchParams.get("state");
       const verification = db.verification.find(
-        (entry) => entry.identifier === state
+        (entry) => entry.identifier === `auth-state:${state}`
       );
       expect(verification).toBeDefined();
       expect(JSON.parse(verification!.value).callbackURL).toBe(SITE_URL);
     });
 
     it("rewrites relative callbackURL to absolute using siteUrl", async () => {
-      const response = await post("/sign-in/oauth2", {
-        providerId: "example-oauth",
+      const response = await post("/sign-in/social", {
+        provider: "example-oauth",
         callbackURL: "/dashboard",
         disableRedirect: true,
       });
       const { url } = (await response.json()) as { url: string };
       const state = new URL(url).searchParams.get("state");
       const verification = db.verification.find(
-        (entry) => entry.identifier === state
+        (entry) => entry.identifier === `auth-state:${state}`
       );
       expect(verification).toBeDefined();
       expect(JSON.parse(verification!.value).callbackURL).toBe(
